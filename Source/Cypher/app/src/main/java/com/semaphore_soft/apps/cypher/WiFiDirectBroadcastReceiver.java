@@ -8,6 +8,7 @@ import android.util.Log;
 
 /**
  * Created by Evan on 9/24/2016.
+ * Broadcast Receiver for Wifi P2P connections
  */
 
 public class WiFiDirectBroadcastReceiver extends BroadcastReceiver {
@@ -42,10 +43,13 @@ public class WiFiDirectBroadcastReceiver extends BroadcastReceiver {
             }
         } else if (WifiP2pManager.WIFI_P2P_PEERS_CHANGED_ACTION.equals(action)) {
             // Call WifiP2pManager.requestPeers() to get a list of current peers
+            Log.d(TAG, "peer list changed");
         } else if (WifiP2pManager.WIFI_P2P_CONNECTION_CHANGED_ACTION.equals(action)) {
             // Respond to new connection or disconnections
+            Log.d(TAG, "connection changed");
         } else if (WifiP2pManager.WIFI_P2P_THIS_DEVICE_CHANGED_ACTION.equals(action)) {
             // Respond to this device's wifi state changing
+            Log.d(TAG, "this device's state changed");
         }
     }
 }

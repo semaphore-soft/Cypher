@@ -9,6 +9,7 @@ import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
+import android.util.Log;
 import android.view.View;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -45,6 +46,9 @@ public class MainActivity extends AppCompatActivity {
         mIntentFiler.addAction(WifiP2pManager.WIFI_P2P_PEERS_CHANGED_ACTION);
         mIntentFiler.addAction(WifiP2pManager.WIFI_P2P_CONNECTION_CHANGED_ACTION);
         mIntentFiler.addAction(WifiP2pManager.WIFI_P2P_THIS_DEVICE_CHANGED_ACTION);
+
+        //TEST
+        discoverPeers();
     }
 
     // Register the broadcast receiver with the intent values to be matched
@@ -59,6 +63,21 @@ public class MainActivity extends AppCompatActivity {
     protected void onPause() {
         super.onPause();
         unregisterReceiver(mReceiver);
+    }
+
+    //should be public?
+    private void discoverPeers() {
+        mManager.discoverPeers(mChannel, new WifiP2pManager.ActionListener() {
+            @Override
+            public void onSuccess() {
+                Log.d("main", "Discovered peers");
+            }
+
+            @Override
+            public void onFailure(int reasonCode) {
+                Log.d("main", "Peer discovery failed, Error:" + reasonCode);
+            }
+        });
     }
 
     @Override
