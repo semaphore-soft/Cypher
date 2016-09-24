@@ -3,8 +3,13 @@ package com.semaphore_soft.apps.cypher;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
+import android.net.wifi.p2p.WifiP2pDevice;
+import android.net.wifi.p2p.WifiP2pDeviceList;
 import android.net.wifi.p2p.WifiP2pManager;
 import android.util.Log;
+
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Created by Evan on 9/24/2016.
@@ -16,8 +21,10 @@ public class WiFiDirectBroadcastReceiver extends BroadcastReceiver {
     private WifiP2pManager mManager;
     private WifiP2pManager.Channel mChannel;
     private MainActivity mActivity;
+    private List<WifiP2pDevice> peers = new ArrayList<>();
 
     private final static String TAG = "WifiBR";
+
 
     public WiFiDirectBroadcastReceiver (WifiP2pManager manager, WifiP2pManager.Channel channel,
                                         MainActivity activity) {
@@ -26,6 +33,27 @@ public class WiFiDirectBroadcastReceiver extends BroadcastReceiver {
         this.mChannel = channel;
         this.mActivity = activity;
     }
+
+    private WifiP2pManager.PeerListListener peerListListener = new WifiP2pManager.PeerListListener() {
+        @Override
+        public void onPeersAvailable(WifiP2pDeviceList peerList) {
+            // Clear old list and add in new peers
+            peers.clear();
+            peers.addAll(peerList.getDeviceList());
+
+            //if using an AdapterView, notify it of the change (ex. ListView)
+            //https://developer.android.com/training/connect-devices-wirelessly/wifi-direct.html
+            if (peers.size() == 0) {
+                Log.d(TAG, "No devices found");
+                return;
+            }
+
+            Log.d(TAG, "Peers found: " + peers.size());
+            for (WifiP2pDevice device : peers) {
+                Log.i(TAG, device.toString());
+            }
+        }
+    };
 
     @Override
     public void onReceive (Context context, Intent intent) {
@@ -42,7 +70,11 @@ public class WiFiDirectBroadcastReceiver extends BroadcastReceiver {
                 Log.d(TAG, "P2P disabled, please fix");
             }
         } else if (WifiP2pManager.WIFI_P2P_PEERS_CHANGED_ACTION.equals(action)) {
-            // Call WifiP2pManager.requestPeers() to get a list of current peers
+            // Request available peers. This is an asynchronous call. The calling activity
+            // is notified with a callback on PeerListListener.onPeerAvailable()
+            if (mManager != null) {
+                mManager.requestPeers(mChannel, peerListListener);
+            }
             Log.d(TAG, "peer list changed");
         } else if (WifiP2pManager.WIFI_P2P_CONNECTION_CHANGED_ACTION.equals(action)) {
             // Respond to new connection or disconnections
