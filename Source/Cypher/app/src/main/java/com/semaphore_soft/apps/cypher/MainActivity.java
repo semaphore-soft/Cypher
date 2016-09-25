@@ -1,5 +1,6 @@
 package com.semaphore_soft.apps.cypher;
 
+import android.app.ProgressDialog;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.IntentFilter;
@@ -10,9 +11,11 @@ import android.support.design.widget.Snackbar;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
-import android.view.View;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.View;
+import android.widget.Button;
+import android.widget.Toast;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -20,6 +23,9 @@ public class MainActivity extends AppCompatActivity {
     WifiP2pManager.Channel mChannel;
     BroadcastReceiver mReceiver;
     IntentFilter mIntentFiler;
+
+    private Button findGame, hostGame;
+    private ProgressDialog peerProgress;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -40,6 +46,7 @@ public class MainActivity extends AppCompatActivity {
         mManager = (WifiP2pManager) getSystemService(Context.WIFI_P2P_SERVICE);
         mChannel = mManager.initialize(this, getMainLooper(), null);
         mReceiver = new WiFiDirectBroadcastReceiver(mManager, mChannel, this);
+        peerProgress = new ProgressDialog(this);
 
         mIntentFiler = new IntentFilter();
         mIntentFiler.addAction(WifiP2pManager.WIFI_P2P_STATE_CHANGED_ACTION);
@@ -47,8 +54,21 @@ public class MainActivity extends AppCompatActivity {
         mIntentFiler.addAction(WifiP2pManager.WIFI_P2P_CONNECTION_CHANGED_ACTION);
         mIntentFiler.addAction(WifiP2pManager.WIFI_P2P_THIS_DEVICE_CHANGED_ACTION);
 
-        //TEST
-        discoverPeers();
+        findGame = (Button) findViewById(R.id.findHost);
+        findGame.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                discoverPeers();
+            }
+        });
+
+        hostGame = (Button) findViewById(R.id.hostGame);
+        hostGame.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                Toast.makeText(getApplication(), "Not implemented", Toast.LENGTH_SHORT).show();
+            }
+        });
     }
 
     // Register the broadcast receiver with the intent values to be matched
@@ -65,12 +85,15 @@ public class MainActivity extends AppCompatActivity {
         unregisterReceiver(mReceiver);
     }
 
-    //should be public?
     private void discoverPeers() {
         mManager.discoverPeers(mChannel, new WifiP2pManager.ActionListener() {
             @Override
             public void onSuccess() {
+                // Broadcast Receiver will be notified if successful
                 Log.d("main", "Discovered peers");
+                peerProgress.setIndeterminate(true);
+                peerProgress.setTitle("Looking for hosts");
+                peerProgress.show();
             }
 
             @Override
@@ -100,5 +123,9 @@ public class MainActivity extends AppCompatActivity {
         }
 
         return super.onOptionsItemSelected(item);
+    }
+
+    public ProgressDialog getPeerProgress() {
+        return peerProgress;
     }
 }

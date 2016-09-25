@@ -1,12 +1,15 @@
 package com.semaphore_soft.apps.cypher;
 
+import android.app.AlertDialog;
 import android.content.BroadcastReceiver;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.net.wifi.p2p.WifiP2pDevice;
 import android.net.wifi.p2p.WifiP2pDeviceList;
 import android.net.wifi.p2p.WifiP2pManager;
 import android.util.Log;
+import android.widget.Toast;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -25,7 +28,6 @@ public class WiFiDirectBroadcastReceiver extends BroadcastReceiver {
 
     private final static String TAG = "WifiBR";
 
-
     public WiFiDirectBroadcastReceiver (WifiP2pManager manager, WifiP2pManager.Channel channel,
                                         MainActivity activity) {
         super();
@@ -41,17 +43,34 @@ public class WiFiDirectBroadcastReceiver extends BroadcastReceiver {
             peers.clear();
             peers.addAll(peerList.getDeviceList());
 
-            //if using an AdapterView, notify it of the change (ex. ListView)
-            //https://developer.android.com/training/connect-devices-wirelessly/wifi-direct.html
             if (peers.size() == 0) {
                 Log.d(TAG, "No devices found");
                 return;
             }
 
             Log.d(TAG, "Peers found: " + peers.size());
+            // Create list of names for user to choose
+            String[] deviceNames = new String[peers.size()];
+            int i = 0;
             for (WifiP2pDevice device : peers) {
                 Log.i(TAG, device.toString());
+                deviceNames[i] = device.deviceName;
+                i++;
             }
+            AlertDialog.Builder builder = new AlertDialog.Builder(mActivity);
+            builder.setTitle("Choose Host");
+            builder.setSingleChoiceItems(deviceNames, -1, new DialogInterface.OnClickListener() {
+                @Override
+                public void onClick(DialogInterface dialogInterface, int i) {
+                    dialogInterface.dismiss();
+                    Log.d(TAG, "Connecting to: " + peers.get(i).deviceName + " at " + peers.get(i).deviceAddress);
+                    Toast.makeText(mActivity, "Connecting to: " + peers.get(i).deviceName,
+                            Toast.LENGTH_SHORT).show();
+                }
+            });
+            AlertDialog alert = builder.create();
+            mActivity.getPeerProgress().dismiss();
+            alert.show();
         }
     };
 
