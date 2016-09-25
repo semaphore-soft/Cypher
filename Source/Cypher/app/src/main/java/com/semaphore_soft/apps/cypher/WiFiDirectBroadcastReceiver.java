@@ -45,6 +45,17 @@ public class WiFiDirectBroadcastReceiver extends BroadcastReceiver {
 
             if (peers.size() == 0) {
                 Log.d(TAG, "No devices found");
+                AlertDialog.Builder builder = new AlertDialog.Builder(mActivity);
+                builder.setTitle("No hosts found");
+                builder.setPositiveButton("OK", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialogInterface, int i) {
+                        dialogInterface.dismiss();
+                    }
+                });
+                AlertDialog alert = builder.create();
+                mActivity.getPeerProgress().dismiss();
+                alert.show();
                 return;
             }
 

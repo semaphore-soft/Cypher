@@ -91,6 +91,7 @@ public class MainActivity extends AppCompatActivity {
             public void onSuccess() {
                 // Broadcast Receiver will be notified if successful
                 Log.d("main", "Discovered peers");
+                // Display progress bar(circle) while waiting for broadcast receiver
                 peerProgress.setIndeterminate(true);
                 peerProgress.setTitle("Looking for hosts");
                 peerProgress.show();
