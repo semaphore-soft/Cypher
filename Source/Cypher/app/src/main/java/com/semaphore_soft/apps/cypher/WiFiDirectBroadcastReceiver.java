@@ -5,12 +5,16 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.net.NetworkInfo;
 import android.net.wifi.p2p.WifiP2pDevice;
 import android.net.wifi.p2p.WifiP2pDeviceList;
+import android.net.wifi.p2p.WifiP2pInfo;
 import android.net.wifi.p2p.WifiP2pManager;
 import android.util.Log;
 import android.widget.Toast;
 
+import java.net.InetAddress;
+import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -85,6 +89,32 @@ public class WiFiDirectBroadcastReceiver extends BroadcastReceiver {
         }
     };
 
+    private WifiP2pManager.ConnectionInfoListener connectionListener =
+            new WifiP2pManager.ConnectionInfoListener() {
+        @Override
+        public void onConnectionInfoAvailable(WifiP2pInfo wifiP2pInfo) {
+            // InetAddress from WifiP2pInfo struct
+            InetAddress groupOwnerAddress;
+            try {
+                groupOwnerAddress = InetAddress.getByName(wifiP2pInfo.groupOwnerAddress.getHostAddress());
+            } catch (UnknownHostException e) {
+                Log.e(TAG, "host IP: " + wifiP2pInfo.groupOwnerAddress.getHostAddress());
+                e.printStackTrace();
+            }
+
+            // After group negotiation, we can determine the group owner
+            if (wifiP2pInfo.groupFormed && wifiP2pInfo.isGroupOwner) {
+                // Tasks specific to group owner
+                // ex. Create server thread and listen for incoming connections
+                Log.d(TAG, "Device is group owner");
+            } else if (wifiP2pInfo.groupFormed) {
+                // Device acts as client
+                // Create client thread that connects to group owner
+                Log.d(TAG, "Device is in group");
+            }
+        }
+    };
+
     @Override
     public void onReceive (Context context, Intent intent) {
         String action = intent.getAction();
@@ -109,6 +139,20 @@ public class WiFiDirectBroadcastReceiver extends BroadcastReceiver {
         } else if (WifiP2pManager.WIFI_P2P_CONNECTION_CHANGED_ACTION.equals(action)) {
             // Respond to new connection or disconnections
             Log.d(TAG, "connection changed");
+
+            if (mManager == null) {
+                return;
+            }
+
+            NetworkInfo networkInfo = (NetworkInfo) intent.getParcelableExtra(
+                    WifiP2pManager.EXTRA_NETWORK_INFO);
+
+            if (networkInfo.isConnected()) {
+                // We are connected with another device, request connection
+                // info to find group owner IP
+                mManager.requestConnectionInfo(mChannel, connectionListener);
+            }
+
         } else if (WifiP2pManager.WIFI_P2P_THIS_DEVICE_CHANGED_ACTION.equals(action)) {
             // Respond to this device's wifi state changing
             Log.d(TAG, "this device's state changed");
