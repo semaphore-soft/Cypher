@@ -7,6 +7,8 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.net.NetworkInfo;
 import android.net.wifi.WifiManager;
+import android.net.wifi.WpsInfo;
+import android.net.wifi.p2p.WifiP2pConfig;
 import android.net.wifi.p2p.WifiP2pDevice;
 import android.net.wifi.p2p.WifiP2pDeviceList;
 import android.net.wifi.p2p.WifiP2pInfo;
@@ -82,6 +84,7 @@ public class WiFiDirectBroadcastReceiver extends BroadcastReceiver {
                     Log.d(TAG, "Connecting to: " + peers.get(i).deviceName + " at " + peers.get(i).deviceAddress);
                     Toast.makeText(mActivity, "Connecting to: " + peers.get(i).deviceName,
                             Toast.LENGTH_SHORT).show();
+                    connect(peers.get(i));
                 }
             });
             AlertDialog alert = builder.create();
@@ -115,6 +118,27 @@ public class WiFiDirectBroadcastReceiver extends BroadcastReceiver {
             }
         }
     };
+
+    public void connect(WifiP2pDevice device) {
+        WifiP2pConfig config = new WifiP2pConfig();
+        config.deviceAddress = device.deviceAddress;
+        config.wps.setup = WpsInfo.PBC;
+
+        mManager.connect(mChannel, config, new WifiP2pManager.ActionListener() {
+            @Override
+            public void onSuccess() {
+                // Broadcast Receiver will notify us.
+                Log.d(TAG, "Connect success");
+            }
+
+            @Override
+            public void onFailure(int i) {
+                Log.d(TAG, "Connect failed. Reason " + i);
+                Toast.makeText(mActivity, "Connect failed. Please try again.",
+                        Toast.LENGTH_SHORT).show();
+            }
+        });
+    }
 
     @Override
     public void onReceive (Context context, Intent intent) {
@@ -174,6 +198,7 @@ public class WiFiDirectBroadcastReceiver extends BroadcastReceiver {
             if (networkInfo.isConnected()) {
                 // We are connected with another device, request connection
                 // info to find group owner IP
+                Log.d(TAG, "Connected");
                 mManager.requestConnectionInfo(mChannel, connectionListener);
             }
 
