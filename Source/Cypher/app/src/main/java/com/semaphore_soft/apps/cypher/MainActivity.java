@@ -15,7 +15,6 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
-import android.widget.Toast;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -24,7 +23,6 @@ public class MainActivity extends AppCompatActivity {
     BroadcastReceiver mReceiver;
     IntentFilter mIntentFiler;
 
-    private Button findGame, hostGame;
     private ProgressDialog peerProgress;
 
     @Override
@@ -54,19 +52,11 @@ public class MainActivity extends AppCompatActivity {
         mIntentFiler.addAction(WifiP2pManager.WIFI_P2P_CONNECTION_CHANGED_ACTION);
         mIntentFiler.addAction(WifiP2pManager.WIFI_P2P_THIS_DEVICE_CHANGED_ACTION);
 
-        findGame = (Button) findViewById(R.id.findHost);
+        Button findGame = (Button) findViewById(R.id.connect);
         findGame.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 discoverPeers();
-            }
-        });
-
-        hostGame = (Button) findViewById(R.id.hostGame);
-        hostGame.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                Toast.makeText(getApplication(), "Not implemented", Toast.LENGTH_SHORT).show();
             }
         });
     }

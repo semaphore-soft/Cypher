@@ -17,13 +17,7 @@
     <Button
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Find Host"
-        android:id="@+id/findHost" />
-
-    <Button
-        android:text="Host Game"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:id="@+id/hostGame" />
+        android:text="Find Game"
+        android:id="@+id/connect" />
 
 </LinearLayout>
