@@ -111,10 +111,13 @@ public class WiFiDirectBroadcastReceiver extends BroadcastReceiver {
                 // Tasks specific to group owner
                 // ex. Create server thread and listen for incoming connections
                 Log.d(TAG, "Device is group owner");
+                Toast.makeText(mActivity, "You're the group owner!", Toast.LENGTH_SHORT).show();
+                //port: 49152-65535
             } else if (wifiP2pInfo.groupFormed) {
                 // Device acts as client
                 // Create client thread that connects to group owner
                 Log.d(TAG, "Device is in group");
+                Toast.makeText(mActivity, "You're in a group!", Toast.LENGTH_SHORT).show();
             }
         }
     };
@@ -199,6 +202,7 @@ public class WiFiDirectBroadcastReceiver extends BroadcastReceiver {
                 // We are connected with another device, request connection
                 // info to find group owner IP
                 Log.d(TAG, "Connected");
+                Toast.makeText(mActivity, "Connected!", Toast.LENGTH_SHORT).show();
                 mManager.requestConnectionInfo(mChannel, connectionListener);
             }
 
