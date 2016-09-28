@@ -32,6 +32,7 @@ public class WiFiDirectBroadcastReceiver extends BroadcastReceiver {
     private WifiP2pManager.Channel mChannel;
     private MainActivity mActivity;
     private List<WifiP2pDevice> peers = new ArrayList<>();
+    private boolean connecting = false;
 
     private final static String TAG = "WifiBR";
 
@@ -132,6 +133,7 @@ public class WiFiDirectBroadcastReceiver extends BroadcastReceiver {
             public void onSuccess() {
                 // Broadcast Receiver will notify us.
                 Log.d(TAG, "Connect success");
+                connecting = true;
             }
 
             @Override
@@ -183,7 +185,7 @@ public class WiFiDirectBroadcastReceiver extends BroadcastReceiver {
         } else if (WifiP2pManager.WIFI_P2P_PEERS_CHANGED_ACTION.equals(action)) {
             // Request available peers. This is an asynchronous call. The calling activity
             // is notified with a callback on PeerListListener.onPeerAvailable()
-            if (mManager != null) {
+            if (mManager != null && !connecting) {
                 mManager.requestPeers(mChannel, peerListListener);
             }
             Log.d(TAG, "Peer list changed");
@@ -204,6 +206,13 @@ public class WiFiDirectBroadcastReceiver extends BroadcastReceiver {
                 Log.d(TAG, "Connected");
                 Toast.makeText(mActivity, "Connected!", Toast.LENGTH_SHORT).show();
                 mManager.requestConnectionInfo(mChannel, connectionListener);
+            } else {
+                // It's a disconnect (maybe; or just never connected)
+                if (connecting) {
+                    Log.d(TAG, "disconnected");
+                    connecting = false;
+                    Toast.makeText(mActivity, "You have disconnected", Toast.LENGTH_SHORT).show();
+                }
             }
 
         } else if (WifiP2pManager.WIFI_P2P_THIS_DEVICE_CHANGED_ACTION.equals(action)) {
