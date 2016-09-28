@@ -88,6 +88,12 @@ public class WiFiDirectBroadcastReceiver extends BroadcastReceiver {
                     connect(peers.get(i));
                 }
             });
+            builder.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+                @Override
+                public void onClick(DialogInterface dialogInterface, int i) {
+                    dialogInterface.dismiss();
+                }
+            });
             AlertDialog alert = builder.create();
             mActivity.getPeerProgress().dismiss();
             alert.show();

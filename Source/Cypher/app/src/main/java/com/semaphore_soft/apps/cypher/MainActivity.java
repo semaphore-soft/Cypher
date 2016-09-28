@@ -3,6 +3,7 @@ package com.semaphore_soft.apps.cypher;
 import android.app.ProgressDialog;
 import android.content.BroadcastReceiver;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.IntentFilter;
 import android.net.wifi.p2p.WifiP2pManager;
 import android.os.Bundle;
@@ -92,7 +93,15 @@ public class MainActivity extends AppCompatActivity {
                 Log.d("main", "Discovering peers");
                 // Display progress bar(circle) while waiting for broadcast receiver
                 peerProgress.setIndeterminate(true);
-                peerProgress.setTitle("Looking for hosts");
+                peerProgress.setTitle("Looking for peers");
+                peerProgress.setButton(DialogInterface.BUTTON_NEGATIVE, "Cancel", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialogInterface, int i) {
+                        dialogInterface.dismiss();
+                        mManager.stopPeerDiscovery(mChannel, null);
+                        Log.d("main", "Stopping peer discovery");
+                    }
+                });
                 peerProgress.show();
             }
 
