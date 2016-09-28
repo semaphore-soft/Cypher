@@ -20,4 +20,10 @@
         android:text="Find Game"
         android:id="@+id/connect" />
 
+    <Button
+        android:text="Disconnect"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:id="@+id/disconnect" />
+
 </LinearLayout>

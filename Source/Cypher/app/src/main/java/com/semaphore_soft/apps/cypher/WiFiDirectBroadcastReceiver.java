@@ -54,7 +54,7 @@ public class WiFiDirectBroadcastReceiver extends BroadcastReceiver {
             if (peers.size() == 0) {
                 Log.d(TAG, "No devices found");
                 AlertDialog.Builder builder = new AlertDialog.Builder(mActivity);
-                builder.setTitle("No hosts found");
+                builder.setTitle("No devices found");
                 builder.setPositiveButton("OK", new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialogInterface, int i) {
@@ -162,7 +162,7 @@ public class WiFiDirectBroadcastReceiver extends BroadcastReceiver {
                 WifiManager wifi = (WifiManager) mActivity.getSystemService(Context.WIFI_SERVICE);
                 if (!wifi.isWifiEnabled()) {
                     wifi.setWifiEnabled(true);
-                    Toast.makeText(mActivity, "Enabled wifi", Toast.LENGTH_SHORT).show();
+                    //Toast.makeText(mActivity, "Enabled wifi", Toast.LENGTH_SHORT).show();
                     Log.d(TAG, "Enabled wifi");
                     return;
                 }

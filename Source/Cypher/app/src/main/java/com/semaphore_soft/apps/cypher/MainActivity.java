@@ -15,6 +15,7 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
+import android.widget.Toast;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -59,6 +60,14 @@ public class MainActivity extends AppCompatActivity {
                 discoverPeers();
             }
         });
+
+        final Button disconnect = (Button) findViewById((R.id.disconnect));
+        disconnect.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                disconnect();
+            }
+        });
     }
 
     // Register the broadcast receiver with the intent values to be matched
@@ -90,6 +99,22 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onFailure(int reasonCode) {
                 Log.d("main", "Peer discovery failed, Error:" + reasonCode);
+            }
+        });
+    }
+
+    private void disconnect() {
+        mManager.removeGroup(mChannel, new WifiP2pManager.ActionListener() {
+            @Override
+            public void onSuccess() {
+                // Will be handled by Broadcast Receiver
+                Log.d("main", "Removing group");
+            }
+
+            @Override
+            public void onFailure(int i) {
+                Toast.makeText(getApplication(), "Failed to disconnect", Toast.LENGTH_SHORT).show();
+                Log.d("main", "Error removing group. Error: " + i);
             }
         });
     }
