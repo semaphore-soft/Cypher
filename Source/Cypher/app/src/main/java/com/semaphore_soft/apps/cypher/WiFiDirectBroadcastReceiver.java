@@ -33,6 +33,7 @@ public class WiFiDirectBroadcastReceiver extends BroadcastReceiver {
     private MainActivity mActivity;
     private List<WifiP2pDevice> peers = new ArrayList<>();
     private boolean connecting = false;
+    private AlertDialog alertDialog = null;
 
     private final static String TAG = "WifiBR";
 
@@ -82,6 +83,7 @@ public class WiFiDirectBroadcastReceiver extends BroadcastReceiver {
                 @Override
                 public void onClick(DialogInterface dialogInterface, int i) {
                     dialogInterface.dismiss();
+                    alertDialog = null;
                     Log.d(TAG, "Connecting to: " + peers.get(i).deviceName + " at " + peers.get(i).deviceAddress);
                     Toast.makeText(mActivity, "Connecting to: " + peers.get(i).deviceName,
                             Toast.LENGTH_SHORT).show();
@@ -96,6 +98,7 @@ public class WiFiDirectBroadcastReceiver extends BroadcastReceiver {
             });
             AlertDialog alert = builder.create();
             mActivity.getPeerProgress().dismiss();
+            alertDialog = alert;
             alert.show();
         }
     };
@@ -213,6 +216,11 @@ public class WiFiDirectBroadcastReceiver extends BroadcastReceiver {
                 Log.d(TAG, "Connected");
                 Toast.makeText(mActivity, "Connected!", Toast.LENGTH_SHORT).show();
                 mManager.requestConnectionInfo(mChannel, connectionListener);
+                // Close connection dialog if we already have a connection
+                if (alertDialog != null) {
+                    alertDialog.dismiss();
+                    alertDialog = null;
+                }
             } else {
                 // It's a disconnect (maybe; or just never connected)
                 if (connecting) {
