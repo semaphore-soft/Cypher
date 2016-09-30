@@ -133,6 +133,7 @@ public class WiFiDirectBroadcastReceiver extends BroadcastReceiver {
         WifiP2pConfig config = new WifiP2pConfig();
         config.deviceAddress = device.deviceAddress;
         config.wps.setup = WpsInfo.PBC;
+        config.groupOwnerIntent = mActivity.getHostWillingness();
 
         mManager.connect(mChannel, config, new WifiP2pManager.ActionListener() {
             @Override

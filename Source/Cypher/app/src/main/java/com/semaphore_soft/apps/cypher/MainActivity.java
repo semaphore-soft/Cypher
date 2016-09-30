@@ -26,6 +26,7 @@ public class MainActivity extends AppCompatActivity {
     IntentFilter mIntentFiler;
 
     private ProgressDialog peerProgress;
+    private int hostWillingness;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -58,11 +59,21 @@ public class MainActivity extends AppCompatActivity {
         findGame.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
+                hostWillingness = 0;
                 discoverPeers();
             }
         });
 
-        final Button disconnect = (Button) findViewById((R.id.disconnect));
+        Button hostGame = (Button) findViewById(R.id.host);
+        hostGame.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                hostWillingness = 15;
+                discoverPeers();
+            }
+        });
+
+        Button disconnect = (Button) findViewById((R.id.disconnect));
         disconnect.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -152,5 +163,9 @@ public class MainActivity extends AppCompatActivity {
 
     public ProgressDialog getPeerProgress() {
         return peerProgress;
+    }
+
+    public int getHostWillingness() {
+        return hostWillingness;
     }
 }

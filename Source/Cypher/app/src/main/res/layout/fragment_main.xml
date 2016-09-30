@@ -21,6 +21,12 @@
         android:id="@+id/connect" />
 
     <Button
+        android:text="Host Game"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:id="@+id/host" />
+
+    <Button
         android:text="Disconnect"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
