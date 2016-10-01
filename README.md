@@ -2,7 +2,7 @@ Project Cypher - UWyo COSC 4950/5
 =========================================
 **Semaphore Soft Members**
 
-Rick Matza, Evan Turner, Joe Eleshuk, and David Reynolds
+Rick Matza (scorple), Evan Turner (bagelhobbit), Joe Eleshuk (jeleshuk), and David Reynolds (dav97a)
 
 Our project is a mobile app for Android that will allow players to use AR to play tabletop games, 
 specifically D&D. Each player will have a marker that they can move around a map. 
