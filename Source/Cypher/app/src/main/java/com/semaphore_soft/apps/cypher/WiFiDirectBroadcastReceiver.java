@@ -122,7 +122,7 @@ public class WiFiDirectBroadcastReceiver extends BroadcastReceiver {
                 // ex. Create server thread and listen for incoming connections
                 Log.d(TAG, "Device is group owner");
                 Toast.makeText(mActivity, "You're the group owner!", Toast.LENGTH_SHORT).show();
-                //port: 49152-65535
+                //port: 58008 (49152-65535)
             } else if (wifiP2pInfo.groupFormed) {
                 // Device acts as client
                 // Create client thread that connects to group owner
@@ -222,7 +222,7 @@ public class WiFiDirectBroadcastReceiver extends BroadcastReceiver {
                     alertDialog = null;
                 }
             } else {
-                // It's a disconnect (maybe; or just never connected)
+                // It's a disconnect (maybe, or just never connected)
                 if (connecting) {
                     Log.d(TAG, "disconnected");
                     connecting = false;

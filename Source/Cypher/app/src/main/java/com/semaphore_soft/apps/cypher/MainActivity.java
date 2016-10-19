@@ -6,6 +6,7 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.IntentFilter;
 import android.net.wifi.p2p.WifiP2pManager;
+import android.net.wifi.p2p.nsd.WifiP2pDnsSdServiceInfo;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
@@ -18,6 +19,9 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.Toast;
 
+import java.util.HashMap;
+import java.util.Map;
+
 public class MainActivity extends AppCompatActivity {
 
     WifiP2pManager mManager;
@@ -27,6 +31,7 @@ public class MainActivity extends AppCompatActivity {
 
     private ProgressDialog peerProgress;
     private int hostWillingness;
+    private int SERVER_PORT = 58008;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -80,6 +85,23 @@ public class MainActivity extends AppCompatActivity {
                 disconnect();
             }
         });
+
+        // Make sure we're using the newest service and it's the only one
+        mManager.clearLocalServices(mChannel, new WifiP2pManager.ActionListener() {
+            @Override
+            public void onSuccess() {
+                Log.d("clear", "Cleared local services");
+                startRegistration();
+            }
+
+            @Override
+            public void onFailure(int i) {
+                Log.d("clear", "Failed to clear local services");
+                Toast.makeText(getApplication(), "Failed to add local service",
+                        Toast.LENGTH_SHORT).show();
+            }
+        });
+
     }
 
     // Register the broadcast receiver with the intent values to be matched
@@ -135,6 +157,36 @@ public class MainActivity extends AppCompatActivity {
             public void onFailure(int i) {
                 Toast.makeText(getApplication(), "Failed to disconnect", Toast.LENGTH_SHORT).show();
                 Log.d("main", "Error removing group. Error: " + i);
+            }
+        });
+    }
+
+    // register a local service for discovery
+    private void startRegistration() {
+        // Create a string map containing information about the service
+        Map<String, String> record = new HashMap<>();
+        record.put("listenport", String.valueOf(SERVER_PORT));
+        record.put("buddyname", "John Doe" + (int) (Math.random() * 1000));
+        record.put("available", "visible");
+
+        // Service information
+        WifiP2pDnsSdServiceInfo serviceInfo =
+                WifiP2pDnsSdServiceInfo.newInstance("cypher", "_presence._tcp", record);
+
+        // Add the local service
+        mManager.addLocalService(mChannel, serviceInfo, new WifiP2pManager.ActionListener() {
+            @Override
+            public void onSuccess() {
+                // Command successful. Code not needed here
+                Log.d("add", "Added local service");
+            }
+
+            @Override
+            public void onFailure(int i) {
+                // Command failed
+                Log.d("add", "Failed to add local service");
+                Toast.makeText(getApplication(), "Adding local service failed",
+                        Toast.LENGTH_SHORT).show();
             }
         });
     }
