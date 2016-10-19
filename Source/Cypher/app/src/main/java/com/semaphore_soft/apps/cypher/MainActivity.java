@@ -5,8 +5,10 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.IntentFilter;
+import android.net.wifi.p2p.WifiP2pDevice;
 import android.net.wifi.p2p.WifiP2pManager;
 import android.net.wifi.p2p.nsd.WifiP2pDnsSdServiceInfo;
+import android.net.wifi.p2p.nsd.WifiP2pDnsSdServiceRequest;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
@@ -24,14 +26,15 @@ import java.util.Map;
 
 public class MainActivity extends AppCompatActivity {
 
-    WifiP2pManager mManager;
-    WifiP2pManager.Channel mChannel;
-    BroadcastReceiver mReceiver;
-    IntentFilter mIntentFiler;
+    private WifiP2pManager mManager;
+    private WifiP2pManager.Channel mChannel;
+    private BroadcastReceiver mReceiver;
+    private IntentFilter mIntentFiler;
 
     private ProgressDialog peerProgress;
     private int hostWillingness;
-    private int SERVER_PORT = 58008;
+    private final int SERVER_PORT = 58008;
+    private final HashMap<String, String> buddies = new HashMap<>();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -66,6 +69,7 @@ public class MainActivity extends AppCompatActivity {
             public void onClick(View view) {
                 hostWillingness = 0;
                 discoverPeers();
+//                discoverService();
             }
         });
 
@@ -75,6 +79,7 @@ public class MainActivity extends AppCompatActivity {
             public void onClick(View view) {
                 hostWillingness = 15;
                 discoverPeers();
+//                discoverService();
             }
         });
 
@@ -116,6 +121,12 @@ public class MainActivity extends AppCompatActivity {
     protected void onPause() {
         super.onPause();
         unregisterReceiver(mReceiver);
+    }
+
+    @Override
+    protected void onStop() {
+        disconnect();
+        super.onStop();
     }
 
     private void discoverPeers() {
@@ -187,6 +198,67 @@ public class MainActivity extends AppCompatActivity {
                 Log.d("add", "Failed to add local service");
                 Toast.makeText(getApplication(), "Adding local service failed",
                         Toast.LENGTH_SHORT).show();
+            }
+        });
+    }
+
+    private void discoverService() {
+        WifiP2pManager.DnsSdTxtRecordListener txtRecordListener = new WifiP2pManager.DnsSdTxtRecordListener() {
+            @Override
+            /* Callback includes:
+             * fullDomain: Full domain name: e.g "printer._ipp._tcp.local".
+             * record: TXT record data as a map of key/value pairs.
+             * device: The device running the advertised service.
+             */
+            public void onDnsSdTxtRecordAvailable(String s, Map<String, String> map, WifiP2pDevice wifiP2pDevice) {
+                Log.d("main", "DnsSdTxtRecord available = " + map.toString());
+                buddies.put(wifiP2pDevice.deviceAddress, map.get("buddyname"));
+            }
+        };
+
+        WifiP2pManager.DnsSdServiceResponseListener servListener = new WifiP2pManager.DnsSdServiceResponseListener() {
+            @Override
+            public void onDnsSdServiceAvailable(String instanceName, String registrationType, WifiP2pDevice wifiP2pDevice) {
+                // Update the device name with the human-friendly version from
+                // the DnsTxtRecord, assuming one arrived
+                wifiP2pDevice.deviceName = buddies.containsKey(wifiP2pDevice.deviceAddress) ? buddies.get(wifiP2pDevice.deviceAddress) : wifiP2pDevice.deviceName;
+
+                // Add to adapter to show wifi devices
+                //TODO create custom adapter for wifi devices
+            }
+        };
+
+        mManager.setDnsSdResponseListeners(mChannel, servListener, txtRecordListener);
+
+        WifiP2pDnsSdServiceRequest serviceRequest = WifiP2pDnsSdServiceRequest.newInstance();
+        mManager.addServiceRequest(mChannel, serviceRequest, new WifiP2pManager.ActionListener() {
+            @Override
+            public void onSuccess() {
+                // Success
+            }
+
+            @Override
+            public void onFailure(int i) {
+                // Command failed
+            }
+        });
+
+        mManager.discoverServices(mChannel, new WifiP2pManager.ActionListener() {
+            @Override
+            public void onSuccess() {
+                // Success
+            }
+
+            @Override
+            public void onFailure(int i) {
+                // Command failed
+                if (i == WifiP2pManager.P2P_UNSUPPORTED) {
+                    Log.d("main", "P2P isn't supported on this device.");
+                } else if (i == WifiP2pManager.BUSY) {
+                    Log.d("main", "System is busy");
+                } else if (i == WifiP2pManager.ERROR) {
+                    Log.d("main", "There was an error"); // soooo helpful...
+                }
             }
         });
     }

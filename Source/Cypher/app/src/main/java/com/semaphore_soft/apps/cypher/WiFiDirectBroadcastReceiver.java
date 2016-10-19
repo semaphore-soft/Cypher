@@ -28,24 +28,24 @@ import java.util.List;
 
 public class WiFiDirectBroadcastReceiver extends BroadcastReceiver {
 
-    private WifiP2pManager mManager;
-    private WifiP2pManager.Channel mChannel;
-    private MainActivity mActivity;
-    private List<WifiP2pDevice> peers = new ArrayList<>();
+    private final WifiP2pManager mManager;
+    private final WifiP2pManager.Channel mChannel;
+    private final MainActivity mActivity;
+    private final List<WifiP2pDevice> peers = new ArrayList<>();
     private boolean connecting = false;
     private AlertDialog alertDialog = null;
 
     private final static String TAG = "WifiBR";
 
-    public WiFiDirectBroadcastReceiver (WifiP2pManager manager, WifiP2pManager.Channel channel,
-                                        MainActivity activity) {
+    public WiFiDirectBroadcastReceiver(WifiP2pManager manager, WifiP2pManager.Channel channel,
+                                       MainActivity activity) {
         super();
         this.mManager = manager;
         this.mChannel = channel;
         this.mActivity = activity;
     }
 
-    private WifiP2pManager.PeerListListener peerListListener = new WifiP2pManager.PeerListListener() {
+    private final WifiP2pManager.PeerListListener peerListListener = new WifiP2pManager.PeerListListener() {
         @Override
         public void onPeersAvailable(WifiP2pDeviceList peerList) {
             // Clear old list and add in new peers
@@ -103,34 +103,34 @@ public class WiFiDirectBroadcastReceiver extends BroadcastReceiver {
         }
     };
 
-    private WifiP2pManager.ConnectionInfoListener connectionListener =
+    private final WifiP2pManager.ConnectionInfoListener connectionListener =
             new WifiP2pManager.ConnectionInfoListener() {
-        @Override
-        public void onConnectionInfoAvailable(WifiP2pInfo wifiP2pInfo) {
-            // InetAddress from WifiP2pInfo struct
-            InetAddress groupOwnerAddress;
-            try {
-                groupOwnerAddress = InetAddress.getByName(wifiP2pInfo.groupOwnerAddress.getHostAddress());
-            } catch (UnknownHostException e) {
-                Log.e(TAG, "Host IP: " + wifiP2pInfo.groupOwnerAddress.getHostAddress());
-                e.printStackTrace();
-            }
+                @Override
+                public void onConnectionInfoAvailable(WifiP2pInfo wifiP2pInfo) {
+                    // InetAddress from WifiP2pInfo struct
+                    InetAddress groupOwnerAddress;
+                    try {
+                        groupOwnerAddress = InetAddress.getByName(wifiP2pInfo.groupOwnerAddress.getHostAddress());
+                    } catch (UnknownHostException e) {
+                        Log.e(TAG, "Host IP: " + wifiP2pInfo.groupOwnerAddress.getHostAddress());
+                        e.printStackTrace();
+                    }
 
-            // After group negotiation, we can determine the group owner
-            if (wifiP2pInfo.groupFormed && wifiP2pInfo.isGroupOwner) {
-                // Tasks specific to group owner
-                // ex. Create server thread and listen for incoming connections
-                Log.d(TAG, "Device is group owner");
-                Toast.makeText(mActivity, "You're the group owner!", Toast.LENGTH_SHORT).show();
-                //port: 58008 (49152-65535)
-            } else if (wifiP2pInfo.groupFormed) {
-                // Device acts as client
-                // Create client thread that connects to group owner
-                Log.d(TAG, "Device is in group");
-                Toast.makeText(mActivity, "You're in a group!", Toast.LENGTH_SHORT).show();
-            }
-        }
-    };
+                    // After group negotiation, we can determine the group owner
+                    if (wifiP2pInfo.groupFormed && wifiP2pInfo.isGroupOwner) {
+                        // Tasks specific to group owner
+                        // ex. Create server thread and listen for incoming connections
+                        Log.d(TAG, "Device is group owner");
+                        Toast.makeText(mActivity, "You're the group owner!", Toast.LENGTH_SHORT).show();
+                        //port: 58008 (49152-65535)
+                    } else if (wifiP2pInfo.groupFormed) {
+                        // Device acts as client
+                        // Create client thread that connects to group owner
+                        Log.d(TAG, "Device is in group");
+                        Toast.makeText(mActivity, "You're in a group!", Toast.LENGTH_SHORT).show();
+                    }
+                }
+            };
 
     public void connect(WifiP2pDevice device) {
         WifiP2pConfig config = new WifiP2pConfig();
@@ -156,7 +156,7 @@ public class WiFiDirectBroadcastReceiver extends BroadcastReceiver {
     }
 
     @Override
-    public void onReceive (Context context, Intent intent) {
+    public void onReceive(Context context, Intent intent) {
         String action = intent.getAction();
 
         if (WifiP2pManager.WIFI_P2P_STATE_CHANGED_ACTION.equals(action)) {
