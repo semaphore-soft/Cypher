@@ -36,6 +36,11 @@ public class MainActivity extends AppCompatActivity {
     private final int SERVER_PORT = 58008;
     private final HashMap<String, String> buddies = new HashMap<>();
 
+    private final static String TAG = "Main";
+    // TXT RECORD properties
+    public final static String SERVICE_INSTANCE = "_cypher";
+    public final static String SERVICE_REG_TYPE = "_presence._tcp";
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -119,8 +124,8 @@ public class MainActivity extends AppCompatActivity {
     // Unregister the broadcast receiver
     @Override
     protected void onPause() {
-        super.onPause();
         unregisterReceiver(mReceiver);
+        super.onPause();
     }
 
     @Override
@@ -134,7 +139,7 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onSuccess() {
                 // Broadcast Receiver will be notified if successful
-                Log.d("main", "Discovering peers");
+                Log.d(TAG, "Discovering peers");
                 // Display progress bar(circle) while waiting for broadcast receiver
                 peerProgress.setIndeterminate(true);
                 peerProgress.setTitle("Looking for peers");
@@ -143,7 +148,7 @@ public class MainActivity extends AppCompatActivity {
                     public void onClick(DialogInterface dialogInterface, int i) {
                         dialogInterface.dismiss();
                         mManager.stopPeerDiscovery(mChannel, null);
-                        Log.d("main", "Stopping peer discovery");
+                        Log.d(TAG, "Stopping peer discovery");
                     }
                 });
                 peerProgress.show();
@@ -151,7 +156,7 @@ public class MainActivity extends AppCompatActivity {
 
             @Override
             public void onFailure(int reasonCode) {
-                Log.d("main", "Peer discovery failed, Error:" + reasonCode);
+                Log.d(TAG, "Peer discovery failed, Error:" + reasonCode);
             }
         });
     }
@@ -161,13 +166,13 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onSuccess() {
                 // Will be handled by Broadcast Receiver
-                Log.d("main", "Removing group");
+                Log.d(TAG, "Removing group");
             }
 
             @Override
             public void onFailure(int i) {
                 Toast.makeText(getApplication(), "Failed to disconnect", Toast.LENGTH_SHORT).show();
-                Log.d("main", "Error removing group. Error: " + i);
+                Log.d(TAG, "Error removing group. Error: " + i);
             }
         });
     }
@@ -182,7 +187,7 @@ public class MainActivity extends AppCompatActivity {
 
         // Service information
         WifiP2pDnsSdServiceInfo serviceInfo =
-                WifiP2pDnsSdServiceInfo.newInstance("cypher", "_presence._tcp", record);
+                WifiP2pDnsSdServiceInfo.newInstance(SERVICE_INSTANCE, SERVICE_REG_TYPE, record);
 
         // Add the local service
         mManager.addLocalService(mChannel, serviceInfo, new WifiP2pManager.ActionListener() {
@@ -210,21 +215,23 @@ public class MainActivity extends AppCompatActivity {
              * record: TXT record data as a map of key/value pairs.
              * device: The device running the advertised service.
              */
-            public void onDnsSdTxtRecordAvailable(String s, Map<String, String> map, WifiP2pDevice wifiP2pDevice) {
-                Log.d("main", "DnsSdTxtRecord available = " + map.toString());
-                buddies.put(wifiP2pDevice.deviceAddress, map.get("buddyname"));
+            public void onDnsSdTxtRecordAvailable(String s, Map<String, String> map, WifiP2pDevice device) {
+                Log.d(TAG, "DnsSdTxtRecord available = " + map.toString());
+                buddies.put(device.deviceAddress, map.get("buddyname"));
             }
         };
 
         WifiP2pManager.DnsSdServiceResponseListener servListener = new WifiP2pManager.DnsSdServiceResponseListener() {
             @Override
-            public void onDnsSdServiceAvailable(String instanceName, String registrationType, WifiP2pDevice wifiP2pDevice) {
-                // Update the device name with the human-friendly version from
-                // the DnsTxtRecord, assuming one arrived
-                wifiP2pDevice.deviceName = buddies.containsKey(wifiP2pDevice.deviceAddress) ? buddies.get(wifiP2pDevice.deviceAddress) : wifiP2pDevice.deviceName;
+            public void onDnsSdServiceAvailable(String instanceName, String registrationType, WifiP2pDevice device) {
+                if(instanceName.equalsIgnoreCase(SERVICE_INSTANCE)) {
+                    // Update the device name with the human-friendly version from
+                    // the DnsTxtRecord, assuming one arrived
+                    device.deviceName = buddies.containsKey(device.deviceAddress) ? buddies.get(device.deviceAddress) : device.deviceName;
 
-                // Add to adapter to show wifi devices
-                //TODO create custom adapter for wifi devices
+                    // Add to adapter to show wifi devices
+                    //TODO create custom adapter for wifi devices
+                }
             }
         };
 
@@ -235,11 +242,13 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onSuccess() {
                 // Success
+                Log.d(TAG, "Added service discovery request");
             }
 
             @Override
             public void onFailure(int i) {
                 // Command failed
+                Log.d(TAG, "Failed adding service discovery request");
             }
         });
 
@@ -247,17 +256,18 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onSuccess() {
                 // Success
+                Log.d(TAG, "Service discovery initiated");
             }
 
             @Override
             public void onFailure(int i) {
                 // Command failed
                 if (i == WifiP2pManager.P2P_UNSUPPORTED) {
-                    Log.d("main", "P2P isn't supported on this device.");
+                    Log.d(TAG, "P2P isn't supported on this device.");
                 } else if (i == WifiP2pManager.BUSY) {
-                    Log.d("main", "System is busy");
+                    Log.d(TAG, "System is busy");
                 } else if (i == WifiP2pManager.ERROR) {
-                    Log.d("main", "There was an error"); // soooo helpful...
+                    Log.d(TAG, "There was an error"); // soooo helpful...
                 }
             }
         });
