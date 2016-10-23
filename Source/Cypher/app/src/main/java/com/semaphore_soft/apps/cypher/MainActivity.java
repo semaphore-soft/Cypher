@@ -1,5 +1,6 @@
 package com.semaphore_soft.apps.cypher;
 
+import android.app.Fragment;
 import android.app.ProgressDialog;
 import android.content.BroadcastReceiver;
 import android.content.Context;
@@ -72,6 +73,9 @@ public class MainActivity extends AppCompatActivity implements WiFiServicesList.
         mIntentFiler.addAction(WifiP2pManager.WIFI_P2P_CONNECTION_CHANGED_ACTION);
         mIntentFiler.addAction(WifiP2pManager.WIFI_P2P_THIS_DEVICE_CHANGED_ACTION);
 
+        servicesList = new WiFiServicesList();
+        getFragmentManager().beginTransaction().add(R.id.fragment, servicesList, "services").commit();
+
         Button findGame = (Button) findViewById(R.id.connect);
         findGame.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -99,9 +103,6 @@ public class MainActivity extends AppCompatActivity implements WiFiServicesList.
                 disconnect();
             }
         });
-
-        servicesList = new WiFiServicesList();
-//        getFragmentManager()
 
         // Make sure we're using the newest service and it's the only one
         mManager.clearLocalServices(mChannel, new WifiP2pManager.ActionListener() {
@@ -139,6 +140,14 @@ public class MainActivity extends AppCompatActivity implements WiFiServicesList.
     protected void onStop() {
         disconnect();
         super.onStop();
+    }
+
+    @Override
+    protected void onRestart() {
+        Fragment frag = getFragmentManager().findFragmentByTag("services");
+        if(frag != null) {
+            getFragmentManager().beginTransaction().remove(frag).commit();
+        }
     }
 
     /*private void discoverPeers() {
@@ -272,7 +281,15 @@ public class MainActivity extends AppCompatActivity implements WiFiServicesList.
                     // Update the UI and add the discovered device
                     WiFiServicesList fragment = (WiFiServicesList) getFragmentManager().findFragmentByTag("services");
                     if(fragment != null) {
-
+                        WiFiServicesList.WiFiDevicesAdapter adapter =
+                                ((WiFiServicesList.WiFiDevicesAdapter) fragment.getListAdapter());
+                        WiFiP2pService service = new WiFiP2pService();
+                        service.device = device;
+                        service.instanceName = instanceName;
+                        service.serviceRegistrationType = registrationType;
+                        adapter.add(service);
+                        adapter.notifyDataSetChanged();
+                        Log.d(TAG, "Service available " + instanceName);
                     }
                 }
             }
@@ -308,7 +325,7 @@ public class MainActivity extends AppCompatActivity implements WiFiServicesList.
                     public void onClick(DialogInterface dialogInterface, int i) {
                         dialogInterface.dismiss();
                         mManager.stopPeerDiscovery(mChannel, null);
-                        Log.d(TAG, "Stopping discovery");
+                        Log.d(TAG, "Stopping discovery?");
                     }
                 });
                 progress.show();

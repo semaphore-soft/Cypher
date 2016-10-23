@@ -4,6 +4,7 @@ import android.app.ListFragment;
 import android.content.Context;
 import android.net.wifi.p2p.WifiP2pDevice;
 import android.os.Bundle;
+import android.support.annotation.NonNull;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -23,7 +24,7 @@ public class WiFiServicesList extends ListFragment {
     WiFiDevicesAdapter listAdapter = null;
 
     interface DeviceClickListener {
-        public void connectP2p(WiFiP2pService service);
+        void connectP2p(WiFiP2pService service);
     }
 
     @Override
@@ -55,7 +56,8 @@ public class WiFiServicesList extends ListFragment {
         }
 
         @Override
-        public View getView(int position, View convertView, ViewGroup parent) {
+        @NonNull
+        public View getView(int position, View convertView, @NonNull ViewGroup parent) {
             View v = convertView;
             if(v == null) {
                 LayoutInflater vi = (LayoutInflater) getActivity()
