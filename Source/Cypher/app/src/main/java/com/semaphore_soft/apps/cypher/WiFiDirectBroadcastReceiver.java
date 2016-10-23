@@ -7,10 +7,6 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.net.NetworkInfo;
 import android.net.wifi.WifiManager;
-import android.net.wifi.WpsInfo;
-import android.net.wifi.p2p.WifiP2pConfig;
-import android.net.wifi.p2p.WifiP2pDevice;
-import android.net.wifi.p2p.WifiP2pDeviceList;
 import android.net.wifi.p2p.WifiP2pInfo;
 import android.net.wifi.p2p.WifiP2pManager;
 import android.util.Log;
@@ -18,8 +14,6 @@ import android.widget.Toast;
 
 import java.net.InetAddress;
 import java.net.UnknownHostException;
-import java.util.ArrayList;
-import java.util.List;
 
 /**
  * Created by Evan on 9/24/2016.
@@ -31,7 +25,7 @@ public class WiFiDirectBroadcastReceiver extends BroadcastReceiver {
     private final WifiP2pManager mManager;
     private final WifiP2pManager.Channel mChannel;
     private final MainActivity mActivity;
-    private final List<WifiP2pDevice> peers = new ArrayList<>();
+//    private final List<WifiP2pDevice> peers = new ArrayList<>();
     private boolean connecting = false;
     private AlertDialog alertDialog = null;
 
@@ -45,7 +39,7 @@ public class WiFiDirectBroadcastReceiver extends BroadcastReceiver {
         this.mActivity = activity;
     }
 
-    private final WifiP2pManager.PeerListListener peerListListener = new WifiP2pManager.PeerListListener() {
+    /*private final WifiP2pManager.PeerListListener peerListListener = new WifiP2pManager.PeerListListener() {
         @Override
         public void onPeersAvailable(WifiP2pDeviceList peerList) {
             // Clear old list and add in new peers
@@ -101,7 +95,7 @@ public class WiFiDirectBroadcastReceiver extends BroadcastReceiver {
             alertDialog = alert;
             alert.show();
         }
-    };
+    };*/
 
     private final WifiP2pManager.ConnectionInfoListener connectionListener =
             new WifiP2pManager.ConnectionInfoListener() {
@@ -132,7 +126,7 @@ public class WiFiDirectBroadcastReceiver extends BroadcastReceiver {
                 }
             };
 
-    public void connect(WifiP2pDevice device) {
+    /*public void connect(WifiP2pDevice device) {
         WifiP2pConfig config = new WifiP2pConfig();
         config.deviceAddress = device.deviceAddress;
         config.wps.setup = WpsInfo.PBC;
@@ -153,7 +147,7 @@ public class WiFiDirectBroadcastReceiver extends BroadcastReceiver {
                         Toast.LENGTH_SHORT).show();
             }
         });
-    }
+    }*/
 
     @Override
     public void onReceive(Context context, Intent intent) {
@@ -192,13 +186,13 @@ public class WiFiDirectBroadcastReceiver extends BroadcastReceiver {
                 AlertDialog dialog = builder.create();
                 dialog.show();
             }
-        } else if (WifiP2pManager.WIFI_P2P_PEERS_CHANGED_ACTION.equals(action)) {
+/*        } else if (WifiP2pManager.WIFI_P2P_PEERS_CHANGED_ACTION.equals(action)) {
             // Request available peers. This is an asynchronous call. The calling activity
             // is notified with a callback on PeerListListener.onPeerAvailable()
             if (mManager != null && !connecting) {
                 mManager.requestPeers(mChannel, peerListListener);
             }
-            Log.d(TAG, "Peer list changed");
+            Log.d(TAG, "Peer list changed");*/
         } else if (WifiP2pManager.WIFI_P2P_CONNECTION_CHANGED_ACTION.equals(action)) {
             // Respond to new connection or disconnections
             Log.d(TAG, "Connection changed");

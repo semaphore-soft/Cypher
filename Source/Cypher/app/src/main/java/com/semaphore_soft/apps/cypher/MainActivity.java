@@ -5,6 +5,8 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.IntentFilter;
+import android.net.wifi.WpsInfo;
+import android.net.wifi.p2p.WifiP2pConfig;
 import android.net.wifi.p2p.WifiP2pDevice;
 import android.net.wifi.p2p.WifiP2pManager;
 import android.net.wifi.p2p.nsd.WifiP2pDnsSdServiceInfo;
@@ -24,22 +26,25 @@ import android.widget.Toast;
 import java.util.HashMap;
 import java.util.Map;
 
-public class MainActivity extends AppCompatActivity {
-
-    private WifiP2pManager mManager;
-    private WifiP2pManager.Channel mChannel;
-    private BroadcastReceiver mReceiver;
-    private IntentFilter mIntentFiler;
-
-    private ProgressDialog peerProgress;
-    private int hostWillingness;
-    private final int SERVER_PORT = 58008;
-    private final HashMap<String, String> buddies = new HashMap<>();
+public class MainActivity extends AppCompatActivity implements WiFiServicesList.DeviceClickListener{
 
     private final static String TAG = "Main";
     // TXT RECORD properties
     public final static String SERVICE_INSTANCE = "_cypher";
     public final static String SERVICE_REG_TYPE = "_presence._tcp";
+
+    private WifiP2pManager mManager;
+    private WifiP2pManager.Channel mChannel;
+    private BroadcastReceiver mReceiver = null;
+    private IntentFilter mIntentFiler = new IntentFilter();
+    private WifiP2pDnsSdServiceRequest serviceRequest;
+
+    private ProgressDialog progress;
+    private int hostWillingness;
+    private final int SERVER_PORT = 58008;
+    private final HashMap<String, String> buddies = new HashMap<>();
+
+    private WiFiServicesList servicesList;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -60,9 +65,8 @@ public class MainActivity extends AppCompatActivity {
         mManager = (WifiP2pManager) getSystemService(Context.WIFI_P2P_SERVICE);
         mChannel = mManager.initialize(this, getMainLooper(), null);
         mReceiver = new WiFiDirectBroadcastReceiver(mManager, mChannel, this);
-        peerProgress = new ProgressDialog(this);
+        progress = new ProgressDialog(this);
 
-        mIntentFiler = new IntentFilter();
         mIntentFiler.addAction(WifiP2pManager.WIFI_P2P_STATE_CHANGED_ACTION);
         mIntentFiler.addAction(WifiP2pManager.WIFI_P2P_PEERS_CHANGED_ACTION);
         mIntentFiler.addAction(WifiP2pManager.WIFI_P2P_CONNECTION_CHANGED_ACTION);
@@ -73,8 +77,8 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onClick(View view) {
                 hostWillingness = 0;
-                discoverPeers();
-//                discoverService();
+//                discoverPeers();
+                discoverService();
             }
         });
 
@@ -83,8 +87,8 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onClick(View view) {
                 hostWillingness = 15;
-                discoverPeers();
-//                discoverService();
+//                discoverPeers();
+                discoverService();
             }
         });
 
@@ -95,6 +99,9 @@ public class MainActivity extends AppCompatActivity {
                 disconnect();
             }
         });
+
+        servicesList = new WiFiServicesList();
+//        getFragmentManager()
 
         // Make sure we're using the newest service and it's the only one
         mManager.clearLocalServices(mChannel, new WifiP2pManager.ActionListener() {
@@ -134,7 +141,7 @@ public class MainActivity extends AppCompatActivity {
         super.onStop();
     }
 
-    private void discoverPeers() {
+    /*private void discoverPeers() {
         mManager.discoverPeers(mChannel, new WifiP2pManager.ActionListener() {
             @Override
             public void onSuccess() {
@@ -159,7 +166,7 @@ public class MainActivity extends AppCompatActivity {
                 Log.d(TAG, "Peer discovery failed, Error:" + reasonCode);
             }
         });
-    }
+    }*/
 
     private void disconnect() {
         mManager.removeGroup(mChannel, new WifiP2pManager.ActionListener() {
@@ -175,6 +182,39 @@ public class MainActivity extends AppCompatActivity {
                 Log.d(TAG, "Error removing group. Error: " + i);
             }
         });
+    }
+
+    public void connectP2p(WiFiP2pService service) {
+        WifiP2pConfig config = new WifiP2pConfig();
+        config.deviceAddress = service.device.deviceAddress;
+        config.wps.setup = WpsInfo.PBC;
+        config.groupOwnerIntent = hostWillingness;
+        if(serviceRequest != null) {
+            mManager.removeServiceRequest(mChannel, serviceRequest, new WifiP2pManager.ActionListener() {
+                @Override
+                public void onSuccess() {
+
+                }
+
+                @Override
+                public void onFailure(int i) {
+
+                }
+            });
+            mManager.connect(mChannel, config, new WifiP2pManager.ActionListener() {
+                @Override
+                public void onSuccess() {
+                    Log.d(TAG, "Connecting to service");
+                    Toast.makeText(getApplication(), "Connecting to service", Toast.LENGTH_SHORT).show();
+                }
+
+                @Override
+                public void onFailure(int i) {
+                    Log.d(TAG, "Failed connecting to service");
+                    Toast.makeText(getApplication(), "Failed connecting to service", Toast.LENGTH_SHORT).show();
+                }
+            });
+        }
     }
 
     // register a local service for discovery
@@ -229,15 +269,18 @@ public class MainActivity extends AppCompatActivity {
                     // the DnsTxtRecord, assuming one arrived
                     device.deviceName = buddies.containsKey(device.deviceAddress) ? buddies.get(device.deviceAddress) : device.deviceName;
 
-                    // Add to adapter to show wifi devices
-                    //TODO create custom adapter for wifi devices
+                    // Update the UI and add the discovered device
+                    WiFiServicesList fragment = (WiFiServicesList) getFragmentManager().findFragmentByTag("services");
+                    if(fragment != null) {
+
+                    }
                 }
             }
         };
 
         mManager.setDnsSdResponseListeners(mChannel, servListener, txtRecordListener);
 
-        WifiP2pDnsSdServiceRequest serviceRequest = WifiP2pDnsSdServiceRequest.newInstance();
+        serviceRequest = WifiP2pDnsSdServiceRequest.newInstance();
         mManager.addServiceRequest(mChannel, serviceRequest, new WifiP2pManager.ActionListener() {
             @Override
             public void onSuccess() {
@@ -257,6 +300,18 @@ public class MainActivity extends AppCompatActivity {
             public void onSuccess() {
                 // Success
                 Log.d(TAG, "Service discovery initiated");
+                // Display progress bar(circle) while waiting for broadcast receiver
+                progress.setIndeterminate(true);
+                progress.setTitle("Looking for players");
+                progress.setButton(DialogInterface.BUTTON_NEGATIVE, "Cancel", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialogInterface, int i) {
+                        dialogInterface.dismiss();
+                        mManager.stopPeerDiscovery(mChannel, null);
+                        Log.d(TAG, "Stopping discovery");
+                    }
+                });
+                progress.show();
             }
 
             @Override
@@ -295,11 +350,11 @@ public class MainActivity extends AppCompatActivity {
         return super.onOptionsItemSelected(item);
     }
 
-    public ProgressDialog getPeerProgress() {
-        return peerProgress;
-    }
+ /*   public ProgressDialog getProgress() {
+        return progress;
+    }*/
 
-    public int getHostWillingness() {
+/*    public int getHostWillingness() {
         return hostWillingness;
-    }
+    }*/
 }
