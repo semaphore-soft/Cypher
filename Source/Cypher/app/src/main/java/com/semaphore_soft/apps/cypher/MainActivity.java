@@ -148,6 +148,7 @@ public class MainActivity extends AppCompatActivity implements WiFiServicesList.
         if(frag != null) {
             getFragmentManager().beginTransaction().remove(frag).commit();
         }
+        super.onRestart();
     }
 
     /*private void discoverPeers() {
