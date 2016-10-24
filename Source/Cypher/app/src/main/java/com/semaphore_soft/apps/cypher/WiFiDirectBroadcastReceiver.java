@@ -39,64 +39,6 @@ public class WiFiDirectBroadcastReceiver extends BroadcastReceiver {
         this.mActivity = activity;
     }
 
-    /*private final WifiP2pManager.PeerListListener peerListListener = new WifiP2pManager.PeerListListener() {
-        @Override
-        public void onPeersAvailable(WifiP2pDeviceList peerList) {
-            // Clear old list and add in new peers
-            peers.clear();
-            peers.addAll(peerList.getDeviceList());
-
-            if (peers.size() == 0) {
-                Log.d(TAG, "No devices found");
-                AlertDialog.Builder builder = new AlertDialog.Builder(mActivity);
-                builder.setTitle("No devices found");
-                builder.setPositiveButton("OK", new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialogInterface, int i) {
-                        dialogInterface.dismiss();
-                    }
-                });
-                AlertDialog alert = builder.create();
-                mActivity.getPeerProgress().dismiss();
-                alert.show();
-                return;
-            }
-
-            Log.d(TAG, "Peers found: " + peers.size());
-            // Create list of names for user to choose
-            String[] deviceNames = new String[peers.size()];
-            int i = 0;
-            for (WifiP2pDevice device : peers) {
-                Log.i(TAG, device.toString());
-                deviceNames[i] = device.deviceName;
-                i++;
-            }
-            AlertDialog.Builder builder = new AlertDialog.Builder(mActivity);
-            builder.setTitle("Choose Host");
-            builder.setSingleChoiceItems(deviceNames, -1, new DialogInterface.OnClickListener() {
-                @Override
-                public void onClick(DialogInterface dialogInterface, int i) {
-                    dialogInterface.dismiss();
-                    alertDialog = null;
-                    Log.d(TAG, "Connecting to: " + peers.get(i).deviceName + " at " + peers.get(i).deviceAddress);
-                    Toast.makeText(mActivity, "Connecting to: " + peers.get(i).deviceName,
-                            Toast.LENGTH_SHORT).show();
-                    connect(peers.get(i));
-                }
-            });
-            builder.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
-                @Override
-                public void onClick(DialogInterface dialogInterface, int i) {
-                    dialogInterface.dismiss();
-                }
-            });
-            AlertDialog alert = builder.create();
-            mActivity.getPeerProgress().dismiss();
-            alertDialog = alert;
-            alert.show();
-        }
-    };*/
-
     private final WifiP2pManager.ConnectionInfoListener connectionListener =
             new WifiP2pManager.ConnectionInfoListener() {
                 @Override
@@ -125,29 +67,6 @@ public class WiFiDirectBroadcastReceiver extends BroadcastReceiver {
                     }
                 }
             };
-
-    /*public void connect(WifiP2pDevice device) {
-        WifiP2pConfig config = new WifiP2pConfig();
-        config.deviceAddress = device.deviceAddress;
-        config.wps.setup = WpsInfo.PBC;
-        config.groupOwnerIntent = mActivity.getHostWillingness();
-
-        mManager.connect(mChannel, config, new WifiP2pManager.ActionListener() {
-            @Override
-            public void onSuccess() {
-                // Broadcast Receiver will notify us.
-                Log.d(TAG, "Connect success");
-                connecting = true;
-            }
-
-            @Override
-            public void onFailure(int i) {
-                Log.d(TAG, "Connect failed. Reason " + i);
-                Toast.makeText(mActivity, "Connect failed. Please try again.",
-                        Toast.LENGTH_SHORT).show();
-            }
-        });
-    }*/
 
     @Override
     public void onReceive(Context context, Intent intent) {
@@ -186,13 +105,6 @@ public class WiFiDirectBroadcastReceiver extends BroadcastReceiver {
                 AlertDialog dialog = builder.create();
                 dialog.show();
             }
-/*        } else if (WifiP2pManager.WIFI_P2P_PEERS_CHANGED_ACTION.equals(action)) {
-            // Request available peers. This is an asynchronous call. The calling activity
-            // is notified with a callback on PeerListListener.onPeerAvailable()
-            if (mManager != null && !connecting) {
-                mManager.requestPeers(mChannel, peerListListener);
-            }
-            Log.d(TAG, "Peer list changed");*/
         } else if (WifiP2pManager.WIFI_P2P_CONNECTION_CHANGED_ACTION.equals(action)) {
             // Respond to new connection or disconnections
             Log.d(TAG, "Connection changed");

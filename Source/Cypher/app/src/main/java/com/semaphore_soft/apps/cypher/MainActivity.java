@@ -81,7 +81,6 @@ public class MainActivity extends AppCompatActivity implements WiFiServicesList.
             @Override
             public void onClick(View view) {
                 hostWillingness = 0;
-//                discoverPeers();
                 discoverService();
             }
         });
@@ -91,7 +90,6 @@ public class MainActivity extends AppCompatActivity implements WiFiServicesList.
             @Override
             public void onClick(View view) {
                 hostWillingness = 15;
-//                discoverPeers();
                 discoverService();
             }
         });
@@ -150,33 +148,6 @@ public class MainActivity extends AppCompatActivity implements WiFiServicesList.
         }
         super.onRestart();
     }
-
-    /*private void discoverPeers() {
-        mManager.discoverPeers(mChannel, new WifiP2pManager.ActionListener() {
-            @Override
-            public void onSuccess() {
-                // Broadcast Receiver will be notified if successful
-                Log.d(TAG, "Discovering peers");
-                // Display progress bar(circle) while waiting for broadcast receiver
-                peerProgress.setIndeterminate(true);
-                peerProgress.setTitle("Looking for peers");
-                peerProgress.setButton(DialogInterface.BUTTON_NEGATIVE, "Cancel", new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialogInterface, int i) {
-                        dialogInterface.dismiss();
-                        mManager.stopPeerDiscovery(mChannel, null);
-                        Log.d(TAG, "Stopping peer discovery");
-                    }
-                });
-                peerProgress.show();
-            }
-
-            @Override
-            public void onFailure(int reasonCode) {
-                Log.d(TAG, "Peer discovery failed, Error:" + reasonCode);
-            }
-        });
-    }*/
 
     private void disconnect() {
         mManager.removeGroup(mChannel, new WifiP2pManager.ActionListener() {
@@ -367,12 +338,4 @@ public class MainActivity extends AppCompatActivity implements WiFiServicesList.
 
         return super.onOptionsItemSelected(item);
     }
-
- /*   public ProgressDialog getProgress() {
-        return progress;
-    }*/
-
-/*    public int getHostWillingness() {
-        return hostWillingness;
-    }*/
 }
