@@ -4,7 +4,6 @@ import android.app.Fragment;
 import android.app.ProgressDialog;
 import android.content.BroadcastReceiver;
 import android.content.Context;
-import android.content.DialogInterface;
 import android.content.IntentFilter;
 import android.net.wifi.WpsInfo;
 import android.net.wifi.p2p.WifiP2pConfig;
@@ -22,6 +21,7 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
+import android.widget.ProgressBar;
 import android.widget.Toast;
 
 import java.util.HashMap;
@@ -259,6 +259,8 @@ public class MainActivity extends AppCompatActivity implements WiFiServicesList.
                         service.device = device;
                         service.instanceName = instanceName;
                         service.serviceRegistrationType = registrationType;
+                        ProgressBar pb = (ProgressBar) findViewById(R.id.progressBar);
+                        pb.setVisibility(View.INVISIBLE);
                         adapter.add(service);
                         adapter.notifyDataSetChanged();
                         Log.d(TAG, "Service available " + instanceName);
@@ -290,7 +292,7 @@ public class MainActivity extends AppCompatActivity implements WiFiServicesList.
                 // Success
                 Log.d(TAG, "Service discovery initiated");
                 // Display progress bar(circle) while waiting for broadcast receiver
-                progress.setIndeterminate(true);
+                /*progress.setIndeterminate(true);
                 progress.setTitle("Looking for players");
                 progress.setButton(DialogInterface.BUTTON_NEGATIVE, "Cancel", new DialogInterface.OnClickListener() {
                     @Override
@@ -300,7 +302,9 @@ public class MainActivity extends AppCompatActivity implements WiFiServicesList.
                         Log.d(TAG, "Stopping discovery?");
                     }
                 });
-                progress.show();
+                progress.show();*/
+                ProgressBar pb = (ProgressBar) findViewById(R.id.progressBar);
+                pb.setVisibility(View.VISIBLE);
             }
 
             @Override
