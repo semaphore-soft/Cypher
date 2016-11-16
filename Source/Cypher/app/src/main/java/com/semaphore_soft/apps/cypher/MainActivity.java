@@ -279,6 +279,9 @@ public class MainActivity extends AppCompatActivity implements WiFiServicesList.
                         adapter.add(service);
                         adapter.notifyDataSetChanged();
                         Log.d(TAG, "Service available " + instanceName);
+                        Toast.makeText(getApplication(), "Service available " + instanceName, Toast.LENGTH_SHORT).show();
+                    } else {
+                        Toast.makeText(getApplication(), "Service fragment is null", Toast.LENGTH_SHORT).show();
                     }
                 }
             }
