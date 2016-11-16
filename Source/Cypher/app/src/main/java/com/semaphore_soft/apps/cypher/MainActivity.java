@@ -88,7 +88,22 @@ public class MainActivity extends AppCompatActivity implements WiFiServicesList.
             @Override
             public void onClick(View view) {
                 hostWillingness = 15;
-                discoverService();
+                // Make sure we're using the newest service and it's the only one
+                mManager.clearLocalServices(mChannel, new WifiP2pManager.ActionListener() {
+                    @Override
+                    public void onSuccess() {
+                        Log.d("clear", "Cleared local services");
+                        startRegistration();
+                    }
+
+                    @Override
+                    public void onFailure(int i) {
+                        Log.d("clear", "Failed to clear local services");
+                        Toast.makeText(getApplication(), "Failed to add local service",
+                                Toast.LENGTH_SHORT).show();
+                    }
+                });
+//                discoverService();
             }
         });
 
@@ -100,7 +115,7 @@ public class MainActivity extends AppCompatActivity implements WiFiServicesList.
             }
         });
 
-        // Make sure we're using the newest service and it's the only one
+        /*// Make sure we're using the newest service and it's the only one
         mManager.clearLocalServices(mChannel, new WifiP2pManager.ActionListener() {
             @Override
             public void onSuccess() {
@@ -114,7 +129,7 @@ public class MainActivity extends AppCompatActivity implements WiFiServicesList.
                 Toast.makeText(getApplication(), "Failed to add local service",
                         Toast.LENGTH_SHORT).show();
             }
-        });
+        });*/
 
     }
 
@@ -153,6 +168,7 @@ public class MainActivity extends AppCompatActivity implements WiFiServicesList.
             public void onSuccess() {
                 // Will be handled by Broadcast Receiver
                 Log.d(TAG, "Removing group");
+                Toast.makeText(getApplicationContext(), "Disconnecting", Toast.LENGTH_SHORT).show();
             }
 
             @Override
@@ -201,7 +217,7 @@ public class MainActivity extends AppCompatActivity implements WiFiServicesList.
         // Create a string map containing information about the service
         Map<String, String> record = new HashMap<>();
         record.put("listenport", String.valueOf(SERVER_PORT));
-        record.put("buddyname", "John Doe" + (int) (Math.random() * 1000));
+        record.put("buddyname", "NetworkTest" + (int) (Math.random() * 1000));
         record.put("available", "visible");
 
         // Service information
@@ -214,7 +230,7 @@ public class MainActivity extends AppCompatActivity implements WiFiServicesList.
             public void onSuccess() {
                 // Command successful. Code not needed here
                 Log.d("add", "Added local service");
-                Toast.makeText(getApplication(), "Added local service", Toast.LENGTH_SHORT).show(); //TODO REMOVE
+                Toast.makeText(getApplication(), "Added local service", Toast.LENGTH_SHORT).show();
             }
 
             @Override
@@ -290,7 +306,7 @@ public class MainActivity extends AppCompatActivity implements WiFiServicesList.
             public void onSuccess() {
                 // Success
                 Log.d(TAG, "Service discovery initiated");
-                Toast.makeText(getApplication(), "Service discovery initiated", Toast.LENGTH_SHORT).show(); //TODO REMOVE
+                Toast.makeText(getApplication(), "Service discovery initiated", Toast.LENGTH_SHORT).show();
                 // Display progress bar(circle) while waiting for broadcast receiver
                 /*progress.setIndeterminate(true);
                 progress.setTitle("Looking for players");
