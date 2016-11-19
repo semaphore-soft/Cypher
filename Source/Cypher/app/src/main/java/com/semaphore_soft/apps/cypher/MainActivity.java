@@ -93,7 +93,22 @@ public class MainActivity extends AppCompatActivity implements WiFiServicesList.
                     @Override
                     public void onSuccess() {
                         Log.d("clear", "Cleared local services");
-                        startRegistration();
+                        // Make sure we're using the newest service and it's the only one
+                        mManager.clearLocalServices(mChannel, new WifiP2pManager.ActionListener() {
+                            @Override
+                            public void onSuccess() {
+                                Log.d("clear", "Cleared local services");
+                                startRegistration();
+                            }
+
+                            @Override
+                            public void onFailure(int i) {
+                                Log.d("clear", "Failed to clear local services");
+                                Toast.makeText(getApplication(), "Failed to add local service",
+                                        Toast.LENGTH_SHORT).show();
+                            }
+                        });
+//                        startRegistration();
                     }
 
                     @Override
@@ -295,12 +310,14 @@ public class MainActivity extends AppCompatActivity implements WiFiServicesList.
             public void onSuccess() {
                 // Success
                 Log.d(TAG, "Added service discovery request");
+                Toast.makeText(getApplication(), "Added service discovery request", Toast.LENGTH_SHORT).show();
             }
 
             @Override
             public void onFailure(int i) {
                 // Command failed
                 Log.d(TAG, "Failed adding service discovery request");
+                Toast.makeText(getApplication(), "Failed adding service discovery request", Toast.LENGTH_SHORT).show();
             }
         });
 
