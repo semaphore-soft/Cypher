@@ -93,22 +93,7 @@ public class MainActivity extends AppCompatActivity implements WiFiServicesList.
                     @Override
                     public void onSuccess() {
                         Log.d("clear", "Cleared local services");
-                        // Make sure we're using the newest service and it's the only one
-                        mManager.clearLocalServices(mChannel, new WifiP2pManager.ActionListener() {
-                            @Override
-                            public void onSuccess() {
-                                Log.d("clear", "Cleared local services");
-                                startRegistration();
-                            }
-
-                            @Override
-                            public void onFailure(int i) {
-                                Log.d("clear", "Failed to clear local services");
-                                Toast.makeText(getApplication(), "Failed to add local service",
-                                        Toast.LENGTH_SHORT).show();
-                            }
-                        });
-//                        startRegistration();
+                        startRegistration();
                     }
 
                     @Override
@@ -188,8 +173,23 @@ public class MainActivity extends AppCompatActivity implements WiFiServicesList.
 
             @Override
             public void onFailure(int i) {
-                Toast.makeText(getApplication(), "Failed to disconnect", Toast.LENGTH_SHORT).show();
+                //Toast.makeText(getApplication(), "Failed to disconnect", Toast.LENGTH_SHORT).show();
                 Log.d(TAG, "Error removing group. Error: " + i);
+                // This should cancel service discovery
+                // Could also call after successful connection
+                mManager.clearServiceRequests(mChannel, new WifiP2pManager.ActionListener() {
+                    @Override
+                    public void onSuccess() {
+                        Log.d(TAG, "Removed service request");
+                        Toast.makeText(getApplication(), "Removed service request", Toast.LENGTH_SHORT).show();
+                    }
+
+                    @Override
+                    public void onFailure(int i) {
+                        Log.d(TAG, "Failed to remove service request");
+                        Toast.makeText(getApplication(), "Action failed", Toast.LENGTH_SHORT).show();
+                    }
+                });
             }
         });
     }
