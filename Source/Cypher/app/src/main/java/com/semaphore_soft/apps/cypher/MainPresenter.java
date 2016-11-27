@@ -15,7 +15,7 @@ class MainPresenter
     void setView(MainActivity view)
     {
         this.view = view;
-        MainActivityFragment portal = new MainActivityFragment();
-        view.setPortal(portal, 0);
+        //MainActivityFragment portal = new MainActivityFragment();
+        //view.setPortal(portal, 0);
     }
 }
