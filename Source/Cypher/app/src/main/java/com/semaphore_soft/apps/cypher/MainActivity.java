@@ -361,6 +361,16 @@ public class MainActivity extends AppCompatActivity implements WiFiServicesList.
         //noinspection SimplifiableIfStatement
         if (id == R.id.action_settings) {
             return true;
+        } else if (id == R.id.reset_list) {
+            // clear list of available devices
+            WiFiServicesList fragment = (WiFiServicesList) getFragmentManager().findFragmentByTag("services");
+            if(fragment != null) {
+                WiFiServicesList.WiFiDevicesAdapter adapter =
+                        ((WiFiServicesList.WiFiDevicesAdapter) fragment.getListAdapter());
+                adapter.clear();
+                adapter.notifyDataSetChanged();
+                Log.d(TAG, "Reset listFragment");
+            }
         }
 
         return super.onOptionsItemSelected(item);
