@@ -10,6 +10,7 @@ import android.net.wifi.p2p.WifiP2pDevice;
 import android.net.wifi.p2p.WifiP2pManager;
 import android.net.wifi.p2p.nsd.WifiP2pDnsSdServiceInfo;
 import android.net.wifi.p2p.nsd.WifiP2pDnsSdServiceRequest;
+import android.os.Build;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
@@ -252,7 +253,7 @@ public class MainActivity extends AppCompatActivity implements WiFiServicesList.
         // Create a string map containing information about the service
         Map<String, String> record = new HashMap<>();
         record.put("listenport", String.valueOf(SERVER_PORT));
-        record.put("buddyname", "NetworkTest" + (int) (Math.random() * 1000));
+        record.put("buddyname", Build.MODEL);
         record.put("available", "visible");
 
         // Service information
