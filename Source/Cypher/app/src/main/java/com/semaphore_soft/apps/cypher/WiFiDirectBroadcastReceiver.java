@@ -10,6 +10,7 @@ import android.net.wifi.WifiManager;
 import android.net.wifi.p2p.WifiP2pInfo;
 import android.net.wifi.p2p.WifiP2pManager;
 import android.util.Log;
+import android.view.View;
 import android.widget.Toast;
 
 import java.net.InetAddress;
@@ -122,6 +123,7 @@ public class WiFiDirectBroadcastReceiver extends BroadcastReceiver {
                 Log.d(TAG, "Connected");
                 Toast.makeText(mActivity, "Connected!", Toast.LENGTH_SHORT).show();
                 mManager.requestConnectionInfo(mChannel, connectionListener);
+                mActivity.progressBar.setVisibility(View.INVISIBLE);
                 // Close connection dialog if we already have a connection
                 if (alertDialog != null) {
                     alertDialog.dismiss();

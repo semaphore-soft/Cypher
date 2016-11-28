@@ -1,7 +1,6 @@
 package com.semaphore_soft.apps.cypher;
 
 import android.app.Fragment;
-import android.app.ProgressDialog;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.IntentFilter;
@@ -40,7 +39,8 @@ public class MainActivity extends AppCompatActivity implements WiFiServicesList.
     private IntentFilter mIntentFiler = new IntentFilter();
     private WifiP2pDnsSdServiceRequest serviceRequest;
 
-    private ProgressDialog progress;
+//    private ProgressDialog progress;
+    public ProgressBar progressBar;
     private int hostWillingness;
     private final int SERVER_PORT = 58008;
     private final HashMap<String, String> buddies = new HashMap<>();
@@ -66,7 +66,8 @@ public class MainActivity extends AppCompatActivity implements WiFiServicesList.
         mManager = (WifiP2pManager) getSystemService(Context.WIFI_P2P_SERVICE);
         mChannel = mManager.initialize(this, getMainLooper(), null);
         mReceiver = new WiFiDirectBroadcastReceiver(mManager, mChannel, this);
-        progress = new ProgressDialog(this);
+//        progress = new ProgressDialog(this);
+        progressBar = (ProgressBar) findViewById(R.id.progressBar);
 
         mIntentFiler.addAction(WifiP2pManager.WIFI_P2P_STATE_CHANGED_ACTION);
         mIntentFiler.addAction(WifiP2pManager.WIFI_P2P_PEERS_CHANGED_ACTION);
@@ -90,22 +91,7 @@ public class MainActivity extends AppCompatActivity implements WiFiServicesList.
             @Override
             public void onClick(View view) {
                 hostWillingness = 15;
-                // Make sure we're using the newest service and it's the only one
-                mManager.clearLocalServices(mChannel, new WifiP2pManager.ActionListener() {
-                    @Override
-                    public void onSuccess() {
-                        Log.d("clear", "Cleared local services");
-                        startRegistration();
-                    }
-
-                    @Override
-                    public void onFailure(int i) {
-                        Log.d("clear", "Failed to clear local services");
-                        Toast.makeText(getApplication(), "Failed to add local service",
-                                Toast.LENGTH_SHORT).show();
-                    }
-                });
-//                discoverService();
+                discoverService();
             }
         });
 
@@ -117,7 +103,7 @@ public class MainActivity extends AppCompatActivity implements WiFiServicesList.
             }
         });
 
-        /*// Make sure we're using the newest service and it's the only one
+        // Make sure we're using the newest service and it's the only one
         mManager.clearLocalServices(mChannel, new WifiP2pManager.ActionListener() {
             @Override
             public void onSuccess() {
@@ -131,7 +117,7 @@ public class MainActivity extends AppCompatActivity implements WiFiServicesList.
                 Toast.makeText(getApplication(), "Failed to add local service",
                         Toast.LENGTH_SHORT).show();
             }
-        });*/
+        });
 
     }
 
@@ -165,6 +151,7 @@ public class MainActivity extends AppCompatActivity implements WiFiServicesList.
     }
 
     private void disconnect() {
+        progressBar.setVisibility(View.INVISIBLE);
         mManager.removeGroup(mChannel, new WifiP2pManager.ActionListener() {
             @Override
             public void onSuccess() {
@@ -291,8 +278,7 @@ public class MainActivity extends AppCompatActivity implements WiFiServicesList.
                         service.device = device;
                         service.instanceName = instanceName;
                         service.serviceRegistrationType = registrationType;
-                        ProgressBar pb = (ProgressBar) findViewById(R.id.progressBar);
-                        pb.setVisibility(View.INVISIBLE);
+                        progressBar.setVisibility(View.INVISIBLE);
                         adapter.add(service);
                         adapter.notifyDataSetChanged();
                         Log.d(TAG, "Service available " + instanceName);
@@ -341,8 +327,7 @@ public class MainActivity extends AppCompatActivity implements WiFiServicesList.
                     }
                 });
                 progress.show();*/
-                ProgressBar pb = (ProgressBar) findViewById(R.id.progressBar);
-                pb.setVisibility(View.VISIBLE);
+                progressBar.setVisibility(View.VISIBLE);
             }
 
             @Override
