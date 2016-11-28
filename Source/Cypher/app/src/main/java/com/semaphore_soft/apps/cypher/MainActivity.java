@@ -26,7 +26,8 @@ import android.widget.Toast;
 import java.util.HashMap;
 import java.util.Map;
 
-public class MainActivity extends AppCompatActivity implements WiFiServicesList.DeviceClickListener{
+public class MainActivity extends AppCompatActivity implements WiFiServicesList.DeviceClickListener
+{
 
     private final static String TAG = "Main";
     // TXT RECORD properties
@@ -39,25 +40,26 @@ public class MainActivity extends AppCompatActivity implements WiFiServicesList.
     private IntentFilter mIntentFiler = new IntentFilter();
     private WifiP2pDnsSdServiceRequest serviceRequest;
 
-//    private ProgressDialog progress;
+    //    private ProgressDialog progress;
     public ProgressBar progressBar;
     private int hostWillingness;
     private final int SERVER_PORT = 58008;
     private final HashMap<String, String> buddies = new HashMap<>();
 
-    private WiFiServicesList servicesList;
-
     @Override
-    protected void onCreate(Bundle savedInstanceState) {
+    protected void onCreate(Bundle savedInstanceState)
+    {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
         FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
-        fab.setOnClickListener(new View.OnClickListener() {
+        fab.setOnClickListener(new View.OnClickListener()
+        {
             @Override
-            public void onClick(View view) {
+            public void onClick(View view)
+            {
                 Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
                         .setAction("Action", null).show();
             }
@@ -66,7 +68,6 @@ public class MainActivity extends AppCompatActivity implements WiFiServicesList.
         mManager = (WifiP2pManager) getSystemService(Context.WIFI_P2P_SERVICE);
         mChannel = mManager.initialize(this, getMainLooper(), null);
         mReceiver = new WiFiDirectBroadcastReceiver(mManager, mChannel, this);
-//        progress = new ProgressDialog(this);
         progressBar = (ProgressBar) findViewById(R.id.progressBar);
 
         mIntentFiler.addAction(WifiP2pManager.WIFI_P2P_STATE_CHANGED_ACTION);
@@ -74,45 +75,54 @@ public class MainActivity extends AppCompatActivity implements WiFiServicesList.
         mIntentFiler.addAction(WifiP2pManager.WIFI_P2P_CONNECTION_CHANGED_ACTION);
         mIntentFiler.addAction(WifiP2pManager.WIFI_P2P_THIS_DEVICE_CHANGED_ACTION);
 
-        servicesList = new WiFiServicesList();
+        WiFiServicesList servicesList = new WiFiServicesList();
         getFragmentManager().beginTransaction().add(R.id.servicesRoot, servicesList, "services").commit();
 
         Button findGame = (Button) findViewById(R.id.connect);
-        findGame.setOnClickListener(new View.OnClickListener() {
+        findGame.setOnClickListener(new View.OnClickListener()
+        {
             @Override
-            public void onClick(View view) {
+            public void onClick(View view)
+            {
                 hostWillingness = 0;
                 discoverService();
             }
         });
 
         Button hostGame = (Button) findViewById(R.id.host);
-        hostGame.setOnClickListener(new View.OnClickListener() {
+        hostGame.setOnClickListener(new View.OnClickListener()
+        {
             @Override
-            public void onClick(View view) {
+            public void onClick(View view)
+            {
                 hostWillingness = 15;
                 discoverService();
             }
         });
 
         Button disconnect = (Button) findViewById((R.id.disconnect));
-        disconnect.setOnClickListener(new View.OnClickListener() {
+        disconnect.setOnClickListener(new View.OnClickListener()
+        {
             @Override
-            public void onClick(View view) {
+            public void onClick(View view)
+            {
                 disconnect();
             }
         });
 
         // Make sure we're using the newest service and it's the only one
-        mManager.clearLocalServices(mChannel, new WifiP2pManager.ActionListener() {
+        mManager.clearLocalServices(mChannel, new WifiP2pManager.ActionListener()
+        {
             @Override
-            public void onSuccess() {
+            public void onSuccess()
+            {
                 Log.d("clear", "Cleared local services");
                 startRegistration();
             }
 
             @Override
-            public void onFailure(int i) {
+            public void onFailure(int i)
+            {
                 Log.d("clear", "Failed to clear local services");
                 Toast.makeText(getApplication(), "Failed to add local service",
                         Toast.LENGTH_SHORT).show();
@@ -123,58 +133,70 @@ public class MainActivity extends AppCompatActivity implements WiFiServicesList.
 
     // Register the broadcast receiver with the intent values to be matched
     @Override
-    protected void onResume() {
+    protected void onResume()
+    {
         super.onResume();
         registerReceiver(mReceiver, mIntentFiler);
     }
 
     // Unregister the broadcast receiver
     @Override
-    protected void onPause() {
+    protected void onPause()
+    {
         unregisterReceiver(mReceiver);
         super.onPause();
     }
 
     @Override
-    protected void onStop() {
+    protected void onStop()
+    {
         disconnect();
         super.onStop();
     }
 
     @Override
-    protected void onRestart() {
+    protected void onRestart()
+    {
         Fragment frag = getFragmentManager().findFragmentByTag("services");
-        if(frag != null) {
+        if (frag != null)
+        {
             getFragmentManager().beginTransaction().remove(frag).commit();
         }
         super.onRestart();
     }
 
-    private void disconnect() {
+    private void disconnect()
+    {
         progressBar.setVisibility(View.INVISIBLE);
-        mManager.removeGroup(mChannel, new WifiP2pManager.ActionListener() {
+        mManager.removeGroup(mChannel, new WifiP2pManager.ActionListener()
+        {
             @Override
-            public void onSuccess() {
+            public void onSuccess()
+            {
                 // Will be handled by Broadcast Receiver
                 Log.d(TAG, "Removing group");
                 Toast.makeText(getApplicationContext(), "Disconnecting", Toast.LENGTH_SHORT).show();
             }
 
             @Override
-            public void onFailure(int i) {
+            public void onFailure(int i)
+            {
                 //Toast.makeText(getApplication(), "Failed to disconnect", Toast.LENGTH_SHORT).show();
                 Log.d(TAG, "Error removing group. Error: " + i);
                 // This should cancel service discovery
                 // Could also call after successful connection
-                mManager.clearServiceRequests(mChannel, new WifiP2pManager.ActionListener() {
+                mManager.clearServiceRequests(mChannel, new WifiP2pManager.ActionListener()
+                {
                     @Override
-                    public void onSuccess() {
+                    public void onSuccess()
+                    {
                         Log.d(TAG, "Removed service request");
                         Toast.makeText(getApplication(), "Removed service request", Toast.LENGTH_SHORT).show();
                     }
 
                     @Override
-                    public void onFailure(int i) {
+                    public void onFailure(int i)
+                    {
                         Log.d(TAG, "Failed to remove service request");
                         Toast.makeText(getApplication(), "Action failed", Toast.LENGTH_SHORT).show();
                     }
@@ -183,32 +205,40 @@ public class MainActivity extends AppCompatActivity implements WiFiServicesList.
         });
     }
 
-    public void connectP2p(WiFiP2pService service) {
+    public void connectP2p(WiFiP2pService service)
+    {
         WifiP2pConfig config = new WifiP2pConfig();
         config.deviceAddress = service.device.deviceAddress;
         config.wps.setup = WpsInfo.PBC;
         config.groupOwnerIntent = hostWillingness;
-        if(serviceRequest != null) {
-            mManager.removeServiceRequest(mChannel, serviceRequest, new WifiP2pManager.ActionListener() {
+        if (serviceRequest != null)
+        {
+            mManager.removeServiceRequest(mChannel, serviceRequest, new WifiP2pManager.ActionListener()
+            {
                 @Override
-                public void onSuccess() {
+                public void onSuccess()
+                {
 
                 }
 
                 @Override
-                public void onFailure(int i) {
+                public void onFailure(int i)
+                {
 
                 }
             });
-            mManager.connect(mChannel, config, new WifiP2pManager.ActionListener() {
+            mManager.connect(mChannel, config, new WifiP2pManager.ActionListener()
+            {
                 @Override
-                public void onSuccess() {
+                public void onSuccess()
+                {
                     Log.d(TAG, "Connecting to service");
                     Toast.makeText(getApplication(), "Connecting to service", Toast.LENGTH_SHORT).show();
                 }
 
                 @Override
-                public void onFailure(int i) {
+                public void onFailure(int i)
+                {
                     Log.d(TAG, "Failed connecting to service");
                     Toast.makeText(getApplication(), "Failed connecting to service", Toast.LENGTH_SHORT).show();
                 }
@@ -217,7 +247,8 @@ public class MainActivity extends AppCompatActivity implements WiFiServicesList.
     }
 
     // register a local service for discovery
-    private void startRegistration() {
+    private void startRegistration()
+    {
         // Create a string map containing information about the service
         Map<String, String> record = new HashMap<>();
         record.put("listenport", String.valueOf(SERVER_PORT));
@@ -229,16 +260,19 @@ public class MainActivity extends AppCompatActivity implements WiFiServicesList.
                 WifiP2pDnsSdServiceInfo.newInstance(SERVICE_INSTANCE, SERVICE_REG_TYPE, record);
 
         // Add the local service
-        mManager.addLocalService(mChannel, serviceInfo, new WifiP2pManager.ActionListener() {
+        mManager.addLocalService(mChannel, serviceInfo, new WifiP2pManager.ActionListener()
+        {
             @Override
-            public void onSuccess() {
+            public void onSuccess()
+            {
                 // Command successful. Code not needed here
                 Log.d("add", "Added local service");
                 Toast.makeText(getApplication(), "Added local service", Toast.LENGTH_SHORT).show();
             }
 
             @Override
-            public void onFailure(int i) {
+            public void onFailure(int i)
+            {
                 // Command failed
                 Log.d("add", "Failed to add local service");
                 Toast.makeText(getApplication(), "Adding local service failed",
@@ -247,31 +281,38 @@ public class MainActivity extends AppCompatActivity implements WiFiServicesList.
         });
     }
 
-    private void discoverService() {
-        WifiP2pManager.DnsSdTxtRecordListener txtRecordListener = new WifiP2pManager.DnsSdTxtRecordListener() {
+    private void discoverService()
+    {
+        WifiP2pManager.DnsSdTxtRecordListener txtRecordListener = new WifiP2pManager.DnsSdTxtRecordListener()
+        {
             @Override
             /* Callback includes:
              * fullDomain: Full domain name: e.g "printer._ipp._tcp.local".
              * record: TXT record data as a map of key/value pairs.
              * device: The device running the advertised service.
              */
-            public void onDnsSdTxtRecordAvailable(String s, Map<String, String> map, WifiP2pDevice device) {
+            public void onDnsSdTxtRecordAvailable(String s, Map<String, String> map, WifiP2pDevice device)
+            {
                 Log.d(TAG, "DnsSdTxtRecord available = " + map.toString());
                 buddies.put(device.deviceAddress, map.get("buddyname"));
             }
         };
 
-        WifiP2pManager.DnsSdServiceResponseListener servListener = new WifiP2pManager.DnsSdServiceResponseListener() {
+        WifiP2pManager.DnsSdServiceResponseListener servListener = new WifiP2pManager.DnsSdServiceResponseListener()
+        {
             @Override
-            public void onDnsSdServiceAvailable(String instanceName, String registrationType, WifiP2pDevice device) {
-                if(instanceName.equalsIgnoreCase(SERVICE_INSTANCE)) {
+            public void onDnsSdServiceAvailable(String instanceName, String registrationType, WifiP2pDevice device)
+            {
+                if (instanceName.equalsIgnoreCase(SERVICE_INSTANCE))
+                {
                     // Update the device name with the human-friendly version from
                     // the DnsTxtRecord, assuming one arrived
                     device.deviceName = buddies.containsKey(device.deviceAddress) ? buddies.get(device.deviceAddress) : device.deviceName;
 
                     // Update the UI and add the discovered device
                     WiFiServicesList fragment = (WiFiServicesList) getFragmentManager().findFragmentByTag("services");
-                    if(fragment != null) {
+                    if (fragment != null)
+                    {
                         WiFiServicesList.WiFiDevicesAdapter adapter =
                                 ((WiFiServicesList.WiFiDevicesAdapter) fragment.getListAdapter());
                         WiFiP2pService service = new WiFiP2pService();
@@ -283,7 +324,8 @@ public class MainActivity extends AppCompatActivity implements WiFiServicesList.
                         adapter.notifyDataSetChanged();
                         Log.d(TAG, "Service available " + instanceName);
                         Toast.makeText(getApplication(), "Service available " + instanceName, Toast.LENGTH_SHORT).show();
-                    } else {
+                    } else
+                    {
                         Toast.makeText(getApplication(), "Service fragment is null", Toast.LENGTH_SHORT).show();
                     }
                 }
@@ -293,25 +335,30 @@ public class MainActivity extends AppCompatActivity implements WiFiServicesList.
         mManager.setDnsSdResponseListeners(mChannel, servListener, txtRecordListener);
 
         serviceRequest = WifiP2pDnsSdServiceRequest.newInstance();
-        mManager.addServiceRequest(mChannel, serviceRequest, new WifiP2pManager.ActionListener() {
+        mManager.addServiceRequest(mChannel, serviceRequest, new WifiP2pManager.ActionListener()
+        {
             @Override
-            public void onSuccess() {
+            public void onSuccess()
+            {
                 // Success
                 Log.d(TAG, "Added service discovery request");
                 Toast.makeText(getApplication(), "Added service discovery request", Toast.LENGTH_SHORT).show();
             }
 
             @Override
-            public void onFailure(int i) {
+            public void onFailure(int i)
+            {
                 // Command failed
                 Log.d(TAG, "Failed adding service discovery request");
                 Toast.makeText(getApplication(), "Failed adding service discovery request", Toast.LENGTH_SHORT).show();
             }
         });
 
-        mManager.discoverServices(mChannel, new WifiP2pManager.ActionListener() {
+        mManager.discoverServices(mChannel, new WifiP2pManager.ActionListener()
+        {
             @Override
-            public void onSuccess() {
+            public void onSuccess()
+            {
                 // Success
                 Log.d(TAG, "Service discovery initiated");
                 Toast.makeText(getApplication(), "Service discovery initiated", Toast.LENGTH_SHORT).show();
@@ -331,13 +378,17 @@ public class MainActivity extends AppCompatActivity implements WiFiServicesList.
             }
 
             @Override
-            public void onFailure(int i) {
+            public void onFailure(int i)
+            {
                 // Command failed
-                if (i == WifiP2pManager.P2P_UNSUPPORTED) {
+                if (i == WifiP2pManager.P2P_UNSUPPORTED)
+                {
                     Log.d(TAG, "P2P isn't supported on this device.");
-                } else if (i == WifiP2pManager.BUSY) {
+                } else if (i == WifiP2pManager.BUSY)
+                {
                     Log.d(TAG, "System is busy");
-                } else if (i == WifiP2pManager.ERROR) {
+                } else if (i == WifiP2pManager.ERROR)
+                {
                     Log.d(TAG, "There was an error"); // soooo helpful...
                 }
             }
@@ -345,26 +396,31 @@ public class MainActivity extends AppCompatActivity implements WiFiServicesList.
     }
 
     @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
+    public boolean onCreateOptionsMenu(Menu menu)
+    {
         // Inflate the menu; this adds items to the action bar if it is present.
         getMenuInflater().inflate(R.menu.menu_main, menu);
         return true;
     }
 
     @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
+    public boolean onOptionsItemSelected(MenuItem item)
+    {
         // Handle action bar item clicks here. The action bar will
         // automatically handle clicks on the Home/Up button, so long
         // as you specify a parent activity in AndroidManifest.xml.
         int id = item.getItemId();
 
         //noinspection SimplifiableIfStatement
-        if (id == R.id.action_settings) {
+        if (id == R.id.action_settings)
+        {
             return true;
-        } else if (id == R.id.reset_list) {
+        } else if (id == R.id.reset_list)
+        {
             // clear list of available devices
             WiFiServicesList fragment = (WiFiServicesList) getFragmentManager().findFragmentByTag("services");
-            if(fragment != null) {
+            if (fragment != null)
+            {
                 WiFiServicesList.WiFiDevicesAdapter adapter =
                         ((WiFiServicesList.WiFiDevicesAdapter) fragment.getListAdapter());
                 adapter.clear();

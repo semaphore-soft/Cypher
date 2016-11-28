@@ -7,7 +7,8 @@ import android.net.wifi.p2p.WifiP2pDevice;
  * class to hold information about services
  */
 
-public class WiFiP2pService {
+public class WiFiP2pService
+{
     WifiP2pDevice device;
     String instanceName = null;
     String serviceRegistrationType = null;
