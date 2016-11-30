@@ -40,7 +40,12 @@
         android:layout_height="match_parent"
         android:orientation="vertical"
         android:id="@+id/servicesRoot">
-
     </LinearLayout>
+
+    <TextView
+        android:text="Label"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:id="@+id/test" />
 
 </LinearLayout>

@@ -12,6 +12,7 @@ import android.net.wifi.p2p.nsd.WifiP2pDnsSdServiceInfo;
 import android.net.wifi.p2p.nsd.WifiP2pDnsSdServiceRequest;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.StrictMode;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
 import android.support.v7.app.AppCompatActivity;
@@ -22,6 +23,7 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
 import android.widget.ProgressBar;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import java.util.HashMap;
@@ -34,6 +36,8 @@ public class MainActivity extends AppCompatActivity implements WiFiServicesList.
     // TXT RECORD properties
     public final static String SERVICE_INSTANCE = "_cypher";
     public final static String SERVICE_REG_TYPE = "_presence._tcp";
+    // Port should be between 49152-65535
+    public final static int SERVER_PORT = 58008;
 
     private WifiP2pManager mManager;
     private WifiP2pManager.Channel mChannel;
@@ -41,10 +45,8 @@ public class MainActivity extends AppCompatActivity implements WiFiServicesList.
     private IntentFilter mIntentFiler = new IntentFilter();
     private WifiP2pDnsSdServiceRequest serviceRequest;
 
-    //    private ProgressDialog progress;
     public ProgressBar progressBar;
     private int hostWillingness;
-    private final int SERVER_PORT = 58008;
     private final HashMap<String, String> buddies = new HashMap<>();
 
     @Override
@@ -65,6 +67,11 @@ public class MainActivity extends AppCompatActivity implements WiFiServicesList.
                         .setAction("Action", null).show();
             }
         });
+
+        // Allow network connections
+        // Can also use permitAll ?
+        StrictMode.ThreadPolicy policy = new StrictMode.ThreadPolicy.Builder().permitNetwork().build();
+        StrictMode.setThreadPolicy(policy);
 
         mManager = (WifiP2pManager) getSystemService(Context.WIFI_P2P_SERVICE);
         mChannel = mManager.initialize(this, getMainLooper(), null);
@@ -364,17 +371,6 @@ public class MainActivity extends AppCompatActivity implements WiFiServicesList.
                 Log.d(TAG, "Service discovery initiated");
                 Toast.makeText(getApplication(), "Service discovery initiated", Toast.LENGTH_SHORT).show();
                 // Display progress bar(circle) while waiting for broadcast receiver
-                /*progress.setIndeterminate(true);
-                progress.setTitle("Looking for players");
-                progress.setButton(DialogInterface.BUTTON_NEGATIVE, "Cancel", new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialogInterface, int i) {
-                        dialogInterface.dismiss();
-                        mManager.stopPeerDiscovery(mChannel, null);
-                        Log.d(TAG, "Stopping discovery?");
-                    }
-                });
-                progress.show();*/
                 progressBar.setVisibility(View.VISIBLE);
             }
 
@@ -431,5 +427,16 @@ public class MainActivity extends AppCompatActivity implements WiFiServicesList.
         }
 
         return super.onOptionsItemSelected(item);
+    }
+
+    public void setLabel(String str)
+    {
+        TextView tv = (TextView) findViewById(R.id.test);
+        tv.setText(str);
+    }
+
+    public void toasts(String str)
+    {
+        Toast.makeText(this, str, Toast.LENGTH_SHORT).show();
     }
 }

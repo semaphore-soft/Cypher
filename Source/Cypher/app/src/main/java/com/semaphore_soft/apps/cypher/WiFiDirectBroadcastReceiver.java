@@ -9,11 +9,21 @@ import android.net.NetworkInfo;
 import android.net.wifi.WifiManager;
 import android.net.wifi.p2p.WifiP2pInfo;
 import android.net.wifi.p2p.WifiP2pManager;
+import android.os.Bundle;
+import android.os.Handler;
+import android.os.Message;
 import android.util.Log;
 import android.view.View;
 import android.widget.Toast;
 
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.net.InetAddress;
+import java.net.InetSocketAddress;
+import java.net.ServerSocket;
+import java.net.Socket;
+import java.net.SocketAddress;
 import java.net.UnknownHostException;
 
 /**
@@ -53,26 +63,26 @@ public class WiFiDirectBroadcastReceiver extends BroadcastReceiver
                     try
                     {
                         groupOwnerAddress = InetAddress.getByName(wifiP2pInfo.groupOwnerAddress.getHostAddress());
+                        // After group negotiation, we can determine the group owner
+                        if (wifiP2pInfo.groupFormed && wifiP2pInfo.isGroupOwner)
+                        {
+                            // Tasks specific to group owner
+                            // ex. Create server thread and listen for incoming connections
+                            Log.d(TAG, "Device is group owner");
+                            Toast.makeText(mActivity, "You're the group owner!", Toast.LENGTH_SHORT).show();
+                            new Thread(new ServerThread()).start();
+                        } else if (wifiP2pInfo.groupFormed)
+                        {
+                            // Device acts as client
+                            // Create client thread that connects to group owner
+                            Log.d(TAG, "Device is in group");
+                            Toast.makeText(mActivity, "You're in a group!", Toast.LENGTH_SHORT).show();
+                            new Thread(new ClientThread(new InetSocketAddress(groupOwnerAddress, MainActivity.SERVER_PORT), groupOwnerAddress)).start();
+                        }
                     } catch (UnknownHostException e)
                     {
                         Log.e(TAG, "Host IP: " + wifiP2pInfo.groupOwnerAddress.getHostAddress());
                         e.printStackTrace();
-                    }
-
-                    // After group negotiation, we can determine the group owner
-                    if (wifiP2pInfo.groupFormed && wifiP2pInfo.isGroupOwner)
-                    {
-                        // Tasks specific to group owner
-                        // ex. Create server thread and listen for incoming connections
-                        Log.d(TAG, "Device is group owner");
-                        Toast.makeText(mActivity, "You're the group owner!", Toast.LENGTH_SHORT).show();
-                        //port: 58008 (49152-65535)
-                    } else if (wifiP2pInfo.groupFormed)
-                    {
-                        // Device acts as client
-                        // Create client thread that connects to group owner
-                        Log.d(TAG, "Device is in group");
-                        Toast.makeText(mActivity, "You're in a group!", Toast.LENGTH_SHORT).show();
                     }
                 }
             };
@@ -165,4 +175,163 @@ public class WiFiDirectBroadcastReceiver extends BroadcastReceiver
             Log.d(TAG, "This device's state changed");
         }
     }
+
+    private Handler handler = new Handler(new Handler.Callback()
+    {
+        @Override
+        public boolean handleMessage(Message msg)
+        {
+            mActivity.setLabel(msg.getData().getString("msg"));
+            return true;
+        }
+    });
+    public void mkmsg(String str)
+    {
+        Message msg = new Message();
+        Bundle b = new Bundle();
+        b.putString("msg", str);
+        msg.setData(b);
+        handler.sendMessage(msg);
+    }
+
+    // Handler to get toasts for debugging
+    private Handler tHandler = new Handler(new Handler.Callback()
+    {
+        @Override
+        public boolean handleMessage(Message msg)
+        {
+            mActivity.toasts(msg.getData().getString("msg"));
+            return true;
+        }
+    });
+    public void makeToast(String str)
+    {
+        Message msg = new Message();
+        Bundle b = new Bundle();
+        b.putString("msg", str);
+        msg.setData(b);
+        tHandler.sendMessage(msg);
+    }
+
+    private class ServerThread extends Thread
+    {
+        // The local server socket
+        private ServerSocket serverSocket = null;
+        private Socket my_socket;
+        public ServerThread()
+        {
+            try
+            {
+                serverSocket = new ServerSocket(MainActivity.SERVER_PORT);
+
+            }
+            catch (IOException e)
+            {
+                e.printStackTrace();
+                Log.e("ServerThread", "Failed to start server");
+                Toast.makeText(mActivity, "Failed to start server", Toast.LENGTH_SHORT).show();
+            }
+        }
+
+        public void run()
+        {
+            Log.i("ServerConnect", "Waiting on accept");
+//            Toast.makeText(mActivity, "Waiting on accept", Toast.LENGTH_SHORT).show();
+            makeToast("Waiting on accept");
+            my_socket = null;
+            try
+            {
+                my_socket = serverSocket.accept();
+            }
+            catch (IOException e)
+            {
+                e.printStackTrace();
+                Log.e("ServerThread", "Failed to accept connection");
+//                Toast.makeText(mActivity, "Failed to accept connection", Toast.LENGTH_SHORT).show();
+                makeToast("Failed to accept connection");
+            }
+            if (my_socket != null)
+            {
+                Log.i("ServerConnect", "Connection made");
+//                Toast.makeText(mActivity, "Connection made", Toast.LENGTH_SHORT).show();
+                makeToast("Connection made");
+                try
+                {
+                    ObjectOutputStream out = new ObjectOutputStream(my_socket.getOutputStream());
+                    ObjectInputStream in = new ObjectInputStream((my_socket.getInputStream()));
+                    out.writeChars("Hello, World!");
+                    mkmsg(in.readUTF());
+                }
+                catch (IOException e)
+                {
+                    e.printStackTrace();
+                }
+            }
+        }
+    }
+
+    private class ClientThread extends Thread
+    {
+        private Socket my_socket = null;
+        private SocketAddress socketAddress;
+        public ClientThread(SocketAddress socketAddress, InetAddress address)
+        {
+            this.socketAddress = socketAddress;
+            try
+            {
+                // creates and connects to address at specified port
+                my_socket = new Socket(address, MainActivity.SERVER_PORT);
+            }
+            catch (IOException e)
+            {
+                e.printStackTrace();
+                Log.e("ClientThread", "Failed to start socket");
+//                Toast.makeText(mActivity, "Failed to start socket", Toast.LENGTH_SHORT).show();
+                makeToast("Failed to start socket");
+            }
+        }
+
+        public void run()
+        {
+//            try
+//            {
+//                my_socket.connect(socketAddress);
+//            }
+//            catch (IOException e)
+//            {
+//                e.printStackTrace();
+//                Log.e("ClientThread", "Connect failed");
+////                Toast.makeText(mActivity, "Connect failed", Toast.LENGTH_SHORT).show();
+//                makeToast("Connect failed");
+//                try {
+//                    my_socket.close();
+//                    my_socket = null;
+//                } catch (IOException e2) {
+//                    Log.e("ClientThread", "unable to close() socket during connection failure: " +
+//                            e2.getMessage());
+//                    my_socket = null;
+//                }
+//            }
+
+            // Connection was accepted
+            if (my_socket != null)
+            {
+                Log.i("ClientThread", "Connection made");
+                try
+                {
+                    ObjectOutputStream out = new ObjectOutputStream(my_socket.getOutputStream());
+                    ObjectInputStream in = new ObjectInputStream(my_socket.getInputStream());
+                    mkmsg(in.readUTF());
+                    out.writeChars("Hello, World!");
+                }
+                catch (IOException e)
+                {
+                    e.printStackTrace();
+                }
+            }
+        }
+
+    }
 }
+
+
