@@ -20,10 +20,8 @@ import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.net.InetAddress;
-import java.net.InetSocketAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
-import java.net.SocketAddress;
 import java.net.UnknownHostException;
 
 /**
@@ -71,15 +69,17 @@ public class WiFiDirectBroadcastReceiver extends BroadcastReceiver
                             Log.d(TAG, "Device is group owner");
                             Toast.makeText(mActivity, "You're the group owner!", Toast.LENGTH_SHORT).show();
                             new Thread(new ServerThread()).start();
-                        } else if (wifiP2pInfo.groupFormed)
+                        }
+                        else if (wifiP2pInfo.groupFormed)
                         {
                             // Device acts as client
                             // Create client thread that connects to group owner
                             Log.d(TAG, "Device is in group");
                             Toast.makeText(mActivity, "You're in a group!", Toast.LENGTH_SHORT).show();
-                            new Thread(new ClientThread(new InetSocketAddress(groupOwnerAddress, MainActivity.SERVER_PORT), groupOwnerAddress)).start();
+                            new Thread(new ClientThread(groupOwnerAddress)).start();
                         }
-                    } catch (UnknownHostException e)
+                    }
+                    catch (UnknownHostException e)
                     {
                         Log.e(TAG, "Host IP: " + wifiP2pInfo.groupOwnerAddress.getHostAddress());
                         e.printStackTrace();
@@ -100,7 +100,8 @@ public class WiFiDirectBroadcastReceiver extends BroadcastReceiver
             {
                 // Wifi P2P is enabled
                 Log.d(TAG, "P2P enabled");
-            } else
+            }
+            else
             {
                 // Wifi P2P is not enabled
                 Log.d(TAG, "P2P disabled");
@@ -235,8 +236,7 @@ public class WiFiDirectBroadcastReceiver extends BroadcastReceiver
 
         public void run()
         {
-            Log.i("ServerConnect", "Waiting on accept");
-//            Toast.makeText(mActivity, "Waiting on accept", Toast.LENGTH_SHORT).show();
+            Log.i("ServerThread", "Waiting on accept");
             makeToast("Waiting on accept");
             my_socket = null;
             try
@@ -247,20 +247,26 @@ public class WiFiDirectBroadcastReceiver extends BroadcastReceiver
             {
                 e.printStackTrace();
                 Log.e("ServerThread", "Failed to accept connection");
-//                Toast.makeText(mActivity, "Failed to accept connection", Toast.LENGTH_SHORT).show();
                 makeToast("Failed to accept connection");
             }
             if (my_socket != null)
             {
                 Log.i("ServerConnect", "Connection made");
-//                Toast.makeText(mActivity, "Connection made", Toast.LENGTH_SHORT).show();
                 makeToast("Connection made");
                 try
                 {
                     ObjectOutputStream out = new ObjectOutputStream(my_socket.getOutputStream());
+                    // This may or may not be needed
+                    out.flush();
                     ObjectInputStream in = new ObjectInputStream((my_socket.getInputStream()));
-                    out.writeChars("Hello, World!");
+                    out.writeUTF("Hello, World!");
+                    // flush after write or inputStream will hang on read
+                    out.flush();
+                    Log.d("ServerThread", "sent message");
                     mkmsg(in.readUTF());
+                    out.close();
+                    in.close();
+                    my_socket.close();
                 }
                 catch (IOException e)
                 {
@@ -273,10 +279,8 @@ public class WiFiDirectBroadcastReceiver extends BroadcastReceiver
     private class ClientThread extends Thread
     {
         private Socket my_socket = null;
-        private SocketAddress socketAddress;
-        public ClientThread(SocketAddress socketAddress, InetAddress address)
+        public ClientThread(InetAddress address)
         {
-            this.socketAddress = socketAddress;
             try
             {
                 // creates and connects to address at specified port
@@ -286,33 +290,12 @@ public class WiFiDirectBroadcastReceiver extends BroadcastReceiver
             {
                 e.printStackTrace();
                 Log.e("ClientThread", "Failed to start socket");
-//                Toast.makeText(mActivity, "Failed to start socket", Toast.LENGTH_SHORT).show();
                 makeToast("Failed to start socket");
             }
         }
 
         public void run()
         {
-//            try
-//            {
-//                my_socket.connect(socketAddress);
-//            }
-//            catch (IOException e)
-//            {
-//                e.printStackTrace();
-//                Log.e("ClientThread", "Connect failed");
-////                Toast.makeText(mActivity, "Connect failed", Toast.LENGTH_SHORT).show();
-//                makeToast("Connect failed");
-//                try {
-//                    my_socket.close();
-//                    my_socket = null;
-//                } catch (IOException e2) {
-//                    Log.e("ClientThread", "unable to close() socket during connection failure: " +
-//                            e2.getMessage());
-//                    my_socket = null;
-//                }
-//            }
-
             // Connection was accepted
             if (my_socket != null)
             {
@@ -320,9 +303,16 @@ public class WiFiDirectBroadcastReceiver extends BroadcastReceiver
                 try
                 {
                     ObjectOutputStream out = new ObjectOutputStream(my_socket.getOutputStream());
+                    out.flush();
                     ObjectInputStream in = new ObjectInputStream(my_socket.getInputStream());
                     mkmsg(in.readUTF());
-                    out.writeChars("Hello, World!");
+                    out.writeUTF("Hello, World!");
+                    // flush after write or inputStream will hang on read
+                    out.flush();
+                    Log.d("ClientThread", "sent message");
+                    out.close();
+                    in.close();
+                    my_socket.close();
                 }
                 catch (IOException e)
                 {

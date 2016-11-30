@@ -69,7 +69,6 @@ public class MainActivity extends AppCompatActivity implements WiFiServicesList.
         });
 
         // Allow network connections
-        // Can also use permitAll ?
         StrictMode.ThreadPolicy policy = new StrictMode.ThreadPolicy.Builder().permitNetwork().build();
         StrictMode.setThreadPolicy(policy);
 
