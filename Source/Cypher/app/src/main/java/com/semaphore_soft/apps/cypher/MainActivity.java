@@ -12,6 +12,7 @@ import android.net.wifi.p2p.nsd.WifiP2pDnsSdServiceInfo;
 import android.net.wifi.p2p.nsd.WifiP2pDnsSdServiceRequest;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.Handler;
 import android.os.StrictMode;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
@@ -38,12 +39,14 @@ public class MainActivity extends AppCompatActivity implements WiFiServicesList.
     public final static String SERVICE_REG_TYPE = "_presence._tcp";
     // Port should be between 49152-65535
     public final static int SERVER_PORT = 58008;
+    private static final long SERVICE_BROADCASTING_INTERVAL = 5000; // rebroadcast every 5 seconds
 
     private WifiP2pManager mManager;
     private WifiP2pManager.Channel mChannel;
     private BroadcastReceiver mReceiver = null;
     private IntentFilter mIntentFiler = new IntentFilter();
     private WifiP2pDnsSdServiceRequest serviceRequest;
+    private Handler mServiceBroadcastingHandler = new Handler();
 
     public ProgressBar progressBar;
     private int hostWillingness;
@@ -275,6 +278,10 @@ public class MainActivity extends AppCompatActivity implements WiFiServicesList.
                 // Command successful. Code not needed here
                 Log.d("add", "Added local service");
                 Toast.makeText(getApplication(), "Added local service", Toast.LENGTH_SHORT).show();
+                // TODO add thread to call discoverPeers
+                mServiceBroadcastingHandler
+                        .postDelayed(mServiceBroadcastingRunnable, SERVICE_BROADCASTING_INTERVAL);
+
             }
 
             @Override
@@ -287,6 +294,25 @@ public class MainActivity extends AppCompatActivity implements WiFiServicesList.
             }
         });
     }
+
+    // TODO
+    private Runnable mServiceBroadcastingRunnable = new Runnable() {
+        @Override
+        public void run() {
+            Log.d("Thread", "Broadcasting");
+            mManager.discoverPeers(mChannel, new WifiP2pManager.ActionListener() {
+                @Override
+                public void onSuccess() {
+                }
+
+                @Override
+                public void onFailure(int error) {
+                }
+            });
+            mServiceBroadcastingHandler
+                    .postDelayed(mServiceBroadcastingRunnable, SERVICE_BROADCASTING_INTERVAL);
+        }
+    };
 
     private void discoverService()
     {
