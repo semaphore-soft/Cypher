@@ -39,7 +39,7 @@ public class MainActivity extends AppCompatActivity implements WiFiServicesList.
     public final static String SERVICE_REG_TYPE = "_presence._tcp";
     // Port should be between 49152-65535
     public final static int SERVER_PORT = 58008;
-    private static final long SERVICE_BROADCASTING_INTERVAL = 5000; // rebroadcast every 5 seconds
+    private static final long SERVICE_BROADCASTING_INTERVAL = 10000; // rebroadcast every 10 seconds
 
     private WifiP2pManager mManager;
     private WifiP2pManager.Channel mChannel;
@@ -95,6 +95,7 @@ public class MainActivity extends AppCompatActivity implements WiFiServicesList.
             public void onClick(View view)
             {
                 hostWillingness = 0;
+                mServiceBroadcastingHandler.postDelayed(mServiceBroadcastingRunnable, SERVICE_BROADCASTING_INTERVAL);
                 discoverService();
             }
         });
@@ -106,6 +107,7 @@ public class MainActivity extends AppCompatActivity implements WiFiServicesList.
             public void onClick(View view)
             {
                 hostWillingness = 15;
+                mServiceBroadcastingHandler.postDelayed(mServiceBroadcastingRunnable, SERVICE_BROADCASTING_INTERVAL);
                 discoverService();
             }
         });
@@ -279,8 +281,8 @@ public class MainActivity extends AppCompatActivity implements WiFiServicesList.
                 Log.d("add", "Added local service");
                 Toast.makeText(getApplication(), "Added local service", Toast.LENGTH_SHORT).show();
                 // TODO add thread to call discoverPeers
-                mServiceBroadcastingHandler
-                        .postDelayed(mServiceBroadcastingRunnable, SERVICE_BROADCASTING_INTERVAL);
+//                mServiceBroadcastingHandler
+//                        .postDelayed(mServiceBroadcastingRunnable, SERVICE_BROADCASTING_INTERVAL);
 
             }
 
@@ -376,6 +378,34 @@ public class MainActivity extends AppCompatActivity implements WiFiServicesList.
                 // Success
                 Log.d(TAG, "Added service discovery request");
                 Toast.makeText(getApplication(), "Added service discovery request", Toast.LENGTH_SHORT).show();
+                mManager.discoverServices(mChannel, new WifiP2pManager.ActionListener()
+                {
+                    @Override
+                    public void onSuccess()
+                    {
+                        // Success
+                        Log.d(TAG, "Service discovery initiated");
+                        Toast.makeText(getApplication(), "Service discovery initiated", Toast.LENGTH_SHORT).show();
+                        // Display progress bar(circle) while waiting for broadcast receiver
+                        progressBar.setVisibility(View.VISIBLE);
+                    }
+
+                    @Override
+                    public void onFailure(int i)
+                    {
+                        // Command failed
+                        if (i == WifiP2pManager.P2P_UNSUPPORTED)
+                        {
+                            Log.d(TAG, "P2P isn't supported on this device.");
+                        } else if (i == WifiP2pManager.BUSY)
+                        {
+                            Log.d(TAG, "System is busy");
+                        } else if (i == WifiP2pManager.ERROR)
+                        {
+                            Log.d(TAG, "There was an error"); // soooo helpful...
+                        }
+                    }
+                });
             }
 
             @Override
@@ -384,35 +414,6 @@ public class MainActivity extends AppCompatActivity implements WiFiServicesList.
                 // Command failed
                 Log.d(TAG, "Failed adding service discovery request");
                 Toast.makeText(getApplication(), "Failed adding service discovery request", Toast.LENGTH_SHORT).show();
-            }
-        });
-
-        mManager.discoverServices(mChannel, new WifiP2pManager.ActionListener()
-        {
-            @Override
-            public void onSuccess()
-            {
-                // Success
-                Log.d(TAG, "Service discovery initiated");
-                Toast.makeText(getApplication(), "Service discovery initiated", Toast.LENGTH_SHORT).show();
-                // Display progress bar(circle) while waiting for broadcast receiver
-                progressBar.setVisibility(View.VISIBLE);
-            }
-
-            @Override
-            public void onFailure(int i)
-            {
-                // Command failed
-                if (i == WifiP2pManager.P2P_UNSUPPORTED)
-                {
-                    Log.d(TAG, "P2P isn't supported on this device.");
-                } else if (i == WifiP2pManager.BUSY)
-                {
-                    Log.d(TAG, "System is busy");
-                } else if (i == WifiP2pManager.ERROR)
-                {
-                    Log.d(TAG, "There was an error"); // soooo helpful...
-                }
             }
         });
     }
