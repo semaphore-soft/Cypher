@@ -422,6 +422,9 @@ public class MainActivity extends AppCompatActivity implements WiFiServicesList.
                 adapter.clear();
                 adapter.notifyDataSetChanged();
                 Log.d(TAG, "Reset listFragment");
+                TextView tv = (TextView) findViewById(R.id.test);
+                tv.setText("Label");
+                Log.d(TAG, "Reset textview");
             }
         }
 
