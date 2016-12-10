@@ -56,7 +56,7 @@ class PortalRenderer extends ARRendererGLES20
 
         ShaderProgram triangleShaderProgram =
             new SimpleShaderProgram(3, new SimpleVertexShader(), new SimpleFragmentShader());
-        arTriangleGLES20 = new ARTriangleGLES20(40.0f, 0.0f, 0.0f, 20.0f);
+        arTriangleGLES20 = new ARTriangleGLES20(40.0f, 0.0f, 0.0f, 0.0f);
         arTriangleGLES20.setShaderProgram(triangleShaderProgram);
     }
 
