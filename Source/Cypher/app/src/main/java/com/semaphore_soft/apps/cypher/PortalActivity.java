@@ -12,15 +12,20 @@ import org.artoolkit.ar.base.rendering.ARRenderer;
 
 public class PortalActivity extends ARActivity {
 
+    PortalRenderer renderer;
+
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState); //Calls ARActivity's ctor, abstract class of ARBaseLib
         setContentView(R.layout.main_portal);
+
+        renderer = new PortalRenderer();
+        renderer.setCharacter(getIntent().getExtras().getInt("character"));
     }
 
     @Override
     protected ARRenderer supplyRenderer() {
-        return new PortalRenderer();
+        return renderer;
     }
 
     @Override

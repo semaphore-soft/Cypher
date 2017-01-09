@@ -9,6 +9,7 @@ import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.RadioButton;
 
 public class MainActivity extends AppCompatActivity
 {
@@ -22,6 +23,12 @@ public class MainActivity extends AppCompatActivity
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
+        final RadioButton char0 = (RadioButton) findViewById(R.id.char0);
+        char0.setChecked(true);
+        final RadioButton char1 = (RadioButton) findViewById(R.id.char1);
+        final RadioButton char2 = (RadioButton) findViewById(R.id.char2);
+        final RadioButton char3 = (RadioButton) findViewById(R.id.char3);
+
         FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
         fab.setOnClickListener(new View.OnClickListener()
         {
@@ -30,6 +37,19 @@ public class MainActivity extends AppCompatActivity
             {
                 Snackbar.make(view, "Starting AR Activity", Snackbar.LENGTH_LONG).show();
                 Intent intent = new Intent(getBaseContext(), PortalActivity.class);
+                intent.putExtra("player", 0);
+                if (char0.isChecked()) {
+                    intent.putExtra("character", 0);
+                }
+                else if (char1.isChecked()) {
+                    intent.putExtra("character", 1);
+                }
+                else if (char2.isChecked()) {
+                    intent.putExtra("character", 2);
+                }
+                else if (char3.isChecked()) {
+                    intent.putExtra("character", 3);
+                }
                 startActivity(intent);
             }
         });

@@ -21,6 +21,8 @@ import javax.microedition.khronos.opengles.GL10;
 class PortalRenderer extends ARRendererGLES20
 {
 
+    private int character = 0;
+
     private int mark0 = -1;
     private int mark1 = -1;
     private int mark2 = -1;
@@ -55,8 +57,11 @@ class PortalRenderer extends ARRendererGLES20
         cube.setShaderProgram(cubeShaderProgram);
 
         ShaderProgram triangleShaderProgram =
-            new SimpleShaderProgram(3, new SimpleVertexShader(), new SimpleFragmentShader());
-        arTriangleGLES20 = new ARTriangleGLES20(40.0f, 0.0f, 0.0f, 20.0f);
+                new SimpleShaderProgram(3, new SimpleVertexShader(), new SimpleFragmentShader());
+        if (arTriangleGLES20 == null) {
+            arTriangleGLES20 = new ARTriangleGLES20(40.0f, 0.0f, 0.0f, 0.0f);
+            arTriangleGLES20.setCharacter(character);
+        }
         arTriangleGLES20.setShaderProgram(triangleShaderProgram);
     }
 
@@ -236,6 +241,13 @@ class PortalRenderer extends ARRendererGLES20
                 cube.draw(projectionMatrix,
                           ARToolKit.getInstance().queryMarkerTransformation(mark2));
             }
+        }
+    }
+
+    public void setCharacter(int character) {
+        this.character = character;
+        if (arTriangleGLES20 != null) {
+            arTriangleGLES20.setCharacter(character);
         }
     }
 }
