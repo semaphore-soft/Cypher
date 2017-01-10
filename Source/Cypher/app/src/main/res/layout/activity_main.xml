@@ -26,37 +26,6 @@
 
         </android.support.design.widget.AppBarLayout>
 
-        <RadioGroup
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content">
-
-            <RadioButton
-                android:text="Character White"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:id="@+id/char0" />
-
-            <RadioButton
-                android:text="Character Red"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:id="@+id/char1" />
-
-            <RadioButton
-                android:text="Character Green"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:id="@+id/char2" />
-
-            <RadioButton
-                android:text="Character Purple"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:id="@+id/char3" />
-
-
-        </RadioGroup>
-
         <Button
                 android:text="Host Game"
                 android:layout_width="match_parent"

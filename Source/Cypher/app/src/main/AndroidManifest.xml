@@ -39,12 +39,30 @@
             </intent-filter>
         </activity>
         <activity
+            android:name=".ConnectionLobbyActivity"
+            android:label="Cypher"
+            android:theme="@style/AppTheme.NoActionBar">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <!--<category android:name="android.intent.category.LAUNCHER" />-->
+            </intent-filter>
+        </activity>
+        <activity
+            android:name=".CharacterSelectActivity"
+            android:label="Cypher"
+            android:theme="@style/AppTheme.NoActionBar">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <!--<category android:name="android.intent.category.LAUNCHER" />-->
+            </intent-filter>
+        </activity>
+        <activity
             android:name=".PortalActivity"
             android:configChanges="keyboardHidden|orientation|screenSize"
             android:label="Cypher">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
-                <category android:name="android.intent.category.LAUNCHER" />
+                <!--<category android:name="android.intent.category.LAUNCHER" />-->
             </intent-filter>
         </activity>
         <activity android:name="org.artoolkit.ar.base.camera.CameraPreferencesActivity" />

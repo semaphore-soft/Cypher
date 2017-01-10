@@ -24,34 +24,13 @@ public class MainActivity extends AppCompatActivity
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
-        final RadioButton char0 = (RadioButton) findViewById(R.id.char0);
-        char0.setChecked(true);
-        final RadioButton char1 = (RadioButton) findViewById(R.id.char1);
-        final RadioButton char2 = (RadioButton) findViewById(R.id.char2);
-        final RadioButton char3 = (RadioButton) findViewById(R.id.char3);
-
         FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
         fab.setOnClickListener(new View.OnClickListener()
         {
             @Override
             public void onClick(View view)
             {
-                Snackbar.make(view, "Starting AR Activity", Snackbar.LENGTH_LONG).show();
-                Intent intent = new Intent(getBaseContext(), PortalActivity.class);
-                intent.putExtra("player", 0);
-                if (char0.isChecked()) {
-                    intent.putExtra("character", 0);
-                }
-                else if (char1.isChecked()) {
-                    intent.putExtra("character", 1);
-                }
-                else if (char2.isChecked()) {
-                    intent.putExtra("character", 2);
-                }
-                else if (char3.isChecked()) {
-                    intent.putExtra("character", 3);
-                }
-                startActivity(intent);
+
             }
         });
 
@@ -62,8 +41,8 @@ public class MainActivity extends AppCompatActivity
             @Override
             public void onClick(View view)
             {
-                Snackbar.make(view, "Starting AR Activity", Snackbar.LENGTH_LONG).show();
-                Intent intent = new Intent(getBaseContext(), PortalActivity.class);
+                Snackbar.make(view, "Moving to Connection Lobby", Snackbar.LENGTH_LONG).show();
+                Intent intent = new Intent(getBaseContext(), ConnectionLobbyActivity.class);
                 startActivity(intent);
             }
         });
@@ -75,8 +54,8 @@ public class MainActivity extends AppCompatActivity
             @Override
             public void onClick(View view)
             {
-                Snackbar.make(view, "Starting AR Activity", Snackbar.LENGTH_LONG).show();
-                Intent intent = new Intent(getBaseContext(), PortalActivity.class);
+                Snackbar.make(view, "Moving to Connection Lobby", Snackbar.LENGTH_LONG).show();
+                Intent intent = new Intent(getBaseContext(), ConnectionLobbyActivity.class);
                 startActivity(intent);
             }
         });
