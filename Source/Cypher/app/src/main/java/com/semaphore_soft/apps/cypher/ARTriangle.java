@@ -15,6 +15,8 @@ import javax.microedition.khronos.opengles.GL10;
 
 public class ARTriangle
 {
+    private int character;
+
     private static final int NUM_INDICES = 3;
 
     private FloatBuffer mVertexBuffer;
@@ -120,5 +122,50 @@ public class ARTriangle
         GLES10.glDisableClientState(GLES10.GL_COLOR_ARRAY);
         GLES10.glDisableClientState(GLES10.GL_VERTEX_ARRAY);
 
+    }
+
+    public void setCharacter(int character) {
+        this.character = character;
+
+        float c = 1.0f;
+
+        float colors[] = {
+            c, c, c, c,
+            c, c, c, c,
+            c, c, c, c
+        };
+
+        switch (character) {
+            case 0:
+               colors = new float[]{
+                   c, c, c, c,
+                   c, c, c, c,
+                   c, c, c, c
+               };
+                break;
+            case 1:
+                colors = new float[]{
+                    c, 0, 0, c,
+                    c, 0, 0, c,
+                    c, 0, 0, c
+                };
+                break;
+            case 2:
+                colors = new float[]{
+                    0, c, 0, c,
+                    0, c, 0, c,
+                    0, c, 0, c
+                };
+                break;
+            case 3:
+                colors = new float[]{
+                    c, 0, c, c,
+                    c, 0, c, c,
+                    c, 0, c, c
+                };
+                break;
+        }
+
+        mColorBuffer = RenderUtils.buildFloatBuffer(colors);
     }
 }
