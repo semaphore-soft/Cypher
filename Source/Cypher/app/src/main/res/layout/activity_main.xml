@@ -31,6 +31,18 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"/>
 
+        <Button
+                android:text="Host Game"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:id="@+id/btnHost"/>
+
+        <Button
+                android:text="Join Game"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:id="@+id/btnJoin"/>
+
     </LinearLayout>
 
     <android.support.design.widget.FloatingActionButton

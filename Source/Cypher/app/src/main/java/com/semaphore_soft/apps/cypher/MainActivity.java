@@ -9,6 +9,7 @@ import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.Button;
 
 public class MainActivity extends AppCompatActivity
 {
@@ -24,6 +25,32 @@ public class MainActivity extends AppCompatActivity
 
         FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
         fab.setOnClickListener(new View.OnClickListener()
+        {
+            @Override
+            public void onClick(View view)
+            {
+                Snackbar.make(view, "Starting AR Activity", Snackbar.LENGTH_LONG).show();
+                Intent intent = new Intent(getBaseContext(), PortalActivity.class);
+                startActivity(intent);
+            }
+        });
+
+        Button btnHost = (Button) findViewById(R.id.btnHost);
+
+        btnHost.setOnClickListener(new View.OnClickListener()
+        {
+            @Override
+            public void onClick(View view)
+            {
+                Snackbar.make(view, "Starting AR Activity", Snackbar.LENGTH_LONG).show();
+                Intent intent = new Intent(getBaseContext(), PortalActivity.class);
+                startActivity(intent);
+            }
+        });
+
+        Button btnJoin = (Button) findViewById(R.id.btnJoin);
+        
+        btnJoin.setOnClickListener(new View.OnClickListener()
         {
             @Override
             public void onClick(View view)
