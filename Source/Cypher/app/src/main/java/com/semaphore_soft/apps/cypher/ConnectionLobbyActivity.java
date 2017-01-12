@@ -7,6 +7,7 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.view.View;
 import android.widget.Button;
+import android.widget.TextView;
 
 /**
  * Created by Scorple on 1/9/2017.
@@ -21,6 +22,10 @@ public class ConnectionLobbyActivity extends AppCompatActivity
         setContentView(R.layout.connection_lobby);
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
+
+        TextView txtDisplayName = (TextView) findViewById(R.id.txtDisplayName);
+
+        txtDisplayName.setText("Welcome " + getIntent().getStringExtra("name"));
 
         Button btnStart = (Button) findViewById(R.id.btnStart);
 

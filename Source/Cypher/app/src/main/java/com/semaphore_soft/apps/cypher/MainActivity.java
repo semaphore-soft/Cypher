@@ -4,6 +4,8 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
+import android.support.v4.app.DialogFragment;
+import android.support.v4.app.FragmentManager;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.view.Menu;
@@ -11,10 +13,13 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
 import android.widget.RadioButton;
+import android.widget.Toast;
 
-public class MainActivity extends AppCompatActivity
+public class MainActivity extends AppCompatActivity implements GetNameDialogFragment.GetNameDialogListener
 {
     private static MainPresenter presenter;
+
+    boolean host = false;
 
     @Override
     public void onCreate(Bundle savedInstanceState)
@@ -30,7 +35,7 @@ public class MainActivity extends AppCompatActivity
             @Override
             public void onClick(View view)
             {
-
+                Toast.makeText(getApplicationContext(), "Host or Join a Game", Toast.LENGTH_SHORT).show();
             }
         });
 
@@ -41,9 +46,11 @@ public class MainActivity extends AppCompatActivity
             @Override
             public void onClick(View view)
             {
-                Snackbar.make(view, "Moving to Connection Lobby", Snackbar.LENGTH_LONG).show();
+                host = true;
+                showGetNameDialog();
+                /*Toast.makeText(getApplicationContext(), "Moving to Connection Lobby", Toast.LENGTH_SHORT).show();
                 Intent intent = new Intent(getBaseContext(), ConnectionLobbyActivity.class);
-                startActivity(intent);
+                startActivity(intent);*/
             }
         });
 
@@ -54,9 +61,10 @@ public class MainActivity extends AppCompatActivity
             @Override
             public void onClick(View view)
             {
-                Snackbar.make(view, "Moving to Connection Lobby", Snackbar.LENGTH_LONG).show();
+                showGetNameDialog();
+                /*Toast.makeText(getApplicationContext(), "Moving to Join Game Lobby", Toast.LENGTH_SHORT).show();
                 Intent intent = new Intent(getBaseContext(), ConnectionLobbyActivity.class);
-                startActivity(intent);
+                startActivity(intent);*/
             }
         });
 
@@ -66,6 +74,14 @@ public class MainActivity extends AppCompatActivity
         }
 
         presenter.setView(this);
+    }
+
+    public void showGetNameDialog() {
+        FragmentManager fm = getSupportFragmentManager();
+        GetNameDialogFragment getNameDialogFragment = new GetNameDialogFragment();
+        //getNameDialogFragment.setStyle(DialogFragment.STYLE_NORMAL, R.style.AppTheme);
+        getNameDialogFragment.setListener(this);
+        getNameDialogFragment.show(fm, "get_name_dialog");
     }
 
     @Override
@@ -91,5 +107,22 @@ public class MainActivity extends AppCompatActivity
         }
 
         return super.onOptionsItemSelected(item);
+    }
+
+    @Override
+    public void onFinishGetName(String name)
+    {
+        if (host) {
+            Toast.makeText(getApplicationContext(), "Moving to Connection Lobby", Toast.LENGTH_SHORT).show();
+            Intent intent = new Intent(getBaseContext(), ConnectionLobbyActivity.class);
+            intent.putExtra("name", name);
+            startActivity(intent);
+        }
+        else {
+            Toast.makeText(getApplicationContext(), "Moving to Join Game Lobby", Toast.LENGTH_SHORT).show();
+            Intent intent = new Intent(getBaseContext(), ConnectionLobbyActivity.class);
+            intent.putExtra("name", name);
+            startActivity(intent);
+        }
     }
 }
