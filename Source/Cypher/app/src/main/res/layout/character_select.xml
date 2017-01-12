@@ -1,59 +1,71 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-              xmlns:app="http://schemas.android.com/apk/res-auto"
-              android:orientation="vertical"
-              android:layout_width="match_parent"
-              android:layout_height="match_parent">
+<android.support.design.widget.CoordinatorLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:fitsSystemWindows="true"
+    tools:context="com.semaphore_soft.apps.cypher.CharacterSelectActivity">
 
-    <android.support.design.widget.AppBarLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:theme="@style/AppTheme.AppBarOverlay">
+    <LinearLayout
+        xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:app="http://schemas.android.com/apk/res-auto"
+        android:orientation="vertical"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
 
-        <android.support.v7.widget.Toolbar
-                android:id="@+id/toolbar"
-                android:layout_width="match_parent"
-                android:layout_height="?attr/actionBarSize"
-                android:background="?attr/colorPrimary"
-                app:popupTheme="@style/AppTheme.PopupOverlay"/>
-
-    </android.support.design.widget.AppBarLayout>
-
-    <Button
-            android:text="GO!"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:id="@+id/btnGo"
-            android:layout_weight="1"/>
-
-    <RadioGroup
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content">
-
-        <RadioButton
-                android:text="Character White"
+        <android.support.design.widget.AppBarLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:id="@+id/char0"/>
+                android:theme="@style/AppTheme.AppBarOverlay">
 
-        <RadioButton
-                android:text="Character Red"
+            <android.support.v7.widget.Toolbar
+                    android:id="@+id/toolbar"
+                    android:layout_width="match_parent"
+                    android:layout_height="?attr/actionBarSize"
+                    android:background="?attr/colorPrimary"
+                    app:popupTheme="@style/AppTheme.PopupOverlay"/>
+
+        </android.support.design.widget.AppBarLayout>
+
+        <Button
+                android:text="GO!"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:id="@+id/char1"/>
+                android:id="@+id/btnGo"
+                android:layout_weight="1"/>
 
-        <RadioButton
-                android:text="Character Green"
+        <RadioGroup
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:id="@+id/char2"/>
+                android:layout_height="wrap_content">
 
-        <RadioButton
-                android:text="Character Purple"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:id="@+id/char3"/>
+            <RadioButton
+                    android:text="Character White"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:id="@+id/char0"/>
+
+            <RadioButton
+                    android:text="Character Red"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:id="@+id/char1"/>
+
+            <RadioButton
+                    android:text="Character Green"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:id="@+id/char2"/>
+
+            <RadioButton
+                    android:text="Character Purple"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:id="@+id/char3"/>
 
 
-    </RadioGroup>
-</LinearLayout>
+        </RadioGroup>
+    </LinearLayout>
+
+</android.support.design.widget.CoordinatorLayout>
