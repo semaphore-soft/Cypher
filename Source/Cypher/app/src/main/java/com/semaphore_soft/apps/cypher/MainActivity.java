@@ -61,6 +61,7 @@ public class MainActivity extends AppCompatActivity implements GetNameDialogFrag
             @Override
             public void onClick(View view)
             {
+                host = false;
                 showGetNameDialog();
                 /*Toast.makeText(getApplicationContext(), "Moving to Join Game Lobby", Toast.LENGTH_SHORT).show();
                 Intent intent = new Intent(getBaseContext(), ConnectionLobbyActivity.class);
@@ -115,12 +116,13 @@ public class MainActivity extends AppCompatActivity implements GetNameDialogFrag
         if (host) {
             Toast.makeText(getApplicationContext(), "Moving to Connection Lobby", Toast.LENGTH_SHORT).show();
             Intent intent = new Intent(getBaseContext(), ConnectionLobbyActivity.class);
+            intent.putExtra("host", true);
             intent.putExtra("name", name);
             startActivity(intent);
         }
         else {
             Toast.makeText(getApplicationContext(), "Moving to Join Game Lobby", Toast.LENGTH_SHORT).show();
-            Intent intent = new Intent(getBaseContext(), ConnectionLobbyActivity.class);
+            Intent intent = new Intent(getBaseContext(), JoinGameActivity.class);
             intent.putExtra("name", name);
             startActivity(intent);
         }
