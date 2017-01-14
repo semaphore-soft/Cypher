@@ -39,7 +39,8 @@ public class MainActivity extends AppCompatActivity implements WiFiServicesList.
     public final static String SERVICE_REG_TYPE = "_presence._tcp";
     // Port should be between 49152-65535
     public final static int SERVER_PORT = 58008;
-    private static final long SERVICE_BROADCASTING_INTERVAL = 10000; // rebroadcast every 10 seconds
+    // rebroadcast every 2 minutes
+    private static final long SERVICE_BROADCASTING_INTERVAL = 120000;
 
     private WifiP2pManager mManager;
     private WifiP2pManager.Channel mChannel;
@@ -135,6 +136,7 @@ public class MainActivity extends AppCompatActivity implements WiFiServicesList.
             @Override
             public void onFailure(int i)
             {
+                // TODO retry clearing local services
                 Log.d("clear", "Failed to clear local services");
                 Toast.makeText(getApplication(), "Failed to add local service",
                         Toast.LENGTH_SHORT).show();
@@ -298,6 +300,7 @@ public class MainActivity extends AppCompatActivity implements WiFiServicesList.
     }
 
     // TODO
+    // Force rebroadcast of service information
     private Runnable mServiceBroadcastingRunnable = new Runnable() {
         @Override
         public void run() {
@@ -388,6 +391,7 @@ public class MainActivity extends AppCompatActivity implements WiFiServicesList.
                         Toast.makeText(getApplication(), "Service discovery initiated", Toast.LENGTH_SHORT).show();
                         // Display progress bar(circle) while waiting for broadcast receiver
                         progressBar.setVisibility(View.VISIBLE);
+                        // TODO add service discovery thread
                     }
 
                     @Override
@@ -402,7 +406,8 @@ public class MainActivity extends AppCompatActivity implements WiFiServicesList.
                             Log.d(TAG, "System is busy");
                         } else if (i == WifiP2pManager.ERROR)
                         {
-                            Log.d(TAG, "There was an error"); // soooo helpful...
+                            // soooo helpful...
+                            Log.d(TAG, "There was an error");
                         }
                     }
                 });
