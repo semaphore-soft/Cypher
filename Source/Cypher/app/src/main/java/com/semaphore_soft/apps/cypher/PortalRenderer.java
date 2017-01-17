@@ -23,9 +23,30 @@ class PortalRenderer extends ARRendererGLES20
 
     private int character = 0;
 
-    private int mark0 = -1;
+    /*private int mark0 = -1;
     private int mark1 = -1;
-    private int mark2 = -1;
+    private int mark2 = -1;*/
+
+    private int mark00 = -1;
+    private int mark01 = -1;
+    private int mark02 = -1;
+    private int mark03 = -1;
+    private int mark04 = -1;
+    private int mark05 = -1;
+    private int mark06 = -1;
+    private int mark07 = -1;
+    private int mark08 = -1;
+    private int mark09 = -1;
+    private int mark10 = -1;
+    private int mark11 = -1;
+    private int mark12 = -1;
+    private int mark13 = -1;
+    private int mark14 = -1;
+    private int mark15 = -1;
+    private int mark16 = -1;
+    private int mark17 = -1;
+    private int mark18 = -1;
+    private int mark19 = -1;
 
     private CubeGLES20       cube;
     private ARTriangleGLES20 arTriangleGLES20;
@@ -33,10 +54,36 @@ class PortalRenderer extends ARRendererGLES20
     @Override
     public boolean configureARScene()
     {
-        mark0 = ARToolKit.getInstance().addMarker("single;Data/0.patt;80");
+        /*mark0 = ARToolKit.getInstance().addMarker("single;Data/0.patt;80");
         mark1 = ARToolKit.getInstance().addMarker("single;Data/1.patt;80");
-        mark2 = ARToolKit.getInstance().addMarker("single;Data/2.patt;80");
-        if (mark0 < 0 || mark1 < 0 || mark2 < 0)
+        mark2 = ARToolKit.getInstance().addMarker("single;Data/2.patt;80");*/
+
+        mark00 = ARToolKit.getInstance().addMarker("single;Data/00.patt;80");
+        mark01 = ARToolKit.getInstance().addMarker("single;Data/01.patt;80");
+        mark02 = ARToolKit.getInstance().addMarker("single;Data/02.patt;80");
+        mark03 = ARToolKit.getInstance().addMarker("single;Data/03.patt;80");
+        mark04 = ARToolKit.getInstance().addMarker("single;Data/04.patt;80");
+        mark05 = ARToolKit.getInstance().addMarker("single;Data/05.patt;80");
+        mark06 = ARToolKit.getInstance().addMarker("single;Data/06.patt;80");
+        mark07 = ARToolKit.getInstance().addMarker("single;Data/07.patt;80");
+        mark08 = ARToolKit.getInstance().addMarker("single;Data/08.patt;80");
+        mark09 = ARToolKit.getInstance().addMarker("single;Data/09.patt;80");
+        mark10 = ARToolKit.getInstance().addMarker("single;Data/10.patt;80");
+        mark11 = ARToolKit.getInstance().addMarker("single;Data/11.patt;80");
+        mark12 = ARToolKit.getInstance().addMarker("single;Data/12.patt;80");
+        mark13 = ARToolKit.getInstance().addMarker("single;Data/13.patt;80");
+        mark14 = ARToolKit.getInstance().addMarker("single;Data/14.patt;80");
+        mark15 = ARToolKit.getInstance().addMarker("single;Data/15.patt;80");
+        mark16 = ARToolKit.getInstance().addMarker("single;Data/16.patt;80");
+        mark17 = ARToolKit.getInstance().addMarker("single;Data/17.patt;80");
+        mark18 = ARToolKit.getInstance().addMarker("single;Data/18.patt;80");
+        mark19 = ARToolKit.getInstance().addMarker("single;Data/19.patt;80");
+
+        if (//mark0 < 0 || mark1 < 0 || mark2 < 0 ||
+            mark00 < 0 || mark01 < 0 || mark02 < 0 || mark03 < 0 || mark04 < 0 || mark06 < 0 ||
+            mark07 < 0 || mark08 < 0 || mark09 < 0 || mark10 < 0 || mark11 < 0 || mark12 < 0 ||
+            mark13 < 0 || mark14 < 0 || mark15 < 0 || mark16 < 0 || mark17 < 0 || mark18 < 0 ||
+            mark19 < 0)
         {
             return false;
         }
@@ -69,7 +116,7 @@ class PortalRenderer extends ARRendererGLES20
     /**
      * Override the draw function from ARRenderer.
      */
-    @Override
+    /*@Override
     public void draw(GL10 gl)
     {
 
@@ -154,7 +201,7 @@ class PortalRenderer extends ARRendererGLES20
             cube.draw(gl);
             gl.glPopMatrix();
         }
-    }
+    }*/
 
     /**
      * Override the render function from {@link ARRendererGLES20}.
@@ -170,14 +217,116 @@ class PortalRenderer extends ARRendererGLES20
 
         float[] projectionMatrix = ARToolKit.getInstance().getProjectionMatrix();
 
+        //TODO make marker generic
         // If the marker is visible, apply its transformation, and render a triangle
-        if (ARToolKit.getInstance().queryMarkerVisible(mark0))
+        /*if (ARToolKit.getInstance().queryMarkerVisible(mark0))
         {
             arTriangleGLES20.draw(projectionMatrix,
                                   ARToolKit.getInstance().queryMarkerTransformation(mark0));
+        }*/
+
+        if (ARToolKit.getInstance().queryMarkerVisible(mark00))
+        {
+            System.out.println("marker 00 visible");
         }
 
-        if (ARToolKit.getInstance().queryMarkerVisible(mark0) &&
+        if (ARToolKit.getInstance().queryMarkerVisible(mark01))
+        {
+            System.out.println("marker 01 visible");
+        }
+
+        if (ARToolKit.getInstance().queryMarkerVisible(mark02))
+        {
+            System.out.println("marker 02 visible");
+        }
+
+        if (ARToolKit.getInstance().queryMarkerVisible(mark03))
+        {
+            System.out.println("marker 03 visible");
+        }
+
+        if (ARToolKit.getInstance().queryMarkerVisible(mark04))
+        {
+            System.out.println("marker 04 visible");
+        }
+
+        if (ARToolKit.getInstance().queryMarkerVisible(mark05))
+        {
+            System.out.println("marker 05 visible");
+        }
+
+        if (ARToolKit.getInstance().queryMarkerVisible(mark06))
+        {
+            System.out.println("marker 06 visible");
+        }
+
+        if (ARToolKit.getInstance().queryMarkerVisible(mark07))
+        {
+            System.out.println("marker 07 visible");
+        }
+
+        if (ARToolKit.getInstance().queryMarkerVisible(mark08))
+        {
+            System.out.println("marker 08 visible");
+        }
+
+        if (ARToolKit.getInstance().queryMarkerVisible(mark09))
+        {
+            System.out.println("marker 09 visible");
+        }
+
+        if (ARToolKit.getInstance().queryMarkerVisible(mark10))
+        {
+            System.out.println("marker 10 visible");
+        }
+
+        if (ARToolKit.getInstance().queryMarkerVisible(mark11))
+        {
+            System.out.println("marker 11 visible");
+        }
+
+        if (ARToolKit.getInstance().queryMarkerVisible(mark12))
+        {
+            System.out.println("marker 12 visible");
+        }
+
+        if (ARToolKit.getInstance().queryMarkerVisible(mark13))
+        {
+            System.out.println("marker 13 visible");
+        }
+
+        if (ARToolKit.getInstance().queryMarkerVisible(mark14))
+        {
+            System.out.println("marker 14 visible");
+        }
+
+        if (ARToolKit.getInstance().queryMarkerVisible(mark15))
+        {
+            System.out.println("marker 15 visible");
+        }
+
+        if (ARToolKit.getInstance().queryMarkerVisible(mark16))
+        {
+            System.out.println("marker 16 visible");
+        }
+
+        if (ARToolKit.getInstance().queryMarkerVisible(mark17))
+        {
+            System.out.println("marker 17 visible");
+        }
+
+        if (ARToolKit.getInstance().queryMarkerVisible(mark18))
+        {
+            System.out.println("marker 18 visible");
+        }
+
+        if (ARToolKit.getInstance().queryMarkerVisible(mark19))
+        {
+            System.out.println("marker 19 visible");
+        }
+
+        //TODO make marker generic
+        /*if (ARToolKit.getInstance().queryMarkerVisible(mark0) &&
             ARToolKit.getInstance().queryMarkerVisible(mark1) &&
             ARToolKit.getInstance().queryMarkerVisible(mark2))
         {
@@ -244,6 +393,7 @@ class PortalRenderer extends ARRendererGLES20
                           ARToolKit.getInstance().queryMarkerTransformation(mark2));
             }
         }
+        */
     }
 
     public void setCharacter(int character)

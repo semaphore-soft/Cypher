@@ -3,8 +3,6 @@ package com.semaphore_soft.apps.cypher;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
-import android.support.design.widget.Snackbar;
-import android.support.v4.app.DialogFragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
@@ -12,7 +10,6 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
-import android.widget.RadioButton;
 import android.widget.Toast;
 
 public class MainActivity extends AppCompatActivity implements GetNameDialogFragment.GetNameDialogListener
@@ -35,8 +32,13 @@ public class MainActivity extends AppCompatActivity implements GetNameDialogFrag
             @Override
             public void onClick(View view)
             {
-                Toast.makeText(getApplicationContext(), "Host or Join a Game", Toast.LENGTH_SHORT)
+                Toast.makeText(getApplicationContext(), "Launching AR Activity", Toast.LENGTH_SHORT)
                      .show();
+
+                Intent intent = new Intent(getBaseContext(), PortalActivity.class);
+                intent.putExtra("player", 0);
+                intent.putExtra("character", 0);
+                startActivity(intent);
             }
         });
 
@@ -49,9 +51,6 @@ public class MainActivity extends AppCompatActivity implements GetNameDialogFrag
             {
                 host = true;
                 showGetNameDialog();
-                /*Toast.makeText(getApplicationContext(), "Moving to Connection Lobby", Toast.LENGTH_SHORT).show();
-                Intent intent = new Intent(getBaseContext(), ConnectionLobbyActivity.class);
-                startActivity(intent);*/
             }
         });
 
@@ -64,9 +63,6 @@ public class MainActivity extends AppCompatActivity implements GetNameDialogFrag
             {
                 host = false;
                 showGetNameDialog();
-                /*Toast.makeText(getApplicationContext(), "Moving to Join Game Lobby", Toast.LENGTH_SHORT).show();
-                Intent intent = new Intent(getBaseContext(), ConnectionLobbyActivity.class);
-                startActivity(intent);*/
             }
         });
 
@@ -82,7 +78,6 @@ public class MainActivity extends AppCompatActivity implements GetNameDialogFrag
     {
         FragmentManager       fm                    = getSupportFragmentManager();
         GetNameDialogFragment getNameDialogFragment = new GetNameDialogFragment();
-        //getNameDialogFragment.setStyle(DialogFragment.STYLE_NORMAL, R.style.AppTheme);
         getNameDialogFragment.setListener(this);
         getNameDialogFragment.show(fm, "get_name_dialog");
     }
