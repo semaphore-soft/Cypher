@@ -124,7 +124,8 @@ public class ARTriangle
 
     }
 
-    public void setCharacter(int character) {
+    public void setCharacter(int character)
+    {
         this.character = character;
 
         float c = 1.0f;
@@ -135,13 +136,14 @@ public class ARTriangle
             c, c, c, c
         };
 
-        switch (character) {
+        switch (character)
+        {
             case 0:
-               colors = new float[]{
-                   c, c, c, c,
-                   c, c, c, c,
-                   c, c, c, c
-               };
+                colors = new float[]{
+                    c, c, c, c,
+                    c, c, c, c,
+                    c, c, c, c
+                };
                 break;
             case 1:
                 colors = new float[]{

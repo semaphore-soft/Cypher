@@ -39,16 +39,20 @@ public class CharacterSelectActivity extends AppCompatActivity
                 Snackbar.make(view, "Starting AR Activity", Snackbar.LENGTH_LONG).show();
                 Intent intent = new Intent(getBaseContext(), PortalActivity.class);
                 intent.putExtra("player", 0);
-                if (char0.isChecked()) {
+                if (char0.isChecked())
+                {
                     intent.putExtra("character", 0);
                 }
-                else if (char1.isChecked()) {
+                else if (char1.isChecked())
+                {
                     intent.putExtra("character", 1);
                 }
-                else if (char2.isChecked()) {
+                else if (char2.isChecked())
+                {
                     intent.putExtra("character", 2);
                 }
-                else if (char3.isChecked()) {
+                else if (char3.isChecked())
+                {
                     intent.putExtra("character", 3);
                 }
                 startActivity(intent);

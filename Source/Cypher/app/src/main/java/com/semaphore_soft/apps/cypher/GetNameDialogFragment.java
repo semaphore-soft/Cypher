@@ -19,7 +19,10 @@ public class GetNameDialogFragment extends DialogFragment implements View.OnClic
     private EditText txtName;
 
     @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+    public View onCreateView(LayoutInflater inflater,
+                             ViewGroup container,
+                             Bundle savedInstanceState)
+    {
         View view = inflater.inflate(R.layout.get_name_dialog, container);
         txtName = (EditText) view.findViewById(R.id.txtName);
         getDialog().setTitle("Player Name");
@@ -40,7 +43,8 @@ public class GetNameDialogFragment extends DialogFragment implements View.OnClic
         void onFinishGetName(String name);
     }
 
-    public void setListener(Activity activity) {
+    public void setListener(Activity activity)
+    {
         listener = (GetNameDialogListener) activity;
     }
 }

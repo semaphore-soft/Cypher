@@ -35,7 +35,8 @@ public class MainActivity extends AppCompatActivity implements GetNameDialogFrag
             @Override
             public void onClick(View view)
             {
-                Toast.makeText(getApplicationContext(), "Host or Join a Game", Toast.LENGTH_SHORT).show();
+                Toast.makeText(getApplicationContext(), "Host or Join a Game", Toast.LENGTH_SHORT)
+                     .show();
             }
         });
 
@@ -55,7 +56,7 @@ public class MainActivity extends AppCompatActivity implements GetNameDialogFrag
         });
 
         Button btnJoin = (Button) findViewById(R.id.btnJoin);
-        
+
         btnJoin.setOnClickListener(new View.OnClickListener()
         {
             @Override
@@ -77,8 +78,9 @@ public class MainActivity extends AppCompatActivity implements GetNameDialogFrag
         presenter.setView(this);
     }
 
-    public void showGetNameDialog() {
-        FragmentManager fm = getSupportFragmentManager();
+    public void showGetNameDialog()
+    {
+        FragmentManager       fm                    = getSupportFragmentManager();
         GetNameDialogFragment getNameDialogFragment = new GetNameDialogFragment();
         //getNameDialogFragment.setStyle(DialogFragment.STYLE_NORMAL, R.style.AppTheme);
         getNameDialogFragment.setListener(this);
@@ -113,15 +115,20 @@ public class MainActivity extends AppCompatActivity implements GetNameDialogFrag
     @Override
     public void onFinishGetName(String name)
     {
-        if (host) {
-            Toast.makeText(getApplicationContext(), "Moving to Connection Lobby", Toast.LENGTH_SHORT).show();
+        if (host)
+        {
+            Toast.makeText(getApplicationContext(),
+                           "Moving to Connection Lobby",
+                           Toast.LENGTH_SHORT).show();
             Intent intent = new Intent(getBaseContext(), ConnectionLobbyActivity.class);
             intent.putExtra("host", true);
             intent.putExtra("name", name);
             startActivity(intent);
         }
-        else {
-            Toast.makeText(getApplicationContext(), "Moving to Join Game Lobby", Toast.LENGTH_SHORT).show();
+        else
+        {
+            Toast.makeText(getApplicationContext(), "Moving to Join Game Lobby", Toast.LENGTH_SHORT)
+                 .show();
             Intent intent = new Intent(getBaseContext(), JoinGameActivity.class);
             intent.putExtra("name", name);
             startActivity(intent);

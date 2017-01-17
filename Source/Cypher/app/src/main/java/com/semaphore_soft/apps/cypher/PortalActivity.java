@@ -40,7 +40,7 @@ public class PortalActivity extends ARActivity
 
         LayoutInflater inflater = LayoutInflater.from(getApplicationContext());
 
-        View overlay;
+        View   overlay;
         Button btnOverlay;
 
         switch (id)

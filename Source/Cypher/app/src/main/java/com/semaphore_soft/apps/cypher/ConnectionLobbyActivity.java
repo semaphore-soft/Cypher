@@ -19,8 +19,8 @@ import java.util.ArrayList;
 
 public class ConnectionLobbyActivity extends AppCompatActivity
 {
-    String name;
-    boolean host;
+    String              name;
+    boolean             host;
     ArrayList<PlayerID> playersList;
 
     private PlayerIDAdapter playerIDAdapter;
@@ -73,13 +73,16 @@ public class ConnectionLobbyActivity extends AppCompatActivity
                 }
             });
         }
-        else {
+        else
+        {
             btnStart.setEnabled(false);
         }
     }
 
-    private void addTestPlayers() {
-        for (int i = 0; i < 3; ++i) {
+    private void addTestPlayers()
+    {
+        for (int i = 0; i < 3; ++i)
+        {
             PlayerID playerID = new PlayerID();
             playerID._id = i;
             playerID.playerName = "player" + i;

@@ -16,9 +16,10 @@ import java.util.ArrayList;
 public class PlayerIDAdapter extends RecyclerView.Adapter<PlayerIDAdapter.PlayerIDViewHolder>
 {
     ConnectionLobbyActivity parent;
-    ArrayList<PlayerID> playersList;
+    ArrayList<PlayerID>     playersList;
 
-    PlayerIDAdapter(ConnectionLobbyActivity parent, ArrayList<PlayerID> playersList) {
+    PlayerIDAdapter(ConnectionLobbyActivity parent, ArrayList<PlayerID> playersList)
+    {
         this.parent = parent;
         this.playersList = playersList;
     }
@@ -26,7 +27,8 @@ public class PlayerIDAdapter extends RecyclerView.Adapter<PlayerIDAdapter.Player
     @Override
     public PlayerIDAdapter.PlayerIDViewHolder onCreateViewHolder(ViewGroup viewGroup, int viewType)
     {
-        View itemView = LayoutInflater.from(viewGroup.getContext()).inflate(R.layout.player_card, viewGroup, false);
+        View itemView = LayoutInflater.from(viewGroup.getContext())
+                                      .inflate(R.layout.player_card, viewGroup, false);
 
         return new PlayerIDViewHolder(itemView);
     }
@@ -45,7 +47,8 @@ public class PlayerIDAdapter extends RecyclerView.Adapter<PlayerIDAdapter.Player
         return playersList.size();
     }
 
-    public class PlayerIDViewHolder extends RecyclerView.ViewHolder {
+    public class PlayerIDViewHolder extends RecyclerView.ViewHolder
+    {
         protected CardView cardView;
         protected TextView txtPlayerName;
 

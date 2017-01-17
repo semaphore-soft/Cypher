@@ -19,7 +19,8 @@ public class GameIDAdapter extends RecyclerView.Adapter<GameIDAdapter.GameIDView
     JoinGameActivity  parent;
     ArrayList<GameID> gamesList;
 
-    GameIDAdapter(JoinGameActivity parent, ArrayList<GameID> gamesList) {
+    GameIDAdapter(JoinGameActivity parent, ArrayList<GameID> gamesList)
+    {
         this.parent = parent;
         this.gamesList = gamesList;
     }
@@ -27,7 +28,8 @@ public class GameIDAdapter extends RecyclerView.Adapter<GameIDAdapter.GameIDView
     @Override
     public GameIDViewHolder onCreateViewHolder(ViewGroup viewGroup, int viewType)
     {
-        View itemView = LayoutInflater.from(viewGroup.getContext()).inflate(R.layout.game_card, viewGroup, false);
+        View itemView = LayoutInflater.from(viewGroup.getContext())
+                                      .inflate(R.layout.game_card, viewGroup, false);
 
         return new GameIDViewHolder(itemView);
     }
@@ -54,7 +56,8 @@ public class GameIDAdapter extends RecyclerView.Adapter<GameIDAdapter.GameIDView
         gamesList.add(gameID);
     }*/
 
-    public class GameIDViewHolder extends RecyclerView.ViewHolder {
+    public class GameIDViewHolder extends RecyclerView.ViewHolder
+    {
         protected CardView cardView;
         protected TextView txtGameName;
 
@@ -66,17 +69,20 @@ public class GameIDAdapter extends RecyclerView.Adapter<GameIDAdapter.GameIDView
         }
     }
 
-    private class GameIDClickListener implements View.OnClickListener {
+    private class GameIDClickListener implements View.OnClickListener
+    {
         GameID gameID;
 
-        GameIDClickListener(GameID gameID) {
+        GameIDClickListener(GameID gameID)
+        {
             this.gameID = gameID;
         }
 
         @Override
         public void onClick(View v)
         {
-            Toast.makeText(parent, "Game " + gameID.gameName + " selected", Toast.LENGTH_SHORT).show();
+            Toast.makeText(parent, "Game " + gameID.gameName + " selected", Toast.LENGTH_SHORT)
+                 .show();
             parent.joinGame(gameID);
         }
     }

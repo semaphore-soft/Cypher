@@ -57,8 +57,9 @@ class PortalRenderer extends ARRendererGLES20
         cube.setShaderProgram(cubeShaderProgram);
 
         ShaderProgram triangleShaderProgram =
-                new SimpleShaderProgram(3, new SimpleVertexShader(), new SimpleFragmentShader());
-        if (arTriangleGLES20 == null) {
+            new SimpleShaderProgram(3, new SimpleVertexShader(), new SimpleFragmentShader());
+        if (arTriangleGLES20 == null)
+        {
             arTriangleGLES20 = new ARTriangleGLES20(40.0f, 0.0f, 0.0f, 0.0f);
             arTriangleGLES20.setCharacter(character);
         }
@@ -69,7 +70,8 @@ class PortalRenderer extends ARRendererGLES20
      * Override the draw function from ARRenderer.
      */
     @Override
-    public void draw(GL10 gl) {
+    public void draw(GL10 gl)
+    {
 
         gl.glClear(GL10.GL_COLOR_BUFFER_BIT | GL10.GL_DEPTH_BUFFER_BIT);
 
@@ -84,14 +86,14 @@ class PortalRenderer extends ARRendererGLES20
         gl.glMatrixMode(GL10.GL_MODELVIEW);
 
         if (ARToolKit.getInstance().queryMarkerVisible(mark0) &&
-                ARToolKit.getInstance().queryMarkerVisible(mark1) &&
-                ARToolKit.getInstance().queryMarkerVisible(mark2))
+            ARToolKit.getInstance().queryMarkerVisible(mark1) &&
+            ARToolKit.getInstance().queryMarkerVisible(mark2))
         {
             float[] mark0TransInfo = ARToolKit.getInstance().queryMarkerTransformation(mark0);
             float[] mark0PosInfo =
-                    {mark0TransInfo[mark0TransInfo.length - 4], mark0TransInfo[mark0TransInfo.length -
-                            3], mark0TransInfo[
-                            mark0TransInfo.length - 2]};
+                {mark0TransInfo[mark0TransInfo.length - 4], mark0TransInfo[mark0TransInfo.length -
+                                                                           3], mark0TransInfo[
+                    mark0TransInfo.length - 2]};
 
             System.out.println("begin mark0 pos matrix");
             for (float x : mark0PosInfo)
@@ -102,9 +104,9 @@ class PortalRenderer extends ARRendererGLES20
 
             float[] mark1TransInfo = ARToolKit.getInstance().queryMarkerTransformation(mark1);
             float[] mark1PosInfo =
-                    {mark1TransInfo[mark1TransInfo.length - 4], mark1TransInfo[mark1TransInfo.length -
-                            3], mark1TransInfo[
-                            mark1TransInfo.length - 2]};
+                {mark1TransInfo[mark1TransInfo.length - 4], mark1TransInfo[mark1TransInfo.length -
+                                                                           3], mark1TransInfo[
+                    mark1TransInfo.length - 2]};
 
             System.out.println("begin mark1 pos matrix");
             for (float x : mark1PosInfo)
@@ -115,9 +117,9 @@ class PortalRenderer extends ARRendererGLES20
 
             float[] mark2TransInfo = ARToolKit.getInstance().queryMarkerTransformation(mark2);
             float[] mark2PosInfo =
-                    {mark2TransInfo[mark2TransInfo.length - 4], mark2TransInfo[mark2TransInfo.length -
-                            3], mark2TransInfo[
-                            mark2TransInfo.length - 2]};
+                {mark2TransInfo[mark2TransInfo.length - 4], mark2TransInfo[mark2TransInfo.length -
+                                                                           3], mark2TransInfo[
+                    mark2TransInfo.length - 2]};
 
             System.out.println("begin mark2 pos matrix");
             for (float x : mark2PosInfo)
@@ -127,12 +129,12 @@ class PortalRenderer extends ARRendererGLES20
             System.out.println("end mark2 pos matrix");
 
             double distanceMark0Mark1 = Math.sqrt(Math.pow(mark0PosInfo[0] - mark1PosInfo[0], 2) +
-                    Math.pow(mark0PosInfo[1] - mark1PosInfo[1], 2) +
-                    Math.pow(mark0PosInfo[2] - mark1PosInfo[2], 2));
+                                                  Math.pow(mark0PosInfo[1] - mark1PosInfo[1], 2) +
+                                                  Math.pow(mark0PosInfo[2] - mark1PosInfo[2], 2));
 
             double distanceMark0Mark2 = Math.sqrt(Math.pow(mark0PosInfo[0] - mark2PosInfo[0], 2) +
-                    Math.pow(mark0PosInfo[1] - mark2PosInfo[1], 2) +
-                    Math.pow(mark0PosInfo[2] - mark2PosInfo[2], 2));
+                                                  Math.pow(mark0PosInfo[1] - mark2PosInfo[1], 2) +
+                                                  Math.pow(mark0PosInfo[2] - mark2PosInfo[2], 2));
 
             System.out.println("distance between mark0 and mark1 is " + distanceMark0Mark1);
             System.out.println("distance between mark0 and mark2 is " + distanceMark0Mark2);
@@ -244,9 +246,11 @@ class PortalRenderer extends ARRendererGLES20
         }
     }
 
-    public void setCharacter(int character) {
+    public void setCharacter(int character)
+    {
         this.character = character;
-        if (arTriangleGLES20 != null) {
+        if (arTriangleGLES20 != null)
+        {
             arTriangleGLES20.setCharacter(character);
         }
     }

@@ -17,7 +17,7 @@ import java.util.ArrayList;
 
 public class JoinGameActivity extends AppCompatActivity
 {
-    String name;
+    String            name;
     ArrayList<GameID> gamesList;
 
     private GameIDAdapter gameIDAdapter;
@@ -64,15 +64,19 @@ public class JoinGameActivity extends AppCompatActivity
         return gamesList.get(position);
     }*/
 
-    public void joinGame(GameID gameID) {
-        Toast.makeText(getApplicationContext(), "Moving to Connection Lobby", Toast.LENGTH_SHORT).show();
+    public void joinGame(GameID gameID)
+    {
+        Toast.makeText(getApplicationContext(), "Moving to Connection Lobby", Toast.LENGTH_SHORT)
+             .show();
         Intent intent = new Intent(getBaseContext(), ConnectionLobbyActivity.class);
         intent.putExtra("name", name);
         startActivity(intent);
     }
 
-    private void addTestGames() {
-        for (int i = 0; i < 3; ++i) {
+    private void addTestGames()
+    {
+        for (int i = 0; i < 3; ++i)
+        {
             GameID gameID = new GameID();
             gameID._id = i;
             gameID.gameName = "game" + i;

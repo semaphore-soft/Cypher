@@ -6,6 +6,6 @@ package com.semaphore_soft.apps.cypher;
 
 public class PlayerID
 {
-    protected int _id;
+    protected int    _id;
     protected String playerName;
 }
