@@ -282,9 +282,8 @@ public class MainActivity extends AppCompatActivity implements WiFiServicesList.
                 // Command successful. Code not needed here
                 Log.d("add", "Added local service");
                 Toast.makeText(getApplication(), "Added local service", Toast.LENGTH_SHORT).show();
-                // TODO add thread to call discoverPeers
-//                mServiceBroadcastingHandler
-//                        .postDelayed(mServiceBroadcastingRunnable, SERVICE_BROADCASTING_INTERVAL);
+                mServiceBroadcastingHandler
+                        .postDelayed(mServiceBroadcastingRunnable, SERVICE_BROADCASTING_INTERVAL);
 
             }
 
@@ -299,7 +298,6 @@ public class MainActivity extends AppCompatActivity implements WiFiServicesList.
         });
     }
 
-    // TODO
     // Force rebroadcast of service information
     private Runnable mServiceBroadcastingRunnable = new Runnable() {
         @Override
@@ -364,7 +362,11 @@ public class MainActivity extends AppCompatActivity implements WiFiServicesList.
                         Toast.makeText(getApplication(), "Service available " + instanceName, Toast.LENGTH_SHORT).show();
                     } else
                     {
-                        Toast.makeText(getApplication(), "Service fragment is null", Toast.LENGTH_SHORT).show();
+                        Log.d("TAG", "fragment is null, retrying");
+                        // Create new service fragment and try again
+                        WiFiServicesList servicesList = new WiFiServicesList();
+                        getFragmentManager().beginTransaction().add(R.id.servicesRoot, servicesList, "services").commit();
+                        discoverService();
                     }
                 }
             }
@@ -422,6 +424,15 @@ public class MainActivity extends AppCompatActivity implements WiFiServicesList.
             }
         });
     }
+
+    private Runnable mServiceDiscoveringRunnable = new Runnable()
+    {
+        @Override
+        public void run()
+        {
+
+        }
+    };
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu)
