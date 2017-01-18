@@ -9,7 +9,7 @@
             android:layout_height="wrap_content"
             android:layout_alignParentBottom="true"
             android:layout_alignParentStart="true"
-            android:id="@+id/btnOverlay"/>
+            android:id="@+id/btnSelect"/>
 
     <TextView
             android:text="Select a marker to use for your character"

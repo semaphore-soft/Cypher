@@ -9,7 +9,7 @@
             android:layout_height="wrap_content"
             android:layout_alignParentBottom="true"
             android:layout_alignParentEnd="true"
-            android:id="@+id/btnOverlay"/>
+            android:id="@+id/btnEndTurn"/>
 
     <TextView
             android:text="Player marker: "
@@ -26,5 +26,13 @@
             android:layout_below="@+id/txtStatus"
             android:layout_alignParentStart="true"
             android:id="@+id/txtStatus2"/>
+
+    <Button
+            android:text="Reselect"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:id="@+id/btnReselect"
+            android:layout_alignParentBottom="true"
+            android:layout_alignParentStart="true"/>
 
 </RelativeLayout>

@@ -403,6 +403,7 @@ class PortalRenderer extends ARRendererGLES20
     public void setPlayerMarkerID(int playerMarkerID)
     {
         this.playerMarkerID = playerMarkerID;
+        playerRoomID = -1; //reset player room for good measure
     }
 
     public void setPlayerRoomID(int playerRoomID)

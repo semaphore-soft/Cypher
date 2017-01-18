@@ -9,7 +9,6 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import org.artoolkit.ar.base.ARActivity;
-import org.artoolkit.ar.base.ARToolKit;
 import org.artoolkit.ar.base.rendering.ARRenderer;
 
 import java.util.ArrayList;
@@ -53,15 +52,15 @@ public class PortalActivity extends ARActivity
         LayoutInflater inflater = LayoutInflater.from(getApplicationContext());
 
         View   overlay;
-        Button btnOverlay;
 
         switch (id)
         {
             case 1:
+            {
                 overlay = inflater.inflate(R.layout.overlay_1, null, false);
                 overlay_layout.addView(overlay);
-                btnOverlay = (Button) findViewById(R.id.btnOverlay);
-                btnOverlay.setOnClickListener(new View.OnClickListener()
+                Button btnSelect = (Button) findViewById(R.id.btnSelect);
+                btnSelect.setOnClickListener(new View.OnClickListener()
                 {
                     @Override
                     public void onClick(View v)
@@ -85,13 +84,39 @@ public class PortalActivity extends ARActivity
                     }
                 });
                 break;
+            }
             case 2:
+            {
                 overlay = inflater.inflate(R.layout.overlay_2, null, false);
                 overlay_layout.addView(overlay);
                 TextView txtStatus = (TextView) findViewById(R.id.txtStatus);
                 txtStatus.setText("Player marker: " + playerMarkerID);
-                btnOverlay = (Button) findViewById(R.id.btnOverlay);
-                btnOverlay.setOnClickListener(new View.OnClickListener()
+                Button btnReselect = (Button) findViewById(R.id.btnReselect);
+                btnReselect.setOnClickListener(new View.OnClickListener()
+                {
+                    @Override
+                    public void onClick(View v)
+                    {
+                        if (setPlayerMarker())
+                        {
+                            renderer.setPlayerMarkerID(playerMarkerID);
+                            Toast.makeText(getApplicationContext(),
+                                           "Marker selected",
+                                           Toast.LENGTH_SHORT)
+                                 .show();
+                            setOverlay(2);
+                        }
+                        else
+                        {
+                            Toast.makeText(getApplicationContext(),
+                                           "No marker found",
+                                           Toast.LENGTH_SHORT)
+                                 .show();
+                        }
+                    }
+                });
+                Button btnEndTurn = (Button) findViewById(R.id.btnEndTurn);
+                btnEndTurn.setOnClickListener(new View.OnClickListener()
                 {
                     @Override
                     public void onClick(View v)
@@ -117,6 +142,7 @@ public class PortalActivity extends ARActivity
                     }
                 });
                 break;
+            }
             default:
                 break;
         }
