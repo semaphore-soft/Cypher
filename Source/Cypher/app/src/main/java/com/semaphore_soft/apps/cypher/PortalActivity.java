@@ -5,9 +5,14 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.Button;
 import android.widget.FrameLayout;
+import android.widget.TextView;
+import android.widget.Toast;
 
 import org.artoolkit.ar.base.ARActivity;
+import org.artoolkit.ar.base.ARToolKit;
 import org.artoolkit.ar.base.rendering.ARRenderer;
+
+import java.util.ArrayList;
 
 /**
  * Created by rickm on 11/9/2016.
@@ -15,10 +20,14 @@ import org.artoolkit.ar.base.rendering.ARRenderer;
 
 public class PortalActivity extends ARActivity
 {
-
     PortalRenderer renderer;
     int            overlayID;
     FrameLayout    overlay_layout;
+
+    private ArrayList<Integer> markers;
+    private int playerMarkerID = -1;
+
+    //GameMaster gameMaster;
 
     @Override
     public void onCreate(Bundle savedInstanceState)
@@ -32,6 +41,9 @@ public class PortalActivity extends ARActivity
 
         renderer = new PortalRenderer();
         renderer.setCharacter(getIntent().getExtras().getInt("character"));
+
+        //gameMaster = new GameMaster();
+        //gameMaster.start();
     }
 
     private void setOverlay(int id)
@@ -54,20 +66,52 @@ public class PortalActivity extends ARActivity
                     @Override
                     public void onClick(View v)
                     {
-                        setOverlay(2);
+                        if (setPlayerMarker())
+                        {
+                            Toast.makeText(getApplicationContext(),
+                                           "Marker selected",
+                                           Toast.LENGTH_SHORT)
+                                 .show();
+                            setOverlay(2);
+                        }
+                        else
+                        {
+                            Toast.makeText(getApplicationContext(),
+                                           "No marker found",
+                                           Toast.LENGTH_SHORT)
+                                 .show();
+                        }
                     }
                 });
                 break;
             case 2:
                 overlay = inflater.inflate(R.layout.overlay_2, null, false);
                 overlay_layout.addView(overlay);
+                TextView txtStatus = (TextView) findViewById(R.id.txtStatus);
+                txtStatus.setText("Player marker: " + playerMarkerID);
                 btnOverlay = (Button) findViewById(R.id.btnOverlay);
                 btnOverlay.setOnClickListener(new View.OnClickListener()
                 {
                     @Override
                     public void onClick(View v)
                     {
-                        setOverlay(1);
+                        int nearestRoomID = renderer.getNearestMarker(playerMarkerID);
+                        if (nearestRoomID > -1)
+                        {
+                            TextView txtStatus2 = (TextView) findViewById(R.id.txtStatus2);
+                            txtStatus2.setText("Player is in room: " + nearestRoomID);
+                            Toast.makeText(getApplicationContext(),
+                                           "Updated player room",
+                                           Toast.LENGTH_SHORT)
+                                 .show();
+                        }
+                        else
+                        {
+                            Toast.makeText(getApplicationContext(),
+                                           "Couldn't find room",
+                                           Toast.LENGTH_SHORT)
+                                 .show();
+                        }
                     }
                 });
                 break;
@@ -89,4 +133,35 @@ public class PortalActivity extends ARActivity
     {
         return (FrameLayout) this.findViewById(R.id.portal_frame);
     }
+
+    private boolean setPlayerMarker()
+    {
+        boolean ret = false;
+
+        playerMarkerID = renderer.getFirstMarker();
+
+        ret = (playerMarkerID > -1);
+
+        return ret;
+    }
+
+    /*private class GameMaster extends Thread {
+        boolean running = false;
+        int state = 0;
+
+        GameMaster() {
+            running = true;
+        }
+
+        public void run() {
+            while (running) {
+                switch (state) {
+                    case 0:
+                        break;
+                    default:
+                        break;
+                }
+            }
+        }
+    }*/
 }

@@ -4,11 +4,19 @@
                 android:layout_height="match_parent">
 
     <Button
-            android:text="Button"
+            android:text="Select"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_alignParentBottom="true"
             android:layout_alignParentStart="true"
             android:id="@+id/btnOverlay"/>
+
+    <TextView
+            android:text="Select a marker to use for your character"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentTop="true"
+            android:layout_alignParentStart="true"
+            android:id="@+id/txtInitStatus"/>
 
 </RelativeLayout>

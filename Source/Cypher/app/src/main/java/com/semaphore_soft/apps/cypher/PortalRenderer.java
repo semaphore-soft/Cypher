@@ -11,6 +11,8 @@ import org.artoolkit.ar.base.rendering.gles20.ARRendererGLES20;
 import org.artoolkit.ar.base.rendering.gles20.CubeGLES20;
 import org.artoolkit.ar.base.rendering.gles20.ShaderProgram;
 
+import java.util.ArrayList;
+
 import javax.microedition.khronos.egl.EGLConfig;
 import javax.microedition.khronos.opengles.GL10;
 
@@ -48,6 +50,8 @@ class PortalRenderer extends ARRendererGLES20
     private int mark18 = -1;
     private int mark19 = -1;
 
+    private ArrayList<Integer> markers;
+
     private CubeGLES20       cube;
     private ARTriangleGLES20 arTriangleGLES20;
 
@@ -58,34 +62,40 @@ class PortalRenderer extends ARRendererGLES20
         mark1 = ARToolKit.getInstance().addMarker("single;Data/1.patt;80");
         mark2 = ARToolKit.getInstance().addMarker("single;Data/2.patt;80");*/
 
-        mark00 = ARToolKit.getInstance().addMarker("single;Data/00.patt;80");
-        mark01 = ARToolKit.getInstance().addMarker("single;Data/01.patt;80");
-        mark02 = ARToolKit.getInstance().addMarker("single;Data/02.patt;80");
-        mark03 = ARToolKit.getInstance().addMarker("single;Data/03.patt;80");
-        mark04 = ARToolKit.getInstance().addMarker("single;Data/04.patt;80");
-        mark05 = ARToolKit.getInstance().addMarker("single;Data/05.patt;80");
-        mark06 = ARToolKit.getInstance().addMarker("single;Data/06.patt;80");
-        mark07 = ARToolKit.getInstance().addMarker("single;Data/07.patt;80");
-        mark08 = ARToolKit.getInstance().addMarker("single;Data/08.patt;80");
-        mark09 = ARToolKit.getInstance().addMarker("single;Data/09.patt;80");
-        mark10 = ARToolKit.getInstance().addMarker("single;Data/10.patt;80");
-        mark11 = ARToolKit.getInstance().addMarker("single;Data/11.patt;80");
-        mark12 = ARToolKit.getInstance().addMarker("single;Data/12.patt;80");
-        mark13 = ARToolKit.getInstance().addMarker("single;Data/13.patt;80");
-        mark14 = ARToolKit.getInstance().addMarker("single;Data/14.patt;80");
-        mark15 = ARToolKit.getInstance().addMarker("single;Data/15.patt;80");
-        mark16 = ARToolKit.getInstance().addMarker("single;Data/16.patt;80");
-        mark17 = ARToolKit.getInstance().addMarker("single;Data/17.patt;80");
-        mark18 = ARToolKit.getInstance().addMarker("single;Data/18.patt;80");
-        mark19 = ARToolKit.getInstance().addMarker("single;Data/19.patt;80");
+        markers = new ArrayList<>();
 
-        if (//mark0 < 0 || mark1 < 0 || mark2 < 0 ||
-            mark00 < 0 || mark01 < 0 || mark02 < 0 || mark03 < 0 || mark04 < 0 || mark06 < 0 ||
-            mark07 < 0 || mark08 < 0 || mark09 < 0 || mark10 < 0 || mark11 < 0 || mark12 < 0 ||
-            mark13 < 0 || mark14 < 0 || mark15 < 0 || mark16 < 0 || mark17 < 0 || mark18 < 0 ||
-            mark19 < 0)
+        markers.add(ARToolKit.getInstance().addMarker("single;Data/00.patt;80"));
+        markers.add(ARToolKit.getInstance().addMarker("single;Data/01.patt;80"));
+        markers.add(ARToolKit.getInstance().addMarker("single;Data/02.patt;80"));
+        markers.add(ARToolKit.getInstance().addMarker("single;Data/03.patt;80"));
+        markers.add(ARToolKit.getInstance().addMarker("single;Data/04.patt;80"));
+        markers.add(ARToolKit.getInstance().addMarker("single;Data/05.patt;80"));
+        markers.add(ARToolKit.getInstance().addMarker("single;Data/06.patt;80"));
+        markers.add(ARToolKit.getInstance().addMarker("single;Data/07.patt;80"));
+        markers.add(ARToolKit.getInstance().addMarker("single;Data/08.patt;80"));
+        markers.add(ARToolKit.getInstance().addMarker("single;Data/09.patt;80"));
+        markers.add(ARToolKit.getInstance().addMarker("single;Data/10.patt;80"));
+        markers.add(ARToolKit.getInstance().addMarker("single;Data/11.patt;80"));
+        markers.add(ARToolKit.getInstance().addMarker("single;Data/12.patt;80"));
+        markers.add(ARToolKit.getInstance().addMarker("single;Data/13.patt;80"));
+        markers.add(ARToolKit.getInstance().addMarker("single;Data/14.patt;80"));
+        markers.add(ARToolKit.getInstance().addMarker("single;Data/15.patt;80"));
+        markers.add(ARToolKit.getInstance().addMarker("single;Data/16.patt;80"));
+        markers.add(ARToolKit.getInstance().addMarker("single;Data/17.patt;80"));
+        markers.add(ARToolKit.getInstance().addMarker("single;Data/18.patt;80"));
+        markers.add(ARToolKit.getInstance().addMarker("single;Data/19.patt;80"));
+
+        /*if (mark0 < 0 || mark1 < 0 || mark2 < 0)
         {
             return false;
+        }*/
+
+        for (Integer id : markers)
+        {
+            if (id < 0)
+            {
+                return false;
+            }
         }
 
         return true;
@@ -225,104 +235,15 @@ class PortalRenderer extends ARRendererGLES20
                                   ARToolKit.getInstance().queryMarkerTransformation(mark0));
         }*/
 
-        if (ARToolKit.getInstance().queryMarkerVisible(mark00))
+        if (markers != null)
         {
-            System.out.println("marker 00 visible");
-        }
-
-        if (ARToolKit.getInstance().queryMarkerVisible(mark01))
-        {
-            System.out.println("marker 01 visible");
-        }
-
-        if (ARToolKit.getInstance().queryMarkerVisible(mark02))
-        {
-            System.out.println("marker 02 visible");
-        }
-
-        if (ARToolKit.getInstance().queryMarkerVisible(mark03))
-        {
-            System.out.println("marker 03 visible");
-        }
-
-        if (ARToolKit.getInstance().queryMarkerVisible(mark04))
-        {
-            System.out.println("marker 04 visible");
-        }
-
-        if (ARToolKit.getInstance().queryMarkerVisible(mark05))
-        {
-            System.out.println("marker 05 visible");
-        }
-
-        if (ARToolKit.getInstance().queryMarkerVisible(mark06))
-        {
-            System.out.println("marker 06 visible");
-        }
-
-        if (ARToolKit.getInstance().queryMarkerVisible(mark07))
-        {
-            System.out.println("marker 07 visible");
-        }
-
-        if (ARToolKit.getInstance().queryMarkerVisible(mark08))
-        {
-            System.out.println("marker 08 visible");
-        }
-
-        if (ARToolKit.getInstance().queryMarkerVisible(mark09))
-        {
-            System.out.println("marker 09 visible");
-        }
-
-        if (ARToolKit.getInstance().queryMarkerVisible(mark10))
-        {
-            System.out.println("marker 10 visible");
-        }
-
-        if (ARToolKit.getInstance().queryMarkerVisible(mark11))
-        {
-            System.out.println("marker 11 visible");
-        }
-
-        if (ARToolKit.getInstance().queryMarkerVisible(mark12))
-        {
-            System.out.println("marker 12 visible");
-        }
-
-        if (ARToolKit.getInstance().queryMarkerVisible(mark13))
-        {
-            System.out.println("marker 13 visible");
-        }
-
-        if (ARToolKit.getInstance().queryMarkerVisible(mark14))
-        {
-            System.out.println("marker 14 visible");
-        }
-
-        if (ARToolKit.getInstance().queryMarkerVisible(mark15))
-        {
-            System.out.println("marker 15 visible");
-        }
-
-        if (ARToolKit.getInstance().queryMarkerVisible(mark16))
-        {
-            System.out.println("marker 16 visible");
-        }
-
-        if (ARToolKit.getInstance().queryMarkerVisible(mark17))
-        {
-            System.out.println("marker 17 visible");
-        }
-
-        if (ARToolKit.getInstance().queryMarkerVisible(mark18))
-        {
-            System.out.println("marker 18 visible");
-        }
-
-        if (ARToolKit.getInstance().queryMarkerVisible(mark19))
-        {
-            System.out.println("marker 19 visible");
+            for (Integer id : markers)
+            {
+                if (ARToolKit.getInstance().queryMarkerVisible(id))
+                {
+                    System.out.println("marker " + id + " visible");
+                }
+            }
         }
 
         //TODO make marker generic
@@ -394,6 +315,63 @@ class PortalRenderer extends ARRendererGLES20
             }
         }
         */
+    }
+
+    public int getFirstMarker()
+    {
+        for (Integer id : markers)
+        {
+            if (ARToolKit.getInstance().queryMarkerVisible(id))
+            {
+                return id;
+            }
+        }
+
+        return -1;
+    }
+
+    public int getNearestMarker(int mark0)
+    {
+        int    nearest          = -1;
+        double shortestDistance = -1;
+
+        if (ARToolKit.getInstance().queryMarkerVisible(mark0))
+        {
+            for (Integer mark1 : markers)
+            {
+                if (mark0 != mark1 && ARToolKit.getInstance().queryMarkerVisible(mark1))
+                {
+                    float[] mark0TransInfo =
+                        ARToolKit.getInstance().queryMarkerTransformation(mark0);
+                    float[] mark0PosInfo =
+                        {mark0TransInfo[mark0TransInfo.length - 4], mark0TransInfo[
+                            mark0TransInfo.length -
+                            3], mark0TransInfo[
+                            mark0TransInfo.length - 2]};
+
+                    float[] mark1TransInfo =
+                        ARToolKit.getInstance().queryMarkerTransformation(mark1);
+                    float[] mark1PosInfo =
+                        {mark1TransInfo[mark1TransInfo.length - 4], mark1TransInfo[
+                            mark1TransInfo.length -
+                            3], mark1TransInfo[
+                            mark1TransInfo.length - 2]};
+
+                    double thisDistance =
+                        Math.sqrt(Math.pow(mark0PosInfo[0] - mark1PosInfo[0], 2) +
+                                  Math.pow(mark0PosInfo[1] - mark1PosInfo[1], 2) +
+                                  Math.pow(mark0PosInfo[2] - mark1PosInfo[2], 2));
+
+                    if (thisDistance < shortestDistance || shortestDistance < 0)
+                    {
+                        nearest = mark1;
+                        shortestDistance = thisDistance;
+                    }
+                }
+            }
+        }
+
+        return nearest;
     }
 
     public void setCharacter(int character)
