@@ -41,6 +41,7 @@ public class MainActivity extends AppCompatActivity implements WiFiServicesList.
     public final static int SERVER_PORT = 58008;
     // rebroadcast every 2 minutes
     private static final long SERVICE_BROADCASTING_INTERVAL = 120000;
+    private static final long SERVICE_DISCOVERING_INTERVAL = 120000;
 
     private WifiP2pManager mManager;
     private WifiP2pManager.Channel mChannel;
@@ -48,6 +49,7 @@ public class MainActivity extends AppCompatActivity implements WiFiServicesList.
     private IntentFilter mIntentFiler = new IntentFilter();
     private WifiP2pDnsSdServiceRequest serviceRequest;
     private Handler mServiceBroadcastingHandler = new Handler();
+    private Handler mServiceDiscoveringHandler = new Handler();
 
     public ProgressBar progressBar;
     private int hostWillingness;
@@ -97,7 +99,8 @@ public class MainActivity extends AppCompatActivity implements WiFiServicesList.
             {
                 hostWillingness = 0;
                 mServiceBroadcastingHandler.postDelayed(mServiceBroadcastingRunnable, SERVICE_BROADCASTING_INTERVAL);
-                discoverService();
+                setupService();
+                startDiscovery();
             }
         });
 
@@ -109,7 +112,8 @@ public class MainActivity extends AppCompatActivity implements WiFiServicesList.
             {
                 hostWillingness = 15;
                 mServiceBroadcastingHandler.postDelayed(mServiceBroadcastingRunnable, SERVICE_BROADCASTING_INTERVAL);
-                discoverService();
+                setupService();
+                startDiscovery();
             }
         });
 
@@ -302,7 +306,7 @@ public class MainActivity extends AppCompatActivity implements WiFiServicesList.
     private Runnable mServiceBroadcastingRunnable = new Runnable() {
         @Override
         public void run() {
-            Log.d("Thread", "Broadcasting");
+            Log.d("Thread", "Broadcasting peers");
             mManager.discoverPeers(mChannel, new WifiP2pManager.ActionListener() {
                 @Override
                 public void onSuccess() {
@@ -317,8 +321,9 @@ public class MainActivity extends AppCompatActivity implements WiFiServicesList.
         }
     };
 
-    private void discoverService()
+    private void setupService()
     {
+        // TODO Check for duplicates/Clear list when adding new devices
         WifiP2pManager.DnsSdTxtRecordListener txtRecordListener = new WifiP2pManager.DnsSdTxtRecordListener()
         {
             @Override
@@ -366,14 +371,17 @@ public class MainActivity extends AppCompatActivity implements WiFiServicesList.
                         // Create new service fragment and try again
                         WiFiServicesList servicesList = new WiFiServicesList();
                         getFragmentManager().beginTransaction().add(R.id.servicesRoot, servicesList, "services").commit();
-                        discoverService();
+                        setupService();
                     }
                 }
             }
         };
 
         mManager.setDnsSdResponseListeners(mChannel, servListener, txtRecordListener);
+    }
 
+    private void startDiscovery()
+    {
         serviceRequest = WifiP2pDnsSdServiceRequest.newInstance();
         mManager.addServiceRequest(mChannel, serviceRequest, new WifiP2pManager.ActionListener()
         {
@@ -394,6 +402,8 @@ public class MainActivity extends AppCompatActivity implements WiFiServicesList.
                         // Display progress bar(circle) while waiting for broadcast receiver
                         progressBar.setVisibility(View.VISIBLE);
                         // TODO add service discovery thread
+                        mServiceDiscoveringHandler
+                                .postDelayed(mServiceDiscoveringRunnable, SERVICE_DISCOVERING_INTERVAL);
                     }
 
                     @Override
@@ -430,7 +440,7 @@ public class MainActivity extends AppCompatActivity implements WiFiServicesList.
         @Override
         public void run()
         {
-
+            startDiscovery();
         }
     };
 
