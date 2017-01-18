@@ -52,8 +52,12 @@ class PortalRenderer extends ARRendererGLES20
 
     private ArrayList<Integer> markers;
 
+    private int playerMarkerID = -1;
+    private int playerRoomID   = -1;
+
     private CubeGLES20       cube;
     private ARTriangleGLES20 arTriangleGLES20;
+    private ARSquareGLES20   arSquareGLES20;
 
     @Override
     public boolean configureARScene()
@@ -121,6 +125,15 @@ class PortalRenderer extends ARRendererGLES20
             arTriangleGLES20.setCharacter(character);
         }
         arTriangleGLES20.setShaderProgram(triangleShaderProgram);
+
+        ShaderProgram squareShaderProgram =
+            new SimpleShaderProgram(6, new SimpleVertexShader(), new SimpleFragmentShader());
+        if (arSquareGLES20 == null)
+        {
+            arSquareGLES20 = new ARSquareGLES20(40.0f, 0.0f, 0.0f, 0.0f);
+            arSquareGLES20.setCharacter(character);
+        }
+        arSquareGLES20.setShaderProgram(squareShaderProgram);
     }
 
     /**
@@ -244,6 +257,19 @@ class PortalRenderer extends ARRendererGLES20
                     System.out.println("marker " + id + " visible");
                 }
             }
+        }
+
+        if (playerMarkerID > -1 && ARToolKit.getInstance().queryMarkerVisible(playerMarkerID))
+        {
+            arTriangleGLES20.draw(projectionMatrix,
+                                  ARToolKit.getInstance()
+                                           .queryMarkerTransformation(playerMarkerID));
+        }
+
+        if (playerRoomID > -1 && ARToolKit.getInstance().queryMarkerVisible(playerRoomID))
+        {
+            arSquareGLES20.draw(projectionMatrix,
+                                ARToolKit.getInstance().queryMarkerTransformation(playerRoomID));
         }
 
         //TODO make marker generic
@@ -372,6 +398,16 @@ class PortalRenderer extends ARRendererGLES20
         }
 
         return nearest;
+    }
+
+    public void setPlayerMarkerID(int playerMarkerID)
+    {
+        this.playerMarkerID = playerMarkerID;
+    }
+
+    public void setPlayerRoomID(int playerRoomID)
+    {
+        this.playerRoomID = playerRoomID;
     }
 
     public void setCharacter(int character)

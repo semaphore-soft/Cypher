@@ -68,6 +68,7 @@ public class PortalActivity extends ARActivity
                     {
                         if (setPlayerMarker())
                         {
+                            renderer.setPlayerMarkerID(playerMarkerID);
                             Toast.makeText(getApplicationContext(),
                                            "Marker selected",
                                            Toast.LENGTH_SHORT)
@@ -98,6 +99,7 @@ public class PortalActivity extends ARActivity
                         int nearestRoomID = renderer.getNearestMarker(playerMarkerID);
                         if (nearestRoomID > -1)
                         {
+                            renderer.setPlayerRoomID(nearestRoomID);
                             TextView txtStatus2 = (TextView) findViewById(R.id.txtStatus2);
                             txtStatus2.setText("Player is in room: " + nearestRoomID);
                             Toast.makeText(getApplicationContext(),
