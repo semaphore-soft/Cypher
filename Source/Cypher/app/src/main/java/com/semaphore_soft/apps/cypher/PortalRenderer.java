@@ -29,35 +29,20 @@ class PortalRenderer extends ARRendererGLES20
     private int mark1 = -1;
     private int mark2 = -1;*/
 
-    private int mark00 = -1;
-    private int mark01 = -1;
-    private int mark02 = -1;
-    private int mark03 = -1;
-    private int mark04 = -1;
-    private int mark05 = -1;
-    private int mark06 = -1;
-    private int mark07 = -1;
-    private int mark08 = -1;
-    private int mark09 = -1;
-    private int mark10 = -1;
-    private int mark11 = -1;
-    private int mark12 = -1;
-    private int mark13 = -1;
-    private int mark14 = -1;
-    private int mark15 = -1;
-    private int mark16 = -1;
-    private int mark17 = -1;
-    private int mark18 = -1;
-    private int mark19 = -1;
-
     private ArrayList<Integer> markers;
 
     private int playerMarkerID = -1;
     private int playerRoomID   = -1;
 
+    private int[] characterMarkerIDs;
+    private int[] characterRoomIDs;
+
     private CubeGLES20       cube;
     private ARTriangleGLES20 arTriangleGLES20;
     private ARSquareGLES20   arSquareGLES20;
+
+    private ArrayList<ARTriangleGLES20> characterModels;
+    private ArrayList<ARSquareGLES20>   roomModels;
 
     @Override
     public boolean configureARScene()
@@ -102,6 +87,9 @@ class PortalRenderer extends ARRendererGLES20
             }
         }
 
+        characterMarkerIDs = new int[]{-1, -1, -1, -1};
+        characterRoomIDs = new int[]{-1, -1, -1, -1};
+
         return true;
     }
 
@@ -134,6 +122,30 @@ class PortalRenderer extends ARRendererGLES20
             arSquareGLES20.setCharacter(character);
         }
         arSquareGLES20.setShaderProgram(squareShaderProgram);
+
+        characterModels = new ArrayList<>();
+
+        for (int i = 0; i < 4; ++i)
+        {
+            ShaderProgram characterShaderProgram =
+                new SimpleShaderProgram(3, new SimpleVertexShader(), new SimpleFragmentShader());
+            ARTriangleGLES20 characterModel = new ARTriangleGLES20(40.0f, 0.0f, 0.0f, 0.0f);
+            characterModel.setCharacter(i);
+            characterModel.setShaderProgram(characterShaderProgram);
+            characterModels.add(characterModel);
+        }
+
+        roomModels = new ArrayList<>();
+
+        for (int i = 0; i < 4; ++i)
+        {
+            ShaderProgram roomShaderProgram =
+                new SimpleShaderProgram(6, new SimpleVertexShader(), new SimpleFragmentShader());
+            ARSquareGLES20 roomModel = new ARSquareGLES20(40.0f, 0.0f, 0.0f, 0.0f);
+            roomModel.setCharacter(i);
+            roomModel.setShaderProgram(roomShaderProgram);
+            roomModels.add(roomModel);
+        }
     }
 
     /**
@@ -259,7 +271,7 @@ class PortalRenderer extends ARRendererGLES20
             }
         }
 
-        if (playerMarkerID > -1 && ARToolKit.getInstance().queryMarkerVisible(playerMarkerID))
+        /*if (playerMarkerID > -1 && ARToolKit.getInstance().queryMarkerVisible(playerMarkerID))
         {
             arTriangleGLES20.draw(projectionMatrix,
                                   ARToolKit.getInstance()
@@ -270,7 +282,35 @@ class PortalRenderer extends ARRendererGLES20
         {
             arSquareGLES20.draw(projectionMatrix,
                                 ARToolKit.getInstance().queryMarkerTransformation(playerRoomID));
+        }*/
+
+        for (int i = 0; i < characterMarkerIDs.length; ++i)
+        {
+            if (characterMarkerIDs[i] > -1 &&
+                ARToolKit.getInstance().queryMarkerVisible(characterMarkerIDs[i]))
+            {
+                characterModels.get(i).draw(projectionMatrix,
+                                            ARToolKit.getInstance()
+                                                     .queryMarkerTransformation(characterMarkerIDs[i]));
+            }
         }
+
+        for (int i = 0; i < characterRoomIDs.length; ++i)
+        {
+            if (characterRoomIDs[i] > -1 &&
+                ARToolKit.getInstance().queryMarkerVisible(characterRoomIDs[i]))
+            {
+                roomModels.get(i).draw(projectionMatrix,
+                                       ARToolKit.getInstance()
+                                                .queryMarkerTransformation(characterRoomIDs[i]));
+            }
+        }
+
+        /*for (Integer markerID : characterMarkerIDs) {
+            if (markerID > -1 && ARToolKit.getInstance().queryMarkerVisible(markerID)) {
+                characterModels
+            }
+        }*/
 
         //TODO make marker generic
         /*if (ARToolKit.getInstance().queryMarkerVisible(mark0) &&
@@ -418,5 +458,15 @@ class PortalRenderer extends ARRendererGLES20
         {
             arTriangleGLES20.setCharacter(character);
         }
+    }
+
+    public void setCharacterMarker(int characterID, int markerID)
+    {
+        characterMarkerIDs[characterID] = markerID;
+    }
+
+    public void setCharacterRoom(int characterID, int roomID)
+    {
+        characterRoomIDs[characterID] = roomID;
     }
 }

@@ -19,11 +19,13 @@ import java.util.ArrayList;
 
 public class PortalActivity extends ARActivity
 {
+    int playerID;
+    int characterID;
+
     PortalRenderer renderer;
     int            overlayID;
     FrameLayout    overlay_layout;
 
-    private ArrayList<Integer> markers;
     private int playerMarkerID = -1;
 
     //GameMaster gameMaster;
@@ -39,7 +41,10 @@ public class PortalActivity extends ARActivity
         setOverlay(1);
 
         renderer = new PortalRenderer();
-        renderer.setCharacter(getIntent().getExtras().getInt("character"));
+
+        characterID = getIntent().getExtras().getInt("character");
+
+        //renderer.setCharacter(getIntent().getExtras().getInt("character"));
 
         //gameMaster = new GameMaster();
         //gameMaster.start();
@@ -67,7 +72,8 @@ public class PortalActivity extends ARActivity
                     {
                         if (setPlayerMarker())
                         {
-                            renderer.setPlayerMarkerID(playerMarkerID);
+                            //renderer.setPlayerMarkerID(playerMarkerID);
+                            renderer.setCharacterMarker(characterID, playerMarkerID);
                             Toast.makeText(getApplicationContext(),
                                            "Marker selected",
                                            Toast.LENGTH_SHORT)
@@ -99,7 +105,8 @@ public class PortalActivity extends ARActivity
                     {
                         if (setPlayerMarker())
                         {
-                            renderer.setPlayerMarkerID(playerMarkerID);
+                            //renderer.setPlayerMarkerID(playerMarkerID);
+                            renderer.setCharacterMarker(characterID, playerMarkerID);
                             Toast.makeText(getApplicationContext(),
                                            "Marker selected",
                                            Toast.LENGTH_SHORT)
@@ -124,7 +131,8 @@ public class PortalActivity extends ARActivity
                         int nearestRoomID = renderer.getNearestMarker(playerMarkerID);
                         if (nearestRoomID > -1)
                         {
-                            renderer.setPlayerRoomID(nearestRoomID);
+                            //renderer.setPlayerRoomID(nearestRoomID);
+                            renderer.setCharacterRoom(characterID, nearestRoomID);
                             TextView txtStatus2 = (TextView) findViewById(R.id.txtStatus2);
                             txtStatus2.setText("Player is in room: " + nearestRoomID);
                             Toast.makeText(getApplicationContext(),
