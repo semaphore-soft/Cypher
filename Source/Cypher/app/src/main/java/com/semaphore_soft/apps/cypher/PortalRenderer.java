@@ -463,6 +463,7 @@ class PortalRenderer extends ARRendererGLES20
     public void setCharacterMarker(int characterID, int markerID)
     {
         characterMarkerIDs[characterID] = markerID;
+        characterRoomIDs[characterID] = -1; //reset player room for good measure
     }
 
     public void setCharacterRoom(int characterID, int roomID)

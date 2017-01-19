@@ -3,8 +3,11 @@ package com.semaphore_soft.apps.cypher;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
+import android.widget.AdapterView;
+import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.FrameLayout;
+import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -28,6 +31,9 @@ public class PortalActivity extends ARActivity
 
     private int playerMarkerID = -1;
 
+    private int[] characterMarkerIDs;
+    private int[] characterRoomIDs;
+
     //GameMaster gameMaster;
 
     @Override
@@ -42,7 +48,10 @@ public class PortalActivity extends ARActivity
 
         renderer = new PortalRenderer();
 
-        characterID = getIntent().getExtras().getInt("character");
+        characterID = getIntent().getExtras().getInt("character", 0);
+
+        characterMarkerIDs = new int[]{-1, -1, -1, -1};
+        characterRoomIDs = new int[]{-1, -1, -1, -1};
 
         //renderer.setCharacter(getIntent().getExtras().getInt("character"));
 
@@ -74,6 +83,8 @@ public class PortalActivity extends ARActivity
                         {
                             //renderer.setPlayerMarkerID(playerMarkerID);
                             renderer.setCharacterMarker(characterID, playerMarkerID);
+                            characterMarkerIDs[characterID] = playerMarkerID;
+                            characterRoomIDs[characterID] = -1;
                             Toast.makeText(getApplicationContext(),
                                            "Marker selected",
                                            Toast.LENGTH_SHORT)
@@ -87,6 +98,37 @@ public class PortalActivity extends ARActivity
                                            Toast.LENGTH_SHORT)
                                  .show();
                         }
+                    }
+                });
+
+                ArrayList<String> characterNamesList = new ArrayList<>();
+                characterNamesList.add("White");
+                characterNamesList.add("Red");
+                characterNamesList.add("Green");
+                characterNamesList.add("Purple");
+                Spinner              spnCharacter         =
+                    (Spinner) findViewById(R.id.spnCharacter);
+                ArrayAdapter<String> characterNameAdapter = new ArrayAdapter<String>(
+                    getApplicationContext(),
+                    R.layout.text_spinner,
+                    characterNamesList);
+                spnCharacter.setAdapter(characterNameAdapter);
+                spnCharacter.setSelection(characterID);
+                spnCharacter.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener()
+                {
+                    @Override
+                    public void onItemSelected(AdapterView<?> parent,
+                                               View view,
+                                               int position,
+                                               long id)
+                    {
+                        characterID = position;
+                    }
+
+                    @Override
+                    public void onNothingSelected(AdapterView<?> parent)
+                    {
+
                     }
                 });
                 break;
@@ -107,6 +149,8 @@ public class PortalActivity extends ARActivity
                         {
                             //renderer.setPlayerMarkerID(playerMarkerID);
                             renderer.setCharacterMarker(characterID, playerMarkerID);
+                            characterMarkerIDs[characterID] = playerMarkerID;
+                            characterRoomIDs[characterID] = -1;
                             Toast.makeText(getApplicationContext(),
                                            "Marker selected",
                                            Toast.LENGTH_SHORT)
@@ -133,6 +177,7 @@ public class PortalActivity extends ARActivity
                         {
                             //renderer.setPlayerRoomID(nearestRoomID);
                             renderer.setCharacterRoom(characterID, nearestRoomID);
+                            characterRoomIDs[characterID] = nearestRoomID;
                             TextView txtStatus2 = (TextView) findViewById(R.id.txtStatus2);
                             txtStatus2.setText("Player is in room: " + nearestRoomID);
                             Toast.makeText(getApplicationContext(),
@@ -147,6 +192,44 @@ public class PortalActivity extends ARActivity
                                            Toast.LENGTH_SHORT)
                                  .show();
                         }
+                    }
+                });
+
+                ArrayList<String> characterNamesList = new ArrayList<>();
+                characterNamesList.add("White");
+                characterNamesList.add("Red");
+                characterNamesList.add("Green");
+                characterNamesList.add("Purple");
+                Spinner              spnCharacter         =
+                    (Spinner) findViewById(R.id.spnCharacter);
+                ArrayAdapter<String> characterNameAdapter = new ArrayAdapter<String>(
+                    getApplicationContext(),
+                    R.layout.text_spinner,
+                    characterNamesList);
+                spnCharacter.setAdapter(characterNameAdapter);
+                spnCharacter.setSelection(characterID);
+                spnCharacter.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener()
+                {
+                    @Override
+                    public void onItemSelected(AdapterView<?> parent,
+                                               View view,
+                                               int position,
+                                               long id)
+                    {
+                        characterID = position;
+                        playerMarkerID = characterMarkerIDs[characterID];
+                        TextView txtStatus = (TextView) findViewById(R.id.txtStatus);
+                        txtStatus.setText(
+                            "Player marker: " + ((playerMarkerID > -1) ? playerMarkerID : "-"));
+                        TextView txtStatus2 = (TextView) findViewById(R.id.txtStatus2);
+                        txtStatus2.setText("Player is in room: " + ((characterRoomIDs[characterID] >
+                                                                     -1) ? characterRoomIDs[characterID] : "-"));
+                    }
+
+                    @Override
+                    public void onNothingSelected(AdapterView<?> parent)
+                    {
+
                     }
                 });
                 break;
@@ -172,13 +255,33 @@ public class PortalActivity extends ARActivity
 
     private boolean setPlayerMarker()
     {
-        boolean ret = false;
+        int foundMarker = renderer.getFirstMarker();
 
-        playerMarkerID = renderer.getFirstMarker();
+        //player marker cannot already be a character's marker
+        for (Integer markerID : characterMarkerIDs)
+        {
+            if (foundMarker == markerID)
+            {
+                return false;
+            }
+        }
 
-        ret = (playerMarkerID > -1);
+        //player marker cannot be a room with a character in it
+        for (Integer markerID : characterRoomIDs)
+        {
+            if (foundMarker == markerID)
+            {
+                return false;
+            }
+        }
 
-        return ret;
+        if (foundMarker > -1)
+        {
+            playerMarkerID = foundMarker;
+            return true;
+        }
+
+        return false;
     }
 
     /*private class GameMaster extends Thread {
