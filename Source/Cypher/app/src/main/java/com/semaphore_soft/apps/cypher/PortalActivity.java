@@ -15,6 +15,7 @@ import org.artoolkit.ar.base.ARActivity;
 import org.artoolkit.ar.base.rendering.ARRenderer;
 
 import java.util.ArrayList;
+import java.util.Hashtable;
 
 /**
  * Created by rickm on 11/9/2016.
@@ -22,8 +23,8 @@ import java.util.ArrayList;
 
 public class PortalActivity extends ARActivity
 {
-    int playerID;
-    int characterID;
+    Long playerID;
+    int  characterID;
 
     PortalRenderer renderer;
     int            overlayID;
@@ -33,6 +34,10 @@ public class PortalActivity extends ARActivity
 
     private int[] characterMarkerIDs;
     private int[] characterRoomIDs;
+
+    private Hashtable<Long, Actor>  actors;
+    private Hashtable<Long, Room>   rooms;
+    private Hashtable<Long, Entity> entities;
 
     //GameMaster gameMaster;
 
@@ -48,10 +53,15 @@ public class PortalActivity extends ARActivity
 
         renderer = new PortalRenderer();
 
+        playerID = getIntent().getExtras().getLong("player", 0);
         characterID = getIntent().getExtras().getInt("character", 0);
 
         characterMarkerIDs = new int[]{-1, -1, -1, -1};
         characterRoomIDs = new int[]{-1, -1, -1, -1};
+
+        actors = new Hashtable<>();
+        rooms = new Hashtable<>();
+        entities = new Hashtable<>();
 
         //renderer.setCharacter(getIntent().getExtras().getInt("character"));
 
@@ -65,7 +75,7 @@ public class PortalActivity extends ARActivity
 
         LayoutInflater inflater = LayoutInflater.from(getApplicationContext());
 
-        View   overlay;
+        View overlay;
 
         switch (id)
         {
@@ -79,12 +89,21 @@ public class PortalActivity extends ARActivity
                     @Override
                     public void onClick(View v)
                     {
-                        if (setPlayerMarker())
+                        int markerID = getPlayerMarker();
+
+                        if (markerID > -1)
                         {
-                            //renderer.setPlayerMarkerID(playerMarkerID);
-                            renderer.setCharacterMarker(characterID, playerMarkerID);
-                            characterMarkerIDs[characterID] = playerMarkerID;
-                            characterRoomIDs[characterID] = -1;
+                            playerMarkerID = markerID;
+                            if (!actors.containsKey(playerID))
+                            {
+                                actors.put(playerID, new Actor(playerID));
+                            }
+                            Actor actor = actors.get(playerID);
+                            actor.setTag(markerID);
+                            actor.setChar(characterID);
+                            actor.setRoom(-1);
+                            renderer.setCharacterMarker(characterID, markerID);
+
                             Toast.makeText(getApplicationContext(),
                                            "Marker selected",
                                            Toast.LENGTH_SHORT)
@@ -98,6 +117,27 @@ public class PortalActivity extends ARActivity
                                            Toast.LENGTH_SHORT)
                                  .show();
                         }
+
+                        /*if (setPlayerMarker())
+                        {
+                            //renderer.setPlayerMarkerID(playerMarkerID);
+                            renderer.setCharacterMarker(characterID, playerMarkerID);
+                            characterMarkerIDs[characterID] = playerMarkerID;
+                            characterRoomIDs[characterID] = -1;
+
+                            Toast.makeText(getApplicationContext(),
+                                           "Marker selected",
+                                           Toast.LENGTH_SHORT)
+                                 .show();
+                            setOverlay(2);
+                        }
+                        else
+                        {
+                            Toast.makeText(getApplicationContext(),
+                                           "No marker found",
+                                           Toast.LENGTH_SHORT)
+                                 .show();
+                        }*/
                     }
                 });
 
@@ -106,7 +146,7 @@ public class PortalActivity extends ARActivity
                 characterNamesList.add("Red");
                 characterNamesList.add("Green");
                 characterNamesList.add("Purple");
-                Spinner              spnCharacter         =
+                Spinner spnCharacter =
                     (Spinner) findViewById(R.id.spnCharacter);
                 ArrayAdapter<String> characterNameAdapter = new ArrayAdapter<String>(
                     getApplicationContext(),
@@ -123,6 +163,20 @@ public class PortalActivity extends ARActivity
                                                long id)
                     {
                         characterID = position;
+                        boolean foundCharacter = false;
+                        for (Long actorID : actors.keySet())
+                        {
+                            if (actors.get(actorID).getChar() == characterID)
+                            {
+                                playerID = actorID;
+                                foundCharacter = true;
+                            }
+                        }
+                        if (!foundCharacter)
+                        {
+                            playerID = (long) actors.size();
+                            //actors.put(playerID, new Actor(playerID));
+                        }
                     }
 
                     @Override
@@ -145,7 +199,36 @@ public class PortalActivity extends ARActivity
                     @Override
                     public void onClick(View v)
                     {
-                        if (setPlayerMarker())
+                        int markerID = getPlayerMarker();
+
+                        if (markerID > -1)
+                        {
+                            playerMarkerID = markerID;
+                            if (!actors.containsKey(playerID))
+                            {
+                                actors.put(playerID, new Actor(playerID));
+                            }
+                            Actor actor = actors.get(playerID);
+                            actor.setTag(markerID);
+                            actor.setChar(characterID);
+                            actor.setRoom(-1);
+                            renderer.setCharacterMarker(characterID, markerID);
+
+                            Toast.makeText(getApplicationContext(),
+                                           "Marker selected",
+                                           Toast.LENGTH_SHORT)
+                                 .show();
+                            setOverlay(2);
+                        }
+                        else
+                        {
+                            Toast.makeText(getApplicationContext(),
+                                           "No marker found",
+                                           Toast.LENGTH_SHORT)
+                                 .show();
+                        }
+
+                        /*if (setPlayerMarker())
                         {
                             //renderer.setPlayerMarkerID(playerMarkerID);
                             renderer.setCharacterMarker(characterID, playerMarkerID);
@@ -163,7 +246,7 @@ public class PortalActivity extends ARActivity
                                            "No marker found",
                                            Toast.LENGTH_SHORT)
                                  .show();
-                        }
+                        }*/
                     }
                 });
                 Button btnEndTurn = (Button) findViewById(R.id.btnEndTurn);
@@ -200,7 +283,7 @@ public class PortalActivity extends ARActivity
                 characterNamesList.add("Red");
                 characterNamesList.add("Green");
                 characterNamesList.add("Purple");
-                Spinner              spnCharacter         =
+                Spinner spnCharacter =
                     (Spinner) findViewById(R.id.spnCharacter);
                 ArrayAdapter<String> characterNameAdapter = new ArrayAdapter<String>(
                     getApplicationContext(),
@@ -217,6 +300,22 @@ public class PortalActivity extends ARActivity
                                                long id)
                     {
                         characterID = position;
+
+                        boolean foundCharacter = false;
+                        for (Long actorID : actors.keySet())
+                        {
+                            if (actors.get(actorID).getChar() == characterID)
+                            {
+                                playerID = actorID;
+                                foundCharacter = true;
+                            }
+                        }
+                        if (!foundCharacter)
+                        {
+                            playerID = (long) actors.size();
+                            //actors.put(playerID, new Actor(playerID));
+                        }
+
                         playerMarkerID = characterMarkerIDs[characterID];
                         TextView txtStatus = (TextView) findViewById(R.id.txtStatus);
                         txtStatus.setText(
@@ -282,6 +381,37 @@ public class PortalActivity extends ARActivity
         }
 
         return false;
+    }
+
+    private int getPlayerMarker()
+    {
+        int foundMarker = renderer.getFirstMarker();
+
+        //player marker cannot already be a character's marker
+        for (long actorID : actors.keySet())
+        {
+            if (actors.get(actorID).getTag() == foundMarker)
+            {
+                return -1;
+            }
+        }
+
+        //player marker cannot be a room with a character in it
+        for (long roomID : rooms.keySet())
+        {
+            if (rooms.get(roomID).getTag() == foundMarker)
+            {
+                return -1;
+            }
+        }
+
+        if (foundMarker > -1)
+        {
+            playerMarkerID = foundMarker;
+            return foundMarker;
+        }
+
+        return -1;
     }
 
     /*private class GameMaster extends Thread {
