@@ -32,9 +32,6 @@ public class PortalActivity extends ARActivity
 
     private int playerMarkerID = -1;
 
-    private int[] characterMarkerIDs;
-    private int[] characterRoomIDs;
-
     private Hashtable<Long, Actor>  actors;
     private Hashtable<Long, Room>   rooms;
     private Hashtable<Long, Entity> entities;
@@ -56,14 +53,9 @@ public class PortalActivity extends ARActivity
         playerID = getIntent().getExtras().getLong("player", 0);
         characterID = getIntent().getExtras().getInt("character", 0);
 
-        characterMarkerIDs = new int[]{-1, -1, -1, -1};
-        characterRoomIDs = new int[]{-1, -1, -1, -1};
-
         actors = new Hashtable<>();
         rooms = new Hashtable<>();
         entities = new Hashtable<>();
-
-        //renderer.setCharacter(getIntent().getExtras().getInt("character"));
 
         //gameMaster = new GameMaster();
         //gameMaster.start();
@@ -117,27 +109,6 @@ public class PortalActivity extends ARActivity
                                            Toast.LENGTH_SHORT)
                                  .show();
                         }
-
-                        /*if (setPlayerMarker())
-                        {
-                            //renderer.setPlayerMarkerID(playerMarkerID);
-                            renderer.setCharacterMarker(characterID, playerMarkerID);
-                            characterMarkerIDs[characterID] = playerMarkerID;
-                            characterRoomIDs[characterID] = -1;
-
-                            Toast.makeText(getApplicationContext(),
-                                           "Marker selected",
-                                           Toast.LENGTH_SHORT)
-                                 .show();
-                            setOverlay(2);
-                        }
-                        else
-                        {
-                            Toast.makeText(getApplicationContext(),
-                                           "No marker found",
-                                           Toast.LENGTH_SHORT)
-                                 .show();
-                        }*/
                     }
                 });
 
@@ -148,7 +119,7 @@ public class PortalActivity extends ARActivity
                 characterNamesList.add("Purple");
                 Spinner spnCharacter =
                     (Spinner) findViewById(R.id.spnCharacter);
-                ArrayAdapter<String> characterNameAdapter = new ArrayAdapter<String>(
+                ArrayAdapter<String> characterNameAdapter = new ArrayAdapter<>(
                     getApplicationContext(),
                     R.layout.text_spinner,
                     characterNamesList);
@@ -175,7 +146,6 @@ public class PortalActivity extends ARActivity
                         if (!foundCharacter)
                         {
                             playerID = (long) actors.size();
-                            //actors.put(playerID, new Actor(playerID));
                         }
                     }
 
@@ -227,26 +197,6 @@ public class PortalActivity extends ARActivity
                                            Toast.LENGTH_SHORT)
                                  .show();
                         }
-
-                        /*if (setPlayerMarker())
-                        {
-                            //renderer.setPlayerMarkerID(playerMarkerID);
-                            renderer.setCharacterMarker(characterID, playerMarkerID);
-                            characterMarkerIDs[characterID] = playerMarkerID;
-                            characterRoomIDs[characterID] = -1;
-                            Toast.makeText(getApplicationContext(),
-                                           "Marker selected",
-                                           Toast.LENGTH_SHORT)
-                                 .show();
-                            setOverlay(2);
-                        }
-                        else
-                        {
-                            Toast.makeText(getApplicationContext(),
-                                           "No marker found",
-                                           Toast.LENGTH_SHORT)
-                                 .show();
-                        }*/
                     }
                 });
                 Button btnEndTurn = (Button) findViewById(R.id.btnEndTurn);
@@ -258,9 +208,8 @@ public class PortalActivity extends ARActivity
                         int nearestRoomID = renderer.getNearestMarker(playerMarkerID);
                         if (nearestRoomID > -1)
                         {
-                            //renderer.setPlayerRoomID(nearestRoomID);
+                            actors.get(playerID).setRoom(nearestRoomID);
                             renderer.setCharacterRoom(characterID, nearestRoomID);
-                            characterRoomIDs[characterID] = nearestRoomID;
                             TextView txtStatus2 = (TextView) findViewById(R.id.txtStatus2);
                             txtStatus2.setText("Player is in room: " + nearestRoomID);
                             Toast.makeText(getApplicationContext(),
@@ -285,7 +234,7 @@ public class PortalActivity extends ARActivity
                 characterNamesList.add("Purple");
                 Spinner spnCharacter =
                     (Spinner) findViewById(R.id.spnCharacter);
-                ArrayAdapter<String> characterNameAdapter = new ArrayAdapter<String>(
+                ArrayAdapter<String> characterNameAdapter = new ArrayAdapter<>(
                     getApplicationContext(),
                     R.layout.text_spinner,
                     characterNamesList);
@@ -313,16 +262,26 @@ public class PortalActivity extends ARActivity
                         if (!foundCharacter)
                         {
                             playerID = (long) actors.size();
-                            //actors.put(playerID, new Actor(playerID));
-                        }
 
-                        playerMarkerID = characterMarkerIDs[characterID];
-                        TextView txtStatus = (TextView) findViewById(R.id.txtStatus);
-                        txtStatus.setText(
-                            "Player marker: " + ((playerMarkerID > -1) ? playerMarkerID : "-"));
-                        TextView txtStatus2 = (TextView) findViewById(R.id.txtStatus2);
-                        txtStatus2.setText("Player is in room: " + ((characterRoomIDs[characterID] >
-                                                                     -1) ? characterRoomIDs[characterID] : "-"));
+                            playerMarkerID = -1;
+                            TextView txtStatus = (TextView) findViewById(R.id.txtStatus);
+                            txtStatus.setText(
+                                "Player marker: -");
+                            TextView txtStatus2 = (TextView) findViewById(R.id.txtStatus2);
+                            txtStatus2.setText("Player is in room: -");
+                        }
+                        else
+                        {
+                            playerMarkerID = actors.get(playerID).getTag();
+                            TextView txtStatus = (TextView) findViewById(R.id.txtStatus);
+                            txtStatus.setText(
+                                "Player marker: " + playerMarkerID);
+                            TextView txtStatus2 = (TextView) findViewById(R.id.txtStatus2);
+                            txtStatus2.setText(
+                                "Player is in room: " + ((actors.get(playerID).getRoom() >
+                                                          -1) ? actors.get(playerID)
+                                                                      .getRoom() : "-"));
+                        }
                     }
 
                     @Override
@@ -350,37 +309,6 @@ public class PortalActivity extends ARActivity
     protected FrameLayout supplyFrameLayout()
     {
         return (FrameLayout) this.findViewById(R.id.portal_frame);
-    }
-
-    private boolean setPlayerMarker()
-    {
-        int foundMarker = renderer.getFirstMarker();
-
-        //player marker cannot already be a character's marker
-        for (Integer markerID : characterMarkerIDs)
-        {
-            if (foundMarker == markerID)
-            {
-                return false;
-            }
-        }
-
-        //player marker cannot be a room with a character in it
-        for (Integer markerID : characterRoomIDs)
-        {
-            if (foundMarker == markerID)
-            {
-                return false;
-            }
-        }
-
-        if (foundMarker > -1)
-        {
-            playerMarkerID = foundMarker;
-            return true;
-        }
-
-        return false;
     }
 
     private int getPlayerMarker()
