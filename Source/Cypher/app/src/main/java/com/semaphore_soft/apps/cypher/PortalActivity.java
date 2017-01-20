@@ -91,7 +91,7 @@ public class PortalActivity extends ARActivity
                                 actors.put(playerID, new Actor(playerID));
                             }
                             Actor actor = actors.get(playerID);
-                            actor.setTag(markerID);
+                            actor.setMarker(markerID);
                             actor.setChar(characterID);
                             actor.setRoom(-1);
                             renderer.setCharacterMarker(characterID, markerID);
@@ -179,8 +179,12 @@ public class PortalActivity extends ARActivity
                                 actors.put(playerID, new Actor(playerID));
                             }
                             Actor actor = actors.get(playerID);
-                            actor.setTag(markerID);
+                            actor.setMarker(markerID);
                             actor.setChar(characterID);
+                            if (actor.getRoom() > -1)
+                            {
+                                rooms.get(actor.getRoom()).removeActor(playerID);
+                            }
                             actor.setRoom(-1);
                             renderer.setCharacterMarker(characterID, markerID);
 
@@ -205,13 +209,37 @@ public class PortalActivity extends ARActivity
                     @Override
                     public void onClick(View v)
                     {
-                        int nearestRoomID = renderer.getNearestMarker(playerMarkerID);
-                        if (nearestRoomID > -1)
+                        int nearestMarkerID = renderer.getNearestMarker(playerMarkerID);
+                        if (nearestMarkerID > -1)
                         {
+                            boolean foundRoom     = false;
+                            long    nearestRoomID = -1;
+                            for (Long roomID : rooms.keySet())
+                            {
+                                if (rooms.get(roomID).getMarker() == nearestMarkerID)
+                                {
+                                    foundRoom = true;
+                                    nearestRoomID = roomID;
+                                    break;
+                                }
+                            }
+                            if (!foundRoom)
+                            {
+                                nearestRoomID = rooms.size();
+                                rooms.put(nearestRoomID, new Room(nearestRoomID, nearestMarkerID));
+                            }
+
+                            if (actors.get(playerID).getRoom() > -1)
+                            {
+                                rooms.get(actors.get(playerID).getRoom()).removeActor(playerID);
+                            }
+
                             actors.get(playerID).setRoom(nearestRoomID);
-                            renderer.setCharacterRoom(characterID, nearestRoomID);
+                            rooms.get(nearestRoomID).addActor(playerID);
+
+                            renderer.setCharacterRoom(characterID, nearestMarkerID);
                             TextView txtStatus2 = (TextView) findViewById(R.id.txtStatus2);
-                            txtStatus2.setText("Player is in room: " + nearestRoomID);
+                            txtStatus2.setText("Player is in room: " + nearestMarkerID);
                             Toast.makeText(getApplicationContext(),
                                            "Updated player room",
                                            Toast.LENGTH_SHORT)
@@ -272,15 +300,16 @@ public class PortalActivity extends ARActivity
                         }
                         else
                         {
-                            playerMarkerID = actors.get(playerID).getTag();
+                            playerMarkerID = actors.get(playerID).getMarker();
                             TextView txtStatus = (TextView) findViewById(R.id.txtStatus);
                             txtStatus.setText(
                                 "Player marker: " + playerMarkerID);
                             TextView txtStatus2 = (TextView) findViewById(R.id.txtStatus2);
                             txtStatus2.setText(
                                 "Player is in room: " + ((actors.get(playerID).getRoom() >
-                                                          -1) ? actors.get(playerID)
-                                                                      .getRoom() : "-"));
+                                                          -1) ? rooms.get(actors.get(playerID)
+                                                                                .getRoom())
+                                                                     .getMarker() : "-"));
                         }
                     }
 
@@ -318,7 +347,7 @@ public class PortalActivity extends ARActivity
         //player marker cannot already be a character's marker
         for (long actorID : actors.keySet())
         {
-            if (actors.get(actorID).getTag() == foundMarker)
+            if (actors.get(actorID).getMarker() == foundMarker)
             {
                 return -1;
             }
@@ -327,7 +356,7 @@ public class PortalActivity extends ARActivity
         //player marker cannot be a room with a character in it
         for (long roomID : rooms.keySet())
         {
-            if (rooms.get(roomID).getTag() == foundMarker)
+            if (rooms.get(roomID).getMarker() == foundMarker)
             {
                 return -1;
             }

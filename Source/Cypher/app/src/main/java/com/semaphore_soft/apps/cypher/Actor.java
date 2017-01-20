@@ -7,14 +7,14 @@ package com.semaphore_soft.apps.cypher;
 public class Actor
 {
     private long id;
-    private int  tagID;
+    private int  markerID;
     private int  charID;
     private long roomID;
 
     public Actor(long id)
     {
         this.id = id;
-        tagID = -1;
+        markerID = -1;
         charID = -1;
         roomID = -1;
     }
@@ -22,7 +22,7 @@ public class Actor
     public Actor(long id, int charID)
     {
         this.id = id;
-        tagID = -1;
+        markerID = -1;
         this.charID = charID;
         roomID = -1;
     }
@@ -32,14 +32,14 @@ public class Actor
         return id;
     }
 
-    public void setTag(int tagID)
+    public void setMarker(int tagID)
     {
-        this.tagID = tagID;
+        this.markerID = tagID;
     }
 
-    public int getTag()
+    public int getMarker()
     {
-        return tagID;
+        return markerID;
     }
 
     public void setChar(int charID)

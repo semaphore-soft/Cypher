@@ -9,14 +9,22 @@ import java.util.ArrayList;
 public class Room
 {
     private long            id;
-    private int             tagID;
+    private int             markerID;
     private ArrayList<Long> residentActorIDs;
     private ArrayList<Long> residentEntityIDs;
 
     public Room(long id)
     {
         this.id = id;
-        tagID = -1;
+        markerID = -1;
+        residentActorIDs = new ArrayList<>();
+        residentEntityIDs = new ArrayList<>();
+    }
+
+    public Room(long id, int markerID)
+    {
+        this.id = id;
+        this.markerID = markerID;
         residentActorIDs = new ArrayList<>();
         residentEntityIDs = new ArrayList<>();
     }
@@ -26,14 +34,14 @@ public class Room
         return id;
     }
 
-    public void setTag(int tagID)
+    public void setMarker(int markerID)
     {
-        this.tagID = tagID;
+        this.markerID = markerID;
     }
 
-    public int getTag()
+    public int getMarker()
     {
-        return tagID;
+        return markerID;
     }
 
     public void addActor(long actorID)
