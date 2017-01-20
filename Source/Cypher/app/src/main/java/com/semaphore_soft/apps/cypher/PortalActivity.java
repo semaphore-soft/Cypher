@@ -254,6 +254,15 @@ public class PortalActivity extends ARActivity
                         }
                     }
                 });
+                Button btnStatus = (Button) findViewById(R.id.btnStatus);
+                btnStatus.setOnClickListener(new View.OnClickListener()
+                {
+                    @Override
+                    public void onClick(View v)
+                    {
+                        setOverlay(3);
+                    }
+                });
 
                 ArrayList<String> characterNamesList = new ArrayList<>();
                 characterNamesList.add("White");
@@ -320,6 +329,46 @@ public class PortalActivity extends ARActivity
                     }
                 });
                 break;
+            }
+            case 3:
+            {
+                overlay = inflater.inflate(R.layout.overlay_3, null, false);
+                overlay_layout.addView(overlay);
+
+                Actor actor = actors.get(playerID);
+                Room  room  = ((actor.getRoom() > -1) ? rooms.get(actor.getRoom()) : null);
+                String output = "Player ID: " + playerID
+                                + "\nPlayer Character ID: " + actor.getChar()
+                                + "\nPlayer Marker ID: " + actor.getMarker()
+                                + "\nPlayer Room ID: " +
+                                ((actor.getRoom() > -1) ? actor.getRoom() : "-")
+                                + "\nRoom Marker ID: " + ((room != null) ? room.getMarker() : "-");
+                if (room != null)
+                {
+                    output += "\nRoom Resident Actors:";
+                    for (Long residentActorID : room.getResidentActors())
+                    {
+                        output += " " + residentActorID;
+                    }
+                    output += "\nRoom Resident Entities:";
+                    for (Long residentEntityID : room.getResidentEntities())
+                    {
+                        output += " " + residentEntityID;
+                    }
+                }
+
+                TextView txtStatus = (TextView) findViewById(R.id.txtOut);
+                txtStatus.setText(output);
+
+                Button btnStatusReturn = (Button) findViewById(R.id.btnStatusReturn);
+                btnStatusReturn.setOnClickListener(new View.OnClickListener()
+                {
+                    @Override
+                    public void onClick(View v)
+                    {
+                        setOverlay(2);
+                    }
+                });
             }
             default:
                 break;
