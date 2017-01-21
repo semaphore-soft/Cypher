@@ -1,6 +1,5 @@
 package com.semaphore_soft.apps.cypher;
 
-import android.app.Fragment;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.IntentFilter;
@@ -52,6 +51,8 @@ public class MainActivity extends AppCompatActivity implements WiFiServicesList.
     private Handler mServiceDiscoveringHandler = new Handler();
 
     public ProgressBar progressBar;
+    // hostWillingness will only work if devices have not connected before
+    // Devices will use the settings from the first time they were grouped
     private int hostWillingness;
     private final HashMap<String, String> buddies = new HashMap<>();
 
@@ -170,17 +171,6 @@ public class MainActivity extends AppCompatActivity implements WiFiServicesList.
     {
         disconnect();
         super.onStop();
-    }
-
-    @Override
-    protected void onRestart()
-    {
-        Fragment frag = getFragmentManager().findFragmentByTag("services");
-        if (frag != null)
-        {
-            getFragmentManager().beginTransaction().remove(frag).commit();
-        }
-        super.onRestart();
     }
 
     private void disconnect()
@@ -367,11 +357,7 @@ public class MainActivity extends AppCompatActivity implements WiFiServicesList.
                         Toast.makeText(getApplication(), "Service available " + instanceName, Toast.LENGTH_SHORT).show();
                     } else
                     {
-                        Log.d("TAG", "fragment is null, retrying");
-                        // Create new service fragment and try again
-                        WiFiServicesList servicesList = new WiFiServicesList();
-                        getFragmentManager().beginTransaction().add(R.id.servicesRoot, servicesList, "services").commit();
-                        setupService();
+                        Log.d("TAG", "fragment is null");
                     }
                 }
             }
@@ -401,7 +387,6 @@ public class MainActivity extends AppCompatActivity implements WiFiServicesList.
                         Toast.makeText(getApplication(), "Service discovery initiated", Toast.LENGTH_SHORT).show();
                         // Display progress bar(circle) while waiting for broadcast receiver
                         progressBar.setVisibility(View.VISIBLE);
-                        // TODO add service discovery thread
                         mServiceDiscoveringHandler
                                 .postDelayed(mServiceDiscoveringRunnable, SERVICE_DISCOVERING_INTERVAL);
                     }
@@ -440,7 +425,24 @@ public class MainActivity extends AppCompatActivity implements WiFiServicesList.
         @Override
         public void run()
         {
-            startDiscovery();
+            mManager.removeServiceRequest(mChannel, serviceRequest, new WifiP2pManager.ActionListener()
+            {
+                @Override
+                public void onSuccess()
+                {
+                    Log.d(TAG, "removed service request");
+                    startDiscovery();
+                }
+
+                @Override
+                public void onFailure(int i)
+                {
+                    Log.d(TAG, "removing service request failed");
+                    // Try again
+                    mServiceDiscoveringHandler
+                            .postDelayed(mServiceDiscoveringRunnable, SERVICE_DISCOVERING_INTERVAL);
+                }
+            });
         }
     };
 
