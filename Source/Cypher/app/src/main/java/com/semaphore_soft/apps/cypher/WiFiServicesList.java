@@ -5,6 +5,7 @@ import android.content.Context;
 import android.net.wifi.p2p.WifiP2pDevice;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -87,6 +88,15 @@ public class WiFiServicesList extends ListFragment
             }
 
             return v;
+        }
+
+        @Override
+        public void clear()
+        {
+            Log.d("adapter", "Called clear()");
+            items.clear();
+            notifyDataSetChanged();
+            super.clear();
         }
     }
 
