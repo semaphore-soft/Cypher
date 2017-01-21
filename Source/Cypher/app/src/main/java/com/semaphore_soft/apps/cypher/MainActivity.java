@@ -265,18 +265,15 @@ public class MainActivity extends AppCompatActivity implements WiFiServicesList.
             public void onSuccess()
             {
                 // Command successful. Code not needed here
-                Log.d("add", "Added local service");
+                Log.d("Add", "Added local service");
                 Toast.makeText(getApplication(), "Added local service", Toast.LENGTH_SHORT).show();
-                mServiceBroadcastingHandler
-                        .postDelayed(mServiceBroadcastingRunnable, SERVICE_BROADCASTING_INTERVAL);
-
             }
 
             @Override
             public void onFailure(int i)
             {
                 // Command failed
-                Log.d("add", "Failed to add local service");
+                Log.d("Add", "Failed to add local service");
                 Toast.makeText(getApplication(), "Adding local service failed",
                         Toast.LENGTH_SHORT).show();
             }
