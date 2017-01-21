@@ -99,6 +99,8 @@ public class MainActivity extends AppCompatActivity implements WiFiServicesList.
             public void onClick(View view)
             {
                 hostWillingness = 0;
+                // Reset ListView so old items are removed
+                reset();
                 mServiceBroadcastingHandler.postDelayed(mServiceBroadcastingRunnable, SERVICE_BROADCASTING_INTERVAL);
                 setupService();
                 startDiscovery();
@@ -112,6 +114,8 @@ public class MainActivity extends AppCompatActivity implements WiFiServicesList.
             public void onClick(View view)
             {
                 hostWillingness = 15;
+                // Reset ListView so old items are removed
+                reset();
                 mServiceBroadcastingHandler.postDelayed(mServiceBroadcastingRunnable, SERVICE_BROADCASTING_INTERVAL);
                 setupService();
                 startDiscovery();
@@ -189,7 +193,6 @@ public class MainActivity extends AppCompatActivity implements WiFiServicesList.
             @Override
             public void onFailure(int i)
             {
-                //Toast.makeText(getApplication(), "Failed to disconnect", Toast.LENGTH_SHORT).show();
                 Log.d(TAG, "Error removing group. Error: " + i);
                 // This should cancel service discovery
                 // NOTE: Could also call after successful connection
@@ -213,6 +216,7 @@ public class MainActivity extends AppCompatActivity implements WiFiServicesList.
         });
     }
 
+    @Override
     public void connectP2p(WiFiP2pService service)
     {
         WifiP2pConfig config = new WifiP2pConfig();
@@ -221,20 +225,7 @@ public class MainActivity extends AppCompatActivity implements WiFiServicesList.
         config.groupOwnerIntent = hostWillingness;
         if (serviceRequest != null)
         {
-            mManager.removeServiceRequest(mChannel, serviceRequest, new WifiP2pManager.ActionListener()
-            {
-                @Override
-                public void onSuccess()
-                {
-
-                }
-
-                @Override
-                public void onFailure(int i)
-                {
-
-                }
-            });
+            mManager.removeServiceRequest(mChannel, serviceRequest, null);
             mManager.connect(mChannel, config, new WifiP2pManager.ActionListener()
             {
                 @Override
@@ -313,7 +304,6 @@ public class MainActivity extends AppCompatActivity implements WiFiServicesList.
 
     private void setupService()
     {
-        // TODO Check for duplicates/Clear list when adding new devices
         WifiP2pManager.DnsSdTxtRecordListener txtRecordListener = new WifiP2pManager.DnsSdTxtRecordListener()
         {
             @Override
@@ -465,22 +455,27 @@ public class MainActivity extends AppCompatActivity implements WiFiServicesList.
             return true;
         } else if (id == R.id.reset_list)
         {
-            // clear list of available devices
-            WiFiServicesList fragment = (WiFiServicesList) getFragmentManager().findFragmentByTag("services");
-            if (fragment != null)
-            {
-                WiFiServicesList.WiFiDevicesAdapter adapter =
-                        ((WiFiServicesList.WiFiDevicesAdapter) fragment.getListAdapter());
-                adapter.clear();
-                adapter.notifyDataSetChanged();
-                Log.d(TAG, "Reset listFragment");
-                TextView tv = (TextView) findViewById(R.id.test);
-                tv.setText("Label");
-                Log.d(TAG, "Reset textview");
-            }
+            reset();
+            TextView tv = (TextView) findViewById(R.id.test);
+            tv.setText("Label");
+            Log.d(TAG, "Reset textview");
         }
 
         return super.onOptionsItemSelected(item);
+    }
+
+    private void reset()
+    {
+        // clear list of available devices
+        WiFiServicesList fragment = (WiFiServicesList) getFragmentManager().findFragmentByTag("services");
+        if (fragment != null)
+        {
+            WiFiServicesList.WiFiDevicesAdapter adapter =
+                    ((WiFiServicesList.WiFiDevicesAdapter) fragment.getListAdapter());
+            adapter.clear();
+            adapter.notifyDataSetChanged();
+            Log.d(TAG, "Reset listFragment");
+        }
     }
 
     public void setLabel(String str)
