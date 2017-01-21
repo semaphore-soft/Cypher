@@ -134,7 +134,7 @@ public class MainActivity extends AppCompatActivity implements WiFiServicesList.
             @Override
             public void onSuccess()
             {
-                Log.d("clear", "Cleared local services");
+                Log.d(TAG, "Cleared local services");
                 startRegistration();
             }
 
@@ -142,7 +142,7 @@ public class MainActivity extends AppCompatActivity implements WiFiServicesList.
             public void onFailure(int i)
             {
                 // TODO retry clearing local services
-                Log.d("clear", "Failed to clear local services");
+                Log.d(TAG, "Failed to clear local services");
                 Toast.makeText(getApplication(), "Failed to add local service",
                         Toast.LENGTH_SHORT).show();
             }
@@ -192,7 +192,7 @@ public class MainActivity extends AppCompatActivity implements WiFiServicesList.
                 //Toast.makeText(getApplication(), "Failed to disconnect", Toast.LENGTH_SHORT).show();
                 Log.d(TAG, "Error removing group. Error: " + i);
                 // This should cancel service discovery
-                // Could also call after successful connection
+                // NOTE: Could also call after successful connection
                 mManager.clearServiceRequests(mChannel, new WifiP2pManager.ActionListener()
                 {
                     @Override
@@ -369,43 +369,59 @@ public class MainActivity extends AppCompatActivity implements WiFiServicesList.
     private void startDiscovery()
     {
         serviceRequest = WifiP2pDnsSdServiceRequest.newInstance();
-        mManager.addServiceRequest(mChannel, serviceRequest, new WifiP2pManager.ActionListener()
+        mManager.removeServiceRequest(mChannel, serviceRequest, new WifiP2pManager.ActionListener()
         {
             @Override
             public void onSuccess()
             {
-                // Success
-                Log.d(TAG, "Added service discovery request");
-                Toast.makeText(getApplication(), "Added service discovery request", Toast.LENGTH_SHORT).show();
-                mManager.discoverServices(mChannel, new WifiP2pManager.ActionListener()
+                mManager.addServiceRequest(mChannel, serviceRequest, new WifiP2pManager.ActionListener()
                 {
                     @Override
                     public void onSuccess()
                     {
                         // Success
-                        Log.d(TAG, "Service discovery initiated");
-                        Toast.makeText(getApplication(), "Service discovery initiated", Toast.LENGTH_SHORT).show();
-                        // Display progress bar(circle) while waiting for broadcast receiver
-                        progressBar.setVisibility(View.VISIBLE);
-                        mServiceDiscoveringHandler
-                                .postDelayed(mServiceDiscoveringRunnable, SERVICE_DISCOVERING_INTERVAL);
+                        Log.d(TAG, "Added service discovery request");
+                        Toast.makeText(getApplication(), "Added service discovery request", Toast.LENGTH_SHORT).show();
+                        mManager.discoverServices(mChannel, new WifiP2pManager.ActionListener()
+                        {
+                            @Override
+                            public void onSuccess()
+                            {
+                                // Success
+                                Log.d(TAG, "Service discovery initiated");
+                                Toast.makeText(getApplication(), "Service discovery initiated", Toast.LENGTH_SHORT).show();
+                                // Display progress bar(circle) while waiting for broadcast receiver
+                                progressBar.setVisibility(View.VISIBLE);
+                                mServiceDiscoveringHandler
+                                        .postDelayed(mServiceDiscoveringRunnable, SERVICE_DISCOVERING_INTERVAL);
+                            }
+
+                            @Override
+                            public void onFailure(int i)
+                            {
+                                // Command failed
+                                if (i == WifiP2pManager.P2P_UNSUPPORTED)
+                                {
+                                    Log.d(TAG, "P2P isn't supported on this device.");
+                                    Toast.makeText(getApplication(), "P2P not supported", Toast.LENGTH_SHORT).show();
+                                } else if (i == WifiP2pManager.BUSY)
+                                {
+                                    Log.d(TAG, "System is busy");
+                                } else if (i == WifiP2pManager.ERROR)
+                                {
+                                    // soooo helpful...
+                                    Log.d(TAG, "There was an error");
+                                }
+                            }
+                        });
                     }
 
                     @Override
                     public void onFailure(int i)
                     {
                         // Command failed
-                        if (i == WifiP2pManager.P2P_UNSUPPORTED)
-                        {
-                            Log.d(TAG, "P2P isn't supported on this device.");
-                        } else if (i == WifiP2pManager.BUSY)
-                        {
-                            Log.d(TAG, "System is busy");
-                        } else if (i == WifiP2pManager.ERROR)
-                        {
-                            // soooo helpful...
-                            Log.d(TAG, "There was an error");
-                        }
+                        Log.d(TAG, "Failed adding service discovery request");
+                        Toast.makeText(getApplication(), "Failed adding service discovery request", Toast.LENGTH_SHORT).show();
                     }
                 });
             }
@@ -413,9 +429,7 @@ public class MainActivity extends AppCompatActivity implements WiFiServicesList.
             @Override
             public void onFailure(int i)
             {
-                // Command failed
-                Log.d(TAG, "Failed adding service discovery request");
-                Toast.makeText(getApplication(), "Failed adding service discovery request", Toast.LENGTH_SHORT).show();
+                Log.d(TAG, "Failed to remove service");
             }
         });
     }
@@ -425,24 +439,7 @@ public class MainActivity extends AppCompatActivity implements WiFiServicesList.
         @Override
         public void run()
         {
-            mManager.removeServiceRequest(mChannel, serviceRequest, new WifiP2pManager.ActionListener()
-            {
-                @Override
-                public void onSuccess()
-                {
-                    Log.d(TAG, "removed service request");
-                    startDiscovery();
-                }
-
-                @Override
-                public void onFailure(int i)
-                {
-                    Log.d(TAG, "removing service request failed");
-                    // Try again
-                    mServiceDiscoveringHandler
-                            .postDelayed(mServiceDiscoveringRunnable, SERVICE_DISCOVERING_INTERVAL);
-                }
-            });
+            startDiscovery();
         }
     };
 
