@@ -227,6 +227,10 @@ public class PortalActivity extends ARActivity
                             {
                                 nearestRoomID = rooms.size();
                                 rooms.put(nearestRoomID, new Room(nearestRoomID, nearestMarkerID));
+
+                                long   newEntityID = entities.size();
+                                Entity newEntity   = new Entity(newEntityID, 0);
+                                entities.put(newEntityID, newEntity);
                             }
 
                             if (actors.get(playerID).getRoom() > -1)

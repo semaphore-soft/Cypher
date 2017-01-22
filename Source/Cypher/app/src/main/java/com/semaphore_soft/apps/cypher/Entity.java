@@ -7,17 +7,36 @@ package com.semaphore_soft.apps.cypher;
 public class Entity
 {
     private long id;
+    private int  type;
     private long roomID;
 
     public Entity(long id)
     {
         this.id = id;
-        this.roomID = -1;
+        type = -1;
+        roomID = -1;
+    }
+
+    public Entity(long id, int type)
+    {
+        this.id = id;
+        this.type = type;
+        roomID = -1;
     }
 
     public long getID()
     {
         return id;
+    }
+
+    public void setType(int type)
+    {
+        this.type = type;
+    }
+
+    public int getType()
+    {
+        return type;
     }
 
     public void setRoom(int roomID)
