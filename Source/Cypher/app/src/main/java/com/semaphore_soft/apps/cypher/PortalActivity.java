@@ -81,19 +81,31 @@ public class PortalActivity extends ARActivity
                     @Override
                     public void onClick(View v)
                     {
+                        //look for a valid player marker
                         int markerID = getPlayerMarker();
 
                         if (markerID > -1)
                         {
                             playerMarkerID = markerID;
+                            //if there is not an actor associated with this playerID,
+                            //generate a new one
                             if (!actors.containsKey(playerID))
                             {
                                 actors.put(playerID, new Actor(playerID));
                             }
+                            //update the marker and character of the actor associated with this player
                             Actor actor = actors.get(playerID);
                             actor.setMarker(markerID);
                             actor.setChar(characterID);
+                            //if the actor was previously in a room, remove it from that room's actor list
+                            if (actor.getRoom() > -1)
+                            {
+                                rooms.get(actor.getRoom()).removeActor(playerID);
+                            }
+                            //clear the actor's room
                             actor.setRoom(-1);
+
+                            //notify the renderer of the character/marker change
                             renderer.setCharacterMarker(characterID, markerID);
 
                             Toast.makeText(getApplicationContext(),
@@ -112,6 +124,7 @@ public class PortalActivity extends ARActivity
                     }
                 });
 
+                //re-initialize the character select drop-down
                 ArrayList<String> characterNamesList = new ArrayList<>();
                 characterNamesList.add("White");
                 characterNamesList.add("Red");
@@ -125,6 +138,8 @@ public class PortalActivity extends ARActivity
                     characterNamesList);
                 spnCharacter.setAdapter(characterNameAdapter);
                 spnCharacter.setSelection(characterID);
+
+                //handler for character select
                 spnCharacter.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener()
                 {
                     @Override
@@ -133,10 +148,16 @@ public class PortalActivity extends ARActivity
                                                int position,
                                                long id)
                     {
+                        //characters are listed in the spinner in character id order, so we may
+                        //use selected item position to get character id
                         characterID = position;
+
+                        //check if the character is already associated with an actor/player
                         boolean foundCharacter = false;
                         for (Long actorID : actors.keySet())
                         {
+                            //if the selected character is not yet associated with an actor,
+                            //get a new playerID/actor id and clear any associated marker
                             if (actors.get(actorID).getChar() == characterID)
                             {
                                 playerID = actorID;
@@ -145,7 +166,10 @@ public class PortalActivity extends ARActivity
                         }
                         if (!foundCharacter)
                         {
+                            //if the selected character is not yet associated with an actor,
+                            //get a new playerID/actor id and clear any associated marker
                             playerID = (long) actors.size();
+                            playerMarkerID = -1;
                         }
                     }
 
@@ -157,35 +181,51 @@ public class PortalActivity extends ARActivity
                 });
                 break;
             }
+            //primary interaction/debug overlay
             case 2:
             {
+                //generate overlay_2, currently the primary interaction/debug overlay
                 overlay = inflater.inflate(R.layout.overlay_2, null, false);
                 overlay_layout.addView(overlay);
+
+                //update debug interface
                 TextView txtStatus = (TextView) findViewById(R.id.txtStatus);
                 txtStatus.setText("Player marker: " + playerMarkerID);
+
+                //"reselect" button
+                //for resetting current character/player marker or setting a marker for a new
+                //character/player
                 Button btnReselect = (Button) findViewById(R.id.btnReselect);
                 btnReselect.setOnClickListener(new View.OnClickListener()
                 {
                     @Override
                     public void onClick(View v)
                     {
+                        //look for a valid player marker
                         int markerID = getPlayerMarker();
 
                         if (markerID > -1)
                         {
                             playerMarkerID = markerID;
+                            //if there is not an actor associated with this playerID,
+                            //generate a new one
                             if (!actors.containsKey(playerID))
                             {
                                 actors.put(playerID, new Actor(playerID));
                             }
+                            //update the marker and character of the actor associated with this player
                             Actor actor = actors.get(playerID);
                             actor.setMarker(markerID);
                             actor.setChar(characterID);
+                            //if the actor was previously in a room, remove it from that room's actor list
                             if (actor.getRoom() > -1)
                             {
                                 rooms.get(actor.getRoom()).removeActor(playerID);
                             }
+                            //clear the actor's room
                             actor.setRoom(-1);
+
+                            //notify the renderer of the character/marker change
                             renderer.setCharacterMarker(characterID, markerID);
 
                             Toast.makeText(getApplicationContext(),
@@ -203,6 +243,9 @@ public class PortalActivity extends ARActivity
                         }
                     }
                 });
+
+                //"end turn" button
+                //currently exists only to update player room
                 Button btnEndTurn = (Button) findViewById(R.id.btnEndTurn);
                 btnEndTurn.setOnClickListener(new View.OnClickListener()
                 {
@@ -214,10 +257,12 @@ public class PortalActivity extends ARActivity
                         {
                             boolean foundRoom     = false;
                             long    nearestRoomID = -1;
+                            //check to see if there is already a room associated with the nearest marker
                             for (Long roomID : rooms.keySet())
                             {
                                 if (rooms.get(roomID).getMarker() == nearestMarkerID)
                                 {
+                                    //if there is, use its id
                                     foundRoom = true;
                                     nearestRoomID = roomID;
                                     break;
@@ -225,23 +270,40 @@ public class PortalActivity extends ARActivity
                             }
                             if (!foundRoom)
                             {
+                                //if there is not an existing room attached to the nearest marker,
+                                //generate a new one
                                 nearestRoomID = rooms.size();
-                                rooms.put(nearestRoomID, new Room(nearestRoomID, nearestMarkerID));
+                                Room newRoom = new Room(nearestRoomID, nearestMarkerID);
 
-                                long   newEntityID = entities.size();
-                                Entity newEntity   = new Entity(newEntityID, 0);
-                                entities.put(newEntityID, newEntity);
+                                //attach three random entities with type 0 or 1 to the new room
+                                for (int i = 0; i < 3; ++i)
+                                {
+                                    long newEntityID = entities.size();
+                                    int  newType     = ((Math.random() > 0.3) ? 0 : 1);
+
+                                    Entity newEntity = new Entity(newEntityID, newType);
+                                    entities.put(newEntityID, newEntity);
+                                    newRoom.addEntity(newEntityID);
+                                }
+
+                                //add the new room to the room collection
+                                rooms.put(nearestRoomID, newRoom);
                             }
 
+                            //if the actor was previously in a room, remove it from that room
                             if (actors.get(playerID).getRoom() > -1)
                             {
                                 rooms.get(actors.get(playerID).getRoom()).removeActor(playerID);
                             }
 
+                            //update the actor's room and the new room's actor list
                             actors.get(playerID).setRoom(nearestRoomID);
                             rooms.get(nearestRoomID).addActor(playerID);
 
+                            //notify the renderer of the actor's new location
                             renderer.setCharacterRoom(characterID, nearestMarkerID);
+
+                            //update the debug interface
                             TextView txtStatus2 = (TextView) findViewById(R.id.txtStatus2);
                             txtStatus2.setText("Player is in room: " + nearestMarkerID);
                             Toast.makeText(getApplicationContext(),
@@ -258,6 +320,8 @@ public class PortalActivity extends ARActivity
                         }
                     }
                 });
+
+                //debug/status screen button
                 Button btnStatus = (Button) findViewById(R.id.btnStatus);
                 btnStatus.setOnClickListener(new View.OnClickListener()
                 {
@@ -268,6 +332,7 @@ public class PortalActivity extends ARActivity
                     }
                 });
 
+                //re-initialize the character select drop-down
                 ArrayList<String> characterNamesList = new ArrayList<>();
                 characterNamesList.add("White");
                 characterNamesList.add("Red");
@@ -281,6 +346,8 @@ public class PortalActivity extends ARActivity
                     characterNamesList);
                 spnCharacter.setAdapter(characterNameAdapter);
                 spnCharacter.setSelection(characterID);
+
+                //handler for character select
                 spnCharacter.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener()
                 {
                     @Override
@@ -289,22 +356,30 @@ public class PortalActivity extends ARActivity
                                                int position,
                                                long id)
                     {
+                        //characters are listed in the spinner in character id order, so we may
+                        //use selected item position to get character id
                         characterID = position;
 
+                        //check if the character is already associated with an actor/player
                         boolean foundCharacter = false;
                         for (Long actorID : actors.keySet())
                         {
                             if (actors.get(actorID).getChar() == characterID)
                             {
+                                //if it is, set this player id to the actor id of the existing actor
+                                //(playerID can be thought of as "this player's actorID")
                                 playerID = actorID;
                                 foundCharacter = true;
                             }
                         }
                         if (!foundCharacter)
                         {
+                            //if the selected character is not yet associated with an actor,
+                            //get a new playerID/actor id and clear any associated marker
                             playerID = (long) actors.size();
-
                             playerMarkerID = -1;
+
+                            //update debug interface
                             TextView txtStatus = (TextView) findViewById(R.id.txtStatus);
                             txtStatus.setText(
                                 "Player marker: -");
@@ -313,7 +388,11 @@ public class PortalActivity extends ARActivity
                         }
                         else
                         {
+                            //if the selected character is associated with an actor,
+                            //get that actor's associated marker
                             playerMarkerID = actors.get(playerID).getMarker();
+
+                            //update debug interface
                             TextView txtStatus = (TextView) findViewById(R.id.txtStatus);
                             txtStatus.setText(
                                 "Player marker: " + playerMarkerID);
@@ -352,12 +431,14 @@ public class PortalActivity extends ARActivity
                     output += "\nRoom Resident Actors:";
                     for (Long residentActorID : room.getResidentActors())
                     {
-                        output += " " + residentActorID;
+                        output +=
+                            " " + residentActorID + ":" + actors.get(residentActorID).getChar();
                     }
                     output += "\nRoom Resident Entities:";
                     for (Long residentEntityID : room.getResidentEntities())
                     {
-                        output += " " + residentEntityID;
+                        output +=
+                            " " + residentEntityID + ":" + entities.get(residentEntityID).getType();
                     }
                 }
 
