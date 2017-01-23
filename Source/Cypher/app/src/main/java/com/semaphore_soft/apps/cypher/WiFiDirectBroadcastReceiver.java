@@ -37,7 +37,6 @@ public class WiFiDirectBroadcastReceiver extends BroadcastReceiver
     private final WifiP2pManager.Channel mChannel;
     private final MainActivity mActivity;
     private boolean connecting = false;
-    private AlertDialog alertDialog = null; //Remove?
 
     public Socket mySocket = null;
 
@@ -81,7 +80,7 @@ public class WiFiDirectBroadcastReceiver extends BroadcastReceiver
                             //new Thread(new ClientThread(groupOwnerAddress)).start();
                             new Client().execute(groupOwnerAddress);
 //                            mActivity.buffer.add("Hello, World!");
-                            //write("Hello, World!");
+//                            write("Hello, World!");
                         }
                     }
                     catch (UnknownHostException e)
@@ -137,7 +136,8 @@ public class WiFiDirectBroadcastReceiver extends BroadcastReceiver
                 AlertDialog dialog = builder.create();
                 dialog.show();
             }
-        } else if (WifiP2pManager.WIFI_P2P_CONNECTION_CHANGED_ACTION.equals(action))
+        }
+        else if (WifiP2pManager.WIFI_P2P_CONNECTION_CHANGED_ACTION.equals(action))
         {
             // Respond to new connection or disconnections
             Log.d(TAG, "Connection changed");
@@ -158,13 +158,8 @@ public class WiFiDirectBroadcastReceiver extends BroadcastReceiver
                 Toast.makeText(mActivity, "Connected!", Toast.LENGTH_SHORT).show();
                 mManager.requestConnectionInfo(mChannel, connectionListener);
                 mActivity.progressBar.setVisibility(View.INVISIBLE);
-                // Close connection dialog if we already have a connection
-                if (alertDialog != null)
-                {
-                    alertDialog.dismiss();
-                    alertDialog = null;
-                }
-            } else
+            }
+            else
             {
                 // It's a disconnect (maybe, or just never connected)
                 if (connecting)
@@ -175,7 +170,8 @@ public class WiFiDirectBroadcastReceiver extends BroadcastReceiver
                 }
             }
 
-        } else if (WifiP2pManager.WIFI_P2P_THIS_DEVICE_CHANGED_ACTION.equals(action))
+        }
+        else if (WifiP2pManager.WIFI_P2P_THIS_DEVICE_CHANGED_ACTION.equals(action))
         {
             // Respond to this device's wifi state changing
             Log.d(TAG, "This device's state changed");
