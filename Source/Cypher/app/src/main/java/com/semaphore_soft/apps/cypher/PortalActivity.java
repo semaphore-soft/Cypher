@@ -82,7 +82,7 @@ public class PortalActivity extends ARActivity
                     public void onClick(View v)
                     {
                         //look for a valid player marker
-                        int markerID = getPlayerMarker();
+                        int markerID = getFirstUnreservedMarker();
 
                         if (markerID > -1)
                         {
@@ -202,7 +202,7 @@ public class PortalActivity extends ARActivity
                     public void onClick(View v)
                     {
                         //look for a valid player marker
-                        int markerID = getPlayerMarker();
+                        int markerID = getFirstUnreservedMarker();
 
                         if (markerID > -1)
                         {
@@ -252,7 +252,7 @@ public class PortalActivity extends ARActivity
                     @Override
                     public void onClick(View v)
                     {
-                        int nearestMarkerID = renderer.getNearestMarker(playerMarkerID);
+                        int nearestMarkerID = getNearestNonPlayerMarker(playerMarkerID);
                         if (nearestMarkerID > -1)
                         {
                             boolean foundRoom     = false;
@@ -474,7 +474,7 @@ public class PortalActivity extends ARActivity
         return (FrameLayout) this.findViewById(R.id.portal_frame);
     }
 
-    private int getPlayerMarker()
+    private int getFirstUnreservedMarker()
     {
         int foundMarker = renderer.getFirstMarker();
 
@@ -498,7 +498,27 @@ public class PortalActivity extends ARActivity
 
         if (foundMarker > -1)
         {
-            playerMarkerID = foundMarker;
+            return foundMarker;
+        }
+
+        return -1;
+    }
+
+    private int getNearestNonPlayerMarker(int mark0)
+    {
+        int foundMarker = renderer.getNearestMarker(mark0);
+
+        //player marker cannot already be a character's marker
+        for (long actorID : actors.keySet())
+        {
+            if (actors.get(actorID).getMarker() == foundMarker)
+            {
+                return -1;
+            }
+        }
+
+        if (foundMarker > -1)
+        {
             return foundMarker;
         }
 
