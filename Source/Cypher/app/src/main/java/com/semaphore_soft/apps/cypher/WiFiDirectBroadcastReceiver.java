@@ -39,6 +39,8 @@ public class WiFiDirectBroadcastReceiver extends BroadcastReceiver
     private boolean connecting = false;
     private AlertDialog alertDialog = null; //Remove?
 
+    public Socket mySocket = null;
+
     private final static String TAG = "WifiBR";
 
     public WiFiDirectBroadcastReceiver(WifiP2pManager manager, WifiP2pManager.Channel channel,
@@ -78,7 +80,8 @@ public class WiFiDirectBroadcastReceiver extends BroadcastReceiver
                             Toast.makeText(mActivity, "You're in a group!", Toast.LENGTH_SHORT).show();
                             //new Thread(new ClientThread(groupOwnerAddress)).start();
                             new Client().execute(groupOwnerAddress);
-                            mActivity.buffer.add("Hello, World!");
+//                            mActivity.buffer.add("Hello, World!");
+                            write("Hello, World!");
                         }
                     }
                     catch (UnknownHostException e)
@@ -216,6 +219,22 @@ public class WiFiDirectBroadcastReceiver extends BroadcastReceiver
         tHandler.sendMessage(msg);
     }
 
+    public void write(String str)
+    {
+        if (mySocket != null)
+        {
+            try
+            {
+                ObjectOutputStream oos = new ObjectOutputStream(mySocket.getOutputStream());
+                oos.writeUTF(str);
+                oos.flush();
+            } catch (IOException e)
+            {
+                e.printStackTrace();
+            }
+        }
+    }
+
     private class ServerThread extends Thread
     {
         // The local server socket
@@ -329,7 +348,7 @@ public class WiFiDirectBroadcastReceiver extends BroadcastReceiver
 
     private class Client extends AsyncTask<InetAddress, ObjectOutputStream, String>
     {
-        private Socket mySocket = null;
+        //private Socket mySocket = null;
 
         @Override
         protected String doInBackground(InetAddress... params)
@@ -342,7 +361,7 @@ public class WiFiDirectBroadcastReceiver extends BroadcastReceiver
                 out.flush();
                 ObjectInputStream in = new ObjectInputStream(mySocket.getInputStream());
                 mkmsg(in.readUTF());
-                publishProgress(out);
+                //publishProgress(out);
             }
             catch (IOException e)
             {
@@ -356,7 +375,7 @@ public class WiFiDirectBroadcastReceiver extends BroadcastReceiver
         @Override
         protected void onProgressUpdate(ObjectOutputStream... progress)
         {
-            mActivity.sendMessage(progress[0]);
+            //mActivity.sendMessage(progress[0]);
             Log.d("Client", "Sending message");
         }
     }
