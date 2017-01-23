@@ -9,6 +9,7 @@ import android.net.NetworkInfo;
 import android.net.wifi.WifiManager;
 import android.net.wifi.p2p.WifiP2pInfo;
 import android.net.wifi.p2p.WifiP2pManager;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
@@ -35,9 +36,8 @@ public class WiFiDirectBroadcastReceiver extends BroadcastReceiver
     private final WifiP2pManager mManager;
     private final WifiP2pManager.Channel mChannel;
     private final MainActivity mActivity;
-    //    private final List<WifiP2pDevice> peers = new ArrayList<>();
     private boolean connecting = false;
-    private AlertDialog alertDialog = null;
+    private AlertDialog alertDialog = null; //Remove?
 
     private final static String TAG = "WifiBR";
 
@@ -76,7 +76,9 @@ public class WiFiDirectBroadcastReceiver extends BroadcastReceiver
                             // Create client thread that connects to group owner
                             Log.d(TAG, "Device is in group");
                             Toast.makeText(mActivity, "You're in a group!", Toast.LENGTH_SHORT).show();
-                            new Thread(new ClientThread(groupOwnerAddress)).start();
+                            //new Thread(new ClientThread(groupOwnerAddress)).start();
+                            new Client().execute(groupOwnerAddress);
+                            mActivity.buffer.add("Hello, World!");
                         }
                     }
                     catch (UnknownHostException e)
@@ -219,6 +221,7 @@ public class WiFiDirectBroadcastReceiver extends BroadcastReceiver
         // The local server socket
         private ServerSocket serverSocket = null;
         private Socket my_socket;
+
         public ServerThread()
         {
             try
@@ -276,51 +279,86 @@ public class WiFiDirectBroadcastReceiver extends BroadcastReceiver
         }
     }
 
-    private class ClientThread extends Thread
+//    private class ClientThread extends Thread
+//    {
+//        private Socket my_socket = null;
+//
+//        public ClientThread(InetAddress address)
+//        {
+//            try
+//            {
+//                // creates and connects to address at specified port
+//                my_socket = new Socket(address, MainActivity.SERVER_PORT);
+//            }
+//            catch (IOException e)
+//            {
+//                e.printStackTrace();
+//                Log.e("ClientThread", "Failed to start socket");
+//                makeToast("Failed to start socket");
+//            }
+//        }
+//
+//        public void run()
+//        {
+//            // Connection was accepted
+//            if (my_socket != null)
+//            {
+//                Log.i("ClientThread", "Connection made");
+//                try
+//                {
+//                    ObjectOutputStream out = new ObjectOutputStream(my_socket.getOutputStream());
+//                    out.flush();
+//                    ObjectInputStream in = new ObjectInputStream(my_socket.getInputStream());
+//                    mkmsg(in.readUTF());
+//                    out.writeUTF("Hello, World!");
+//                    // flush after write or inputStream will hang on read
+//                    out.flush();
+//                    Log.d("ClientThread", "sent message");
+//                    out.close();
+//                    in.close();
+//                    my_socket.close();
+//                }
+//                catch (IOException e)
+//                {
+//                    e.printStackTrace();
+//                }
+//            }
+//        }
+//
+//    }
+
+    private class Client extends AsyncTask<InetAddress, ObjectOutputStream, String>
     {
-        private Socket my_socket = null;
-        public ClientThread(InetAddress address)
+        private Socket mySocket = null;
+
+        @Override
+        protected String doInBackground(InetAddress... params)
         {
             try
             {
-                // creates and connects to address at specified port
-                my_socket = new Socket(address, MainActivity.SERVER_PORT);
+                mySocket = new Socket(params[0], MainActivity.SERVER_PORT);
+                Log.d("Client", "Connection made");
+                ObjectOutputStream out = new ObjectOutputStream(mySocket.getOutputStream());
+                out.flush();
+                ObjectInputStream in = new ObjectInputStream(mySocket.getInputStream());
+                mkmsg(in.readUTF());
+                publishProgress(out);
             }
             catch (IOException e)
             {
                 e.printStackTrace();
-                Log.e("ClientThread", "Failed to start socket");
-                makeToast("Failed to start socket");
+                Log.e("Client", "Connection failed");
             }
+
+            return "";
         }
 
-        public void run()
+        @Override
+        protected void onProgressUpdate(ObjectOutputStream... progress)
         {
-            // Connection was accepted
-            if (my_socket != null)
-            {
-                Log.i("ClientThread", "Connection made");
-                try
-                {
-                    ObjectOutputStream out = new ObjectOutputStream(my_socket.getOutputStream());
-                    out.flush();
-                    ObjectInputStream in = new ObjectInputStream(my_socket.getInputStream());
-                    mkmsg(in.readUTF());
-                    out.writeUTF("Hello, World!");
-                    // flush after write or inputStream will hang on read
-                    out.flush();
-                    Log.d("ClientThread", "sent message");
-                    out.close();
-                    in.close();
-                    my_socket.close();
-                }
-                catch (IOException e)
-                {
-                    e.printStackTrace();
-                }
-            }
+            mActivity.sendMessage(progress[0]);
+            Log.d("Client", "Sending message");
         }
-
     }
 }
 

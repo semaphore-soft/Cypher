@@ -26,7 +26,10 @@ import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import java.io.IOException;
+import java.io.ObjectOutputStream;
 import java.util.HashMap;
+import java.util.LinkedList;
 import java.util.Map;
 
 public class MainActivity extends AppCompatActivity implements WiFiServicesList.DeviceClickListener
@@ -55,6 +58,9 @@ public class MainActivity extends AppCompatActivity implements WiFiServicesList.
     // Devices will use the settings from the first time they were grouped
     private int hostWillingness;
     private final HashMap<String, String> buddies = new HashMap<>();
+
+    // Hold messages to send to host
+    public LinkedList<String> buffer = new LinkedList<>();
 
     @Override
     protected void onCreate(Bundle savedInstanceState)
@@ -484,5 +490,23 @@ public class MainActivity extends AppCompatActivity implements WiFiServicesList.
     public void toasts(String str)
     {
         Toast.makeText(this, str, Toast.LENGTH_SHORT).show();
+    }
+
+    public void sendMessage(ObjectOutputStream oos)
+    {
+        if (oos != null && buffer.peek() != null)
+        {
+            try
+            {
+                oos.writeUTF(buffer.pop());
+                // Flush after write to avoid hanging the server
+                oos.flush();
+            }
+            catch (IOException e)
+            {
+                e.printStackTrace();
+                Log.d("Message", "Unable to send message to host");
+            }
+        }
     }
 }
