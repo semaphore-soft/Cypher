@@ -15,6 +15,8 @@ import org.artoolkit.ar.base.ARActivity;
 import org.artoolkit.ar.base.rendering.ARRenderer;
 
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.Hashtable;
 
 /**
@@ -168,7 +170,7 @@ public class PortalActivity extends ARActivity
                         {
                             //if the selected character is not yet associated with an actor,
                             //get a new playerID/actor id and clear any associated marker
-                            playerID = (long) actors.size();
+                            playerID = getNextID(actors);
                             playerMarkerID = -1;
                         }
                     }
@@ -272,13 +274,14 @@ public class PortalActivity extends ARActivity
                             {
                                 //if there is not an existing room attached to the nearest marker,
                                 //generate a new one
-                                nearestRoomID = rooms.size();
+                                nearestRoomID = getNextID(rooms);
                                 Room newRoom = new Room(nearestRoomID, nearestMarkerID);
 
                                 //attach three random entities with type 0 or 1 to the new room
                                 for (int i = 0; i < 3; ++i)
                                 {
-                                    long newEntityID = entities.size();
+                                    long newEntityID =
+                                        getNextID(entities);
                                     int  newType     = ((Math.random() > 0.3) ? 0 : 1);
 
                                     Entity newEntity = new Entity(newEntityID, newType);
@@ -376,7 +379,7 @@ public class PortalActivity extends ARActivity
                         {
                             //if the selected character is not yet associated with an actor,
                             //get a new playerID/actor id and clear any associated marker
-                            playerID = (long) actors.size();
+                            playerID = getNextID(actors);
                             playerMarkerID = -1;
 
                             //update debug interface
@@ -523,6 +526,11 @@ public class PortalActivity extends ARActivity
         }
 
         return -1;
+    }
+
+    public long getNextID(Hashtable<Long, ?> hashTable)
+    {
+        return ((hashTable.size() > 0) ? Collections.max(hashTable.keySet()) + 1 : 0);
     }
 
     /*private class GameMaster extends Thread {
