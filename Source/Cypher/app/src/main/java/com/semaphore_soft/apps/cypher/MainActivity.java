@@ -225,7 +225,17 @@ public class MainActivity extends AppCompatActivity implements WiFiServicesList.
         config.groupOwnerIntent = hostWillingness;
         if (serviceRequest != null)
         {
-            mManager.removeServiceRequest(mChannel, serviceRequest, null);
+            mManager.removeServiceRequest(mChannel, serviceRequest, new WifiP2pManager.ActionListener() {
+                @Override
+                public void onSuccess() {
+                    Log.d(TAG, "Removed service request");
+                }
+
+                @Override
+                public void onFailure(int reason) {
+                    Log.d(TAG, "Failed to remove service request");
+                }
+            });
             mManager.connect(mChannel, config, new WifiP2pManager.ActionListener()
             {
                 @Override
@@ -361,6 +371,7 @@ public class MainActivity extends AppCompatActivity implements WiFiServicesList.
             @Override
             public void onSuccess()
             {
+                Log.d(TAG, "Removed service request");
                 mManager.addServiceRequest(mChannel, serviceRequest, new WifiP2pManager.ActionListener()
                 {
                     @Override
