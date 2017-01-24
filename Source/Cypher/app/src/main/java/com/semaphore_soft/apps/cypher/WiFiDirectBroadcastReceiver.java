@@ -17,9 +17,9 @@ import android.util.Log;
 import android.view.View;
 import android.widget.Toast;
 
+import java.io.DataInputStream;
+import java.io.DataOutputStream;
 import java.io.IOException;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
 import java.net.InetAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
@@ -80,7 +80,7 @@ public class WiFiDirectBroadcastReceiver extends BroadcastReceiver
                             //new Thread(new ClientThread(groupOwnerAddress)).start();
                             new Client().execute(groupOwnerAddress);
 //                            mActivity.buffer.add("Hello, World!");
-//                            write("Hello, World!");
+                            write("Hello, World!");
                         }
                     }
                     catch (UnknownHostException e)
@@ -222,9 +222,9 @@ public class WiFiDirectBroadcastReceiver extends BroadcastReceiver
             Log.d("Write", "sending message...");
             try
             {
-                ObjectOutputStream oos = new ObjectOutputStream(mySocket.getOutputStream());
-                oos.writeUTF(str);
-                oos.flush();
+                DataOutputStream dos = new DataOutputStream(mySocket.getOutputStream());
+                dos.writeUTF(str);
+                dos.flush();
             } catch (IOException e)
             {
                 e.printStackTrace();
@@ -274,10 +274,10 @@ public class WiFiDirectBroadcastReceiver extends BroadcastReceiver
                 makeToast("Connection made");
                 try
                 {
-                    ObjectOutputStream out = new ObjectOutputStream(my_socket.getOutputStream());
+                    DataOutputStream out = new DataOutputStream(my_socket.getOutputStream());
                     // This may or may not be needed
                     out.flush();
-                    ObjectInputStream in = new ObjectInputStream((my_socket.getInputStream()));
+                    DataInputStream in = new DataInputStream((my_socket.getInputStream()));
                     out.writeUTF("Hello, World!");
                     // flush after write or inputStream will hang on read
                     out.flush();
@@ -322,9 +322,9 @@ public class WiFiDirectBroadcastReceiver extends BroadcastReceiver
 //                Log.i("ClientThread", "Connection made");
 //                try
 //                {
-//                    ObjectOutputStream out = new ObjectOutputStream(my_socket.getOutputStream());
+//                    DataOutputStream out = new DataOutputStream(my_socket.getOutputStream());
 //                    out.flush();
-//                    ObjectInputStream in = new ObjectInputStream(my_socket.getInputStream());
+//                    DataInputStream in = new DataInputStream(my_socket.getInputStream());
 //                    mkmsg(in.readUTF());
 //                    out.writeUTF("Hello, World!");
 //                    // flush after write or inputStream will hang on read
@@ -343,7 +343,7 @@ public class WiFiDirectBroadcastReceiver extends BroadcastReceiver
 //
 //    }
 
-    private class Client extends AsyncTask<InetAddress, ObjectOutputStream, String>
+    private class Client extends AsyncTask<InetAddress, DataOutputStream, String>
     {
         //private Socket mySocket = null;
 
@@ -354,11 +354,11 @@ public class WiFiDirectBroadcastReceiver extends BroadcastReceiver
             {
                 mySocket = new Socket(params[0], MainActivity.SERVER_PORT);
                 Log.d("Client", "Connection made");
-                ObjectOutputStream out = new ObjectOutputStream(mySocket.getOutputStream());
+                DataOutputStream out = new DataOutputStream(mySocket.getOutputStream());
                 out.flush();
-                ObjectInputStream in = new ObjectInputStream(mySocket.getInputStream());
+                DataInputStream in = new DataInputStream(mySocket.getInputStream());
                 mkmsg(in.readUTF());
-                publishProgress(out);
+                //publishProgress(out);
             }
             catch (IOException e)
             {
@@ -370,10 +370,10 @@ public class WiFiDirectBroadcastReceiver extends BroadcastReceiver
         }
 
         @Override
-        protected void onProgressUpdate(ObjectOutputStream... progress)
+        protected void onProgressUpdate(DataOutputStream... progress)
         {
             //mActivity.sendMessage(progress[0]);
-            write("Hello, World!");
+            //write("Hello, World!");
             Log.d("Client", "Sending message");
         }
     }
