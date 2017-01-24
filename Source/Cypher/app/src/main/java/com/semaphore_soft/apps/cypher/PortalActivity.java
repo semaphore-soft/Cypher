@@ -423,9 +423,19 @@ public class PortalActivity extends ARActivity
                         int markerID = renderer.getFirstMarker();
                         if (markerID > -1)
                         {
-                            float res = renderer.getMarkerDirection(markerID);
+                            float  res    = renderer.getMarkerDirection(markerID);
+                            String output = "Heading: " + res;
+
+                            int nearestMarkerID = getNearestNonPlayerMarker(markerID);
+                            if (nearestMarkerID > -1)
+                            {
+                                float res2 =
+                                    renderer.getAngleBetweenMarkers(markerID, nearestMarkerID);
+                                output += "\nAngle: " + res2;
+                            }
+
                             Toast.makeText(PortalActivity.this,
-                                           "Heading: " + res,
+                                           output,
                                            Toast.LENGTH_SHORT).show();
                         }
 

@@ -464,7 +464,48 @@ class PortalRenderer extends ARRendererGLES20
         System.out.println("Flat angle in degrees: " + res);
 
         res *= (180 / Math.PI);
-        return res;
+        return ((Float.isNaN(res)) ? 0 : res);
+    }
+
+    public float getAngleBetweenMarkers(int mark0, int mark1)
+    {
+        float res;
+
+        float[] mark0TransInfo =
+            ARToolKit.getInstance().queryMarkerTransformation(mark0);
+        float[] mark0PosInfo =
+            {mark0TransInfo[mark0TransInfo.length - 4], mark0TransInfo[
+                mark0TransInfo.length -
+                3], mark0TransInfo[
+                mark0TransInfo.length - 2]};
+        float[] mark1TransInfo =
+            ARToolKit.getInstance().queryMarkerTransformation(mark1);
+        float[] mark1PosInfo =
+            {mark1TransInfo[mark1TransInfo.length - 4], mark1TransInfo[
+                mark1TransInfo.length -
+                3], mark1TransInfo[
+                mark1TransInfo.length - 2]};
+
+        String output = "";
+        for (int i = 0; i < mark0PosInfo.length; ++i)
+        {
+            output += mark0PosInfo[i] + " ";
+        }
+        System.out.println(output);
+
+        output = "";
+        for (int i = 0; i < mark1PosInfo.length; ++i)
+        {
+            output += mark1PosInfo[i] + " ";
+        }
+        System.out.println(output);
+
+        res = (float) Math.atan2(mark1PosInfo[0] - mark0PosInfo[0],
+                                 mark1PosInfo[1] - mark0PosInfo[1]);
+        res *= (180 / Math.PI);
+        res = ((res < 0) ? (360 + res) : res);
+
+        return ((Float.isNaN(res)) ? 0 : res);
     }
 
     public void setPlayerMarkerID(int playerMarkerID)
