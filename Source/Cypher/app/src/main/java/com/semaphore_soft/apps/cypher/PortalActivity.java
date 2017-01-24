@@ -15,7 +15,6 @@ import org.artoolkit.ar.base.ARActivity;
 import org.artoolkit.ar.base.rendering.ARRenderer;
 
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.Hashtable;
 
@@ -282,7 +281,7 @@ public class PortalActivity extends ARActivity
                                 {
                                     long newEntityID =
                                         getNextID(entities);
-                                    int  newType     = ((Math.random() > 0.3) ? 0 : 1);
+                                    int newType = ((Math.random() > 0.3) ? 0 : 1);
 
                                     Entity newEntity = new Entity(newEntityID, newType);
                                     entities.put(newEntityID, newEntity);
@@ -412,6 +411,26 @@ public class PortalActivity extends ARActivity
                     public void onNothingSelected(AdapterView<?> parent)
                     {
 
+                    }
+                });
+
+                Button btnHeading = (Button) findViewById(R.id.btnMarkerHeading);
+                btnHeading.setOnClickListener(new View.OnClickListener()
+                {
+                    @Override
+                    public void onClick(View v)
+                    {
+                        int markerID = renderer.getFirstMarker();
+                        if (markerID > -1)
+                        {
+                            float res = renderer.getMarkerDirection(markerID);
+                            Toast.makeText(PortalActivity.this,
+                                           "Heading: " + res,
+                                           Toast.LENGTH_SHORT).show();
+                        }
+
+                        //System.out.println("Heading: " + heading);
+                        //Toast.makeText(getApplicationContext(), "Heading: " + heading, Toast.LENGTH_SHORT);
                     }
                 });
                 break;

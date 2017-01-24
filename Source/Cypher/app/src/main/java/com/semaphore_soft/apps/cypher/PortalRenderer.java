@@ -266,7 +266,7 @@ class PortalRenderer extends ARRendererGLES20
             {
                 if (ARToolKit.getInstance().queryMarkerVisible(id))
                 {
-                    System.out.println("marker " + id + " visible");
+                    //System.out.println("marker " + id + " visible");
                 }
             }
         }
@@ -438,6 +438,33 @@ class PortalRenderer extends ARRendererGLES20
         }
 
         return nearest;
+    }
+
+    public float getMarkerDirection(int mark0)
+    {
+        float res;
+
+        float[] mark0TransInfo =
+            ARToolKit.getInstance().queryMarkerTransformation(mark0);
+
+        for (int i = 0; i < mark0TransInfo.length; i += 4)
+        {
+            String output = "";
+            for (int j = 0; j < 4; ++j)
+            {
+                output += mark0TransInfo[i + j] + " ";
+            }
+            System.out.println(output);
+        }
+
+        res = ((mark0TransInfo[4] >= 0) ? (float) Math.acos(mark0TransInfo[0]) : (float) (Math.PI +
+                                                                                          Math.acos(
+                                                                                              -mark0TransInfo[0])));
+
+        System.out.println("Flat angle in degrees: " + res);
+
+        res *= (180 / Math.PI);
+        return res;
     }
 
     public void setPlayerMarkerID(int playerMarkerID)
