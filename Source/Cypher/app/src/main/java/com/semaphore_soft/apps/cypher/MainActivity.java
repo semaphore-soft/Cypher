@@ -167,6 +167,7 @@ public class MainActivity extends AppCompatActivity implements WiFiServicesList.
     protected void onPause()
     {
         unregisterReceiver(mReceiver);
+        stopServices();
         super.onPause();
     }
 
@@ -495,5 +496,13 @@ public class MainActivity extends AppCompatActivity implements WiFiServicesList.
     public void toasts(String str)
     {
         Toast.makeText(this, str, Toast.LENGTH_SHORT).show();
+    }
+
+    // Stop these threads from running after they are no longer needed
+    public void stopServices()
+    {
+        Log.i(TAG, "Removing service callbacks");
+        mServiceDiscoveringHandler.removeCallbacks(mServiceDiscoveringRunnable);
+        mServiceBroadcastingHandler.removeCallbacks(mServiceBroadcastingRunnable);
     }
 }
