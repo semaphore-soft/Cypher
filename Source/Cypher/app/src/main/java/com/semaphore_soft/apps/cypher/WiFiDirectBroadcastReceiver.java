@@ -70,6 +70,7 @@ public class WiFiDirectBroadcastReceiver extends BroadcastReceiver
                             Log.d(TAG, "Device is group owner");
                             Toast.makeText(mActivity, "You're the group owner!", Toast.LENGTH_SHORT).show();
                             new Thread(new ServerThread()).start();
+                            mActivity.stopServices();
                         }
                         else if (wifiP2pInfo.groupFormed)
                         {
@@ -80,7 +81,8 @@ public class WiFiDirectBroadcastReceiver extends BroadcastReceiver
                             //new Thread(new ClientThread(groupOwnerAddress)).start();
                             new Client().execute(groupOwnerAddress);
 //                            mActivity.buffer.add("Hello, World!");
-                            write("Hello, World!");
+//                            write("Hello, World!");
+                            mActivity.stopServices();
                         }
                     }
                     catch (UnknownHostException e)

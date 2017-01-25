@@ -167,6 +167,7 @@ public class MainActivity extends AppCompatActivity implements WiFiServicesList.
     protected void onPause()
     {
         unregisterReceiver(mReceiver);
+        stopServices();
         super.onPause();
     }
 
@@ -225,7 +226,17 @@ public class MainActivity extends AppCompatActivity implements WiFiServicesList.
         config.groupOwnerIntent = hostWillingness;
         if (serviceRequest != null)
         {
-            mManager.removeServiceRequest(mChannel, serviceRequest, null);
+            mManager.removeServiceRequest(mChannel, serviceRequest, new WifiP2pManager.ActionListener() {
+                @Override
+                public void onSuccess() {
+                    Log.d(TAG, "Removed service request");
+                }
+
+                @Override
+                public void onFailure(int reason) {
+                    Log.d(TAG, "Failed to remove service request");
+                }
+            });
             mManager.connect(mChannel, config, new WifiP2pManager.ActionListener()
             {
                 @Override
@@ -361,6 +372,7 @@ public class MainActivity extends AppCompatActivity implements WiFiServicesList.
             @Override
             public void onSuccess()
             {
+                Log.d(TAG, "Removed service request");
                 mManager.addServiceRequest(mChannel, serviceRequest, new WifiP2pManager.ActionListener()
                 {
                     @Override
@@ -484,5 +496,13 @@ public class MainActivity extends AppCompatActivity implements WiFiServicesList.
     public void toasts(String str)
     {
         Toast.makeText(this, str, Toast.LENGTH_SHORT).show();
+    }
+
+    // Stop these threads from running after they are no longer needed
+    public void stopServices()
+    {
+        Log.i(TAG, "Removing service callbacks");
+        mServiceDiscoveringHandler.removeCallbacks(mServiceDiscoveringRunnable);
+        mServiceBroadcastingHandler.removeCallbacks(mServiceBroadcastingRunnable);
     }
 }
