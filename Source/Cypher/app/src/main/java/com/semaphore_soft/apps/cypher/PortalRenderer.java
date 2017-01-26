@@ -1,6 +1,7 @@
 package com.semaphore_soft.apps.cypher;
 
 import android.opengl.GLES20;
+import android.opengl.Matrix;
 
 import com.semaphore_soft.apps.cypher.shader.SimpleFragmentShader;
 import com.semaphore_soft.apps.cypher.shader.SimpleShaderProgram;
@@ -25,14 +26,7 @@ class PortalRenderer extends ARRendererGLES20
 
     private int character = 0;
 
-    /*private int mark0 = -1;
-    private int mark1 = -1;
-    private int mark2 = -1;*/
-
     private ArrayList<Integer> markers;
-
-    private int playerMarkerID = -1;
-    private int playerRoomID   = -1;
 
     private int[] characterMarkerIDs;
     private int[] characterRoomIDs;
@@ -47,10 +41,6 @@ class PortalRenderer extends ARRendererGLES20
     @Override
     public boolean configureARScene()
     {
-        /*mark0 = ARToolKit.getInstance().addMarker("single;Data/0.patt;80");
-        mark1 = ARToolKit.getInstance().addMarker("single;Data/1.patt;80");
-        mark2 = ARToolKit.getInstance().addMarker("single;Data/2.patt;80");*/
-
         markers = new ArrayList<>();
 
         markers.add(ARToolKit.getInstance().addMarker("single;Data/00.patt;80"));
@@ -73,11 +63,6 @@ class PortalRenderer extends ARRendererGLES20
         markers.add(ARToolKit.getInstance().addMarker("single;Data/17.patt;80"));
         markers.add(ARToolKit.getInstance().addMarker("single;Data/18.patt;80"));
         markers.add(ARToolKit.getInstance().addMarker("single;Data/19.patt;80"));
-
-        /*if (mark0 < 0 || mark1 < 0 || mark2 < 0)
-        {
-            return false;
-        }*/
 
         for (Integer id : markers)
         {
@@ -461,71 +446,63 @@ class PortalRenderer extends ARRendererGLES20
                                                                                           Math.acos(
                                                                                               -mark0TransInfo[0])));
 
+        res *= (180 / Math.PI);
         System.out.println("Flat angle in degrees: " + res);
 
-        res *= (180 / Math.PI);
         return ((Float.isNaN(res)) ? 0 : res);
     }
 
     public float getAngleBetweenMarkers(int mark0, int mark1)
     {
-        float res;
+        float[] resVector;
 
         float[] mark0TransInfo =
             ARToolKit.getInstance().queryMarkerTransformation(mark0);
-        float[] mark0PosInfo =
-            {mark0TransInfo[mark0TransInfo.length - 4], mark0TransInfo[
-                mark0TransInfo.length -
-                3], mark0TransInfo[
-                mark0TransInfo.length - 2]};
         float[] mark1TransInfo =
             ARToolKit.getInstance().queryMarkerTransformation(mark1);
-        float[] mark1PosInfo =
-            {mark1TransInfo[mark1TransInfo.length - 4], mark1TransInfo[
-                mark1TransInfo.length -
-                3], mark1TransInfo[
-                mark1TransInfo.length - 2]};
 
-        String output = "";
-        for (int i = 0; i < mark0PosInfo.length; ++i)
+        mark1TransInfo[12] -= mark0TransInfo[12];
+        mark1TransInfo[13] -= mark0TransInfo[13];
+        mark1TransInfo[14] -= mark0TransInfo[14];
+
+        mark0TransInfo[12] -= mark0TransInfo[12];
+        mark0TransInfo[13] -= mark0TransInfo[13];
+        mark0TransInfo[14] -= mark0TransInfo[14];
+
+        float[] mark0TransInv = new float[16];
+        Matrix.invertM(mark0TransInv, 0, mark0TransInfo, 0);
+
+        resVector =
+            new float[]{mark1TransInfo[12], mark1TransInfo[13], mark1TransInfo[14], mark1TransInfo[15]};
+
+        String output = "ResVector Before Multiply: ";
+        for (int i = 0; i < resVector.length; ++i)
         {
-            output += mark0PosInfo[i] + " ";
+            output += resVector[i] + " ";
         }
         System.out.println(output);
 
-        output = "";
-        for (int i = 0; i < mark1PosInfo.length; ++i)
+        Matrix.multiplyMV(resVector,
+                          0,
+                          mark0TransInv,
+                          0,
+                          resVector,
+                          0);
+
+        output = "ResVector After Multiply: ";
+        for (int i = 0; i < resVector.length; ++i)
         {
-            output += mark1PosInfo[i] + " ";
+            output += resVector[i] + " ";
         }
+
+        float resAngle = (float) Math.atan2(resVector[0], resVector[1]);
+        resAngle *= (180 / Math.PI);
+        resAngle = ((resAngle < 0) ? (360 + resAngle) : resAngle);
+
+        //output += resAngle;
         System.out.println(output);
 
-        res = (float) Math.atan2(mark1PosInfo[0] - mark0PosInfo[0],
-                                 mark1PosInfo[1] - mark0PosInfo[1]);
-        res *= (180 / Math.PI);
-        res = ((res < 0) ? (360 + res) : res);
-
-        return ((Float.isNaN(res)) ? 0 : res);
-    }
-
-    public void setPlayerMarkerID(int playerMarkerID)
-    {
-        this.playerMarkerID = playerMarkerID;
-        playerRoomID = -1; //reset player room for good measure
-    }
-
-    public void setPlayerRoomID(int playerRoomID)
-    {
-        this.playerRoomID = playerRoomID;
-    }
-
-    public void setCharacter(int character)
-    {
-        this.character = character;
-        if (arTriangleGLES20 != null)
-        {
-            arTriangleGLES20.setCharacter(character);
-        }
+        return ((Float.isNaN(resAngle)) ? 0 : resAngle);
     }
 
     public void setCharacterMarker(int characterID, int markerID)
