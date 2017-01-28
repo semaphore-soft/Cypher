@@ -470,12 +470,18 @@ public class MainActivity extends AppCompatActivity implements WiFiServicesList.
         if (id == R.id.action_settings)
         {
             return true;
-        } else if (id == R.id.reset_list)
+        }
+        else if (id == R.id.reset_list)
         {
             reset();
             TextView tv = (TextView) findViewById(R.id.test);
             tv.setText("Label");
             Log.d(TAG, "Reset textview");
+        }
+        else if (id == R.id.write_message)
+        {
+            WiFiDirectBroadcastReceiver.write("Test string");
+            Log.d(TAG, "Send message");
         }
 
         return super.onOptionsItemSelected(item);

@@ -6,6 +6,10 @@
         android:orderInCategory="1"
         android:title="Reset"
         app:showAsAction="never" />
+    <item android:id="@+id/write_message"
+          android:orderInCategory="2"
+          android:title="Write"
+          app:showAsAction="never" />
     <item
         android:id="@+id/action_settings"
         android:orderInCategory="100"

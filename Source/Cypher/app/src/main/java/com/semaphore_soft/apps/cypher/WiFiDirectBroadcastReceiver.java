@@ -38,7 +38,7 @@ public class WiFiDirectBroadcastReceiver extends BroadcastReceiver
     private final MainActivity mActivity;
     private boolean connecting = false;
 
-    public Socket mySocket = null;
+    public static Socket mySocket = null;
 
     private final static String TAG = "WifiBR";
 
@@ -216,7 +216,7 @@ public class WiFiDirectBroadcastReceiver extends BroadcastReceiver
         tHandler.sendMessage(msg);
     }
 
-    public void write(String str)
+    public static void write(String str)
     {
         if (mySocket != null)
         {
@@ -362,7 +362,7 @@ public class WiFiDirectBroadcastReceiver extends BroadcastReceiver
                 out.flush();
                 DataInputStream in = new DataInputStream(mySocket.getInputStream());
                 mkmsg(in.readUTF());
-                publishProgress(out);
+                //publishProgress(out);
             }
             catch (IOException e)
             {
