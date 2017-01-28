@@ -46,10 +46,10 @@ public class MainActivity extends AppCompatActivity implements WiFiServicesList.
     private WifiP2pManager mManager;
     private WifiP2pManager.Channel mChannel;
     private BroadcastReceiver mReceiver = null;
-    private IntentFilter mIntentFiler = new IntentFilter();
+    private final IntentFilter mIntentFiler = new IntentFilter();
     private WifiP2pDnsSdServiceRequest serviceRequest;
-    private Handler mServiceBroadcastingHandler = new Handler();
-    private Handler mServiceDiscoveringHandler = new Handler();
+    private final Handler mServiceBroadcastingHandler = new Handler();
+    private final Handler mServiceDiscoveringHandler = new Handler();
 
     public ProgressBar progressBar;
     // hostWillingness will only work if devices have not connected before
@@ -311,7 +311,7 @@ public class MainActivity extends AppCompatActivity implements WiFiServicesList.
     }
 
     // Force rebroadcast of service information
-    private Runnable mServiceBroadcastingRunnable = new Runnable() {
+    private final Runnable mServiceBroadcastingRunnable = new Runnable() {
         @Override
         public void run() {
             peerDiscovery();
@@ -416,7 +416,7 @@ public class MainActivity extends AppCompatActivity implements WiFiServicesList.
                                     Log.d(TAG, "System is busy");
                                 } else if (i == WifiP2pManager.ERROR)
                                 {
-                                    // soooo helpful...
+                                    // so helpful...
                                     Log.d(TAG, "There was an error");
                                 }
                             }
@@ -441,7 +441,7 @@ public class MainActivity extends AppCompatActivity implements WiFiServicesList.
         });
     }
 
-    private Runnable mServiceDiscoveringRunnable = new Runnable()
+    private final Runnable mServiceDiscoveringRunnable = new Runnable()
     {
         @Override
         public void run()

@@ -20,15 +20,15 @@ import java.net.Socket;
 
 public class DeviceThreads
 {
-    public static Socket mySocket = null;
-    private MainActivity mActivity;
+    private static Socket mySocket = null;
+    private final MainActivity mActivity;
 
     public DeviceThreads(MainActivity activity)
     {
         mActivity = activity;
     }
 
-    private Handler handler = new Handler(new Handler.Callback()
+    private final Handler handler = new Handler(new Handler.Callback()
     {
         @Override
         public boolean handleMessage(Message msg)
@@ -37,7 +37,7 @@ public class DeviceThreads
             return true;
         }
     });
-    public void mkmsg(String str)
+    private void mkmsg(String str)
     {
         Message msg = new Message();
         Bundle b = new Bundle();
@@ -47,7 +47,7 @@ public class DeviceThreads
     }
 
     // Handler to get toasts for debugging
-    private Handler tHandler = new Handler(new Handler.Callback()
+    private final Handler tHandler = new Handler(new Handler.Callback()
     {
         @Override
         public boolean handleMessage(Message msg)
@@ -56,7 +56,7 @@ public class DeviceThreads
             return true;
         }
     });
-    public void makeToast(String str)
+    private void makeToast(String str)
     {
         Message msg = new Message();
         Bundle b = new Bundle();
