@@ -466,7 +466,6 @@ public class MainActivity extends AppCompatActivity implements WiFiServicesList.
         // as you specify a parent activity in AndroidManifest.xml.
         int id = item.getItemId();
 
-        //noinspection SimplifiableIfStatement
         if (id == R.id.action_settings)
         {
             return true;
@@ -480,7 +479,7 @@ public class MainActivity extends AppCompatActivity implements WiFiServicesList.
         }
         else if (id == R.id.write_message)
         {
-            WiFiDirectBroadcastReceiver.write("Test string");
+            DeviceThreads.write("Test string");
             Log.d(TAG, "Send message");
         }
 
