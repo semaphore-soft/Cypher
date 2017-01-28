@@ -296,6 +296,7 @@ public class MainActivity extends AppCompatActivity implements WiFiServicesList.
 
     private void peerDiscovery()
     {
+        Log.d(TAG, "Starting peer discovery");
         mManager.discoverPeers(mChannel, new WifiP2pManager.ActionListener() {
             @Override
             public void onSuccess() {
@@ -313,7 +314,6 @@ public class MainActivity extends AppCompatActivity implements WiFiServicesList.
     private Runnable mServiceBroadcastingRunnable = new Runnable() {
         @Override
         public void run() {
-            Log.d("Thread", "Broadcasting peers");
             peerDiscovery();
         }
     };
