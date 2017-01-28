@@ -39,7 +39,8 @@ public class MainActivity extends AppCompatActivity implements WiFiServicesList.
     // Port should be between 49152-65535
     public final static int SERVER_PORT = 58008;
     // rebroadcast every 2 minutes
-    private static final long SERVICE_BROADCASTING_INTERVAL = 120000;
+//    private static final long SERVICE_BROADCASTING_INTERVAL = 120000;
+    private static final long SERVICE_BROADCASTING_INTERVAL = 100000;
     private static final long SERVICE_DISCOVERING_INTERVAL = 120000;
 
     private WifiP2pManager mManager;
@@ -101,7 +102,8 @@ public class MainActivity extends AppCompatActivity implements WiFiServicesList.
                 hostWillingness = 0;
                 // Reset ListView so old items are removed
                 reset();
-                mServiceBroadcastingHandler.postDelayed(mServiceBroadcastingRunnable, SERVICE_BROADCASTING_INTERVAL);
+//                mServiceBroadcastingHandler.postDelayed(mServiceBroadcastingRunnable, SERVICE_BROADCASTING_INTERVAL);
+                peerDiscovery();
                 setupService();
                 startDiscovery();
             }
@@ -116,7 +118,8 @@ public class MainActivity extends AppCompatActivity implements WiFiServicesList.
                 hostWillingness = 15;
                 // Reset ListView so old items are removed
                 reset();
-                mServiceBroadcastingHandler.postDelayed(mServiceBroadcastingRunnable, SERVICE_BROADCASTING_INTERVAL);
+//                mServiceBroadcastingHandler.postDelayed(mServiceBroadcastingRunnable, SERVICE_BROADCASTING_INTERVAL);
+                peerDiscovery();
                 setupService();
                 startDiscovery();
             }
@@ -291,22 +294,27 @@ public class MainActivity extends AppCompatActivity implements WiFiServicesList.
         });
     }
 
+    private void peerDiscovery()
+    {
+        mManager.discoverPeers(mChannel, new WifiP2pManager.ActionListener() {
+            @Override
+            public void onSuccess() {
+            }
+
+            @Override
+            public void onFailure(int error) {
+            }
+        });
+        mServiceBroadcastingHandler
+                .postDelayed(mServiceBroadcastingRunnable, SERVICE_BROADCASTING_INTERVAL);
+    }
+
     // Force rebroadcast of service information
     private Runnable mServiceBroadcastingRunnable = new Runnable() {
         @Override
         public void run() {
             Log.d("Thread", "Broadcasting peers");
-            mManager.discoverPeers(mChannel, new WifiP2pManager.ActionListener() {
-                @Override
-                public void onSuccess() {
-                }
-
-                @Override
-                public void onFailure(int error) {
-                }
-            });
-            mServiceBroadcastingHandler
-                    .postDelayed(mServiceBroadcastingRunnable, SERVICE_BROADCASTING_INTERVAL);
+            peerDiscovery();
         }
     };
 
