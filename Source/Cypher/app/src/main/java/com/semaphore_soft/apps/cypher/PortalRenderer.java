@@ -13,6 +13,7 @@ import org.artoolkit.ar.base.rendering.gles20.CubeGLES20;
 import org.artoolkit.ar.base.rendering.gles20.ShaderProgram;
 
 import java.util.ArrayList;
+import java.util.Hashtable;
 
 import javax.microedition.khronos.egl.EGLConfig;
 import javax.microedition.khronos.opengles.GL10;
@@ -37,6 +38,10 @@ class PortalRenderer extends ARRendererGLES20
 
     private ArrayList<ARTriangleGLES20> characterModels;
     private ArrayList<ARSquareGLES20>   roomModels;
+
+    private Hashtable<Integer, ARRoomGLES20> arRoomModels;
+
+    private SimpleShaderProgram roomShaderProgram;
 
     @Override
     public boolean configureARScene()
@@ -131,6 +136,13 @@ class PortalRenderer extends ARRendererGLES20
             roomModel.setShaderProgram(roomShaderProgram);
             roomModels.add(roomModel);
         }
+
+        arRoomModels = new Hashtable<>();
+
+        roomShaderProgram =
+            new SimpleShaderProgram(ARRoom.NUM_INDICES,
+                                    new SimpleVertexShader(),
+                                    new SimpleFragmentShader());
     }
 
     /**
@@ -291,6 +303,16 @@ class PortalRenderer extends ARRendererGLES20
             }
         }
 
+        for (Integer i : arRoomModels.keySet())
+        {
+            if (ARToolKit.getInstance().queryMarkerVisible(i))
+            {
+                arRoomModels.get(i)
+                            .draw(projectionMatrix,
+                                  ARToolKit.getInstance().queryMarkerTransformation(i));
+            }
+        }
+
         /*for (Integer markerID : characterMarkerIDs) {
             if (markerID > -1 && ARToolKit.getInstance().queryMarkerVisible(markerID)) {
                 characterModels
@@ -381,6 +403,19 @@ class PortalRenderer extends ARRendererGLES20
         return -1;
     }
 
+    public int getFirstMarkerExcluding(ArrayList<Integer> marksX)
+    {
+        for (Integer id : markers)
+        {
+            if (!marksX.contains(id) && ARToolKit.getInstance().queryMarkerVisible(id))
+            {
+                return id;
+            }
+        }
+
+        return -1;
+    }
+
     public int getNearestMarker(int mark0)
     {
         int    nearest          = -1;
@@ -391,6 +426,51 @@ class PortalRenderer extends ARRendererGLES20
             for (Integer mark1 : markers)
             {
                 if (mark0 != mark1 && ARToolKit.getInstance().queryMarkerVisible(mark1))
+                {
+                    float[] mark0TransInfo =
+                        ARToolKit.getInstance().queryMarkerTransformation(mark0);
+                    float[] mark0PosInfo =
+                        {mark0TransInfo[mark0TransInfo.length - 4], mark0TransInfo[
+                            mark0TransInfo.length -
+                            3], mark0TransInfo[
+                            mark0TransInfo.length - 2]};
+
+                    float[] mark1TransInfo =
+                        ARToolKit.getInstance().queryMarkerTransformation(mark1);
+                    float[] mark1PosInfo =
+                        {mark1TransInfo[mark1TransInfo.length - 4], mark1TransInfo[
+                            mark1TransInfo.length -
+                            3], mark1TransInfo[
+                            mark1TransInfo.length - 2]};
+
+                    double thisDistance =
+                        Math.sqrt(Math.pow(mark0PosInfo[0] - mark1PosInfo[0], 2) +
+                                  Math.pow(mark0PosInfo[1] - mark1PosInfo[1], 2) +
+                                  Math.pow(mark0PosInfo[2] - mark1PosInfo[2], 2));
+
+                    if (thisDistance < shortestDistance || shortestDistance < 0)
+                    {
+                        nearest = mark1;
+                        shortestDistance = thisDistance;
+                    }
+                }
+            }
+        }
+
+        return nearest;
+    }
+
+    public int getNearestMarkerExcluding(int mark0, ArrayList<Integer> marksX)
+    {
+        int    nearest          = -1;
+        double shortestDistance = -1;
+
+        if (ARToolKit.getInstance().queryMarkerVisible(mark0))
+        {
+            for (Integer mark1 : markers)
+            {
+                if (!marksX.contains(mark1) && mark0 != mark1 &&
+                    ARToolKit.getInstance().queryMarkerVisible(mark1))
                 {
                     float[] mark0TransInfo =
                         ARToolKit.getInstance().queryMarkerTransformation(mark0);
@@ -514,5 +594,30 @@ class PortalRenderer extends ARRendererGLES20
     public void setCharacterRoom(int characterID, int roomID)
     {
         characterRoomIDs[characterID] = roomID;
+    }
+
+    public void createRoom(Room room)
+    {
+        ARRoomGLES20 arRoom = new ARRoomGLES20(80.0f, 0.0f, 0.0f, 0.0f);
+        arRoom.setShaderProgram(roomShaderProgram);
+        for (short i = 0; i < 4; ++i)
+        {
+            arRoom.setWall(i, room.getWallType(i));
+        }
+        arRoomModels.put(room.getMarker(), arRoom);
+    }
+
+    public void updateRoom(Room room)
+    {
+        ARRoomGLES20 arRoom = arRoomModels.get(room.getMarker());
+        for (short i = 0; i < 4; ++i)
+        {
+            arRoom.setWall(i, room.getWallType(i));
+        }
+    }
+
+    public interface NewMarkerListener
+    {
+        void newMarker(int marker);
     }
 }

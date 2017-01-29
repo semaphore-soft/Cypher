@@ -13,16 +13,18 @@ public class Actor
 
     public Actor(long id)
     {
-        this.id = id;
-        markerID = -1;
-        charID = -1;
-        roomID = -1;
+        this(id, -1);
     }
 
     public Actor(long id, int charID)
     {
+        this(id, charID, -1);
+    }
+
+    public Actor(long id, int charID, int markerID)
+    {
         this.id = id;
-        markerID = -1;
+        this.markerID = markerID;
         this.charID = charID;
         roomID = -1;
     }
