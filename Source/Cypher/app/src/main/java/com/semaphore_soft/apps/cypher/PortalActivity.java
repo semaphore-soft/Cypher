@@ -932,8 +932,6 @@ public class PortalActivity extends ARActivity implements PortalRenderer.NewMark
                                 {
                                     room1.setPlaced(true);
 
-                                    //TODO open unlocked doors between other adjacent rooms
-
                                     short wall0 = getWall(room0, room1);
                                     short wall1 = getWall(room1, room0);
 
