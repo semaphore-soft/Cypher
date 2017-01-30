@@ -1,0 +1,14 @@
+_cleanup of messy room/move validity code
+
+_move classes to appropriate packages
+
+_turn system for players
+ gives turns to existing enemies after last actor turn - handled by host
+
+_interaction by with enemies/entities(/players?) in same room
+
+_graphical presentation of enemies/entities/players in each room
+
+_report invalid moves in real time
+
+_generate new room when unassigned marker comes into view
