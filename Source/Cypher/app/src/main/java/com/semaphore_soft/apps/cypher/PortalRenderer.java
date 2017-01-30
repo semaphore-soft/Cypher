@@ -3,9 +3,14 @@ package com.semaphore_soft.apps.cypher;
 import android.opengl.GLES20;
 import android.opengl.Matrix;
 
-import com.semaphore_soft.apps.cypher.shader.SimpleFragmentShader;
-import com.semaphore_soft.apps.cypher.shader.SimpleShaderProgram;
-import com.semaphore_soft.apps.cypher.shader.SimpleVertexShader;
+import com.semaphore_soft.apps.cypher.game.Room;
+import com.semaphore_soft.apps.cypher.opengl.ARRoom;
+import com.semaphore_soft.apps.cypher.opengl.ARRoomGLES20;
+import com.semaphore_soft.apps.cypher.opengl.ARSquareGLES20;
+import com.semaphore_soft.apps.cypher.opengl.ARTriangleGLES20;
+import com.semaphore_soft.apps.cypher.opengl.shader.SimpleFragmentShader;
+import com.semaphore_soft.apps.cypher.opengl.shader.SimpleShaderProgram;
+import com.semaphore_soft.apps.cypher.opengl.shader.SimpleVertexShader;
 
 import org.artoolkit.ar.base.ARToolKit;
 import org.artoolkit.ar.base.rendering.gles20.ARRendererGLES20;

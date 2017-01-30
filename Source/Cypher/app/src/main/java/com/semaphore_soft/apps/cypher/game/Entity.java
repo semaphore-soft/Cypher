@@ -1,4 +1,4 @@
-package com.semaphore_soft.apps.cypher;
+package com.semaphore_soft.apps.cypher.game;
 
 /**
  * Created by rickm on 1/19/2017.

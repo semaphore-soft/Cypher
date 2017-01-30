@@ -1,6 +1,8 @@
-package com.semaphore_soft.apps.cypher;
+package com.semaphore_soft.apps.cypher.opengl;
 
 import android.opengl.GLES10;
+
+import com.semaphore_soft.apps.cypher.game.Room;
 
 import org.artoolkit.ar.base.rendering.RenderUtils;
 

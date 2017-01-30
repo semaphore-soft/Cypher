@@ -34,7 +34,7 @@
  *  Author(s): Julian Looser, Philip Lamb
  *
  */
-package com.semaphore_soft.apps.cypher.shader;
+package com.semaphore_soft.apps.cypher.opengl.shader;
 
 import org.artoolkit.ar.base.rendering.gles20.BaseVertexShader;
 import org.artoolkit.ar.base.rendering.gles20.OpenGLShader;

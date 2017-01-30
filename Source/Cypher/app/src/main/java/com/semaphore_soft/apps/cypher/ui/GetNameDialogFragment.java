@@ -1,4 +1,4 @@
-package com.semaphore_soft.apps.cypher;
+package com.semaphore_soft.apps.cypher.ui;
 
 import android.app.Activity;
 import android.support.v4.app.DialogFragment;
@@ -7,6 +7,8 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.EditText;
+
+import com.semaphore_soft.apps.cypher.R;
 
 /**
  * Created by Scorple on 1/12/2017.

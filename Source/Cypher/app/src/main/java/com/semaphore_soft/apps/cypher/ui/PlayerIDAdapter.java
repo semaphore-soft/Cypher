@@ -1,4 +1,4 @@
-package com.semaphore_soft.apps.cypher;
+package com.semaphore_soft.apps.cypher.ui;
 
 import android.support.v7.widget.CardView;
 import android.support.v7.widget.RecyclerView;
@@ -6,6 +6,9 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
+
+import com.semaphore_soft.apps.cypher.ConnectionLobbyActivity;
+import com.semaphore_soft.apps.cypher.R;
 
 import java.util.ArrayList;
 
@@ -18,7 +21,7 @@ public class PlayerIDAdapter extends RecyclerView.Adapter<PlayerIDAdapter.Player
     ConnectionLobbyActivity parent;
     ArrayList<PlayerID>     playersList;
 
-    PlayerIDAdapter(ConnectionLobbyActivity parent, ArrayList<PlayerID> playersList)
+    public PlayerIDAdapter(ConnectionLobbyActivity parent, ArrayList<PlayerID> playersList)
     {
         this.parent = parent;
         this.playersList = playersList;

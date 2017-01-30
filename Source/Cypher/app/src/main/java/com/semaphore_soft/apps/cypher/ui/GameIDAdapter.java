@@ -1,4 +1,4 @@
-package com.semaphore_soft.apps.cypher;
+package com.semaphore_soft.apps.cypher.ui;
 
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.CardView;
@@ -7,6 +7,9 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
 import android.widget.Toast;
+
+import com.semaphore_soft.apps.cypher.JoinGameActivity;
+import com.semaphore_soft.apps.cypher.R;
 
 import java.util.ArrayList;
 
@@ -19,7 +22,7 @@ public class GameIDAdapter extends RecyclerView.Adapter<GameIDAdapter.GameIDView
     JoinGameActivity  parent;
     ArrayList<GameID> gamesList;
 
-    GameIDAdapter(JoinGameActivity parent, ArrayList<GameID> gamesList)
+    public GameIDAdapter(JoinGameActivity parent, ArrayList<GameID> gamesList)
     {
         this.parent = parent;
         this.gamesList = gamesList;

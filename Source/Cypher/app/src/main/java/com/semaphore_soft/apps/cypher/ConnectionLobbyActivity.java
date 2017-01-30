@@ -11,6 +11,9 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
 
+import com.semaphore_soft.apps.cypher.ui.PlayerID;
+import com.semaphore_soft.apps.cypher.ui.PlayerIDAdapter;
+
 import java.util.ArrayList;
 
 /**
@@ -84,8 +87,8 @@ public class ConnectionLobbyActivity extends AppCompatActivity
         for (int i = 0; i < 3; ++i)
         {
             PlayerID playerID = new PlayerID();
-            playerID._id = i;
-            playerID.playerName = "player" + i;
+            playerID.setID(i);
+            playerID.setPlayerName("player" + i);
             //gameIDAdapter.pushGameID(gameID);
             playersList.add(playerID);
         }

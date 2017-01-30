@@ -9,6 +9,9 @@ import android.support.v7.widget.Toolbar;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.semaphore_soft.apps.cypher.ui.GameID;
+import com.semaphore_soft.apps.cypher.ui.GameIDAdapter;
+
 import java.util.ArrayList;
 
 /**
@@ -36,7 +39,8 @@ public class JoinGameActivity extends AppCompatActivity
 
         name = getIntent().getStringExtra("name");
 
-        txtDisplayName.setText("Welcome " + name);
+        String welcomeText = "Welcome " + name;
+        txtDisplayName.setText(welcomeText);
 
         recyclerView = (RecyclerView) findViewById(R.id.recGameCardList);
         recyclerView.setHasFixedSize(true);
@@ -78,8 +82,8 @@ public class JoinGameActivity extends AppCompatActivity
         for (int i = 0; i < 3; ++i)
         {
             GameID gameID = new GameID();
-            gameID._id = i;
-            gameID.gameName = "game" + i;
+            gameID.setID(i);
+            gameID.setGameName("game" + i);
             //gameIDAdapter.pushGameID(gameID);
             gamesList.add(gameID);
         }

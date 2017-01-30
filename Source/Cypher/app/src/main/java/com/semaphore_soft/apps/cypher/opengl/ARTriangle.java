@@ -1,4 +1,4 @@
-package com.semaphore_soft.apps.cypher;
+package com.semaphore_soft.apps.cypher.opengl;
 
 import android.opengl.GLES10;
 

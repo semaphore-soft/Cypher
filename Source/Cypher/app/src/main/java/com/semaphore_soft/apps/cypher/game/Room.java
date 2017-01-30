@@ -1,11 +1,9 @@
-package com.semaphore_soft.apps.cypher;
+package com.semaphore_soft.apps.cypher.game;
 
 import java.util.ArrayList;
 
-import static com.semaphore_soft.apps.cypher.Room.E_WALL_TYPE.NO_DOOR;
-import static com.semaphore_soft.apps.cypher.Room.E_WALL_TYPE.DOOR_UNLOCKED;
-import static com.semaphore_soft.apps.cypher.Room.E_WALL_TYPE.DOOR_OPEN;
-import static com.semaphore_soft.apps.cypher.Room.E_WALL_TYPE.DOOR_LOCKED;
+import static com.semaphore_soft.apps.cypher.game.Room.E_WALL_TYPE.NO_DOOR;
+import static com.semaphore_soft.apps.cypher.game.Room.E_WALL_TYPE.DOOR_UNLOCKED;
 
 /**
  * Created by rickm on 1/19/2017.

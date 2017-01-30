@@ -1,4 +1,4 @@
-package com.semaphore_soft.apps.cypher;
+package com.semaphore_soft.apps.cypher.game;
 
 import android.util.Pair;
 
@@ -15,10 +15,10 @@ public class Map
     public static final short SOUTH = 2;
     public static final short WEST  = 3;
 
-    long[][]  roomIDMap;
-    short[][] roomRotationMap;
+    private long[][]  roomIDMap;
+    private short[][] roomRotationMap;
 
-    Map()
+    public Map()
     {
         roomIDMap = new long[31][31];
         roomRotationMap = new short[31][31];

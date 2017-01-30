@@ -12,6 +12,11 @@ import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.semaphore_soft.apps.cypher.game.Actor;
+import com.semaphore_soft.apps.cypher.game.Entity;
+import com.semaphore_soft.apps.cypher.game.Map;
+import com.semaphore_soft.apps.cypher.game.Room;
+
 import org.artoolkit.ar.base.ARActivity;
 import org.artoolkit.ar.base.rendering.ARRenderer;
 
@@ -19,8 +24,8 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Hashtable;
 
-import static com.semaphore_soft.apps.cypher.Room.E_WALL_TYPE.DOOR_OPEN;
-import static com.semaphore_soft.apps.cypher.Room.E_WALL_TYPE.DOOR_UNLOCKED;
+import static com.semaphore_soft.apps.cypher.game.Room.E_WALL_TYPE.DOOR_OPEN;
+import static com.semaphore_soft.apps.cypher.game.Room.E_WALL_TYPE.DOOR_UNLOCKED;
 
 /**
  * Created by rickm on 11/9/2016.

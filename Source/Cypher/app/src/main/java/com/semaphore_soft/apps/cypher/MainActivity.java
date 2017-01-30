@@ -12,10 +12,10 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.Toast;
 
+import com.semaphore_soft.apps.cypher.ui.GetNameDialogFragment;
+
 public class MainActivity extends AppCompatActivity implements GetNameDialogFragment.GetNameDialogListener
 {
-    private static MainPresenter presenter;
-
     boolean host = false;
 
     @Override
@@ -65,13 +65,6 @@ public class MainActivity extends AppCompatActivity implements GetNameDialogFrag
                 showGetNameDialog();
             }
         });
-
-        if (presenter == null)
-        {
-            presenter = new MainPresenter();
-        }
-
-        presenter.setView(this);
     }
 
     public void showGetNameDialog()

@@ -1,28 +1,30 @@
-package com.semaphore_soft.apps.cypher;
+package com.semaphore_soft.apps.cypher.opengl;
+
+import com.semaphore_soft.apps.cypher.opengl.shader.SimpleShaderProgram;
 
 import org.artoolkit.ar.base.rendering.gles20.ARDrawableOpenGLES20;
 import org.artoolkit.ar.base.rendering.gles20.ShaderProgram;
 
 /**
- * Created by Scorple on 11/28/2016.
+ * Created by Scorple on 1/27/2017.
  */
 
-public class ARTriangleGLES20 extends ARTriangle implements ARDrawableOpenGLES20
+public class ARRoomGLES20 extends ARRoom implements ARDrawableOpenGLES20
 {
-    private ShaderProgram shaderProgram;
+    private SimpleShaderProgram shaderProgram;
 
-    public ARTriangleGLES20(ShaderProgram shaderProgram)
+    public ARRoomGLES20(SimpleShaderProgram shaderProgram)
     {
         super();
         this.shaderProgram = shaderProgram;
     }
 
-    public ARTriangleGLES20(float size)
+    public ARRoomGLES20(float size)
     {
         super(size);
     }
 
-    public ARTriangleGLES20(float size, float x, float y, float z)
+    public ARRoomGLES20(float size, float x, float y, float z)
     {
         super(size, x, y, z);
     }
@@ -46,10 +48,15 @@ public class ARTriangleGLES20 extends ARTriangle implements ARDrawableOpenGLES20
     }
 
     @Override
+    public void setShaderProgram(ShaderProgram shaderProgram)
+    {
+        setShaderProgram((SimpleShaderProgram) shaderProgram);
+    }
+
     /**
      * Sets the shader program used by this geometry.
      */
-    public void setShaderProgram(ShaderProgram shaderProgram)
+    public void setShaderProgram(SimpleShaderProgram shaderProgram)
     {
         this.shaderProgram = shaderProgram;
     }

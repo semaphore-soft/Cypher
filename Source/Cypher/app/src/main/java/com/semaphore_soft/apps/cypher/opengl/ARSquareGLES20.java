@@ -1,4 +1,4 @@
-package com.semaphore_soft.apps.cypher;
+package com.semaphore_soft.apps.cypher.opengl;
 
 import org.artoolkit.ar.base.rendering.gles20.ARDrawableOpenGLES20;
 import org.artoolkit.ar.base.rendering.gles20.ShaderProgram;

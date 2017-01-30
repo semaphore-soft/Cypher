@@ -34,7 +34,7 @@
  *  Author(s): Julian Looser, Philip Lamb
  *
  */
-package com.semaphore_soft.apps.cypher.shader;
+package com.semaphore_soft.apps.cypher.opengl.shader;
 
 import android.opengl.GLES20;
 
