@@ -87,7 +87,7 @@ public class PortalActivity extends ARActivity implements PortalRenderer.NewMark
         //gameMaster.start();
     }
 
-    private void setOverlay(int id)
+    /*private void setOverlay(int id)
     {
         overlay_layout.removeAllViews();
 
@@ -666,6 +666,7 @@ public class PortalActivity extends ARActivity implements PortalRenderer.NewMark
 
         overlayID = id;
     }
+    */
 
     private void setOverlay2(int id)
     {
