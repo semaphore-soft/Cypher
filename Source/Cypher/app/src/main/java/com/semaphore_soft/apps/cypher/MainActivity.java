@@ -110,7 +110,7 @@ public class MainActivity extends AppCompatActivity implements GetNameDialogFrag
                            "Moving to Connection Lobby",
                            Toast.LENGTH_SHORT).show();
             Intent intent = new Intent(getBaseContext(), ConnectionLobbyActivity.class);
-            intent.putExtra("host", true);
+            intent.putExtra("host", host);
             intent.putExtra("name", name);
             startActivity(intent);
         }

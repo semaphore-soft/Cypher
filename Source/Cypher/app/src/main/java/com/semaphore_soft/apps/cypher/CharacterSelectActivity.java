@@ -15,6 +15,9 @@ import android.widget.RadioButton;
 
 public class CharacterSelectActivity extends AppCompatActivity
 {
+    boolean host;
+    long    playerID;
+
     @Override
     public void onCreate(Bundle savedInstanceState)
     {
@@ -22,6 +25,10 @@ public class CharacterSelectActivity extends AppCompatActivity
         setContentView(R.layout.character_select);
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
+
+        host = getIntent().getBooleanExtra("host", false);
+
+        playerID = getIntent().getLongExtra("player", 0);
 
         Button btnGo = (Button) findViewById(R.id.btnGo);
 
@@ -38,7 +45,8 @@ public class CharacterSelectActivity extends AppCompatActivity
             {
                 Snackbar.make(view, "Starting AR Activity", Snackbar.LENGTH_LONG).show();
                 Intent intent = new Intent(getBaseContext(), PortalActivity.class);
-                intent.putExtra("player", 0);
+                intent.putExtra("host", host);
+                intent.putExtra("player", playerID);
                 if (char0.isChecked())
                 {
                     intent.putExtra("character", 0);

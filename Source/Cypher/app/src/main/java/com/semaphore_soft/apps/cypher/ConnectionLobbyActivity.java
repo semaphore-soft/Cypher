@@ -24,6 +24,7 @@ public class ConnectionLobbyActivity extends AppCompatActivity
 {
     String              name;
     boolean             host;
+    long                playerID;
     ArrayList<PlayerID> playersList;
 
     private PlayerIDAdapter playerIDAdapter;
@@ -44,7 +45,8 @@ public class ConnectionLobbyActivity extends AppCompatActivity
 
         name = getIntent().getStringExtra("name");
 
-        txtDisplayName.setText("Welcome " + name);
+        String welcomeText = "Welcome" + name;
+        txtDisplayName.setText(welcomeText);
 
         recyclerView = (RecyclerView) findViewById(R.id.recPlayerCardList);
         recyclerView.setHasFixedSize(true);
@@ -63,6 +65,8 @@ public class ConnectionLobbyActivity extends AppCompatActivity
 
         if (host)
         {
+            playerID = 0;
+
             btnStart.setEnabled(true);
 
             btnStart.setOnClickListener(new View.OnClickListener()
@@ -73,6 +77,7 @@ public class ConnectionLobbyActivity extends AppCompatActivity
                     Snackbar.make(view, "Moving to Character Select", Snackbar.LENGTH_LONG).show();
                     Intent intent = new Intent(getBaseContext(), CharacterSelectActivity.class);
                     intent.putExtra("host", host);
+                    intent.putExtra("player", playerID);
                     startActivity(intent);
                 }
             });
