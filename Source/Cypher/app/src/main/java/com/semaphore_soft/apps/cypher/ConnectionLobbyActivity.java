@@ -72,6 +72,7 @@ public class ConnectionLobbyActivity extends AppCompatActivity
                 {
                     Snackbar.make(view, "Moving to Character Select", Snackbar.LENGTH_LONG).show();
                     Intent intent = new Intent(getBaseContext(), CharacterSelectActivity.class);
+                    intent.putExtra("host", host);
                     startActivity(intent);
                 }
             });

@@ -56,18 +56,6 @@ public class JoinGameActivity extends AppCompatActivity
         recyclerView.setAdapter(gameIDAdapter);
     }
 
-    /*public int getGamesCount() {
-        return gamesList.size();
-    }
-
-    public ArrayList<GameID> getGamesList() {
-        return gamesList;
-    }
-
-    public GameID getGameIDFromList(int position) {
-        return gamesList.get(position);
-    }*/
-
     public void joinGame(GameID gameID)
     {
         Toast.makeText(getApplicationContext(), "Moving to Connection Lobby", Toast.LENGTH_SHORT)

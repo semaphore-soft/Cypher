@@ -36,6 +36,7 @@ public class MainActivity extends AppCompatActivity implements GetNameDialogFrag
                      .show();
 
                 Intent intent = new Intent(getBaseContext(), PortalActivity.class);
+                intent.putExtra("host", true);
                 intent.putExtra("player", 0);
                 intent.putExtra("character", 0);
                 startActivity(intent);

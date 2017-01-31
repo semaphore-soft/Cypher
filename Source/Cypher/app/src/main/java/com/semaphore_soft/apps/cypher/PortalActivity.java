@@ -4,6 +4,7 @@ import android.os.Bundle;
 import android.util.Pair;
 import android.view.LayoutInflater;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
@@ -37,6 +38,10 @@ public class PortalActivity extends ARActivity implements PortalRenderer.NewMark
     public static final short OVERLAY_START_MARKER_SELECT  = 1;
     public static final short OVERLAY_ACTION               = 2;
     public static final short OVERLAY_OPEN_DOOR            = 3;
+    public static final short OVERLAY_WAITING_FOR_HOST     = 4;
+    public static final short OVERLAY_WAITING_FOR_PLAYERS  = 5;
+
+    boolean host;
 
     Long playerID;
     int  characterID;
@@ -62,18 +67,21 @@ public class PortalActivity extends ARActivity implements PortalRenderer.NewMark
 
         overlay_layout = (FrameLayout) findViewById(R.id.overlay_frame);
 
-        setOverlay2(OVERLAY_PLAYER_MARKER_SELECT);
+        host = getIntent().getBooleanExtra("host", false);
+
+        playerID = getIntent().getLongExtra("player", 0);
+        characterID = getIntent().getIntExtra("character", 0);
 
         renderer = new PortalRenderer();
 
-        playerID = getIntent().getExtras().getLong("player", 0);
-        characterID = getIntent().getExtras().getInt("character", 0);
 
         actors = new Hashtable<>();
         rooms = new Hashtable<>();
         entities = new Hashtable<>();
 
         map = new Map();
+
+        setOverlay2(OVERLAY_PLAYER_MARKER_SELECT);
 
         //gameMaster = new GameMaster();
         //gameMaster.start();
@@ -671,7 +679,9 @@ public class PortalActivity extends ARActivity implements PortalRenderer.NewMark
         {
             case OVERLAY_PLAYER_MARKER_SELECT:
             {
-                overlay = inflater.inflate(R.layout.overlay_player_marker_select, null, false);
+                overlay = inflater.inflate(R.layout.overlay_player_marker_select,
+                                           (ViewGroup) findViewById(R.id.portal_base),
+                                           false);
                 overlay_layout.addView(overlay);
                 Button btnSelect = (Button) findViewById(R.id.btnSelect);
                 btnSelect.setOnClickListener(new View.OnClickListener()
@@ -691,7 +701,14 @@ public class PortalActivity extends ARActivity implements PortalRenderer.NewMark
                                            Toast.LENGTH_SHORT)
                                  .show();
 
-                            setOverlay2(1);
+                            if (host)
+                            {
+                                setOverlay2(OVERLAY_START_MARKER_SELECT);
+                            }
+                            else
+                            {
+                                setOverlay2(OVERLAY_ACTION);
+                            }
                         }
                         else
                         {
@@ -704,11 +721,11 @@ public class PortalActivity extends ARActivity implements PortalRenderer.NewMark
                 });
                 break;
             }
-            //TODO waiting for players case
-            //TODO case should only apply to host
+            //TODO waiting for players/host case(s)
             case OVERLAY_START_MARKER_SELECT:
             {
-                overlay = inflater.inflate(R.layout.overlay_start_marker_select, null, false);
+                overlay = inflater.inflate(R.layout.overlay_start_marker_select,
+                                           (ViewGroup) findViewById(R.id.portal_base), false);
                 overlay_layout.addView(overlay);
                 Button btnSelect = (Button) findViewById(R.id.btnSelect);
                 btnSelect.setOnClickListener(new View.OnClickListener()
@@ -753,7 +770,9 @@ public class PortalActivity extends ARActivity implements PortalRenderer.NewMark
             }
             case OVERLAY_ACTION:
             {
-                overlay = inflater.inflate(R.layout.overlay_action, null, false);
+                overlay = inflater.inflate(R.layout.overlay_action,
+                                           (ViewGroup) findViewById(R.id.portal_base),
+                                           false);
                 overlay_layout.addView(overlay);
                 Button btnEndTurn = (Button) findViewById(R.id.btnEndTurn);
                 btnEndTurn.setOnClickListener(new View.OnClickListener()
@@ -893,7 +912,9 @@ public class PortalActivity extends ARActivity implements PortalRenderer.NewMark
             }
             case OVERLAY_OPEN_DOOR:
             {
-                overlay = inflater.inflate(R.layout.overlay_open_door, null, false);
+                overlay = inflater.inflate(R.layout.overlay_open_door,
+                                           (ViewGroup) findViewById(R.id.portal_base),
+                                           false);
                 overlay_layout.addView(overlay);
                 Button btnConfirm = (Button) findViewById(R.id.btnConfirm);
                 btnConfirm.setOnClickListener(new View.OnClickListener()
