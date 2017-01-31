@@ -1,7 +1,5 @@
 _cleanup of messy room/move validity code
 
-_move classes to appropriate packages
-
 _turn system for players
  gives turns to existing enemies after last actor turn - handled by host
 
