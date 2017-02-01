@@ -1,8 +1,6 @@
 package com.semaphore_soft.apps.cypher;
 
 
-import android.app.AlertDialog;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
 import android.os.StrictMode;
@@ -15,17 +13,11 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
-import android.widget.TextView;
-import android.widget.Toast;
-
-import java.net.InetAddress;
-import java.net.NetworkInterface;
-import java.net.SocketException;
-import java.util.Enumeration;
-
 import android.widget.Toast;
 
 import com.semaphore_soft.apps.cypher.ui.GetNameDialogFragment;
+
+import java.net.InetAddress;
 
 public class MainActivity extends AppCompatActivity implements GetNameDialogFragment.GetNameDialogListener, ConnectFragment.callback
 {
@@ -67,15 +59,15 @@ public class MainActivity extends AppCompatActivity implements GetNameDialogFrag
         final ConnectFragment connectFragment = new ConnectFragment();
         connectFragment.setListener(this);
 
-        Button findGame = (Button) findViewById(R.id.connect);
-        findGame.setOnClickListener(new View.OnClickListener()
-        {
-            @Override
-            public void onClick(View view)
-            {
-                connectFragment.show(getFragmentManager(), "dialog");
-            }
-        });
+//        Button findGame = (Button) findViewById(R.id.connect);
+//        findGame.setOnClickListener(new View.OnClickListener()
+//        {
+//            @Override
+//            public void onClick(View view)
+//            {
+//                connectFragment.show(getFragmentManager(), "dialog");
+//            }
+//        });
 
 
         Button btnHost = (Button) findViewById(R.id.btnHost);
@@ -90,53 +82,53 @@ public class MainActivity extends AppCompatActivity implements GetNameDialogFrag
             }
         });
 
-        Button hostGame = (Button) findViewById(R.id.host);
-        hostGame.setOnClickListener(new View.OnClickListener()
-        {
-            @Override
-            public void onClick(View view)
-            {
-                String ip = "";
-                try
-                {
-                    for (Enumeration<NetworkInterface> en = NetworkInterface.getNetworkInterfaces(); en.hasMoreElements();)
-                    {
-                        NetworkInterface ni = en.nextElement();
-                        for (Enumeration<InetAddress> addresses = ni.getInetAddresses(); addresses.hasMoreElements();)
-                        {
-                            InetAddress inetAddress = addresses.nextElement();
-                            // Limit IP addresses shown to IPv4                            if (!inetAddress.isLoopbackAddress() && inetAddress instanceof Inet4Address)
-                            {
-                                ip = inetAddress.getHostAddress();
-                                Log.i(TAG, ip);
-                            }
-                        }
-                    }
-                }
-                catch (SocketException ex)
-                {
-                    Log.e(TAG, ex.toString());
-                }
-                // ServerThread is not static so it requires an instance of the outer class
-                new Thread(new DeviceThreads(MainActivity.this).new ServerThread()).start();
-                AlertDialog.Builder builder = new AlertDialog.Builder(MainActivity.this);
-                builder.setTitle("IP Address");
-                builder.setMessage("Use this address to connect:\n" + ip);
-                builder.setPositiveButton("OK", new DialogInterface.OnClickListener()
-                {
-                    @Override
-                    public void onClick(DialogInterface dialogInterface, int i)
-                    {
-                        dialogInterface.dismiss();
-                    }
-                });
-                AlertDialog alert = builder.create();
-                alert.show();
-            }
-        });
+//        Button hostGame = (Button) findViewById(R.id.host);
+//        hostGame.setOnClickListener(new View.OnClickListener()
+//        {
+//            @Override
+//            public void onClick(View view)
+//            {
+//                String ip = "";
+//                try
+//                {
+//                    for (Enumeration<NetworkInterface> en = NetworkInterface.getNetworkInterfaces(); en.hasMoreElements();)
+//                    {
+//                        NetworkInterface ni = en.nextElement();
+//                        for (Enumeration<InetAddress> addresses = ni.getInetAddresses(); addresses.hasMoreElements();)
+//                        {
+//                            InetAddress inetAddress = addresses.nextElement();
+//                            // Limit IP addresses shown to IPv4
+//                            if (!inetAddress.isLoopbackAddress() && inetAddress instanceof Inet4Address)
+//                            {
+//                                ip = inetAddress.getHostAddress();
+//                                Log.i(TAG, ip);
+//                            }
+//                        }
+//                    }
+//                }
+//                catch (SocketException ex)
+//                {
+//                    Log.e(TAG, ex.toString());
+//                }
+//                // ServerThread is not static so it requires an instance of the outer class
+//                new Thread(new DeviceThreads(MainActivity.this).new ServerThread()).start();
+//                AlertDialog.Builder builder = new AlertDialog.Builder(MainActivity.this);
+//                builder.setTitle("IP Address");
+//                builder.setMessage("Use this address to connect:\n" + ip);
+//                builder.setPositiveButton("OK", new DialogInterface.OnClickListener()
+//                {
+//                    @Override
+//                    public void onClick(DialogInterface dialogInterface, int i)
+//                    {
+//                        dialogInterface.dismiss();
+//                    }
+//                });
+//                AlertDialog alert = builder.create();
+//                alert.show();
+//            }
+//        });
 
         Button btnJoin = (Button) findViewById(R.id.btnJoin);
-
         btnJoin.setOnClickListener(new View.OnClickListener()
         {
             @Override
@@ -178,8 +170,8 @@ public class MainActivity extends AppCompatActivity implements GetNameDialogFrag
         }
         else if (id == R.id.reset_list)
         {
-            TextView tv = (TextView) findViewById(R.id.test);
-            tv.setText("Label");
+//            TextView tv = (TextView) findViewById(R.id.test);
+//            tv.setText("Label");
             Log.d(TAG, "Reset textview");
         }
         else if (id == R.id.write_message)
@@ -193,8 +185,8 @@ public class MainActivity extends AppCompatActivity implements GetNameDialogFrag
 
     public void setLabel(String str)
     {
-        TextView tv = (TextView) findViewById(R.id.test);
-        tv.setText(str);
+//        TextView tv = (TextView) findViewById(R.id.test);
+//        tv.setText(str);
     }
 
     public void toasts(String str)
@@ -206,7 +198,7 @@ public class MainActivity extends AppCompatActivity implements GetNameDialogFrag
     public void doNetwork(InetAddress addr)
     {
         // ClientThread is not static so it requires an instance of the outer class
-        new Thread(new DeviceThreads(this).new ClientThread(addr)).start();
+        //new Thread(new DeviceThreads(this).new ClientThread(addr)).start();
     }
 
     @Override

@@ -7,14 +7,21 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
+import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.semaphore_soft.apps.cypher.ui.PlayerID;
 import com.semaphore_soft.apps.cypher.ui.PlayerIDAdapter;
 
+import java.net.Inet4Address;
+import java.net.InetAddress;
+import java.net.NetworkInterface;
+import java.net.SocketException;
 import java.util.ArrayList;
+import java.util.Enumeration;
 
 /**
  * Created by Scorple on 1/9/2017.
@@ -45,7 +52,7 @@ public class ConnectionLobbyActivity extends AppCompatActivity
 
         name = getIntent().getStringExtra("name");
 
-        String welcomeText = "Welcome" + name;
+        String welcomeText = "Welcome " + name;
         txtDisplayName.setText(welcomeText);
 
         recyclerView = (RecyclerView) findViewById(R.id.recPlayerCardList);
@@ -66,6 +73,35 @@ public class ConnectionLobbyActivity extends AppCompatActivity
         if (host)
         {
             playerID = 0;
+
+            String ip = "";
+            try
+            {
+                for (Enumeration<NetworkInterface> en = NetworkInterface.getNetworkInterfaces(); en.hasMoreElements();)
+                {
+                    NetworkInterface ni = en.nextElement();
+                    for (Enumeration<InetAddress> addresses = ni.getInetAddresses(); addresses.hasMoreElements();)
+                    {
+                        InetAddress inetAddress = addresses.nextElement();
+                        // Limit IP addresses shown to IPv4
+                        if (!inetAddress.isLoopbackAddress() && inetAddress instanceof Inet4Address)
+                        {
+                            ip = inetAddress.getHostAddress();
+                            Log.i("Lobby", ip);
+                        }
+                    }
+                }
+            }
+            catch (SocketException ex)
+            {
+                Log.e("Lobby", ex.toString());
+            }
+
+            // ServerThread is not static so it requires an instance of the outer class
+            new Thread(new DeviceThreads(ConnectionLobbyActivity.this).new ServerThread()).start();
+
+            TextView ipAddress = (TextView) findViewById(R.id.ip_address);
+            ipAddress.setText("Your IP Address is: " + ip);
 
             btnStart.setEnabled(true);
 
@@ -98,5 +134,10 @@ public class ConnectionLobbyActivity extends AppCompatActivity
             //gameIDAdapter.pushGameID(gameID);
             playersList.add(playerID);
         }
+    }
+
+    public void toasts(String str)
+    {
+        Toast.makeText(this, str, Toast.LENGTH_SHORT).show();
     }
 }

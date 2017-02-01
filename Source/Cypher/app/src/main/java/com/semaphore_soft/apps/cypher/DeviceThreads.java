@@ -21,29 +21,11 @@ import java.net.Socket;
 public class DeviceThreads
 {
     private static Socket mySocket = null;
-    private final MainActivity mActivity;
+    private final ConnectionLobbyActivity mActivity;
 
-    public DeviceThreads(MainActivity activity)
+    public DeviceThreads(ConnectionLobbyActivity activity)
     {
         mActivity = activity;
-    }
-
-    private final Handler handler = new Handler(new Handler.Callback()
-    {
-        @Override
-        public boolean handleMessage(Message msg)
-        {
-            mActivity.setLabel(msg.getData().getString("msg"));
-            return true;
-        }
-    });
-    private void mkmsg(String str)
-    {
-        Message msg = new Message();
-        Bundle b = new Bundle();
-        b.putString("msg", str);
-        msg.setData(b);
-        handler.sendMessage(msg);
     }
 
     // Handler to get toasts for debugging
@@ -137,7 +119,7 @@ public class DeviceThreads
                     // flush after write or inputStream will hang on read
                     out.flush();
                     Log.d("ServerThread", "sent message");
-                    mkmsg(in.readUTF());
+                    in.readUTF();
                     Log.d("ServerThread", "received message");
                     out.close();
                     in.close();
@@ -179,7 +161,7 @@ public class DeviceThreads
                     DataOutputStream out = new DataOutputStream(mySocket.getOutputStream());
                     out.flush();
                     DataInputStream in = new DataInputStream(mySocket.getInputStream());
-                    mkmsg(in.readUTF());
+                    in.readUTF();
                     Log.d("ClientThread", "read message");
                     // Message passing will not work if stream/socket is closed
 
