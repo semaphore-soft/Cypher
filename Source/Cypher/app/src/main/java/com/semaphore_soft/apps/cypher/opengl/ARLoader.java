@@ -92,7 +92,13 @@ public class ARLoader
         }
 
         float c = 1.0f;
-        float colors[] = {};
+        float colors[] = new float[vectorSize*4];
+        i=0;
+        while (i < vectorSize*4)
+        {
+            colors[i] = c;
+            i++;
+        }
 
         i = 0;
         Vector<Short> vecInd = file.getIndices();
