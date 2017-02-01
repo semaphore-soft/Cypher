@@ -23,13 +23,15 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:id="@+id/cancel"
-            android:layout_weight="1"/>
+            android:layout_weight="1"
+            style="@style/Widget.AppCompat.Button.Borderless"/>
 
         <Button
             android:text="Connect"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:id="@+id/connect"
-            android:layout_weight="1"/>
+            android:layout_weight="1"
+            style="@style/Widget.AppCompat.Button.Borderless"/>
     </LinearLayout>
 </LinearLayout>

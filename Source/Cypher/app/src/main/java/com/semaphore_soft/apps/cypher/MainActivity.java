@@ -13,7 +13,6 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
-import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -28,8 +27,6 @@ public class MainActivity extends AppCompatActivity implements ConnectFragment.c
     private final static String TAG = "Main";
     // Port should be between 49152-65535
     public final static int SERVER_PORT = 58008;
-
-    public ProgressBar progressBar;
 
     @Override
     protected void onCreate(Bundle savedInstanceState)

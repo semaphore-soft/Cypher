@@ -17,13 +17,12 @@ import java.net.UnknownHostException;
 
 /**
  * Created by Evan on 1/31/2017.
+ * Dialog to get host address information
  */
 
 public class ConnectFragment extends DialogFragment
 {
     private EditText addr;
-    private Button cancel;
-    private Button connect;
 
     private callback myListener;
 
@@ -40,7 +39,7 @@ public class ConnectFragment extends DialogFragment
 
         addr = (EditText) myView.findViewById(R.id.hostAddr);
 
-        cancel = (Button) myView.findViewById(R.id.cancel);
+        Button cancel = (Button) myView.findViewById(R.id.cancel);
         cancel.setOnClickListener(new View.OnClickListener()
         {
             @Override
@@ -50,7 +49,7 @@ public class ConnectFragment extends DialogFragment
             }
         });
 
-        connect = (Button) myView.findViewById(R.id.connect);
+        Button connect = (Button) myView.findViewById(R.id.connect);
         connect.setOnClickListener(new View.OnClickListener()
         {
             @Override
@@ -81,7 +80,7 @@ public class ConnectFragment extends DialogFragment
                 // hide keyboard on fragment exit
                 InputMethodManager imm = (InputMethodManager) getActivity()
                         .getSystemService(Context.INPUT_METHOD_SERVICE);
-                imm.hideSoftInputFromWindow(getView().getWindowToken(), 0);
+                boolean b = imm.hideSoftInputFromWindow(getView().getWindowToken(), 0);
 
                 dismiss();
             }

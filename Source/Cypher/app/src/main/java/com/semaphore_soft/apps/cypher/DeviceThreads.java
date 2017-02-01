@@ -74,6 +74,7 @@ public class DeviceThreads
             {
                 DataOutputStream dos = new DataOutputStream(mySocket.getOutputStream());
                 dos.writeUTF(str);
+                // flush after write or inputStream will hang on read
                 dos.flush();
             } catch (IOException e)
             {
@@ -179,14 +180,9 @@ public class DeviceThreads
                     out.flush();
                     DataInputStream in = new DataInputStream(mySocket.getInputStream());
                     mkmsg(in.readUTF());
-//                    out.writeUTF("Hello, World!");
-                     // Flush after write or inputStream will hang on read
-//                    out.flush();
-                    Log.d("ClientThread", "sent message");
+                    Log.d("ClientThread", "read message");
                     // Message passing will not work if stream/socket is closed
-//                    out.close();
-//                    in.close();
-//                    mySocket.close();
+
                 }
                 catch (IOException e)
                 {
