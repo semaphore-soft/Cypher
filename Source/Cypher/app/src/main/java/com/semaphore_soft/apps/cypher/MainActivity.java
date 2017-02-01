@@ -16,6 +16,7 @@ import android.widget.Button;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import java.net.Inet4Address;
 import java.net.InetAddress;
 import java.net.NetworkInterface;
 import java.net.SocketException;
@@ -70,6 +71,7 @@ public class MainActivity extends AppCompatActivity implements ConnectFragment.c
             @Override
             public void onClick(View view)
             {
+                String ip = "";
                 try
                 {
                     for (Enumeration<NetworkInterface> en = NetworkInterface.getNetworkInterfaces(); en.hasMoreElements();)
@@ -78,9 +80,9 @@ public class MainActivity extends AppCompatActivity implements ConnectFragment.c
                         for (Enumeration<InetAddress> addresses = ni.getInetAddresses(); addresses.hasMoreElements();)
                         {
                             InetAddress inetAddress = addresses.nextElement();
-                            if (!inetAddress.isLoopbackAddress())
+                            if (!inetAddress.isLoopbackAddress() && inetAddress instanceof Inet4Address)
                             {
-                                String ip = inetAddress.getHostAddress();
+                                ip = inetAddress.getHostAddress();
                                 Log.i(TAG, ip);
                             }
                         }
@@ -94,7 +96,7 @@ public class MainActivity extends AppCompatActivity implements ConnectFragment.c
                 new Thread(new DeviceThreads(MainActivity.this).new ServerThread()).start();
                 AlertDialog.Builder builder = new AlertDialog.Builder(MainActivity.this);
                 builder.setTitle("IP Address");
-                builder.setMessage("Use this address to connect:\n");
+                builder.setMessage("Use this address to connect:\n" + ip);
                 builder.setPositiveButton("OK", new DialogInterface.OnClickListener()
                 {
                     @Override
