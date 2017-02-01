@@ -1,5 +1,8 @@
 package com.semaphore_soft.apps.cypher.game;
 
+import java.util.Collections;
+import java.util.Hashtable;
+
 /**
  * Created by rickm on 1/19/2017.
  */
@@ -11,13 +14,6 @@ public class Actor
     private int     charID;
     private long    roomID;
     private boolean isPlayer;
-
-    private enum E_MODIFIER_TYPE
-    {
-        ATTACK,
-        SPECIAL,
-        DEFEND
-    }
 
     private enum E_SPECIAL_TYPE
     {
@@ -44,6 +40,9 @@ public class Actor
     private int            defenceRating;
     private E_STATE        state;
 
+    Hashtable<Long, Item>   items;
+    Hashtable<Long, Status> statuses;
+
     public Actor(long id)
     {
         this(id, -1);
@@ -61,6 +60,9 @@ public class Actor
         this.charID = charID;
         roomID = -1;
         isPlayer = true;
+
+        items = new Hashtable<>();
+        statuses = new Hashtable<>();
     }
 
     public Actor(long id, long roomID)
@@ -236,6 +238,9 @@ public class Actor
                 break;
         }
 
+        damage -= getRealDefenceRating();
+        damage = (damage < 0) ? 0 : damage;
+
         healthCurrent = (damage > healthCurrent) ? 0 : healthCurrent - damage;
     }
 
@@ -277,15 +282,303 @@ public class Actor
                         break;
                 }
 
+                damage -= getRealDefenceRating();
+                damage = (damage < 0) ? 0 : damage;
+
                 healthCurrent = (damage > healthCurrent) ? 0 : healthCurrent - damage;
                 break;
             case DEFEND:
-                defenceRating += specialRating;
+                StatusTemporary defenceBuff = new StatusTemporary(getNextID(statuses),
+                                                                  Status.E_STATUS_TYPE.DEFENCE_RATING_MODIFIER,
+                                                                  specialRating,
+                                                                  2);
+                statuses.put(defenceBuff.getID(), defenceBuff);
                 break;
             case HEAL:
                 healthCurrent = ((healthCurrent + specialRating) > healthMaximum) ? healthMaximum :
                                 healthCurrent + specialRating;
                 break;
         }
+    }
+
+    public void addItem(Item item)
+    {
+        if (!items.containsKey(item.getID()))
+        {
+            items.put(item.getID(), item);
+            if (item instanceof ItemDurable)
+            {
+                switch (item.getType())
+                {
+                    case HEALTH_MAXIMUM_MODIFIER:
+                    {
+                        Status status = new StatusLinked(getNextID(statuses),
+                                                         Status.E_STATUS_TYPE.HEALTH_MAXIMUM_MODIFIER,
+                                                         item.getEffectRating(),
+                                                         item.getID());
+                        addStatus(status);
+                        break;
+                    }
+                    case ATTACK_RATING_MODIFIER:
+                    {
+                        Status status = new StatusLinked(getNextID(statuses),
+                                                         Status.E_STATUS_TYPE.ATTACK_RATING_MODIFIER,
+                                                         item.getEffectRating(),
+                                                         item.getID());
+                        addStatus(status);
+                        break;
+                    }
+                    case SPECIAL_MAXIMUM_MODIFIER:
+                    {
+                        Status status = new StatusLinked(getNextID(statuses),
+                                                         Status.E_STATUS_TYPE.SPECIAL_MAXIMUM_MODIFIER,
+                                                         item.getEffectRating(),
+                                                         item.getID());
+                        addStatus(status);
+                        break;
+                    }
+                    case SPECIAL_RATING_MODIFIER:
+                    {
+                        Status status = new StatusLinked(getNextID(statuses),
+                                                         Status.E_STATUS_TYPE.SPECIAL_RATING_MODIFIER,
+                                                         item.getEffectRating(),
+                                                         item.getID());
+                        addStatus(status);
+                        break;
+                    }
+                    case SPECIAL_COST_MODIFIER:
+                    {
+                        Status status = new StatusLinked(getNextID(statuses),
+                                                         Status.E_STATUS_TYPE.SPECIAL_COST_MODIFIER,
+                                                         item.getEffectRating(),
+                                                         item.getID());
+                        addStatus(status);
+                        break;
+                    }
+                    case DEFENCE_RATING_MODIFIER:
+                    {
+                        Status status = new StatusLinked(getNextID(statuses),
+                                                         Status.E_STATUS_TYPE.DEFENCE_RATING_MODIFIER,
+                                                         item.getEffectRating(),
+                                                         item.getID());
+                        addStatus(status);
+                        break;
+                    }
+                    default:
+                        break;
+                }
+            }
+        }
+    }
+
+    public void removeItem(long itemID)
+    {
+        if (items.containsKey(itemID))
+        {
+            items.remove(itemID);
+            for (Long statusID : statuses.keySet())
+            {
+                Status status = statuses.get(statusID);
+                if (status instanceof StatusLinked && ((StatusLinked) status).getLinkID() == itemID)
+                {
+                    removeStatus(status);
+                }
+            }
+        }
+    }
+
+    public void removeItem(Item item)
+    {
+        if (items.containsKey(item.getID()))
+        {
+            items.remove(item.getID());
+            for (Long statusID : statuses.keySet())
+            {
+                Status status = statuses.get(statusID);
+                if (status instanceof StatusLinked &&
+                    ((StatusLinked) status).getLinkID() == item.getID())
+                {
+                    removeStatus(status);
+                }
+            }
+        }
+    }
+
+    public void addStatus(Status status)
+    {
+        if (!statuses.contains(status.getID()))
+        {
+            statuses.put(status.getID(), status);
+        }
+    }
+
+    public void removeStatus(long statusID)
+    {
+        if (statuses.containsKey(statusID))
+        {
+            statuses.remove(statusID);
+        }
+    }
+
+    public void removeStatus(Status status)
+    {
+        if (statuses.containsKey(status.getID()))
+        {
+            statuses.put(status.getID(), status);
+        }
+    }
+
+    //TODO the following three methods are almost identical, merge them somehow?
+    private int getRealAttackRating()
+    {
+        int realAttackRating = attackRating;
+
+        for (Long statusID : statuses.keySet())
+        {
+            Status status = statuses.get(statusID);
+            if (status.getType() == Status.E_STATUS_TYPE.ATTACK_RATING_MODIFIER)
+            {
+                realAttackRating += status.getEffectRating();
+            }
+        }
+
+        return realAttackRating;
+    }
+
+    private int getRealSpecialRating()
+    {
+        int realSpecialRating = specialRating;
+
+        for (Long statusID : statuses.keySet())
+        {
+            Status status = statuses.get(statusID);
+            if (status.getType() == Status.E_STATUS_TYPE.SPECIAL_RATING_MODIFIER)
+            {
+                realSpecialRating += status.getEffectRating();
+            }
+        }
+
+        return realSpecialRating;
+    }
+
+    private int getRealDefenceRating()
+    {
+        int realDefenceRating = defenceRating;
+
+        for (Long statusID : statuses.keySet())
+        {
+            Status status = statuses.get(statusID);
+            if (status.getType() == Status.E_STATUS_TYPE.DEFENCE_RATING_MODIFIER)
+            {
+                realDefenceRating += status.getEffectRating();
+            }
+
+        }
+
+        return realDefenceRating;
+    }
+
+    public void useItem(long itemID)
+    {
+        if (items.containsKey(itemID))
+        {
+            useItem(items.get(itemID));
+        }
+    }
+
+    public void useItem(Item item)
+    {
+        if (items.containsKey(item.getID()))
+        {
+            if (item instanceof ItemConsumable)
+            {
+                switch (item.getType())
+                {
+                    case KEY:
+                        break;
+                    case HEALTH_MAXIMUM_MODIFIER:
+                    {
+                        Status status = new StatusTemporary(getNextID(statuses),
+                                                            Status.E_STATUS_TYPE.HEALTH_MAXIMUM_MODIFIER,
+                                                            item.getEffectRating(),
+                                                            ((ItemConsumable) item).getDuration());
+                        addStatus(status);
+                        break;
+                    }
+                    case HEALTH_RESTORE:
+                        healthCurrent += item.getEffectRating();
+                        break;
+                    case ATTACK_RATING_MODIFIER:
+                    {
+                        Status status = new StatusTemporary(getNextID(statuses),
+                                                            Status.E_STATUS_TYPE.ATTACK_RATING_MODIFIER,
+                                                            item.getEffectRating(),
+                                                            ((ItemConsumable) item).getDuration());
+                        addStatus(status);
+                        break;
+                    }
+                    case SPECIAL_MAXIMUM_MODIFIER:
+                    {
+                        Status status = new StatusTemporary(getNextID(statuses),
+                                                            Status.E_STATUS_TYPE.SPECIAL_MAXIMUM_MODIFIER,
+                                                            item.getEffectRating(),
+                                                            ((ItemConsumable) item).getDuration());
+                        addStatus(status);
+                        break;
+                    }
+                    case SPECIAL_RESTORE:
+                    {
+                        specialCurrent += item.getEffectRating();
+                        break;
+                    }
+                    case SPECIAL_RATING_MODIFIER:
+                    {
+                        Status status = new StatusTemporary(getNextID(statuses),
+                                                            Status.E_STATUS_TYPE.SPECIAL_RATING_MODIFIER,
+                                                            item.getEffectRating(),
+                                                            ((ItemConsumable) item).getDuration());
+                        addStatus(status);
+                        break;
+                    }
+                    case SPECIAL_COST_MODIFIER:
+                    {
+                        Status status = new StatusTemporary(getNextID(statuses),
+                                                            Status.E_STATUS_TYPE.SPECIAL_COST_MODIFIER,
+                                                            item.getEffectRating(),
+                                                            ((ItemConsumable) item).getDuration());
+                        addStatus(status);
+                        break;
+                    }
+                    case DEFENCE_RATING_MODIFIER:
+                    {
+                        Status status = new StatusTemporary(getNextID(statuses),
+                                                            Status.E_STATUS_TYPE.DEFENCE_RATING_MODIFIER,
+                                                            item.getEffectRating(),
+                                                            ((ItemConsumable) item).getDuration());
+                        addStatus(status);
+                        break;
+                    }
+                    default:
+                        break;
+                }
+            }
+        }
+    }
+
+    public void tick()
+    {
+        for (Long statusID : statuses.keySet())
+        {
+            Status status = statuses.get(statusID);
+            if (status instanceof StatusTemporary && ((StatusTemporary) status).tick())
+            {
+                removeStatus(status);
+            }
+        }
+    }
+
+    public long getNextID(Hashtable<Long, ?> hashtable)
+    {
+        return ((hashtable.size() > 0) ? Collections.max(hashtable.keySet()) + 1 : 0);
     }
 }

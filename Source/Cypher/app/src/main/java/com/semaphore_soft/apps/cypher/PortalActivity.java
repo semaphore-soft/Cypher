@@ -1110,9 +1110,9 @@ public class PortalActivity extends ARActivity implements PortalRenderer.NewMark
         return -1;
     }
 
-    public long getNextID(Hashtable<Long, ?> hashTable)
+    public long getNextID(Hashtable<Long, ?> hashtable)
     {
-        return ((hashTable.size() > 0) ? Collections.max(hashTable.keySet()) + 1 : 0);
+        return ((hashtable.size() > 0) ? Collections.max(hashtable.keySet()) + 1 : 0);
     }
 
     short getWall(long room0, long room1)
