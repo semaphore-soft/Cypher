@@ -1,7 +1,9 @@
 package com.semaphore_soft.apps.cypher;
 
+import android.app.AlertDialog;
 import android.content.BroadcastReceiver;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.IntentFilter;
 import android.net.wifi.WpsInfo;
 import android.net.wifi.p2p.WifiP2pConfig;
@@ -26,10 +28,14 @@ import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import java.net.InetAddress;
+import java.net.NetworkInterface;
+import java.net.SocketException;
+import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Map;
 
-public class MainActivity extends AppCompatActivity implements WiFiServicesList.DeviceClickListener
+public class MainActivity extends AppCompatActivity implements WiFiServicesList.DeviceClickListener, ConnectFragment.callback
 {
 
     private final static String TAG = "Main";
@@ -93,19 +99,22 @@ public class MainActivity extends AppCompatActivity implements WiFiServicesList.
         WiFiServicesList servicesList = new WiFiServicesList();
         getFragmentManager().beginTransaction().add(R.id.servicesRoot, servicesList, "services").commit();
 
+        final ConnectFragment connectFragment = new ConnectFragment();
+        connectFragment.setListener(this);
+
         Button findGame = (Button) findViewById(R.id.connect);
         findGame.setOnClickListener(new View.OnClickListener()
         {
             @Override
             public void onClick(View view)
             {
-                hostWillingness = 0;
-                // Reset ListView so old items are removed
-                reset();
-//                mServiceBroadcastingHandler.postDelayed(mServiceBroadcastingRunnable, SERVICE_BROADCASTING_INTERVAL);
-                peerDiscovery();
-                setupService();
-                startDiscovery();
+//                hostWillingness = 0;
+//                // Reset ListView so old items are removed
+//                reset();
+//                peerDiscovery();
+//                setupService();
+//                startDiscovery();
+                connectFragment.show(getFragmentManager(), "dialog");
             }
         });
 
@@ -115,13 +124,47 @@ public class MainActivity extends AppCompatActivity implements WiFiServicesList.
             @Override
             public void onClick(View view)
             {
-                hostWillingness = 15;
-                // Reset ListView so old items are removed
-                reset();
-//                mServiceBroadcastingHandler.postDelayed(mServiceBroadcastingRunnable, SERVICE_BROADCASTING_INTERVAL);
-                peerDiscovery();
-                setupService();
-                startDiscovery();
+//                hostWillingness = 15;
+//                // Reset ListView so old items are removed
+//                reset();
+//                peerDiscovery();
+//                setupService();
+//                startDiscovery();
+                try
+                {
+                    for (Enumeration<NetworkInterface> en = NetworkInterface.getNetworkInterfaces(); en.hasMoreElements();)
+                    {
+                        NetworkInterface ni = en.nextElement();
+                        for (Enumeration<InetAddress> addresses = ni.getInetAddresses(); addresses.hasMoreElements();)
+                        {
+                            InetAddress inetAddress = addresses.nextElement();
+                            if (!inetAddress.isLoopbackAddress())
+                            {
+                                String ip = inetAddress.getHostAddress();
+                                Log.i(TAG, ip);
+                            }
+                        }
+                    }
+                }
+                catch (SocketException ex)
+                {
+                    Log.e(TAG, ex.toString());
+                }
+                // ServerThread is not static so it requires an instance of the outer class
+                new Thread(new DeviceThreads(MainActivity.this).new ServerThread()).start();
+                AlertDialog.Builder builder = new AlertDialog.Builder(MainActivity.this);
+                builder.setTitle("IP Address");
+                builder.setMessage("Use this address to connect:\n");
+                builder.setPositiveButton("OK", new DialogInterface.OnClickListener()
+                {
+                    @Override
+                    public void onClick(DialogInterface dialogInterface, int i)
+                    {
+                        dialogInterface.dismiss();
+                    }
+                });
+                AlertDialog alert = builder.create();
+                alert.show();
             }
         });
 
@@ -517,5 +560,12 @@ public class MainActivity extends AppCompatActivity implements WiFiServicesList.
         Log.i(TAG, "Removing service callbacks");
         mServiceDiscoveringHandler.removeCallbacks(mServiceDiscoveringRunnable);
         mServiceBroadcastingHandler.removeCallbacks(mServiceBroadcastingRunnable);
+    }
+
+    @Override
+    public void doNetwork(InetAddress addr)
+    {
+        // ClientThread is not static so it requires an instance of the outer class
+        new Thread(new DeviceThreads(this).new ClientThread(addr)).start();
     }
 }
