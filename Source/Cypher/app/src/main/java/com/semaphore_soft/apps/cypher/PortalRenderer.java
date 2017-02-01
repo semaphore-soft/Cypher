@@ -7,7 +7,7 @@ import com.semaphore_soft.apps.cypher.game.Room;
 import com.semaphore_soft.apps.cypher.opengl.ARRoom;
 import com.semaphore_soft.apps.cypher.opengl.ARRoomGLES20;
 import com.semaphore_soft.apps.cypher.opengl.ARSquareGLES20;
-import com.semaphore_soft.apps.cypher.opengl.ARTriangleGLES20;
+import com.semaphore_soft.apps.cypher.opengl.ARLoaderGLES20;
 import com.semaphore_soft.apps.cypher.opengl.shader.SimpleFragmentShader;
 import com.semaphore_soft.apps.cypher.opengl.shader.SimpleShaderProgram;
 import com.semaphore_soft.apps.cypher.opengl.shader.SimpleVertexShader;
@@ -38,10 +38,10 @@ class PortalRenderer extends ARRendererGLES20
     private int[] characterRoomIDs;
 
     private CubeGLES20       cube;
-    private ARTriangleGLES20 arTriangleGLES20;
+    private ARLoaderGLES20 arLoaderGLES20;
     private ARSquareGLES20   arSquareGLES20;
 
-    private ArrayList<ARTriangleGLES20> characterModels;
+    private ArrayList<ARLoaderGLES20> characterModels;
     private ArrayList<ARSquareGLES20>   roomModels;
 
     private Hashtable<Integer, ARRoomGLES20> arRoomModels;
@@ -102,12 +102,12 @@ class PortalRenderer extends ARRendererGLES20
 
         ShaderProgram triangleShaderProgram =
             new SimpleShaderProgram(3, new SimpleVertexShader(), new SimpleFragmentShader());
-        if (arTriangleGLES20 == null)
+        if (arLoaderGLES20 == null)
         {
-            arTriangleGLES20 = new ARTriangleGLES20(40.0f, 0.0f, 0.0f, 0.0f);
-            arTriangleGLES20.setCharacter(character);
+            arLoaderGLES20 = new ARLoaderGLES20(40.0f, 0.0f, 0.0f, 0.0f);
+            arLoaderGLES20.setCharacter(character);
         }
-        arTriangleGLES20.setShaderProgram(triangleShaderProgram);
+        arLoaderGLES20.setShaderProgram(triangleShaderProgram);
 
         ShaderProgram squareShaderProgram =
             new SimpleShaderProgram(6, new SimpleVertexShader(), new SimpleFragmentShader());
@@ -124,7 +124,7 @@ class PortalRenderer extends ARRendererGLES20
         {
             ShaderProgram characterShaderProgram =
                 new SimpleShaderProgram(3, new SimpleVertexShader(), new SimpleFragmentShader());
-            ARTriangleGLES20 characterModel = new ARTriangleGLES20(40.0f, 0.0f, 0.0f, 0.0f);
+            ARLoaderGLES20 characterModel = new ARLoaderGLES20(40.0f, 0.0f, 0.0f, 0.0f);
             characterModel.setCharacter(i);
             characterModel.setShaderProgram(characterShaderProgram);
             characterModels.add(characterModel);
@@ -258,7 +258,7 @@ class PortalRenderer extends ARRendererGLES20
         // If the marker is visible, apply its transformation, and render a triangle
         /*if (ARToolKit.getInstance().queryMarkerVisible(mark0))
         {
-            arTriangleGLES20.draw(projectionMatrix,
+            arLoaderGLES20.draw(projectionMatrix,
                                   ARToolKit.getInstance().queryMarkerTransformation(mark0));
         }*/
 
@@ -275,7 +275,7 @@ class PortalRenderer extends ARRendererGLES20
 
         /*if (playerMarkerID > -1 && ARToolKit.getInstance().queryMarkerVisible(playerMarkerID))
         {
-            arTriangleGLES20.draw(projectionMatrix,
+            arLoaderGLES20.draw(projectionMatrix,
                                   ARToolKit.getInstance()
                                            .queryMarkerTransformation(playerMarkerID));
         }
