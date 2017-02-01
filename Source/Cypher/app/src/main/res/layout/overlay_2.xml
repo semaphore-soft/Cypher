@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent">
+
+    <Button
+            android:text="End Turn"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentBottom="true"
+            android:layout_alignParentEnd="true"
+            android:id="@+id/btnEndTurn"/>
+
+    <TextView
+            android:text="Player marker: "
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentTop="true"
+            android:layout_alignParentStart="true"
+            android:id="@+id/txtStatus"/>
+
+    <TextView
+            android:text="Player is in room: "
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_below="@+id/txtStatus"
+            android:layout_alignParentStart="true"
+            android:id="@+id/txtStatus2"/>
+
+    <Button
+            android:text="Reselect"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:id="@+id/btnReselect"
+            android:layout_alignParentBottom="true"
+            android:layout_alignParentStart="true"/>
+
+    <Spinner
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentTop="true"
+            android:layout_alignParentEnd="true"
+            android:id="@+id/spnCharacter"/>
+
+    <Button
+            android:text="Status"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentBottom="true"
+            android:layout_centerHorizontal="true"
+            android:id="@+id/btnStatus" />
+
+    <Button
+            android:text="Heading"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:id="@+id/btnMarkerHeading"
+            android:layout_alignParentTop="true"
+            android:layout_alignStart="@+id/btnStatus"/>
+
+</RelativeLayout>

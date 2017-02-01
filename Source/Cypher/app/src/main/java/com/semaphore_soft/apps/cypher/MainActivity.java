@@ -1,11 +1,13 @@
 package com.semaphore_soft.apps.cypher;
 
+
 import android.app.AlertDialog;
 import android.content.DialogInterface;
+import android.content.Intent;
 import android.os.Bundle;
 import android.os.StrictMode;
 import android.support.design.widget.FloatingActionButton;
-import android.support.design.widget.Snackbar;
+import android.support.v4.app.FragmentManager;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
@@ -21,15 +23,20 @@ import java.net.NetworkInterface;
 import java.net.SocketException;
 import java.util.Enumeration;
 
-public class MainActivity extends AppCompatActivity implements ConnectFragment.callback
+import android.widget.Toast;
+
+import com.semaphore_soft.apps.cypher.ui.GetNameDialogFragment;
+
+public class MainActivity extends AppCompatActivity implements GetNameDialogFragment.GetNameDialogListener, ConnectFragment.callback
 {
+    boolean host = false;
 
     private final static String TAG = "Main";
     // Port should be between 49152-65535
     public final static int SERVER_PORT = 58008;
 
     @Override
-    protected void onCreate(Bundle savedInstanceState)
+    public void onCreate(Bundle savedInstanceState)
     {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
@@ -42,8 +49,14 @@ public class MainActivity extends AppCompatActivity implements ConnectFragment.c
             @Override
             public void onClick(View view)
             {
-                Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
-                        .setAction("Action", null).show();
+                Toast.makeText(getApplicationContext(), "Launching AR Activity", Toast.LENGTH_SHORT)
+                        .show();
+
+                Intent intent = new Intent(getBaseContext(), PortalActivity.class);
+                intent.putExtra("host", true);
+                intent.putExtra("player", 0);
+                intent.putExtra("character", 0);
+                startActivity(intent);
             }
         });
 
@@ -61,6 +74,19 @@ public class MainActivity extends AppCompatActivity implements ConnectFragment.c
             public void onClick(View view)
             {
                 connectFragment.show(getFragmentManager(), "dialog");
+            }
+        });
+
+
+        Button btnHost = (Button) findViewById(R.id.btnHost);
+
+        btnHost.setOnClickListener(new View.OnClickListener()
+        {
+            @Override
+            public void onClick(View view)
+            {
+                host = true;
+                showGetNameDialog();
             }
         });
 
@@ -109,6 +135,25 @@ public class MainActivity extends AppCompatActivity implements ConnectFragment.c
             }
         });
 
+        Button btnJoin = (Button) findViewById(R.id.btnJoin);
+
+        btnJoin.setOnClickListener(new View.OnClickListener()
+        {
+            @Override
+            public void onClick(View view)
+            {
+                host = false;
+                showGetNameDialog();
+            }
+        });
+    }
+
+    public void showGetNameDialog()
+    {
+        FragmentManager       fm                    = getSupportFragmentManager();
+        GetNameDialogFragment getNameDialogFragment = new GetNameDialogFragment();
+        getNameDialogFragment.setListener(this);
+        getNameDialogFragment.show(fm, "get_name_dialog");
     }
 
     @Override
@@ -162,5 +207,28 @@ public class MainActivity extends AppCompatActivity implements ConnectFragment.c
     {
         // ClientThread is not static so it requires an instance of the outer class
         new Thread(new DeviceThreads(this).new ClientThread(addr)).start();
+    }
+
+    @Override
+    public void onFinishGetName(String name)
+    {
+        if (host)
+        {
+            Toast.makeText(getApplicationContext(),
+                           "Moving to Connection Lobby",
+                           Toast.LENGTH_SHORT).show();
+            Intent intent = new Intent(getBaseContext(), ConnectionLobbyActivity.class);
+            intent.putExtra("host", host);
+            intent.putExtra("name", name);
+            startActivity(intent);
+        }
+        else
+        {
+            Toast.makeText(getApplicationContext(), "Moving to Join Game Lobby", Toast.LENGTH_SHORT)
+                 .show();
+            Intent intent = new Intent(getBaseContext(), JoinGameActivity.class);
+            intent.putExtra("name", name);
+            startActivity(intent);
+        }
     }
 }

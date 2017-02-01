@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent">
+
+    <Button
+            android:text="End Turn"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentTop="true"
+            android:layout_alignParentStart="true"
+            android:id="@+id/btnEndTurn"/>
+
+    <Button
+            android:text="Open Door"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:id="@+id/btnOpenDoor"
+            android:layout_alignParentBottom="true"
+            android:layout_alignParentStart="true"/>
+
+    <Button
+            android:text="Attack"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:id="@+id/btnAttack"
+            android:layout_alignParentTop="true"
+            android:layout_alignParentEnd="true"/>
+
+    <Button
+            android:text="Defend"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:id="@+id/btnDefend"
+            android:layout_centerVertical="true"
+            android:layout_alignParentEnd="true"/>
+
+    <Button
+            android:text="Magic"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentBottom="true"
+            android:layout_alignParentEnd="true"
+            android:id="@+id/btnMagic"/>
+
+    <Button
+            android:text="Generate\nRoom"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignBottom="@+id/btnDefend"
+            android:layout_alignParentStart="true"
+            android:id="@+id/btnGenerateRoom"/>
+
+</RelativeLayout>
