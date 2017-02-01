@@ -80,6 +80,7 @@ public class MainActivity extends AppCompatActivity implements ConnectFragment.c
                         for (Enumeration<InetAddress> addresses = ni.getInetAddresses(); addresses.hasMoreElements();)
                         {
                             InetAddress inetAddress = addresses.nextElement();
+                            // Limit IP addresses shown to IPv4
                             if (!inetAddress.isLoopbackAddress() && inetAddress instanceof Inet4Address)
                             {
                                 ip = inetAddress.getHostAddress();
