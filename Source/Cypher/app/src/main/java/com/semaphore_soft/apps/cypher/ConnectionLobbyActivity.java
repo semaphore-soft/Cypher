@@ -1,5 +1,7 @@
 package com.semaphore_soft.apps.cypher;
 
+import android.app.AlertDialog;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.design.widget.Snackbar;
@@ -20,6 +22,7 @@ import java.net.Inet4Address;
 import java.net.InetAddress;
 import java.net.NetworkInterface;
 import java.net.SocketException;
+import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.Enumeration;
 
@@ -121,6 +124,30 @@ public class ConnectionLobbyActivity extends AppCompatActivity
         else
         {
             btnStart.setEnabled(false);
+
+            try
+            {
+                InetAddress addr = InetAddress.getByName(getIntent().getStringExtra("address"));
+                // ClientThread is not static so it requires an instance of the outer class
+                new Thread(new DeviceThreads(this).new ClientThread(addr)).start();
+            }
+            catch (UnknownHostException e)
+            {
+                e.printStackTrace();
+                AlertDialog.Builder builder = new AlertDialog.Builder(this);
+                builder.setTitle("Error");
+                builder.setMessage("Unable to connect to host \nPlease try again");
+                builder.setPositiveButton("OK", new DialogInterface.OnClickListener()
+                {
+                    @Override
+                    public void onClick(DialogInterface dialogInterface, int i)
+                    {
+                        dialogInterface.dismiss();
+                    }
+                });
+                AlertDialog alert = builder.create();
+                alert.show();
+            }
         }
     }
 

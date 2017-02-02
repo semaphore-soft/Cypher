@@ -1,5 +1,8 @@
 package com.semaphore_soft.apps.cypher;
 
+import android.os.Bundle;
+import android.os.Handler;
+import android.os.Message;
 import android.util.Log;
 import android.widget.Toast;
 
@@ -18,14 +21,30 @@ import java.net.Socket;
 public class DeviceThreads
 {
     private static Socket mySocket = null;
+    private final ConnectionLobbyActivity mActivity;
 
-    public DeviceThreads()
+    public DeviceThreads(ConnectionLobbyActivity activity)
     {
+        mActivity = activity;
     }
 
-    private static void makeToast(String str)
+    // Handler to get toasts for debugging
+    private final Handler tHandler = new Handler(new Handler.Callback()
     {
-        Toast.makeText(MainApplication.getInstance().getApplicationContext(), str, Toast.LENGTH_SHORT).show();
+        @Override
+        public boolean handleMessage(Message msg)
+        {
+            mActivity.toasts(msg.getData().getString("msg"));
+            return true;
+        }
+    });
+    private void makeToast(String str)
+    {
+        Message msg = new Message();
+        Bundle b = new Bundle();
+        b.putString("msg", str);
+        msg.setData(b);
+        tHandler.sendMessage(msg);
     }
 
     public static void write(String str)
@@ -50,7 +69,7 @@ public class DeviceThreads
         }
     }
 
-    public static class ServerThread extends Thread
+    public class ServerThread extends Thread
     {
         // The local server socket
         private ServerSocket serverSocket = null;
@@ -114,7 +133,7 @@ public class DeviceThreads
         }
     }
 
-    public static class ClientThread extends Thread
+    public class ClientThread extends Thread
     {
         public ClientThread(InetAddress address)
         {
