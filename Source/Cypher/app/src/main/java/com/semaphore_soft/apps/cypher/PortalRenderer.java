@@ -104,7 +104,7 @@ class PortalRenderer extends ARRendererGLES20
             new SimpleShaderProgram(3, new SimpleVertexShader(), new SimpleFragmentShader());
         if (arLoaderGLES20 == null)
         {
-            arLoaderGLES20 = new ARLoaderGLES20(40.0f, 0.0f, 0.0f, 0.0f);
+            arLoaderGLES20 = new ARLoaderGLES20(40.0f, 0.0f, 0.0f, 0.0f, "R.assets.models.lowPolyLink");
             arLoaderGLES20.setCharacter(character);
         }
         arLoaderGLES20.setShaderProgram(triangleShaderProgram);

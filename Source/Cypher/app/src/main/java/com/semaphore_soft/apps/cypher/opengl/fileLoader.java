@@ -13,55 +13,71 @@ import java.util.Vector;
 
 public class fileLoader
 {
-    String filename;
-    Vector<Float> vertices = new Vector();
-    Vector colors= new Vector();
-    Vector<Short> indices= new Vector();
-    Vector texCoord= new Vector();
+    String filename = null;
+    Vector<Float> vertices = null;
+    Vector<Float> colors = null;
+    Vector<Short> indices= null;
+    Vector<Float> texCoord= null;
 
-    public fileLoader(){ filename = "lowPolyLink";}
+    public fileLoader(){ }
     public fileLoader(String filename){ this.filename = filename;}
 
     public void setName(String filename) {this.filename = filename;}
-    public void setName() {this.filename = "lowPolyLink";}
 
     public void getData(String filename) {
+        if (filename != null)
+        {
+            BufferedReader br = null;
+            FileReader     fr = null;
+            try
+            {
+                fr = new FileReader(filename);
+                br = new BufferedReader(fr);
 
-        BufferedReader br = null;
-        FileReader     fr = null;
+                String sCurrentLine;
 
-        try {
+                br = new BufferedReader(new FileReader(filename));
 
-            fr = new FileReader(filename);
-            br = new BufferedReader(fr);
-
-            String sCurrentLine;
-
-            br = new BufferedReader(new FileReader(filename));
-
-            while ((sCurrentLine = br.readLine()) != null) {
-                getToken(sCurrentLine);
+                while ((sCurrentLine = br.readLine()) != null)
+                {
+                    getToken(sCurrentLine);
+                }
             }
-
-        } catch (IOException e) {
-
-            e.printStackTrace();
-
-        } finally {
-
-            try {
-
-                if (br != null)
-                    br.close();
-
-                if (fr != null)
-                    fr.close();
-
-            } catch (IOException ex) {
-
-                ex.printStackTrace();
-
+            catch (IOException e)
+            {
+                e.printStackTrace();
             }
+            finally
+            {
+                try
+                {
+                    if (br != null)
+                        br.close();
+
+                    if (fr != null)
+                        fr.close();
+                }
+                catch (IOException ex)
+                {
+                    ex.printStackTrace();
+                }
+            }
+        }
+        else
+        {
+            vertices.add(1f);
+            vertices.add(2f);
+            vertices.add(1f);
+            vertices.add(0f);
+            vertices.add(1f);
+            vertices.add(3f);
+            vertices.add(1f);
+            vertices.add(1f);
+            vertices.add(1f);
+            indices.add((short) 1);
+            indices.add((short) 2);
+            indices.add((short) 3);
+
         }
     }
 
@@ -103,7 +119,6 @@ public class fileLoader
     public Vector<Float> getVerts(){
         return vertices;
     }
-
     public Vector<Short> getIndices(){
         return indices;
     }

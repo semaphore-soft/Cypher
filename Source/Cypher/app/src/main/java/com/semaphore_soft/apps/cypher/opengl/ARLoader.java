@@ -26,9 +26,9 @@ public class ARLoader
     private FloatBuffer mVertexBuffer;
     private FloatBuffer mColorBuffer;
     private ShortBuffer mIndexBuffer;
-    private fileLoader file;
+    private fileLoader file = null;
     String filename;
-    private ArrayList<Long> characters;
+    private ArrayList<Long> characters = null;
 
     public ARLoader()
     {
@@ -195,5 +195,4 @@ public class ARLoader
     }
 
     public void setName(String filename) {this.filename = filename;}
-    public void setName() {this.filename = "lowPolyLink";}
 }
