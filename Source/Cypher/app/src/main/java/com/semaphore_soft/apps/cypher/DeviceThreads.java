@@ -1,8 +1,5 @@
 package com.semaphore_soft.apps.cypher;
 
-import android.os.Bundle;
-import android.os.Handler;
-import android.os.Message;
 import android.util.Log;
 import android.widget.Toast;
 
@@ -21,30 +18,14 @@ import java.net.Socket;
 public class DeviceThreads
 {
     private static Socket mySocket = null;
-    private final ConnectionLobbyActivity mActivity;
 
-    public DeviceThreads(ConnectionLobbyActivity activity)
+    public DeviceThreads()
     {
-        mActivity = activity;
     }
 
-    // Handler to get toasts for debugging
-    private final Handler tHandler = new Handler(new Handler.Callback()
+    private static void makeToast(String str)
     {
-        @Override
-        public boolean handleMessage(Message msg)
-        {
-            mActivity.toasts(msg.getData().getString("msg"));
-            return true;
-        }
-    });
-    private void makeToast(String str)
-    {
-        Message msg = new Message();
-        Bundle b = new Bundle();
-        b.putString("msg", str);
-        msg.setData(b);
-        tHandler.sendMessage(msg);
+        Toast.makeText(MainApplication.getInstance().getApplicationContext(), str, Toast.LENGTH_SHORT).show();
     }
 
     public static void write(String str)
@@ -69,7 +50,7 @@ public class DeviceThreads
         }
     }
 
-    public class ServerThread extends Thread
+    public static class ServerThread extends Thread
     {
         // The local server socket
         private ServerSocket serverSocket = null;
@@ -86,7 +67,7 @@ public class DeviceThreads
             {
                 e.printStackTrace();
                 Log.e("ServerThread", "Failed to start server");
-                Toast.makeText(mActivity, "Failed to start server", Toast.LENGTH_SHORT).show();
+                Toast.makeText(MainApplication.getInstance().getApplicationContext(), "Failed to start server", Toast.LENGTH_SHORT).show();
             }
         }
 
@@ -119,7 +100,7 @@ public class DeviceThreads
                     // flush after write or inputStream will hang on read
                     out.flush();
                     Log.d("ServerThread", "sent message");
-                    in.readUTF();
+                    makeToast(in.readUTF());
                     Log.d("ServerThread", "received message");
                     out.close();
                     in.close();
@@ -133,7 +114,7 @@ public class DeviceThreads
         }
     }
 
-    public class ClientThread extends Thread
+    public static class ClientThread extends Thread
     {
         public ClientThread(InetAddress address)
         {
@@ -161,7 +142,7 @@ public class DeviceThreads
                     DataOutputStream out = new DataOutputStream(mySocket.getOutputStream());
                     out.flush();
                     DataInputStream in = new DataInputStream(mySocket.getInputStream());
-                    in.readUTF();
+                    makeToast(in.readUTF());
                     Log.d("ClientThread", "read message");
                     // Message passing will not work if stream/socket is closed
 
