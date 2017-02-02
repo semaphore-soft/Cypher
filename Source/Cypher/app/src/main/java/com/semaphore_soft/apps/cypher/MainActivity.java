@@ -53,9 +53,6 @@ public class MainActivity extends AppCompatActivity implements GetNameDialogFrag
         StrictMode.ThreadPolicy policy = new StrictMode.ThreadPolicy.Builder().permitNetwork().build();
         StrictMode.setThreadPolicy(policy);
 
-        final ConnectFragment connectFragment = new ConnectFragment();
-        connectFragment.setListener(this);
-
         Button btnHost = (Button) findViewById(R.id.btnHost);
 
         btnHost.setOnClickListener(new View.OnClickListener()
@@ -75,7 +72,7 @@ public class MainActivity extends AppCompatActivity implements GetNameDialogFrag
             public void onClick(View view)
             {
                 host = false;
-                connectFragment.show(getFragmentManager(), "dialog");
+                showConnectDialog();
             }
         });
     }
@@ -86,6 +83,14 @@ public class MainActivity extends AppCompatActivity implements GetNameDialogFrag
         GetNameDialogFragment getNameDialogFragment = new GetNameDialogFragment();
         getNameDialogFragment.setListener(this);
         getNameDialogFragment.show(fm, "get_name_dialog");
+    }
+
+    public void showConnectDialog()
+    {
+        FragmentManager fm = getSupportFragmentManager();
+        ConnectFragment connectFragment = new ConnectFragment();
+        connectFragment.setListener(this);
+        connectFragment.show(fm, "connect_dialog");
     }
 
     @Override
