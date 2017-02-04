@@ -81,33 +81,32 @@ public class DeviceThreads
             try
             {
                 DataInputStream dis = new DataInputStream(clientSocket.getInputStream());
-                String str = dis.readUTF();
-                return str;
+                return dis.readUTF();
             }
             catch (IOException e)
             {
                 e.printStackTrace();
-                return "";
+                return null;
             }
         }
         else
         {
             Log.d("clientRead", "socket is null");
-            return "";
+            return null;
         }
     }
 
     public class ServerThread extends Thread
     {
         // The local server socket
-        private ServerSocket serverSocket = null;
-        private Socket my_socket;
+        private ServerSocket startSocket = null;
+        private Socket serverSocket;
 
         public ServerThread()
         {
             try
             {
-                serverSocket = new ServerSocket(MainActivity.SERVER_PORT);
+                startSocket = new ServerSocket(MainActivity.SERVER_PORT);
 
             }
             catch (IOException e)
@@ -122,10 +121,10 @@ public class DeviceThreads
         {
             Log.i("ServerThread", "Waiting on accept");
             makeToast("Waiting on accept");
-            my_socket = null;
+            serverSocket = null;
             try
             {
-                my_socket = serverSocket.accept();
+                serverSocket = startSocket.accept();
             }
             catch (IOException e)
             {
@@ -133,16 +132,16 @@ public class DeviceThreads
                 Log.e("ServerThread", "Failed to accept connection");
                 makeToast("Failed to accept connection");
             }
-            if (my_socket != null)
+            if (serverSocket != null)
             {
                 Log.i("ServerConnect", "Connection made");
                 makeToast("Connection made");
                 try
                 {
-                    DataOutputStream out = new DataOutputStream(my_socket.getOutputStream());
+                    DataOutputStream out = new DataOutputStream(serverSocket.getOutputStream());
                     // This may or may not be needed
                     out.flush();
-                    DataInputStream in = new DataInputStream((my_socket.getInputStream()));
+                    DataInputStream in = new DataInputStream((serverSocket.getInputStream()));
                     out.writeUTF("Hello, World!");
                     // flush after write or inputStream will hang on read
                     out.flush();
@@ -151,7 +150,7 @@ public class DeviceThreads
                     Log.d("ServerThread", "received message");
                     out.close();
                     in.close();
-                    my_socket.close();
+                    serverSocket.close();
                 }
                 catch (IOException e)
                 {
@@ -181,24 +180,6 @@ public class DeviceThreads
         public void run()
         {
             // Connection was accepted
-            if (clientSocket != null)
-            {
-                Log.i("ClientThread", "Connection made");
-                try
-                {
-                    DataOutputStream out = new DataOutputStream(clientSocket.getOutputStream());
-                    out.flush();
-                    DataInputStream in = new DataInputStream(clientSocket.getInputStream());
-//                    makeToast(in.readUTF());
-//                    Log.d("ClientThread", "read message");
-                    // Message passing will not work if stream/socket is closed
-
-                }
-                catch (IOException e)
-                {
-                    e.printStackTrace();
-                }
-            }
         }
 
     }
