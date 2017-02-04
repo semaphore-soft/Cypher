@@ -1,0 +1,13 @@
+<characters>
+    <knight>
+        <healthMaximum>200</healthMaximum>
+        <attackRating>10</attackRating>
+        <specialMaximum>100</specialMaximum>
+        <specialRating>5</specialRating>
+        <defenseRating>5</defenseRating>
+        <specials>
+            <special>heal</special>
+            <special>protect</special>
+        </specials>
+    </knight>
+</characters>

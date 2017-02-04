@@ -1,0 +1,11 @@
+<specials>
+    <heal>
+        <cost>10</cost>
+        <targetingType>0</targetingType>
+    </heal>
+    <protect>
+        <cost>5</cost>
+        <duration>2</duration>
+        <targetingType>0</targetingType>
+    </protect>
+</specials>

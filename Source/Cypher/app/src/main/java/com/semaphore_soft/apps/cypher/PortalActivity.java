@@ -1,5 +1,6 @@
 package com.semaphore_soft.apps.cypher;
 
+import android.content.res.AssetManager;
 import android.os.Bundle;
 import android.util.Pair;
 import android.view.LayoutInflater;
@@ -15,12 +16,21 @@ import android.widget.Toast;
 
 import com.semaphore_soft.apps.cypher.game.Actor;
 import com.semaphore_soft.apps.cypher.game.Entity;
+import com.semaphore_soft.apps.cypher.game.Item;
 import com.semaphore_soft.apps.cypher.game.Map;
 import com.semaphore_soft.apps.cypher.game.Room;
+import com.semaphore_soft.apps.cypher.game.Special;
 
 import org.artoolkit.ar.base.ARActivity;
 import org.artoolkit.ar.base.rendering.ARRenderer;
+import org.xmlpull.v1.XmlPullParser;
+import org.xmlpull.v1.XmlPullParserException;
+import org.xmlpull.v1.XmlPullParserFactory;
 
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Hashtable;
@@ -34,6 +44,8 @@ import static com.semaphore_soft.apps.cypher.game.Room.E_WALL_TYPE.DOOR_UNLOCKED
 
 public class PortalActivity extends ARActivity implements PortalRenderer.NewMarkerListener
 {
+    //TODO this class is too large, some methods should be exported
+
     public static final short OVERLAY_PLAYER_MARKER_SELECT = 0;
     public static final short OVERLAY_START_MARKER_SELECT  = 1;
     public static final short OVERLAY_ACTION               = 2;
@@ -52,10 +64,12 @@ public class PortalActivity extends ARActivity implements PortalRenderer.NewMark
 
     private int playerMarkerID = -1;
 
-    private Hashtable<Long, Actor>  actors;
-    private Hashtable<Long, Room>   rooms;
-    private Hashtable<Long, Entity> entities;
-    private Map                     map;
+    private Hashtable<Long, Room>    rooms;
+    private Hashtable<Long, Actor>   actors;
+    private Hashtable<Long, Special> specials;
+    private Hashtable<Long, Entity>  entities;
+    private Hashtable<Long, Item>    items;
+    private Map                      map;
 
     //GameMaster gameMaster;
 
@@ -74,10 +88,11 @@ public class PortalActivity extends ARActivity implements PortalRenderer.NewMark
 
         renderer = new PortalRenderer();
 
-
-        actors = new Hashtable<>();
         rooms = new Hashtable<>();
+        actors = new Hashtable<>();
+        specials = new Hashtable<>();
         entities = new Hashtable<>();
+        items = new Hashtable<>();
 
         map = new Map();
 
@@ -694,6 +709,7 @@ public class PortalActivity extends ARActivity implements PortalRenderer.NewMark
                         if (mark > -1)
                         {
                             Actor actor = new Actor(playerID, characterID, mark);
+                            loadActorStats(actor, characterID);
                             actors.put(playerID, actor);
                             renderer.setCharacterMarker(characterID, mark);
 
@@ -907,6 +923,85 @@ public class PortalActivity extends ARActivity implements PortalRenderer.NewMark
                     public void onClick(View v)
                     {
                         setOverlay2(OVERLAY_OPEN_DOOR);
+                    }
+                });
+                Button btnAttack = (Button) findViewById(R.id.btnAttack);
+                btnAttack.setOnClickListener(new View.OnClickListener()
+                {
+                    @Override
+                    public void onClick(View v)
+                    {
+                        Actor            actor   = actors.get(playerID);
+                        Room             room    = rooms.get(actor.getRoom());
+                        ArrayList<Actor> targets = new ArrayList<>();
+                        for (Long targetId : room.getResidentActors())
+                        {
+                            Actor target = actors.get(targetId);
+                            if (!target.isPlayer())
+                            {
+                                targets.add(target);
+                            }
+                        }
+                        if (targets.size() < 1)
+                        {
+                            Toast.makeText(getApplicationContext(),
+                                           "Nothing to attack here",
+                                           Toast.LENGTH_SHORT).show();
+                        }
+                        else if (targets.size() == 1)
+                        {
+                            actor.attack(targets.get(0));
+                        }
+                        else
+                        {
+                            //TODO display target selection
+                            Toast.makeText(getApplicationContext(),
+                                           "Multiple possible targets, not yet implemented",
+                                           Toast.LENGTH_SHORT).show();
+                        }
+                    }
+                });
+                Button btnDefend = (Button) findViewById(R.id.btnDefend);
+                btnDefend.setOnClickListener(new View.OnClickListener()
+                {
+                    @Override
+                    public void onClick(View v)
+                    {
+                        actors.get(playerID).setState(Actor.E_STATE.DEFEND);
+                        Toast.makeText(getApplicationContext(),
+                                       "Happy defending bucko",
+                                       Toast.LENGTH_SHORT).show();
+                    }
+                });
+                Button btnSpecial = (Button) findViewById(R.id.btnSpecial);
+                btnSpecial.setOnClickListener(new View.OnClickListener()
+                {
+                    @Override
+                    public void onClick(View v)
+                    {
+                        Actor                    actor         = actors.get(playerID);
+                        Hashtable<Long, Special> actorSpecials = actor.getSpecials();
+
+
+                        if (actorSpecials.size() < 1)
+                        {
+                            Toast.makeText(getApplicationContext(),
+                                           "You have no specials",
+                                           Toast.LENGTH_SHORT).show();
+                        }
+                        else if (actorSpecials.size() == 1)
+                        {
+                            Special special = actorSpecials.get(0);
+
+                            performPlayerSpecial(actor, special);
+                        }
+                        else
+                        {
+                            //TODO display special select
+                            Toast.makeText(getApplicationContext(),
+                                           "Multiple possible specials, not yet implemented",
+                                           Toast.LENGTH_SHORT).show();
+                        }
                     }
                 });
                 break;
@@ -1366,6 +1461,370 @@ public class PortalActivity extends ARActivity implements PortalRenderer.NewMark
     public void newMarker(int marker)
     {
 
+    }
+
+    private void performPlayerSpecial(Actor actor, Special special)
+    {
+        Room             room    = rooms.get(actor.getRoom());
+        ArrayList<Actor> targets = new ArrayList<>();
+
+        switch (special.getTargetingType())
+        {
+            case SINGLE_PLAYER:
+            {
+                targets = getActorsInRoom(room, true);
+                if (targets.size() < 1)
+                {
+                    Toast.makeText(getApplicationContext(),
+                                   "Nothing to use special on here",
+                                   Toast.LENGTH_SHORT).show();
+                }
+                else if (targets.size() == 1)
+                {
+                    actor.performSpecial(special, targets.get(0));
+                }
+                else
+                {
+                    //TODO display target selection
+                    Toast.makeText(getApplicationContext(),
+                                   "Multiple possible targets, not yet implemented",
+                                   Toast.LENGTH_SHORT).show();
+                }
+                break;
+            }
+            case SINGLE_NON_PLAYER:
+            {
+                targets = getActorsInRoom(room, false);
+                if (targets.size() < 1)
+                {
+                    Toast.makeText(getApplicationContext(),
+                                   "Nothing to use special on here",
+                                   Toast.LENGTH_SHORT).show();
+                }
+                else if (targets.size() == 1)
+                {
+                    if (!actor.performSpecial(special, targets.get(0)))
+                    {
+                        Toast.makeText(getApplicationContext(),
+                                       "Not enough SP",
+                                       Toast.LENGTH_SHORT).show();
+                    }
+                }
+                else
+                {
+                    //TODO display target selection
+                    Toast.makeText(getApplicationContext(),
+                                   "Multiple possible targets, not yet implemented",
+                                   Toast.LENGTH_SHORT).show();
+                }
+                break;
+            }
+            case AOE_PLAYER:
+            {
+                targets = getActorsInRoom(room, true);
+                if (targets.size() < 1)
+                {
+                    Toast.makeText(getApplicationContext(),
+                                   "Nothing to use special on here",
+                                   Toast.LENGTH_SHORT).show();
+                }
+                else
+                {
+                    if (!actor.performSpecial(special, targets))
+                    {
+                        Toast.makeText(getApplicationContext(),
+                                       "Not enough SP",
+                                       Toast.LENGTH_SHORT).show();
+                    }
+                }
+                break;
+            }
+            case AOE_NON_PLAYER:
+            {
+                targets = getActorsInRoom(room, false);
+                if (targets.size() < 1)
+                {
+                    Toast.makeText(getApplicationContext(),
+                                   "Nothing to use special on here",
+                                   Toast.LENGTH_SHORT).show();
+                }
+                else
+                {
+                    if (!actor.performSpecial(special, targets))
+                    {
+                        Toast.makeText(getApplicationContext(),
+                                       "Not enough SP",
+                                       Toast.LENGTH_SHORT).show();
+                    }
+                }
+                break;
+            }
+            default:
+                break;
+        }
+    }
+
+    private ArrayList<Actor> getActorsInRoom(Room room, boolean getPlayers)
+    {
+        ArrayList<Actor> res = new ArrayList<>();
+
+        for (Long actorId : room.getResidentActors())
+        {
+            Actor actor = actors.get(actorId);
+            if ((getPlayers && actor.isPlayer()) || (!getPlayers && !actor.isPlayer()))
+            {
+                res.add(actor);
+            }
+        }
+
+        return res;
+    }
+
+    private void loadActorStats(Actor actor, int characterID)
+    {
+        try
+        {
+            XmlPullParserFactory factory     = XmlPullParserFactory.newInstance();
+            XmlPullParser        actorParser = factory.newPullParser();
+
+            AssetManager assetManager     = getAssets();
+            InputStream  actorInputStream = assetManager.open("playerActors.xml");
+            actorParser.setInput(actorInputStream, null);
+
+            String characterName;
+            switch (characterID)
+            {
+                case 0:
+                    characterName = "knight";
+                    break;
+                case 1:
+                    characterName = "soldier";
+                    break;
+                case 2:
+                    characterName = "ranger";
+                    break;
+                case 3:
+                    characterName = "wizard";
+                    break;
+                default:
+                    return;
+            }
+            boolean foundCharacter    = false;
+            boolean finishedCharacter = false;
+            boolean foundSpecials     = false;
+            boolean finishedSpecials  = false;
+
+            ArrayList<String> actorSpecials = new ArrayList<>();
+
+            System.out.println("character is: " + characterName);
+
+            int event = actorParser.getEventType();
+            while (event != XmlPullParser.END_DOCUMENT && !finishedCharacter)
+            {
+                switch (event)
+                {
+                    case XmlPullParser.START_TAG:
+                        if (characterName.equals(actorParser.getName()))
+                        {
+                            foundCharacter = true;
+                            System.out.println("found character");
+                        }
+                        else if (foundCharacter)
+                        {
+                            if (actorParser.getName().equals("specials"))
+                            {
+                                foundSpecials = true;
+                                System.out.println("found character specials");
+                            }
+                            else if (foundSpecials && !finishedSpecials)
+                            {
+                                actorParser.next();
+                                actorSpecials.add(actorParser.getText());
+                                System.out.println("found special: " + actorParser.getText());
+                            }
+                            else if (actorParser.getName().equals("healthMaximum"))
+                            {
+                                actorParser.next();
+                                actor.setHealthMaximum(Integer.parseInt(actorParser.getText()));
+                                actor.setHealthCurrent(actor.getHealthMaximum());
+                                System.out.println(
+                                    "found health maximum: " + actorParser.getText());
+                            }
+                            else if (actorParser.getName().equals("attackRating"))
+                            {
+                                actorParser.next();
+                                actor.setAttackRating(Integer.parseInt(actorParser.getText()));
+                                System.out.println("found attack rating: " + actorParser.getText());
+                            }
+                            else if (actorParser.getName().equals("specialMaximum"))
+                            {
+                                actorParser.next();
+                                actor.setSpecialMaximum(Integer.parseInt(actorParser.getText()));
+                                actor.setSpecialCurrent(actor.getSpecialMaximum());
+                                System.out.println(
+                                    "found special maximum: " + actorParser.getText());
+                            }
+                            else if (actorParser.getName().equals("specialRating"))
+                            {
+                                actorParser.next();
+                                actor.setSpecialRating(Integer.parseInt(actorParser.getText()));
+                                System.out.println(
+                                    "found special rating: " + actorParser.getText());
+                            }
+                            else if (actorParser.getName().equals("defenceRating"))
+                            {
+                                actorParser.next();
+                                actor.setDefenceRating(Integer.parseInt(actorParser.getText()));
+                                System.out.println(
+                                    "found defence rating: " + actorParser.getText());
+                            }
+                        }
+                        break;
+                    case XmlPullParser.END_TAG:
+                        if (foundCharacter)
+                        {
+                            if (characterName.equals(actorParser.getName()))
+                            {
+                                finishedCharacter = true;
+                                System.out.println("finished character");
+                            }
+                            else if (foundSpecials && !finishedSpecials)
+                            {
+                                if (actorParser.getName().equals("specials"))
+                                {
+                                    finishedSpecials = true;
+                                    System.out.println("finished character specials");
+                                }
+                            }
+                        }
+                        break;
+                }
+                event = actorParser.next();
+            }
+
+            for (String specialName : actorSpecials)
+            {
+                System.out.println("special is: " + specialName);
+
+                boolean specialLoaded = false;
+
+                for (Long specialId : specials.keySet())
+                {
+                    Special special = specials.get(specialId);
+                    if (specialName.equals(special.getName()))
+                    {
+                        actor.addSpecial(special);
+                        specialLoaded = true;
+                        break;
+                    }
+                }
+
+                if (!specialLoaded)
+                {
+                    XmlPullParser specialParser      = factory.newPullParser();
+                    InputStream   specialInputStream = assetManager.open("specials.xml");
+                    specialParser.setInput(specialInputStream, null);
+
+                    boolean foundSpecial    = false;
+                    boolean finishedSpecial = false;
+
+                    int cost          = -1;
+                    int duration      = -1;
+                    int targetingType = -1;
+
+                    event = specialParser.getEventType();
+                    while (event != XmlPullParser.END_DOCUMENT && !finishedSpecial)
+                    {
+                        switch (event)
+                        {
+                            case XmlPullParser.START_TAG:
+                                if (specialName.equals(specialParser.getName()))
+                                {
+                                    foundSpecial = true;
+                                    System.out.println("found special");
+                                }
+                                else if (foundSpecial)
+                                {
+                                    if (specialParser.getName().equals("cost"))
+                                    {
+                                        specialParser.next();
+                                        cost = Integer.parseInt(specialParser.getText());
+                                        System.out.println(
+                                            "found cost: " + specialParser.getText());
+                                    }
+                                    else if (specialParser.getName().equals("duration"))
+                                    {
+                                        specialParser.next();
+                                        duration = Integer.parseInt(specialParser.getText());
+                                        System.out.println(
+                                            "found duration: " + specialParser.getText());
+                                    }
+                                    else if (specialParser.getName().equals("targetingType"))
+                                    {
+                                        specialParser.next();
+                                        targetingType = Integer.parseInt(specialParser.getText());
+                                        System.out.println(
+                                            "found targeting type: " + specialParser.getText());
+                                    }
+                                }
+                                break;
+                            case XmlPullParser.END_TAG:
+                                if (foundSpecial)
+                                {
+                                    if (specialName.equals(specialParser.getName()))
+                                    {
+                                        finishedSpecial = true;
+                                        System.out.println("finished special");
+                                    }
+                                }
+                                break;
+                        }
+                        event = specialParser.next();
+                    }
+
+                    Special.E_TARGETING_TYPE specialTargetingType;
+
+                    switch (targetingType)
+                    {
+                        case 0:
+                            specialTargetingType = Special.E_TARGETING_TYPE.SINGLE_PLAYER;
+                            break;
+                        case 1:
+                            specialTargetingType = Special.E_TARGETING_TYPE.SINGLE_NON_PLAYER;
+                            break;
+                        case 2:
+                            specialTargetingType = Special.E_TARGETING_TYPE.AOE_PLAYER;
+                            break;
+                        case 3:
+                            specialTargetingType = Special.E_TARGETING_TYPE.AOE_NON_PLAYER;
+                            break;
+                        default:
+                            specialTargetingType = Special.E_TARGETING_TYPE.SINGLE_NON_PLAYER;
+                            break;
+                    }
+
+                    //TODO special effects
+                    if (finishedSpecial)
+                    {
+                        Special special = new Special(getNextID(specials),
+                                                      specialName,
+                                                      cost,
+                                                      duration,
+                                                      specialTargetingType);
+                        specials.put(special.getId(), special);
+                        actor.addSpecial(special);
+                    }
+                }
+            }
+        }
+        catch (XmlPullParserException e)
+        {
+            e.printStackTrace();
+        }
+        catch (IOException e)
+        {
+            e.printStackTrace();
+        }
     }
 
     /*private class GameMaster extends Thread {

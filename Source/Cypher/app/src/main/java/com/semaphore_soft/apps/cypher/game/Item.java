@@ -6,9 +6,10 @@ package com.semaphore_soft.apps.cypher.game;
 
 public abstract class Item
 {
-    protected long id;
+    protected long   id;
+    protected String name;
 
-    public enum E_ITEM_TYPE
+    enum E_ITEM_TYPE
     {
         KEY,
         HEALTH_MAXIMUM_MODIFIER,
@@ -22,17 +23,23 @@ public abstract class Item
     }
 
     protected E_ITEM_TYPE type;
-    protected int         effectRating;
+    private   int         effectRating;
 
-    public Item(long id, E_ITEM_TYPE type)
+    private Item(long id, String name)
     {
         this.id = id;
+        this.name = name;
+    }
+
+    private Item(long id, String name, E_ITEM_TYPE type)
+    {
+        this(id, name);
         this.type = type;
     }
 
-    public Item(long id, E_ITEM_TYPE type, int effectRating)
+    Item(long id, String name, E_ITEM_TYPE type, int effectRating)
     {
-        this(id, type);
+        this(id, name, type);
         this.effectRating = effectRating;
     }
 
@@ -41,12 +48,17 @@ public abstract class Item
         return id;
     }
 
+    public String getName()
+    {
+        return name;
+    }
+
     public E_ITEM_TYPE getType()
     {
         return type;
     }
 
-    public int getEffectRating()
+    int getEffectRating()
     {
         return effectRating;
     }

@@ -6,8 +6,8 @@ package com.semaphore_soft.apps.cypher.game;
 
 public class ItemDurable extends Item
 {
-    public ItemDurable(long id, E_ITEM_TYPE type, int effectRating)
+    public ItemDurable(long id, String name, E_ITEM_TYPE type, int effectRating)
     {
-        super(id, type, effectRating);
+        super(id, name, type, effectRating);
     }
 }

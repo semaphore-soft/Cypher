@@ -8,14 +8,35 @@ public class ItemConsumable extends Item
 {
     private int duration;
 
-    public ItemConsumable(long id, E_ITEM_TYPE type, int effectRating, int duration)
+    public enum E_TARGETING_TYPE
     {
-        super(id, type, effectRating);
-        this.duration = duration;
+        SINGLE_PLAYER,
+        SINGLE_NON_PLAYER,
+        AOE_PLAYER,
+        AOE_NON_PLAYER
     }
 
-    public int getDuration()
+    private E_TARGETING_TYPE targetingType;
+
+    public ItemConsumable(long id,
+                          String name,
+                          E_ITEM_TYPE type,
+                          int effectRating,
+                          int duration,
+                          E_TARGETING_TYPE targetingType)
+    {
+        super(id, name, type, effectRating);
+        this.duration = duration;
+        this.targetingType = targetingType;
+    }
+
+    int getDuration()
     {
         return duration;
+    }
+
+    public E_TARGETING_TYPE getTargetingType()
+    {
+        return targetingType;
     }
 }

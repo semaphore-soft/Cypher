@@ -33,9 +33,14 @@ public abstract class Status
         this.effectRating = effectRating;
     }
 
-    public long getID()
+    public long getId()
     {
         return id;
+    }
+
+    public void setId(long id)
+    {
+        this.id = id;
     }
 
     public E_STATUS_TYPE getType()
@@ -43,7 +48,7 @@ public abstract class Status
         return type;
     }
 
-    public int getEffectRating()
+    int getEffectRating()
     {
         return effectRating;
     }

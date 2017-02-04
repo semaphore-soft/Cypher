@@ -1,5 +1,6 @@
 package com.semaphore_soft.apps.cypher.game;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Hashtable;
 
@@ -15,33 +16,25 @@ public class Actor
     private long    roomID;
     private boolean isPlayer;
 
-    private enum E_SPECIAL_TYPE
-    {
-        ATTACK,
-        DEFEND,
-        HEAL
-    }
-
-    private enum E_STATE
+    public enum E_STATE
     {
         ATTACK,
         SPECIAL,
         DEFEND
     }
 
-    private int            healthMaximum;
-    private int            healthCurrent;
-    private int            attackRating;
-    private E_SPECIAL_TYPE specialType;
-    private int            specialMaximum;
-    private int            specialCurrent;
-    private int            specialRating;
-    private int            specialCost;
-    private int            defenceRating;
-    private E_STATE        state;
+    private int     healthMaximum;
+    private int     healthCurrent;
+    private int     attackRating;
+    private int     specialMaximum;
+    private int     specialCurrent;
+    private int     specialRating;
+    private int     defenceRating;
+    private E_STATE state;
 
-    Hashtable<Long, Item>   items;
-    Hashtable<Long, Status> statuses;
+    Hashtable<Long, Special> specials;
+    Hashtable<Long, Item>    items;
+    Hashtable<Long, Status>  statuses;
 
     public Actor(long id)
     {
@@ -61,6 +54,7 @@ public class Actor
         roomID = -1;
         isPlayer = true;
 
+        specials = new Hashtable<>();
         items = new Hashtable<>();
         statuses = new Hashtable<>();
     }
@@ -144,14 +138,17 @@ public class Actor
         return attackRating;
     }
 
-    public E_SPECIAL_TYPE getSpecialType()
+    public Hashtable<Long, Special> getSpecials()
     {
-        return specialType;
+        return specials;
     }
 
-    public void setSpecialType(E_SPECIAL_TYPE specialType)
+    public void addSpecial(Special special)
     {
-        this.specialType = specialType;
+        if (!specials.containsValue(special))
+        {
+            specials.put(special.getId(), special);
+        }
     }
 
     public void setSpecialMaximum(int specialMaximum)
@@ -184,16 +181,6 @@ public class Actor
         return specialRating;
     }
 
-    public void setSpecialCost(int specialCost)
-    {
-        this.specialCost = specialCost;
-    }
-
-    public int getSpecialCost()
-    {
-        return specialCost;
-    }
-
     public void setDefenceRating(int defenceRating)
     {
         this.defenceRating = defenceRating;
@@ -214,9 +201,11 @@ public class Actor
         return state;
     }
 
-    public void attack(Actor victim)
+    public void attack(Actor actor)
     {
-        victim.receiveAttack(attackRating);
+        actor.receiveAttack(getRealAttackRating());
+
+        state = E_STATE.ATTACK;
     }
 
     private void receiveAttack(int attackRating)
@@ -244,61 +233,39 @@ public class Actor
         healthCurrent = (damage > healthCurrent) ? 0 : healthCurrent - damage;
     }
 
-    public boolean performSpecial(Actor victim)
+    public boolean performSpecial(Special special, Actor actor)
     {
-        if (specialCost > specialCurrent)
+        if (special.getCost() > specialCurrent)
         {
             return false;
         }
         else
         {
-            specialCurrent -= specialCost;
+            specialCurrent -= special.getCost();
         }
 
-        victim.receiveSpecial(specialType, specialRating);
+        special.applySpecial(getRealSpecialRating(), actor);
 
         return true;
     }
 
-    private void receiveSpecial(E_SPECIAL_TYPE specialType, int specialRating)
+    public boolean performSpecial(Special special, ArrayList<Actor> actors)
     {
-        switch (specialType)
+        if (special.getCost() > specialCurrent)
         {
-            case ATTACK:
-                int damage = specialRating;
-
-                switch (state)
-                {
-                    case ATTACK:
-                        damage = attackRating * 2;
-                        break;
-                    case SPECIAL:
-                        damage = attackRating;
-                        break;
-                    case DEFEND:
-                        damage = attackRating / 2;
-                        break;
-                    default:
-                        break;
-                }
-
-                damage -= getRealDefenceRating();
-                damage = (damage < 0) ? 0 : damage;
-
-                healthCurrent = (damage > healthCurrent) ? 0 : healthCurrent - damage;
-                break;
-            case DEFEND:
-                StatusTemporary defenceBuff = new StatusTemporary(getNextID(statuses),
-                                                                  Status.E_STATUS_TYPE.DEFENCE_RATING_MODIFIER,
-                                                                  specialRating,
-                                                                  2);
-                statuses.put(defenceBuff.getID(), defenceBuff);
-                break;
-            case HEAL:
-                healthCurrent = ((healthCurrent + specialRating) > healthMaximum) ? healthMaximum :
-                                healthCurrent + specialRating;
-                break;
+            return false;
         }
+        else
+        {
+            specialCurrent -= special.getCost();
+        }
+
+        for (Actor actor : actors)
+        {
+            special.applySpecial(getRealSpecialRating(), actor);
+        }
+
+        return true;
     }
 
     public void addItem(Item item)
@@ -406,10 +373,18 @@ public class Actor
 
     public void addStatus(Status status)
     {
-        if (!statuses.contains(status.getID()))
+        if (!statuses.contains(status.getId()))
         {
-            statuses.put(status.getID(), status);
+            statuses.put(status.getId(), status);
         }
+    }
+
+    public void addNewStatusTemporary(Status.E_STATUS_TYPE type, int effectRating, int duration)
+    {
+        StatusTemporary status =
+            new StatusTemporary(getNextID(statuses), type, effectRating, duration);
+
+        statuses.put(status.getId(), status);
     }
 
     public void removeStatus(long statusID)
@@ -422,14 +397,14 @@ public class Actor
 
     public void removeStatus(Status status)
     {
-        if (statuses.containsKey(status.getID()))
+        if (statuses.containsKey(status.getId()))
         {
-            statuses.put(status.getID(), status);
+            statuses.put(status.getId(), status);
         }
     }
 
     //TODO the following three methods are almost identical, merge them somehow?
-    private int getRealAttackRating()
+    public int getRealAttackRating()
     {
         int realAttackRating = attackRating;
 
@@ -445,7 +420,7 @@ public class Actor
         return realAttackRating;
     }
 
-    private int getRealSpecialRating()
+    public int getRealSpecialRating()
     {
         int realSpecialRating = specialRating;
 
@@ -461,7 +436,7 @@ public class Actor
         return realSpecialRating;
     }
 
-    private int getRealDefenceRating()
+    public int getRealDefenceRating()
     {
         int realDefenceRating = defenceRating;
 
