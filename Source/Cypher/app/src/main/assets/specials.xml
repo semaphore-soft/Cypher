@@ -1,11 +1,17 @@
 <specials>
     <heal>
         <cost>10</cost>
-        <targetingType>0</targetingType>
+        <targetingType>SINGLE_PLAYER</targetingType>
+        <effects>
+            <effect>HEAL</effect>
+        </effects>
     </heal>
     <protect>
         <cost>5</cost>
         <duration>2</duration>
-        <targetingType>0</targetingType>
+        <targetingType>SINGLE_PLAYER</targetingType>
+        <effects>
+            <effect>DEFENCE_RATING_UP</effect>
+        </effects>
     </protect>
 </specials>

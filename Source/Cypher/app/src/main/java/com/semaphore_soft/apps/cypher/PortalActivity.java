@@ -1727,10 +1727,13 @@ public class PortalActivity extends ARActivity implements PortalRenderer.NewMark
 
                     boolean foundSpecial    = false;
                     boolean finishedSpecial = false;
+                    boolean foundEffects    = false;
+                    boolean finishedEffects = false;
 
-                    int cost          = -1;
-                    int duration      = -1;
-                    int targetingType = -1;
+                    int               cost          = -1;
+                    int               duration      = -1;
+                    String            targetingType = "";
+                    ArrayList<String> effects       = new ArrayList<>();
 
                     event = specialParser.getEventType();
                     while (event != XmlPullParser.END_DOCUMENT && !finishedSpecial)
@@ -1745,7 +1748,19 @@ public class PortalActivity extends ARActivity implements PortalRenderer.NewMark
                                 }
                                 else if (foundSpecial)
                                 {
-                                    if (specialParser.getName().equals("cost"))
+                                    if (specialParser.getName().equals("effects"))
+                                    {
+                                        foundEffects = true;
+                                        System.out.println("found special effects");
+                                    }
+                                    else if (foundEffects && !finishedEffects)
+                                    {
+                                        specialParser.next();
+                                        effects.add(specialParser.getText());
+                                        System.out.println(
+                                            "found effect: " + specialParser.getText());
+                                    }
+                                    else if (specialParser.getName().equals("cost"))
                                     {
                                         specialParser.next();
                                         cost = Integer.parseInt(specialParser.getText());
@@ -1762,7 +1777,7 @@ public class PortalActivity extends ARActivity implements PortalRenderer.NewMark
                                     else if (specialParser.getName().equals("targetingType"))
                                     {
                                         specialParser.next();
-                                        targetingType = Integer.parseInt(specialParser.getText());
+                                        targetingType = specialParser.getText();
                                         System.out.println(
                                             "found targeting type: " + specialParser.getText());
                                     }
@@ -1776,6 +1791,14 @@ public class PortalActivity extends ARActivity implements PortalRenderer.NewMark
                                         finishedSpecial = true;
                                         System.out.println("finished special");
                                     }
+                                    else if (foundEffects && !finishedEffects)
+                                    {
+                                        if (specialParser.getName().equals("effects"))
+                                        {
+                                            finishedEffects = true;
+                                            System.out.println("finished special effects");
+                                        }
+                                    }
                                 }
                                 break;
                         }
@@ -1786,16 +1809,16 @@ public class PortalActivity extends ARActivity implements PortalRenderer.NewMark
 
                     switch (targetingType)
                     {
-                        case 0:
+                        case "SINGLE_PLAYER":
                             specialTargetingType = Special.E_TARGETING_TYPE.SINGLE_PLAYER;
                             break;
-                        case 1:
+                        case "SINGLE_NON_PLAYER":
                             specialTargetingType = Special.E_TARGETING_TYPE.SINGLE_NON_PLAYER;
                             break;
-                        case 2:
+                        case "AOE_PLAYER":
                             specialTargetingType = Special.E_TARGETING_TYPE.AOE_PLAYER;
                             break;
-                        case 3:
+                        case "AOE_NON_PLAYER":
                             specialTargetingType = Special.E_TARGETING_TYPE.AOE_NON_PLAYER;
                             break;
                         default:
@@ -1803,7 +1826,6 @@ public class PortalActivity extends ARActivity implements PortalRenderer.NewMark
                             break;
                     }
 
-                    //TODO special effects
                     if (finishedSpecial)
                     {
                         Special special = new Special(getNextID(specials),
@@ -1811,6 +1833,50 @@ public class PortalActivity extends ARActivity implements PortalRenderer.NewMark
                                                       cost,
                                                       duration,
                                                       specialTargetingType);
+
+                        for (String effect : effects)
+                        {
+                            switch (effect)
+                            {
+                                case "HEAL":
+                                    special.addEffect(Special.E_SPECIAL_EFFECT.HEAL);
+                                    break;
+                                case "ATTACK":
+                                    special.addEffect(Special.E_SPECIAL_EFFECT.ATTACK);
+                                    break;
+                                case "HEALTH_MAXIMUM_UP":
+                                    special.addEffect(Special.E_SPECIAL_EFFECT.HEALTH_MAXIMUM_UP);
+                                    break;
+                                case "HEALTH_MAXIMUM_DOWN":
+                                    special.addEffect(Special.E_SPECIAL_EFFECT.HEALTH_MAXIMUM_DOWN);
+                                    break;
+                                case "ATTACK_RATING_UP":
+                                    special.addEffect(Special.E_SPECIAL_EFFECT.ATTACK_RATING_UP);
+                                    break;
+                                case "ATTACK_RATING_DOWN":
+                                    special.addEffect(Special.E_SPECIAL_EFFECT.ATTACK_RATING_DOWN);
+                                    break;
+                                case "SPECIAL_MAXIMUM_UP":
+                                    special.addEffect(Special.E_SPECIAL_EFFECT.SPECIAL_MAXIMUM_UP);
+                                    break;
+                                case "SPECIAL_MAXIMUM_DOWN":
+                                    special.addEffect(Special.E_SPECIAL_EFFECT.SPECIAL_MAXIMUM_DOWN);
+                                    break;
+                                case "SPECIAL_RATING_UP":
+                                    special.addEffect(Special.E_SPECIAL_EFFECT.SPECIAL_RATING_UP);
+                                    break;
+                                case "SPECIAL_RATING_DOWN":
+                                    special.addEffect(Special.E_SPECIAL_EFFECT.SPECIAL_RATING_DOWN);
+                                    break;
+                                case "DEFENCE_RATING_UP":
+                                    special.addEffect(Special.E_SPECIAL_EFFECT.DEFENCE_RATING_UP);
+                                    break;
+                                case "DEFENCE_RATING_DOWN":
+                                    special.addEffect(Special.E_SPECIAL_EFFECT.DEFENCE_RATING_DOWN);
+                                    break;
+                            }
+                        }
+
                         specials.put(special.getId(), special);
                         actor.addSpecial(special);
                     }

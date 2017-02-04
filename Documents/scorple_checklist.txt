@@ -10,3 +10,5 @@ _graphical presentation of enemies/entities/players in each room
 _report invalid moves in real time
 
 _generate new room when unassigned marker comes into view
+
+_handle death of non-player actors, removal from room, actor table, loot?
