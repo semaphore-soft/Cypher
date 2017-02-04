@@ -130,7 +130,13 @@ public class ConnectionLobbyActivity extends AppCompatActivity
                 InetAddress addr = InetAddress.getByName(getIntent().getStringExtra("address"));
                 // ClientThread is not static so it requires an instance of the outer class
                 new Thread(new DeviceThreads(this).new ClientThread(addr)).start();
-                DeviceThreads.write("Test string");
+                String str = DeviceThreads.clientRead();
+                Toast.makeText(this, str, Toast.LENGTH_SHORT).show();
+                if (DeviceThreads.clientWrite("Test string") == 1)
+                {
+                    // Socket was null, try again?
+                    //TODO
+                }
             }
             catch (UnknownHostException e)
             {

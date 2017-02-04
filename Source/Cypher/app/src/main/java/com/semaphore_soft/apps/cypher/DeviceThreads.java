@@ -20,7 +20,7 @@ import java.net.Socket;
 
 public class DeviceThreads
 {
-    private static Socket mySocket = null;
+    private static Socket clientSocket = null;
     private final ConnectionLobbyActivity mActivity;
 
     public DeviceThreads(ConnectionLobbyActivity activity)
@@ -47,25 +47,53 @@ public class DeviceThreads
         tHandler.sendMessage(msg);
     }
 
-    public static void write(String str)
+    public static int clientWrite(String str)
     {
-        if (mySocket != null)
+        if (clientSocket != null)
         {
-            Log.d("Write", "sending message");
+            Log.d("clientWrite", "sending message");
             try
             {
-                DataOutputStream dos = new DataOutputStream(mySocket.getOutputStream());
+                DataOutputStream dos = new DataOutputStream(clientSocket.getOutputStream());
                 dos.writeUTF(str);
                 // flush after write or inputStream will hang on read
                 dos.flush();
-            } catch (IOException e)
+                return 0;
+            }
+            catch (IOException e)
             {
                 e.printStackTrace();
+                return 2;
             }
         }
         else
         {
-            Log.d("Write", "Socket is null");
+            Log.d("clientWrite", "Socket is null");
+            return 1;
+        }
+    }
+
+    public static String clientRead()
+    {
+        if (clientSocket != null)
+        {
+            Log.d("clientRead", "reading message");
+            try
+            {
+                DataInputStream dis = new DataInputStream(clientSocket.getInputStream());
+                String str = dis.readUTF();
+                return str;
+            }
+            catch (IOException e)
+            {
+                e.printStackTrace();
+                return "";
+            }
+        }
+        else
+        {
+            Log.d("clientRead", "socket is null");
+            return "";
         }
     }
 
@@ -140,7 +168,7 @@ public class DeviceThreads
             try
             {
                 // creates and connects to address at specified port
-                mySocket = new Socket(address, MainActivity.SERVER_PORT);
+                clientSocket = new Socket(address, MainActivity.SERVER_PORT);
             }
             catch (IOException e)
             {
@@ -153,16 +181,16 @@ public class DeviceThreads
         public void run()
         {
             // Connection was accepted
-            if (mySocket != null)
+            if (clientSocket != null)
             {
                 Log.i("ClientThread", "Connection made");
                 try
                 {
-                    DataOutputStream out = new DataOutputStream(mySocket.getOutputStream());
+                    DataOutputStream out = new DataOutputStream(clientSocket.getOutputStream());
                     out.flush();
-                    DataInputStream in = new DataInputStream(mySocket.getInputStream());
-                    makeToast(in.readUTF());
-                    Log.d("ClientThread", "read message");
+                    DataInputStream in = new DataInputStream(clientSocket.getInputStream());
+//                    makeToast(in.readUTF());
+//                    Log.d("ClientThread", "read message");
                     // Message passing will not work if stream/socket is closed
 
                 }
