@@ -1,8 +1,6 @@
 package com.semaphore_soft.apps.cypher;
 
-import android.os.Bundle;
-import android.os.Handler;
-import android.os.Message;
+import android.content.Intent;
 import android.util.Log;
 import android.widget.Toast;
 
@@ -22,33 +20,34 @@ import java.util.ArrayList;
 
 public class DeviceThreads
 {
-    private final ConnectionLobbyActivity mActivity;
+//    private final ConnectionLobbyActivity mActivity;
     private ArrayList<ServerThread> clients = new ArrayList<>();
     public Boolean accepting = false;
+    private Intent mServiceIntent;
 
-    public DeviceThreads(ConnectionLobbyActivity activity)
+    public DeviceThreads()//ConnectionLobbyActivity activity)
     {
-        mActivity = activity;
+//        mActivity = activity;
     }
 
     // Handler to get toasts for debugging
-    private final Handler tHandler = new Handler(new Handler.Callback()
-    {
-        @Override
-        public boolean handleMessage(Message msg)
-        {
-            mActivity.toasts(msg.getData().getString("msg"));
-            return true;
-        }
-    });
-    private void makeToast(String str)
-    {
-        Message msg = new Message();
-        Bundle b = new Bundle();
-        b.putString("msg", str);
-        msg.setData(b);
-        tHandler.sendMessage(msg);
-    }
+//    private final Handler tHandler = new Handler(new Handler.Callback()
+//    {
+//        @Override
+//        public boolean handleMessage(Message msg)
+//        {
+//            mActivity.toasts(msg.getData().getString("msg"));
+//            return true;
+//        }
+//    });
+//    private void makeToast(String str)
+//    {
+//        Message msg = new Message();
+//        Bundle b = new Bundle();
+//        b.putString("msg", str);
+//        msg.setData(b);
+//        tHandler.sendMessage(msg);
+//    }
 
     public ClientThread startClient(InetAddress addr)
     {
@@ -75,7 +74,9 @@ public class DeviceThreads
     public void writeToClient(String str, int index)
     {
         Log.d("Threads", "Attempting to write to client " + String.valueOf(index));
-        if (!clients.isEmpty())
+        // TODO call writeALL if index invalid?
+        // Service will default to -1 if no index is given
+        if (!clients.isEmpty() && index > 0)
         {
             clients.get(index).write(str);
         }
@@ -111,7 +112,7 @@ public class DeviceThreads
                 try
                 {
                     Log.i("ServerThread", "Waiting on accept");
-                    makeToast("Waiting on accept");
+//                    makeToast("Waiting on accept");
                     mySocket = serverSocket.accept();
                     ServerThread serverThread = new ServerThread(mySocket, id);
                     clients.add(serverThread);
@@ -174,7 +175,8 @@ public class DeviceThreads
 
         private void processMessage(String msg)
         {
-            makeToast(msg);
+//            makeToast(msg);
+            Log.i("ServerThread", msg);
         }
     }
 
@@ -193,7 +195,7 @@ public class DeviceThreads
             {
                 e.printStackTrace();
                 Log.e("ClientThread", "Failed to start socket");
-                makeToast("Failed to start socket");
+//                makeToast("Failed to start socket");
             }
         }
 
@@ -224,7 +226,7 @@ public class DeviceThreads
                 out.writeUTF(str);
                 // flush after write or inputStream will hang on read
                 out.flush();
-                Log.d("ServerThread", "sent message");
+                Log.d("ClientThread", "sent message");
             } catch (IOException e) {
                 e.printStackTrace();
             }
@@ -232,7 +234,8 @@ public class DeviceThreads
 
         private void processMessage(String msg)
         {
-            makeToast(msg);
+//            makeToast(msg);
+            Log.i("ClientThread", msg);
         }
     }
 }

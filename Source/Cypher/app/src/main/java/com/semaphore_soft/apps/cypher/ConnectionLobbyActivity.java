@@ -1,9 +1,7 @@
 package com.semaphore_soft.apps.cypher;
 
-import android.app.AlertDialog;
 import android.content.BroadcastReceiver;
 import android.content.Context;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.net.Uri;
@@ -27,7 +25,6 @@ import java.net.Inet4Address;
 import java.net.InetAddress;
 import java.net.NetworkInterface;
 import java.net.SocketException;
-import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.Enumeration;
 
@@ -43,7 +40,6 @@ public class ConnectionLobbyActivity extends AppCompatActivity
     ArrayList<PlayerID> playersList;
 
     private PlayerIDAdapter playerIDAdapter;
-    private DeviceThreads threads = new DeviceThreads(this);
 
     RecyclerView recyclerView;
     private Intent mServiceIntent;
@@ -56,7 +52,8 @@ public class ConnectionLobbyActivity extends AppCompatActivity
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
-        IntentFilter statusIntentFilter = new IntentFilter(NetworkingService.BROADCAST_ACTION);
+        IntentFilter statusIntentFilter = new IntentFilter(NetworkingService.BROADCAST_MESSAGE);
+        // TODO register and unregister in OnResume and OnPause
         LocalBroadcastManager.getInstance(this).registerReceiver(new ResponseReceiver(), statusIntentFilter);
 
         host = getIntent().getBooleanExtra("host", false);
@@ -110,11 +107,16 @@ public class ConnectionLobbyActivity extends AppCompatActivity
                 Log.e("Lobby", ex.toString());
             }
 
-            threads.startAcceptor();
-            threads.writeToClient("Hello", 0);
+//            threads.startAcceptor();
+//            threads.writeToClient("Hello", 0);
             
             mServiceIntent = new Intent(this, NetworkingService.class);
-            mServiceIntent.setData(Uri.parse("TEST"));
+            mServiceIntent.setData(Uri.parse(NetworkingService.SETUP_SERVER));
+            startService(mServiceIntent);
+
+            mServiceIntent.setData(Uri.parse(NetworkingService.WRITE_TO_CLIENT));
+            mServiceIntent.putExtra("message", "Hello, World!");
+            mServiceIntent.putExtra("index", 0);
             startService(mServiceIntent);
 
             TextView ipAddress = (TextView) findViewById(R.id.ip_address);
@@ -139,30 +141,38 @@ public class ConnectionLobbyActivity extends AppCompatActivity
         {
             btnStart.setEnabled(false);
 
-            try
-            {
-                InetAddress addr = InetAddress.getByName(getIntent().getStringExtra("address"));
-                DeviceThreads.ClientThread client = threads.startClient(addr);
-                client.write("Hello");
+//            try
+//            {
+//                InetAddress addr = InetAddress.getByName(getIntent().getStringExtra("address"));
+            mServiceIntent = new Intent(this, NetworkingService.class);
+            mServiceIntent.setData(Uri.parse(NetworkingService.SETUP_CLIENT));
+            mServiceIntent.putExtra("address", getIntent().getStringExtra("address"));
+            startService(mServiceIntent);
 
-            }
-            catch (UnknownHostException e)
-            {
-                e.printStackTrace();
-                AlertDialog.Builder builder = new AlertDialog.Builder(this);
-                builder.setTitle("Error");
-                builder.setMessage("Unable to connect to host \nPlease try again");
-                builder.setPositiveButton("OK", new DialogInterface.OnClickListener()
-                {
-                    @Override
-                    public void onClick(DialogInterface dialogInterface, int i)
-                    {
-                        dialogInterface.dismiss();
-                    }
-                });
-                AlertDialog alert = builder.create();
-                alert.show();
-            }
+            mServiceIntent.setData(Uri.parse(NetworkingService.CLIENT_WRITE));
+            mServiceIntent.putExtra("message", "Hello, World!");
+            startService(mServiceIntent);
+//                DeviceThreads.ClientThread client = threads.startClient(addr);
+//                client.write("Hello");
+
+//            }
+//            catch (UnknownHostException e)
+//            {
+//                e.printStackTrace();
+//                AlertDialog.Builder builder = new AlertDialog.Builder(this);
+//                builder.setTitle("Error");
+//                builder.setMessage("Unable to connect to host \nPlease try again");
+//                builder.setPositiveButton("OK", new DialogInterface.OnClickListener()
+//                {
+//                    @Override
+//                    public void onClick(DialogInterface dialogInterface, int i)
+//                    {
+//                        dialogInterface.dismiss();
+//                    }
+//                });
+//                AlertDialog alert = builder.create();
+//                alert.show();
+//            }
         }
     }
 
@@ -193,10 +203,10 @@ public class ConnectionLobbyActivity extends AppCompatActivity
         public void onReceive(Context context, Intent intent)
         {
             String action = intent.getAction();
-            Log.d("TAG", action);
-            if (NetworkingService.BROADCAST_ACTION.equals(action))
+            Log.d("BR", action);
+            if (NetworkingService.BROADCAST_MESSAGE.equals(action))
             {
-                Log.i("BR", "LOG!");
+                Log.i("BR", intent.getStringExtra(NetworkingService.MESSAGE));
             }
         }
     }
