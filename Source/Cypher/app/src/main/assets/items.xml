@@ -2,6 +2,7 @@
 <items>
     <!--Delightful Bread-->
     <delightful_bread>
+        <name>Delightful Bread</name>
         <effectRating>1</effectRating>
         <duration>0</duration>
         <targetingType>SINGLE_PLAYER</targetingType>
@@ -12,6 +13,7 @@
 
     <!--Potion of Buffness-->
     <potion_of_buffness>
+        <name>Potion of Buffness</name>
         <effectRating>1</effectRating>
         <duration>5</duration>
         <targetingType>SINGLE_PLAYER</targetingType>

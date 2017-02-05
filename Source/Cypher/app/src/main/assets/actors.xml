@@ -2,6 +2,7 @@
 <characters>
     <!--Soldier-->
     <soldier>
+        <name>Soldier</name>
         <healthMaximum>200</healthMaximum>
         <specialMaximum>50</specialMaximum>
         <attackRating>8</attackRating>
@@ -15,6 +16,7 @@
 
     <!--Knight-->
     <knight>
+        <name>Knight</name>
         <healthMaximum>250</healthMaximum>
         <specialMaximum>150</specialMaximum>
         <attackRating>5</attackRating>
@@ -22,12 +24,13 @@
         <specialRating>6</specialRating>
         <specials>
             <name>heal</name>
-            <name>protect</name>
+            <name>beef_increase</name>
         </specials>
     </knight>
 
     <!--Wizard-->
     <wizard>
+        <name>Wizard</name>
         <healthMaximum>150</healthMaximum>
         <specialMaximum>200</specialMaximum>
         <attackRating>3</attackRating>
@@ -41,6 +44,7 @@
 
     <!--Ranger-->
     <ranger>
+        <name>Ranger</name>
         <healthMaximum>175</healthMaximum>
         <specialMaximum>100</specialMaximum>
         <attackRating>7</attackRating>
@@ -57,6 +61,7 @@
 <enemies>
 <!--'Lil Ghost-->
 <lil_ghost>
+    <name>'Lil Ghost</name>
     <healthMaximum>30</healthMaximum>
     <specialMaximum>10</specialMaximum>
     <attackRating>2</attackRating>
@@ -69,6 +74,7 @@
 
 <!--Groblin-->
 <groblin>
+    <name>Groblin</name>
     <healthMaximum>45</healthMaximum>
     <specialMaximum>10</specialMaximum>
     <attackRating>4</attackRating>
