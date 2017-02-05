@@ -38,6 +38,7 @@ public class ConnectionLobbyActivity extends AppCompatActivity
     ArrayList<PlayerID> playersList;
 
     private PlayerIDAdapter playerIDAdapter;
+    private DeviceThreads threads = new DeviceThreads(this);
 
     RecyclerView recyclerView;
 
@@ -100,10 +101,8 @@ public class ConnectionLobbyActivity extends AppCompatActivity
                 Log.e("Lobby", ex.toString());
             }
 
-            // ServerThread is not static so it requires an instance of the outer class
-            DeviceThreads.ServerThread server = new DeviceThreads(this).new ServerThread();
-            new Thread(server).start();
-//            server.write("Hello, World!");
+            threads.startAcceptor();
+            threads.writeToClient("Hello", 0);
 
             TextView ipAddress = (TextView) findViewById(R.id.ip_address);
             ipAddress.setText("Your IP Address is: " + ip);
@@ -130,10 +129,9 @@ public class ConnectionLobbyActivity extends AppCompatActivity
             try
             {
                 InetAddress addr = InetAddress.getByName(getIntent().getStringExtra("address"));
-                // ClientThread is not static so it requires an instance of the outer class
-                DeviceThreads.ClientThread client = new DeviceThreads(this).new ClientThread(addr);
-                new Thread(client).start();
-                client.write("Test string");
+                DeviceThreads.ClientThread client = threads.startClient(addr);
+                client.write("Hello");
+
             }
             catch (UnknownHostException e)
             {
