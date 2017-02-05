@@ -1,6 +1,8 @@
 package com.semaphore_soft.apps.cypher;
 
+import android.content.Context;
 import android.content.Intent;
+import android.net.Uri;
 import android.util.Log;
 import android.widget.Toast;
 
@@ -21,33 +23,16 @@ import java.util.ArrayList;
 public class DeviceThreads
 {
 //    private final ConnectionLobbyActivity mActivity;
-    private ArrayList<ServerThread> clients = new ArrayList<>();
-    public Boolean accepting = false;
-    private Intent mServiceIntent;
+private ArrayList<ServerThread> clients        = new ArrayList<>();
+public  Boolean                 accepting      = false;
+private Context                 mContext       = MainApplication.getInstance()
+                                                                .getApplicationContext();
+private Intent                  mServiceIntent = new Intent(mContext, NetworkingService.class);
 
-    public DeviceThreads()//ConnectionLobbyActivity activity)
+
+    public DeviceThreads()
     {
-//        mActivity = activity;
     }
-
-    // Handler to get toasts for debugging
-//    private final Handler tHandler = new Handler(new Handler.Callback()
-//    {
-//        @Override
-//        public boolean handleMessage(Message msg)
-//        {
-//            mActivity.toasts(msg.getData().getString("msg"));
-//            return true;
-//        }
-//    });
-//    private void makeToast(String str)
-//    {
-//        Message msg = new Message();
-//        Bundle b = new Bundle();
-//        b.putString("msg", str);
-//        msg.setData(b);
-//        tHandler.sendMessage(msg);
-//    }
 
     public ClientThread startClient(InetAddress addr)
     {
@@ -99,7 +84,7 @@ public class DeviceThreads
             {
                 e.printStackTrace();
                 Log.e("ServerThread", "Failed to start server");
-                Toast.makeText(MainApplication.getInstance().getApplicationContext(), "Failed to start server", Toast.LENGTH_SHORT).show();
+                Toast.makeText(mContext, "Failed to start server", Toast.LENGTH_SHORT).show();
             }
         }
 
@@ -112,7 +97,10 @@ public class DeviceThreads
                 try
                 {
                     Log.i("ServerThread", "Waiting on accept");
-//                    makeToast("Waiting on accept");
+                    mServiceIntent.setData(Uri.parse(NetworkingService.THREAD_UPDATE));
+                    mServiceIntent.putExtra("message", "Waiting on accept");
+                    mContext.startService(mServiceIntent);
+
                     mySocket = serverSocket.accept();
                     ServerThread serverThread = new ServerThread(mySocket, id);
                     clients.add(serverThread);
@@ -146,7 +134,8 @@ public class DeviceThreads
 
         public void run()
         {
-            while(true)
+            Boolean running = true;
+            while (running)
             {
                 try
                 {
@@ -156,6 +145,7 @@ public class DeviceThreads
                 catch (IOException e)
                 {
                     e.printStackTrace();
+                    running = false;
                 }
             }
         }
@@ -175,8 +165,10 @@ public class DeviceThreads
 
         private void processMessage(String msg)
         {
-//            makeToast(msg);
             Log.i("ServerThread", msg);
+            mServiceIntent.setData(Uri.parse(NetworkingService.THREAD_READ));
+            mServiceIntent.putExtra("message", msg);
+            mContext.startService(mServiceIntent);
         }
     }
 
@@ -195,7 +187,9 @@ public class DeviceThreads
             {
                 e.printStackTrace();
                 Log.e("ClientThread", "Failed to start socket");
-//                makeToast("Failed to start socket");
+                mServiceIntent.setData(Uri.parse(NetworkingService.THREAD_UPDATE));
+                mServiceIntent.putExtra("message", "Failed to start socket");
+                mContext.startService(mServiceIntent);
             }
         }
 
@@ -204,7 +198,8 @@ public class DeviceThreads
             // Connection was accepted
             if (mySocket != null) {
                 Log.i("ClientThread", "Connection made");
-                while(true)
+                Boolean running = true;
+                while (running)
                 {
                     try
                     {
@@ -214,6 +209,7 @@ public class DeviceThreads
                     catch (IOException e)
                     {
                         e.printStackTrace();
+                        running = false;
                     }
                 }
             }
@@ -234,8 +230,10 @@ public class DeviceThreads
 
         private void processMessage(String msg)
         {
-//            makeToast(msg);
             Log.i("ClientThread", msg);
+            mServiceIntent.setData(Uri.parse(NetworkingService.THREAD_READ));
+            mServiceIntent.putExtra("message", msg);
+            mContext.startService(mServiceIntent);
         }
     }
 }

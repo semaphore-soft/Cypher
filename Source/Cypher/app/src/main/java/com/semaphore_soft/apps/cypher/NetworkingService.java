@@ -15,16 +15,18 @@ public class NetworkingService extends IntentService
 {
     // Custom Intent action
     public static final String BROADCAST_MESSAGE = "com.semaphore_soft.apps.cypher.BROADCAST";
+    public static final String BROADCAST_STATUS  = "com.semaphore_soft.apps.cypher.STATUS";
 
     // Defines the key for the status "extra" in an Intent
     public static final String MESSAGE = "com.semaphore_soft.apps.cypher.MESSAGE";
 
-    public static final String SETUP_SERVER = "SERVER_SETUP";
-    public static final String SETUP_CLIENT = "CLIENT_SETUP";
-    public static final String CLIENT_WRITE = "CLIENT_WRITE";
+    public static final String SETUP_SERVER    = "SERVER_SETUP";
+    public static final String SETUP_CLIENT    = "CLIENT_SETUP";
+    public static final String CLIENT_WRITE    = "CLIENT_WRITE";
     public static final String WRITE_TO_CLIENT = "SINGLE_WRITE";
-    public static final String WRITE_ALL = "WRITE_ALL";
-    public static final String THREAD_READ = "THREAD_READ";
+    public static final String WRITE_ALL       = "WRITE_ALL";
+    public static final String THREAD_READ     = "THREAD_READ";
+    public static final String THREAD_UPDATE   = "THREAD_UPDATE";
 
     private DeviceThreads deviceThreads = new DeviceThreads();
     private DeviceThreads.ClientThread clientThread = null;
@@ -74,6 +76,12 @@ public class NetworkingService extends IntentService
         {
             String msg = intent.getStringExtra("message");
             Intent localIntent = new Intent(BROADCAST_MESSAGE).putExtra(MESSAGE, msg);
+            LocalBroadcastManager.getInstance(this).sendBroadcast(localIntent);
+        }
+        else if (dataString.equals(THREAD_UPDATE))
+        {
+            String msg         = intent.getStringExtra("message");
+            Intent localIntent = new Intent(BROADCAST_STATUS).putExtra(MESSAGE, msg);
             LocalBroadcastManager.getInstance(this).sendBroadcast(localIntent);
         }
     }

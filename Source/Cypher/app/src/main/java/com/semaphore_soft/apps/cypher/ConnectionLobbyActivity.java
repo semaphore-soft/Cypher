@@ -52,9 +52,15 @@ public class ConnectionLobbyActivity extends AppCompatActivity
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
-        IntentFilter statusIntentFilter = new IntentFilter(NetworkingService.BROADCAST_MESSAGE);
+        IntentFilter mIntentFilter = new IntentFilter();
+
+        mIntentFilter.addAction(NetworkingService.BROADCAST_MESSAGE);
+        mIntentFilter.addAction(NetworkingService.BROADCAST_STATUS);
+
         // TODO register and unregister in OnResume and OnPause
-        LocalBroadcastManager.getInstance(this).registerReceiver(new ResponseReceiver(), statusIntentFilter);
+        LocalBroadcastManager.getInstance(this)
+                             .registerReceiver(new ResponseReceiver(), mIntentFilter);
+
 
         host = getIntent().getBooleanExtra("host", false);
 
@@ -106,9 +112,6 @@ public class ConnectionLobbyActivity extends AppCompatActivity
             {
                 Log.e("Lobby", ex.toString());
             }
-
-//            threads.startAcceptor();
-//            threads.writeToClient("Hello", 0);
             
             mServiceIntent = new Intent(this, NetworkingService.class);
             mServiceIntent.setData(Uri.parse(NetworkingService.SETUP_SERVER));
@@ -141,9 +144,6 @@ public class ConnectionLobbyActivity extends AppCompatActivity
         {
             btnStart.setEnabled(false);
 
-//            try
-//            {
-//                InetAddress addr = InetAddress.getByName(getIntent().getStringExtra("address"));
             mServiceIntent = new Intent(this, NetworkingService.class);
             mServiceIntent.setData(Uri.parse(NetworkingService.SETUP_CLIENT));
             mServiceIntent.putExtra("address", getIntent().getStringExtra("address"));
@@ -152,27 +152,6 @@ public class ConnectionLobbyActivity extends AppCompatActivity
             mServiceIntent.setData(Uri.parse(NetworkingService.CLIENT_WRITE));
             mServiceIntent.putExtra("message", "Hello, World!");
             startService(mServiceIntent);
-//                DeviceThreads.ClientThread client = threads.startClient(addr);
-//                client.write("Hello");
-
-//            }
-//            catch (UnknownHostException e)
-//            {
-//                e.printStackTrace();
-//                AlertDialog.Builder builder = new AlertDialog.Builder(this);
-//                builder.setTitle("Error");
-//                builder.setMessage("Unable to connect to host \nPlease try again");
-//                builder.setPositiveButton("OK", new DialogInterface.OnClickListener()
-//                {
-//                    @Override
-//                    public void onClick(DialogInterface dialogInterface, int i)
-//                    {
-//                        dialogInterface.dismiss();
-//                    }
-//                });
-//                AlertDialog alert = builder.create();
-//                alert.show();
-//            }
         }
     }
 
@@ -188,11 +167,6 @@ public class ConnectionLobbyActivity extends AppCompatActivity
         }
     }
 
-    public void toasts(String str)
-    {
-        Toast.makeText(this, str, Toast.LENGTH_SHORT).show();
-    }
-
     private class ResponseReceiver extends BroadcastReceiver
     {
         // Prevents instantiation
@@ -206,8 +180,23 @@ public class ConnectionLobbyActivity extends AppCompatActivity
             Log.d("BR", action);
             if (NetworkingService.BROADCAST_MESSAGE.equals(action))
             {
-                Log.i("BR", intent.getStringExtra(NetworkingService.MESSAGE));
+                // Message from other devices
+                String msg = intent.getStringExtra(NetworkingService.MESSAGE);
+                Log.i("BR", msg);
+                toasts(msg);
             }
+            else if (NetworkingService.BROADCAST_STATUS.equals(action))
+            {
+                // Thread status updates
+                String msg = intent.getStringExtra(NetworkingService.MESSAGE);
+                Log.i("BR", msg);
+                toasts(msg);
+            }
+        }
+
+        private void toasts(String str)
+        {
+            Toast.makeText(ConnectionLobbyActivity.this, str, Toast.LENGTH_SHORT).show();
         }
     }
 }

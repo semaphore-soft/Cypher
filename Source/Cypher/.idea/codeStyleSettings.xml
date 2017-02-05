@@ -75,9 +75,14 @@
           <option name="WHILE_ON_NEW_LINE" value="true" />
           <option name="CATCH_ON_NEW_LINE" value="true" />
           <option name="FINALLY_ON_NEW_LINE" value="true" />
+          <option name="ALIGN_MULTILINE_CHAINED_METHODS" value="true" />
+          <option name="ALIGN_MULTILINE_PARAMETERS_IN_CALLS" value="true" />
           <option name="ALIGN_GROUP_FIELD_DECLARATIONS" value="true" />
           <option name="ALIGN_CONSECUTIVE_VARIABLE_DECLARATIONS" value="true" />
           <option name="ALIGN_SUBSEQUENT_SIMPLE_METHODS" value="true" />
+          <option name="CALL_PARAMETERS_WRAP" value="1" />
+          <option name="METHOD_PARAMETERS_WRAP" value="1" />
+          <option name="METHOD_CALL_CHAIN_WRAP" value="1" />
           <option name="IF_BRACE_FORCE" value="3" />
           <option name="DOWHILE_BRACE_FORCE" value="3" />
           <option name="WHILE_BRACE_FORCE" value="3" />
