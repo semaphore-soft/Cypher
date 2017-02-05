@@ -1,10 +1,15 @@
 package com.semaphore_soft.apps.cypher;
 
 import android.app.AlertDialog;
+import android.content.BroadcastReceiver;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.IntentFilter;
+import android.net.Uri;
 import android.os.Bundle;
 import android.support.design.widget.Snackbar;
+import android.support.v4.content.LocalBroadcastManager;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
@@ -41,6 +46,7 @@ public class ConnectionLobbyActivity extends AppCompatActivity
     private DeviceThreads threads = new DeviceThreads(this);
 
     RecyclerView recyclerView;
+    private Intent mServiceIntent;
 
     @Override
     public void onCreate(Bundle savedInstanceState)
@@ -49,6 +55,9 @@ public class ConnectionLobbyActivity extends AppCompatActivity
         setContentView(R.layout.connection_lobby);
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
+
+        IntentFilter statusIntentFilter = new IntentFilter(NetworkingService.BROADCAST_ACTION);
+        LocalBroadcastManager.getInstance(this).registerReceiver(new ResponseReceiver(), statusIntentFilter);
 
         host = getIntent().getBooleanExtra("host", false);
 
@@ -103,6 +112,10 @@ public class ConnectionLobbyActivity extends AppCompatActivity
 
             threads.startAcceptor();
             threads.writeToClient("Hello", 0);
+            
+            mServiceIntent = new Intent(this, NetworkingService.class);
+            mServiceIntent.setData(Uri.parse("TEST"));
+            startService(mServiceIntent);
 
             TextView ipAddress = (TextView) findViewById(R.id.ip_address);
             ipAddress.setText("Your IP Address is: " + ip);
@@ -168,5 +181,23 @@ public class ConnectionLobbyActivity extends AppCompatActivity
     public void toasts(String str)
     {
         Toast.makeText(this, str, Toast.LENGTH_SHORT).show();
+    }
+
+    private class ResponseReceiver extends BroadcastReceiver
+    {
+        // Prevents instantiation
+        private ResponseReceiver()
+        {
+        }
+
+        public void onReceive(Context context, Intent intent)
+        {
+            String action = intent.getAction();
+            Log.d("TAG", action);
+            if (NetworkingService.BROADCAST_ACTION.equals(action))
+            {
+                Log.i("BR", "LOG!");
+            }
+        }
     }
 }

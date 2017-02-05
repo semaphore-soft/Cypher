@@ -45,7 +45,6 @@
             android:theme="@style/AppTheme.NoActionBar">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
-                <!--<category android:name="android.intent.category.LAUNCHER" />-->
             </intent-filter>
         </activity>
         <activity
@@ -54,7 +53,6 @@
             android:theme="@style/AppTheme.NoActionBar">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
-                <!--<category android:name="android.intent.category.LAUNCHER" />-->
             </intent-filter>
         </activity>
         <activity
@@ -63,10 +61,12 @@
             android:label="Cypher">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
-                <!--<category android:name="android.intent.category.LAUNCHER" />-->
             </intent-filter>
         </activity>
         <activity android:name="org.artoolkit.ar.base.camera.CameraPreferencesActivity" />
+        <service
+            android:name=".NetworkingService"
+            android:exported="false"/>
     </application>
 
 </manifest>

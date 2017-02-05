@@ -21,7 +21,6 @@ public class MainActivity extends AppCompatActivity implements GetNameDialogFrag
 {
     boolean host = false;
 
-    private final static String TAG = "Main";
     // Port should be between 49152-65535
     public final static int SERVER_PORT = 58008;
 
