@@ -1,45 +1,28 @@
 package com.semaphore_soft.apps.cypher.game;
 
+import java.util.ArrayList;
+
 /**
  * Created by rickm on 1/31/2017.
  */
 
 public abstract class Item
 {
-    protected long   id;
-    protected String name;
-
-    enum E_ITEM_TYPE
-    {
-        KEY,
-        HEALTH_MAXIMUM_MODIFIER,
-        HEALTH_RESTORE,
-        ATTACK_RATING_MODIFIER,
-        SPECIAL_MAXIMUM_MODIFIER,
-        SPECIAL_RESTORE,
-        SPECIAL_RATING_MODIFIER,
-        SPECIAL_COST_MODIFIER,
-        DEFENCE_RATING_MODIFIER
-    }
-
-    protected E_ITEM_TYPE type;
-    private   int         effectRating;
+    protected long                       id;
+    protected String                     name;
+    private   int                        effectRating;
+    private   ArrayList<Effect.E_EFFECT> effects;
 
     private Item(long id, String name)
     {
         this.id = id;
         this.name = name;
+        effects = new ArrayList<>();
     }
 
-    private Item(long id, String name, E_ITEM_TYPE type)
+    Item(long id, String name, int effectRating)
     {
         this(id, name);
-        this.type = type;
-    }
-
-    Item(long id, String name, E_ITEM_TYPE type, int effectRating)
-    {
-        this(id, name, type);
         this.effectRating = effectRating;
     }
 
@@ -53,13 +36,21 @@ public abstract class Item
         return name;
     }
 
-    public E_ITEM_TYPE getType()
-    {
-        return type;
-    }
-
-    int getEffectRating()
+    public int getEffectRating()
     {
         return effectRating;
+    }
+
+    public void addEffect(Effect.E_EFFECT effect)
+    {
+        if (!effects.contains(effect))
+        {
+            effects.add(effect);
+        }
+    }
+
+    public ArrayList<Effect.E_EFFECT> getEffects()
+    {
+        return effects;
     }
 }

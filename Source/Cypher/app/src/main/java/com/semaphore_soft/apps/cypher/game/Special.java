@@ -62,11 +62,16 @@ public class Special
         }
     }
 
+    public ArrayList<Effect.E_EFFECT> getEffects()
+    {
+        return effects;
+    }
+
     public void applySpecial(int specialRating, Actor actor)
     {
         for (Effect.E_EFFECT effect : effects)
         {
-            Effect.applyEffect(effect, specialRating, duration, actor);
+            Effect.applyTemporaryEffect(effect, specialRating, duration, actor);
         }
     }
 }

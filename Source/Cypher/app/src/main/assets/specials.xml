@@ -1,4 +1,6 @@
+<!--Specials-->
 <specials>
+    <!--Heal-->
     <heal>
         <cost>10</cost>
         <targetingType>SINGLE_PLAYER</targetingType>
@@ -6,6 +8,8 @@
             <effect>HEAL</effect>
         </effects>
     </heal>
+
+    <!--Protect-->
     <protect>
         <cost>5</cost>
         <duration>2</duration>

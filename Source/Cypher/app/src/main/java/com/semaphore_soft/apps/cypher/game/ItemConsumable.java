@@ -20,17 +20,16 @@ public class ItemConsumable extends Item
 
     public ItemConsumable(long id,
                           String name,
-                          E_ITEM_TYPE type,
                           int effectRating,
                           int duration,
                           E_TARGETING_TYPE targetingType)
     {
-        super(id, name, type, effectRating);
+        super(id, name, effectRating);
         this.duration = duration;
         this.targetingType = targetingType;
     }
 
-    int getDuration()
+    public int getDuration()
     {
         return duration;
     }

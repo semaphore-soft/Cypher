@@ -1,16 +1,22 @@
-<!--Itemps-->
+<!--Items-->
 <items>
     <!--Delightful Bread-->
     <delightful_bread>
-        <effect>heal</effect>
         <effectRating>1</effectRating>
         <duration>0</duration>
+        <targetingType>SINGLE_PLAYER</targetingType>
+        <effects>
+            <effect>heal</effect>
+        </effects>
     </delightful_bread>
 
     <!--Potion of Buffness-->
     <potion_of_buffness>
-        <effect>beef_increase</effect>
         <effectRating>1</effectRating>
         <duration>5</duration>
+        <targetingType>SINGLE_PLAYER</targetingType>
+        <effects>
+            <effect>beef_increase</effect>
+        </effects>
     </potion_of_buffness>
 </items>

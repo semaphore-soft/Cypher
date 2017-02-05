@@ -1,8 +1,9 @@
 package com.semaphore_soft.apps.cypher.game;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.Hashtable;
+
+import static com.semaphore_soft.apps.cypher.utils.CollectionManager.getNextID;
 
 /**
  * Created by rickm on 1/19/2017.
@@ -275,64 +276,9 @@ public class Actor
             items.put(item.getID(), item);
             if (item instanceof ItemDurable)
             {
-                switch (item.getType())
+                for (Effect.E_EFFECT effect : item.getEffects())
                 {
-                    case HEALTH_MAXIMUM_MODIFIER:
-                    {
-                        Status status = new StatusLinked(getNextID(statuses),
-                                                         Status.E_STATUS_TYPE.HEALTH_MAXIMUM_MODIFIER,
-                                                         item.getEffectRating(),
-                                                         item.getID());
-                        addStatus(status);
-                        break;
-                    }
-                    case ATTACK_RATING_MODIFIER:
-                    {
-                        Status status = new StatusLinked(getNextID(statuses),
-                                                         Status.E_STATUS_TYPE.ATTACK_RATING_MODIFIER,
-                                                         item.getEffectRating(),
-                                                         item.getID());
-                        addStatus(status);
-                        break;
-                    }
-                    case SPECIAL_MAXIMUM_MODIFIER:
-                    {
-                        Status status = new StatusLinked(getNextID(statuses),
-                                                         Status.E_STATUS_TYPE.SPECIAL_MAXIMUM_MODIFIER,
-                                                         item.getEffectRating(),
-                                                         item.getID());
-                        addStatus(status);
-                        break;
-                    }
-                    case SPECIAL_RATING_MODIFIER:
-                    {
-                        Status status = new StatusLinked(getNextID(statuses),
-                                                         Status.E_STATUS_TYPE.SPECIAL_RATING_MODIFIER,
-                                                         item.getEffectRating(),
-                                                         item.getID());
-                        addStatus(status);
-                        break;
-                    }
-                    case SPECIAL_COST_MODIFIER:
-                    {
-                        Status status = new StatusLinked(getNextID(statuses),
-                                                         Status.E_STATUS_TYPE.SPECIAL_COST_MODIFIER,
-                                                         item.getEffectRating(),
-                                                         item.getID());
-                        addStatus(status);
-                        break;
-                    }
-                    case DEFENCE_RATING_MODIFIER:
-                    {
-                        Status status = new StatusLinked(getNextID(statuses),
-                                                         Status.E_STATUS_TYPE.DEFENCE_RATING_MODIFIER,
-                                                         item.getEffectRating(),
-                                                         item.getID());
-                        addStatus(status);
-                        break;
-                    }
-                    default:
-                        break;
+                    Effect.applyLinkedEffect(effect, item.getEffectRating(), this, item.getID());
                 }
             }
         }
@@ -383,6 +329,13 @@ public class Actor
     {
         StatusTemporary status =
             new StatusTemporary(getNextID(statuses), type, effectRating, duration);
+
+        statuses.put(status.getId(), status);
+    }
+
+    public void addNewStatusLinked(Status.E_STATUS_TYPE type, int effectRating, long linkId)
+    {
+        StatusLinked status = new StatusLinked(getNextID(statuses), type, effectRating, linkId);
 
         statuses.put(status.getId(), status);
     }
@@ -467,74 +420,12 @@ public class Actor
         {
             if (item instanceof ItemConsumable)
             {
-                switch (item.getType())
+                for (Effect.E_EFFECT effect : item.getEffects())
                 {
-                    case KEY:
-                        break;
-                    case HEALTH_MAXIMUM_MODIFIER:
-                    {
-                        Status status = new StatusTemporary(getNextID(statuses),
-                                                            Status.E_STATUS_TYPE.HEALTH_MAXIMUM_MODIFIER,
-                                                            item.getEffectRating(),
-                                                            ((ItemConsumable) item).getDuration());
-                        addStatus(status);
-                        break;
-                    }
-                    case HEALTH_RESTORE:
-                        healthCurrent += item.getEffectRating();
-                        break;
-                    case ATTACK_RATING_MODIFIER:
-                    {
-                        Status status = new StatusTemporary(getNextID(statuses),
-                                                            Status.E_STATUS_TYPE.ATTACK_RATING_MODIFIER,
-                                                            item.getEffectRating(),
-                                                            ((ItemConsumable) item).getDuration());
-                        addStatus(status);
-                        break;
-                    }
-                    case SPECIAL_MAXIMUM_MODIFIER:
-                    {
-                        Status status = new StatusTemporary(getNextID(statuses),
-                                                            Status.E_STATUS_TYPE.SPECIAL_MAXIMUM_MODIFIER,
-                                                            item.getEffectRating(),
-                                                            ((ItemConsumable) item).getDuration());
-                        addStatus(status);
-                        break;
-                    }
-                    case SPECIAL_RESTORE:
-                    {
-                        specialCurrent += item.getEffectRating();
-                        break;
-                    }
-                    case SPECIAL_RATING_MODIFIER:
-                    {
-                        Status status = new StatusTemporary(getNextID(statuses),
-                                                            Status.E_STATUS_TYPE.SPECIAL_RATING_MODIFIER,
-                                                            item.getEffectRating(),
-                                                            ((ItemConsumable) item).getDuration());
-                        addStatus(status);
-                        break;
-                    }
-                    case SPECIAL_COST_MODIFIER:
-                    {
-                        Status status = new StatusTemporary(getNextID(statuses),
-                                                            Status.E_STATUS_TYPE.SPECIAL_COST_MODIFIER,
-                                                            item.getEffectRating(),
-                                                            ((ItemConsumable) item).getDuration());
-                        addStatus(status);
-                        break;
-                    }
-                    case DEFENCE_RATING_MODIFIER:
-                    {
-                        Status status = new StatusTemporary(getNextID(statuses),
-                                                            Status.E_STATUS_TYPE.DEFENCE_RATING_MODIFIER,
-                                                            item.getEffectRating(),
-                                                            ((ItemConsumable) item).getDuration());
-                        addStatus(status);
-                        break;
-                    }
-                    default:
-                        break;
+                    Effect.applyTemporaryEffect(effect,
+                                                item.getEffectRating(),
+                                                ((ItemConsumable) item).getDuration(),
+                                                this);
                 }
             }
         }
@@ -550,10 +441,5 @@ public class Actor
                 removeStatus(status);
             }
         }
-    }
-
-    public long getNextID(Hashtable<Long, ?> hashtable)
-    {
-        return ((hashtable.size() > 0) ? Collections.max(hashtable.keySet()) + 1 : 0);
     }
 }

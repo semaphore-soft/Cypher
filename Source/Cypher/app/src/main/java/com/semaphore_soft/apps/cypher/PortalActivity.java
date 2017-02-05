@@ -1,43 +1,31 @@
 package com.semaphore_soft.apps.cypher;
 
-import android.content.res.AssetManager;
 import android.os.Bundle;
 import android.util.Pair;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.AdapterView;
-import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.FrameLayout;
-import android.widget.Spinner;
-import android.widget.TextView;
 import android.widget.Toast;
 
 import com.semaphore_soft.apps.cypher.game.Actor;
-import com.semaphore_soft.apps.cypher.game.Effect;
 import com.semaphore_soft.apps.cypher.game.Entity;
 import com.semaphore_soft.apps.cypher.game.Item;
 import com.semaphore_soft.apps.cypher.game.Map;
 import com.semaphore_soft.apps.cypher.game.Room;
 import com.semaphore_soft.apps.cypher.game.Special;
+import com.semaphore_soft.apps.cypher.utils.GameStatLoader;
 
 import org.artoolkit.ar.base.ARActivity;
 import org.artoolkit.ar.base.rendering.ARRenderer;
-import org.xmlpull.v1.XmlPullParser;
-import org.xmlpull.v1.XmlPullParserException;
-import org.xmlpull.v1.XmlPullParserFactory;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.io.InputStream;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.Hashtable;
 
 import static com.semaphore_soft.apps.cypher.game.Room.E_WALL_TYPE.DOOR_OPEN;
 import static com.semaphore_soft.apps.cypher.game.Room.E_WALL_TYPE.DOOR_UNLOCKED;
+import static com.semaphore_soft.apps.cypher.utils.CollectionManager.getNextID;
 
 /**
  * Created by rickm on 11/9/2016.
@@ -97,594 +85,13 @@ public class PortalActivity extends ARActivity implements PortalRenderer.NewMark
 
         map = new Map();
 
-        setOverlay2(OVERLAY_PLAYER_MARKER_SELECT);
+        setOverlay(OVERLAY_PLAYER_MARKER_SELECT);
 
         //gameMaster = new GameMaster();
         //gameMaster.start();
     }
 
-    /*private void setOverlay(int id)
-    {
-        overlay_layout.removeAllViews();
-
-        LayoutInflater inflater = LayoutInflater.from(getApplicationContext());
-
-        View overlay;
-
-        switch (id)
-        {
-            case 1:
-            {
-                overlay = inflater.inflate(R.layout.overlay_1, null, false);
-                overlay_layout.addView(overlay);
-                Button btnSelect = (Button) findViewById(R.id.btnSelect);
-                btnSelect.setOnClickListener(new View.OnClickListener()
-                {
-                    @Override
-                    public void onClick(View v)
-                    {
-                        //look for a valid player marker
-                        int markerID = getFirstUnreservedMarker();
-
-                        if (markerID > -1)
-                        {
-                            playerMarkerID = markerID;
-                            //if there is not an actor associated with this playerID,
-                            //generate a new one
-                            if (!actors.containsKey(playerID))
-                            {
-                                actors.put(playerID, new Actor(playerID));
-                            }
-                            //update the marker and character of the actor associated with this player
-                            Actor actor = actors.get(playerID);
-                            actor.setMarker(markerID);
-                            actor.setChar(characterID);
-                            //if the actor was previously in a room, remove it from that room's actor list
-                            if (actor.getRoom() > -1)
-                            {
-                                rooms.get(actor.getRoom()).removeActor(playerID);
-                            }
-                            //clear the actor's room
-                            actor.setRoom(-1);
-
-                            //notify the renderer of the character/marker change
-                            renderer.setCharacterMarker(characterID, markerID);
-
-                            Toast.makeText(getApplicationContext(),
-                                           "Marker selected",
-                                           Toast.LENGTH_SHORT)
-                                 .show();
-                            setOverlay(2);
-                        }
-                        else
-                        {
-                            Toast.makeText(getApplicationContext(),
-                                           "No marker found",
-                                           Toast.LENGTH_SHORT)
-                                 .show();
-                        }
-                    }
-                });
-
-                //re-initialize the character select drop-down
-                ArrayList<String> characterNamesList = new ArrayList<>();
-                characterNamesList.add("White");
-                characterNamesList.add("Red");
-                characterNamesList.add("Green");
-                characterNamesList.add("Purple");
-                Spinner spnCharacter =
-                    (Spinner) findViewById(R.id.spnCharacter);
-                ArrayAdapter<String> characterNameAdapter = new ArrayAdapter<>(
-                    getApplicationContext(),
-                    R.layout.text_spinner,
-                    characterNamesList);
-                spnCharacter.setAdapter(characterNameAdapter);
-                spnCharacter.setSelection(characterID);
-
-                //handler for character select
-                spnCharacter.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener()
-                {
-                    @Override
-                    public void onItemSelected(AdapterView<?> parent,
-                                               View view,
-                                               int position,
-                                               long id)
-                    {
-                        //characters are listed in the spinner in character id order, so we may
-                        //use selected item position to get character id
-                        characterID = position;
-
-                        //check if the character is already associated with an actor/player
-                        boolean foundCharacter = false;
-                        for (Long actorID : actors.keySet())
-                        {
-                            //if the selected character is not yet associated with an actor,
-                            //get a new playerID/actor id and clear any associated marker
-                            if (actors.get(actorID).getChar() == characterID)
-                            {
-                                playerID = actorID;
-                                foundCharacter = true;
-                            }
-                        }
-                        if (!foundCharacter)
-                        {
-                            //if the selected character is not yet associated with an actor,
-                            //get a new playerID/actor id and clear any associated marker
-                            playerID = getNextID(actors);
-                            playerMarkerID = -1;
-                        }
-                    }
-
-                    @Override
-                    public void onNothingSelected(AdapterView<?> parent)
-                    {
-
-                    }
-                });
-                break;
-            }
-            //primary interaction/debug overlay
-            case 2:
-            {
-                //generate overlay_2, currently the primary interaction/debug overlay
-                overlay = inflater.inflate(R.layout.overlay_2, null, false);
-                overlay_layout.addView(overlay);
-
-                //update debug interface
-                TextView txtStatus = (TextView) findViewById(R.id.txtStatus);
-                txtStatus.setText("Player marker: " + playerMarkerID);
-
-                //"reselect" button
-                //for resetting current character/player marker or setting a marker for a new
-                //character/player
-                Button btnReselect = (Button) findViewById(R.id.btnReselect);
-                btnReselect.setOnClickListener(new View.OnClickListener()
-                {
-                    @Override
-                    public void onClick(View v)
-                    {
-                        //look for a valid player marker
-                        int markerID = getFirstUnreservedMarker();
-
-                        if (markerID > -1)
-                        {
-                            playerMarkerID = markerID;
-                            //if there is not an actor associated with this playerID,
-                            //generate a new one
-                            if (!actors.containsKey(playerID))
-                            {
-                                actors.put(playerID, new Actor(playerID));
-                            }
-                            //update the marker and character of the actor associated with this player
-                            Actor actor = actors.get(playerID);
-                            actor.setMarker(markerID);
-                            actor.setChar(characterID);
-                            //if the actor was previously in a room, remove it from that room's actor list
-                            if (actor.getRoom() > -1)
-                            {
-                                rooms.get(actor.getRoom()).removeActor(playerID);
-                            }
-                            //clear the actor's room
-                            actor.setRoom(-1);
-
-                            //notify the renderer of the character/marker change
-                            renderer.setCharacterMarker(characterID, markerID);
-
-                            Toast.makeText(getApplicationContext(),
-                                           "Marker selected",
-                                           Toast.LENGTH_SHORT)
-                                 .show();
-                            setOverlay(2);
-                        }
-                        else
-                        {
-                            Toast.makeText(getApplicationContext(),
-                                           "No marker found",
-                                           Toast.LENGTH_SHORT)
-                                 .show();
-                        }
-                    }
-                });
-
-                //"end turn" button
-                //currently exists only to update player room
-                Button btnEndTurn = (Button) findViewById(R.id.btnEndTurn);
-                btnEndTurn.setOnClickListener(new View.OnClickListener()
-                {
-                    @Override
-                    public void onClick(View v)
-                    {
-                        int nearestMarkerID = getNearestNonPlayerMarker(playerMarkerID);
-                        if (nearestMarkerID > -1)
-                        {
-                            boolean foundRoom     = false;
-                            long    nearestRoomID = -1;
-                            //check to see if there is already a room associated with the nearest marker
-                            for (Long roomID : rooms.keySet())
-                            {
-                                if (rooms.get(roomID).getMarker() == nearestMarkerID)
-                                {
-                                    //if there is, use its id
-                                    foundRoom = true;
-                                    nearestRoomID = roomID;
-                                    break;
-                                }
-                            }
-                            if (!foundRoom)
-                            {
-                                //if there is not an existing room attached to the nearest marker,
-                                //generate a new one
-                                nearestRoomID = getNextID(rooms);
-                                Room newRoom = new Room(nearestRoomID, nearestMarkerID);
-
-                                //attach three random entities with type 0 or 1 to the new room
-                                for (int i = 0; i < 3; ++i)
-                                {
-                                    long newEntityID =
-                                        getNextID(entities);
-                                    int newType = ((Math.random() > 0.3) ? 0 : 1);
-
-                                    Entity newEntity = new Entity(newEntityID, newType);
-                                    entities.put(newEntityID, newEntity);
-                                    newRoom.addEntity(newEntityID);
-                                }
-
-                                //add the new room to the room collection
-                                rooms.put(nearestRoomID, newRoom);
-                            }
-
-                            //if the actor was previously in a room, remove it from that room
-                            if (actors.get(playerID).getRoom() > -1)
-                            {
-                                rooms.get(actors.get(playerID).getRoom()).removeActor(playerID);
-                            }
-
-                            //update the actor's room and the new room's actor list
-                            actors.get(playerID).setRoom(nearestRoomID);
-                            rooms.get(nearestRoomID).addActor(playerID);
-
-                            //notify the renderer of the actor's new location
-                            renderer.setCharacterRoom(characterID, nearestMarkerID);
-
-                            //update the debug interface
-                            TextView txtStatus2 = (TextView) findViewById(R.id.txtStatus2);
-                            txtStatus2.setText("Player is in room: " + nearestMarkerID);
-                            Toast.makeText(getApplicationContext(),
-                                           "Updated player room",
-                                           Toast.LENGTH_SHORT)
-                                 .show();
-                        }
-                        else
-                        {
-                            Toast.makeText(getApplicationContext(),
-                                           "Couldn't find room",
-                                           Toast.LENGTH_SHORT)
-                                 .show();
-                        }
-                    }
-                });
-
-                //debug/status screen button
-                Button btnStatus = (Button) findViewById(R.id.btnStatus);
-                btnStatus.setOnClickListener(new View.OnClickListener()
-                {
-                    @Override
-                    public void onClick(View v)
-                    {
-                        setOverlay(3);
-                    }
-                });
-
-                //re-initialize the character select drop-down
-                ArrayList<String> characterNamesList = new ArrayList<>();
-                characterNamesList.add("White");
-                characterNamesList.add("Red");
-                characterNamesList.add("Green");
-                characterNamesList.add("Purple");
-                Spinner spnCharacter =
-                    (Spinner) findViewById(R.id.spnCharacter);
-                ArrayAdapter<String> characterNameAdapter = new ArrayAdapter<>(
-                    getApplicationContext(),
-                    R.layout.text_spinner,
-                    characterNamesList);
-                spnCharacter.setAdapter(characterNameAdapter);
-                spnCharacter.setSelection(characterID);
-
-                //handler for character select
-                spnCharacter.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener()
-                {
-                    @Override
-                    public void onItemSelected(AdapterView<?> parent,
-                                               View view,
-                                               int position,
-                                               long id)
-                    {
-                        //characters are listed in the spinner in character id order, so we may
-                        //use selected item position to get character id
-                        characterID = position;
-
-                        //check if the character is already associated with an actor/player
-                        boolean foundCharacter = false;
-                        for (Long actorID : actors.keySet())
-                        {
-                            if (actors.get(actorID).getChar() == characterID)
-                            {
-                                //if it is, set this player id to the actor id of the existing actor
-                                //(playerID can be thought of as "this player's actorID")
-                                playerID = actorID;
-                                foundCharacter = true;
-                            }
-                        }
-                        if (!foundCharacter)
-                        {
-                            //if the selected character is not yet associated with an actor,
-                            //get a new playerID/actor id and clear any associated marker
-                            playerID = getNextID(actors);
-                            playerMarkerID = -1;
-
-                            //update debug interface
-                            TextView txtStatus = (TextView) findViewById(R.id.txtStatus);
-                            txtStatus.setText(
-                                "Player marker: -");
-                            TextView txtStatus2 = (TextView) findViewById(R.id.txtStatus2);
-                            txtStatus2.setText("Player is in room: -");
-                        }
-                        else
-                        {
-                            //if the selected character is associated with an actor,
-                            //get that actor's associated marker
-                            playerMarkerID = actors.get(playerID).getMarker();
-
-                            //update debug interface
-                            TextView txtStatus = (TextView) findViewById(R.id.txtStatus);
-                            txtStatus.setText(
-                                "Player marker: " + playerMarkerID);
-                            TextView txtStatus2 = (TextView) findViewById(R.id.txtStatus2);
-                            txtStatus2.setText(
-                                "Player is in room: " + ((actors.get(playerID).getRoom() >
-                                                          -1) ? rooms.get(actors.get(playerID)
-                                                                                .getRoom())
-                                                                     .getMarker() : "-"));
-                        }
-                    }
-
-                    @Override
-                    public void onNothingSelected(AdapterView<?> parent)
-                    {
-
-                    }
-                });
-
-                Button btnHeading = (Button) findViewById(R.id.btnMarkerHeading);
-                btnHeading.setOnClickListener(new View.OnClickListener()
-                {
-                    @Override
-                    public void onClick(View v)
-                    {
-                        int markerID = renderer.getFirstMarker();
-                        if (markerID > -1)
-                        {
-                            float  res    = renderer.getMarkerDirection(markerID);
-                            String output = "Heading: " + res;
-
-                            int nearestMarkerID = getNearestNonPlayerMarker(markerID);
-                            if (nearestMarkerID > -1)
-                            {
-                                float res2 =
-                                    renderer.getAngleBetweenMarkers(markerID, nearestMarkerID);
-                                output += "\nAngle: " + res2;
-                            }
-
-                            Toast.makeText(PortalActivity.this,
-                                           output,
-                                           Toast.LENGTH_SHORT).show();
-                        }
-
-                        //System.out.println("Heading: " + heading);
-                        //Toast.makeText(getApplicationContext(), "Heading: " + heading, Toast.LENGTH_SHORT);
-                    }
-                });
-                break;
-            }
-            case 3:
-            {
-                overlay = inflater.inflate(R.layout.overlay_3, null, false);
-                overlay_layout.addView(overlay);
-
-                Actor actor = actors.get(playerID);
-                Room  room  = ((actor.getRoom() > -1) ? rooms.get(actor.getRoom()) : null);
-                String output = "Player ID: " + playerID
-                                + "\nPlayer Character ID: " + actor.getChar()
-                                + "\nPlayer Marker ID: " + actor.getMarker()
-                                + "\nPlayer Room ID: " +
-                                ((actor.getRoom() > -1) ? actor.getRoom() : "-")
-                                + "\nRoom Marker ID: " + ((room != null) ? room.getMarker() : "-");
-                if (room != null)
-                {
-                    output += "\nRoom Resident Actors:";
-                    for (Long residentActorID : room.getResidentActors())
-                    {
-                        output +=
-                            " " + residentActorID + ":" + actors.get(residentActorID).getChar();
-                    }
-                    output += "\nRoom Resident Entities:";
-                    for (Long residentEntityID : room.getResidentEntities())
-                    {
-                        output +=
-                            " " + residentEntityID + ":" + entities.get(residentEntityID).getType();
-                    }
-                }
-
-                TextView txtStatus = (TextView) findViewById(R.id.txtOut);
-                txtStatus.setText(output);
-
-                Button btnStatusReturn = (Button) findViewById(R.id.btnStatusReturn);
-                btnStatusReturn.setOnClickListener(new View.OnClickListener()
-                {
-                    @Override
-                    public void onClick(View v)
-                    {
-                        setOverlay(2);
-                    }
-                });
-                break;
-            }
-            case 4:
-            {
-                overlay = inflater.inflate(R.layout.overlay_4, null, false);
-                overlay_layout.addView(overlay);
-                Button btnMakeRoom = (Button) findViewById(R.id.btnMakeRoom);
-                btnMakeRoom.setOnClickListener(new View.OnClickListener()
-                {
-                    @Override
-                    public void onClick(View v)
-                    {
-                        int mark = getFirstUnreservedMarker();
-                        if (mark > -1)
-                        {
-                            long roomID = getNextID(rooms);
-                            Room room   = new Room(roomID, mark);
-                            rooms.put(roomID, room);
-                            renderer.createRoom(room);
-                        }
-                    }
-                });
-                Button btnOpenDoor = (Button) findViewById(R.id.btnOpenDoor);
-                btnOpenDoor.setOnClickListener(new View.OnClickListener()
-                {
-                    @Override
-                    public void onClick(View v)
-                    {
-                        if (actors.get(playerID).getRoom() < 0)
-                        {
-                            Toast.makeText(getApplicationContext(),
-                                           "Must enter room first",
-                                           Toast.LENGTH_SHORT)
-                                 .show();
-                        }
-                        else
-                        {
-
-                        }
-                    }
-                });
-                Button btnMove = (Button) findViewById(R.id.btnMove);
-                btnMove.setOnClickListener(new View.OnClickListener()
-                {
-                    @Override
-                    public void onClick(View v)
-                    {
-                        if (actors.get(playerID).getRoom() < 0)
-                        {
-                            int nearestMarkerID = getNearestNonPlayerMarker(playerMarkerID);
-                            if (nearestMarkerID > -1)
-                            {
-                                boolean foundRoom     = false;
-                                long    nearestRoomID = -1;
-                                //check to see if there is already a room associated with the nearest marker
-                                for (Long roomID : rooms.keySet())
-                                {
-                                    if (rooms.get(roomID).getMarker() == nearestMarkerID)
-                                    {
-                                        //if there is, use its id
-                                        foundRoom = true;
-                                        nearestRoomID = roomID;
-                                        break;
-                                    }
-                                }
-                                if (!foundRoom)
-                                {
-                                    //if there is not an existing room attached to the nearest marker,
-                                    //generate a new one
-                                    nearestRoomID = getNextID(rooms);
-                                    Room newRoom = new Room(nearestRoomID, nearestMarkerID);
-
-                                    //attach three random entities with type 0 or 1 to the new room
-                                    for (int i = 0; i < 3; ++i)
-                                    {
-                                        long newEntityID =
-                                            getNextID(entities);
-                                        int newType = ((Math.random() > 0.3) ? 0 : 1);
-
-                                        Entity newEntity = new Entity(newEntityID, newType);
-                                        entities.put(newEntityID, newEntity);
-                                        newRoom.addEntity(newEntityID);
-                                    }
-
-                                    //add the new room to the room collection
-                                    rooms.put(nearestRoomID, newRoom);
-                                }
-
-                                //if the actor was previously in a room, remove it from that room
-                                if (actors.get(playerID).getRoom() > -1)
-                                {
-                                    rooms.get(actors.get(playerID).getRoom()).removeActor(playerID);
-                                }
-
-                                //update the actor's room and the new room's actor list
-                                actors.get(playerID).setRoom(nearestRoomID);
-                                rooms.get(nearestRoomID).addActor(playerID);
-
-                                //notify the renderer of the actor's new location
-                                renderer.setCharacterRoom(characterID, nearestMarkerID);
-
-                                Toast.makeText(getApplicationContext(),
-                                               "Updated player room",
-                                               Toast.LENGTH_SHORT)
-                                     .show();
-                            }
-                            else
-                            {
-                                Toast.makeText(getApplicationContext(),
-                                               "Couldn't find room",
-                                               Toast.LENGTH_SHORT)
-                                     .show();
-                            }
-                        }
-                    }
-                });
-                break;
-            }
-            case 5:
-            {
-                overlay = inflater.inflate(R.layout.overlay_5, null, false);
-                overlay_layout.addView(overlay);
-                Button btnMakeRoom = (Button) findViewById(R.id.btnMakeRoom);
-                btnMakeRoom.setOnClickListener(new View.OnClickListener()
-                {
-                    @Override
-                    public void onClick(View v)
-                    {
-                        int mark = getFirstUnreservedMarker();
-                        if (mark > -1)
-                        {
-                            long roomID = getNextID(rooms);
-                            Room room   = new Room(roomID, mark);
-                            rooms.put(roomID, room);
-                            renderer.createRoom(room);
-                        }
-                    }
-                });
-                Button btnConfirm = (Button) findViewById(R.id.btnConfirm);
-                btnConfirm.setOnClickListener(new View.OnClickListener()
-                {
-                    @Override
-                    public void onClick(View v)
-                    {
-
-                    }
-                });
-                break;
-            }
-            default:
-                break;
-        }
-
-        overlayID = id;
-    }
-    */
-
-    private void setOverlay2(int id)
+    private void setOverlay(int id)
     {
         overlay_layout.removeAllViews();
 
@@ -710,9 +117,17 @@ public class PortalActivity extends ARActivity implements PortalRenderer.NewMark
                         if (mark > -1)
                         {
                             Actor actor = new Actor(playerID, characterID, mark);
-                            loadActorStats(actor, characterID);
+                            GameStatLoader.loadActorStats(actor,
+                                                          characterID,
+                                                          specials,
+                                                          getApplicationContext());
                             actors.put(playerID, actor);
                             renderer.setCharacterMarker(characterID, mark);
+
+                            Item item = GameStatLoader.loadItemStats("delightful_bread",
+                                                                     items,
+                                                                     specials,
+                                                                     getApplicationContext());
 
                             Toast.makeText(getApplicationContext(),
                                            "Player Marker Set",
@@ -721,11 +136,11 @@ public class PortalActivity extends ARActivity implements PortalRenderer.NewMark
 
                             if (host)
                             {
-                                setOverlay2(OVERLAY_START_MARKER_SELECT);
+                                setOverlay(OVERLAY_START_MARKER_SELECT);
                             }
                             else
                             {
-                                setOverlay2(OVERLAY_ACTION);
+                                setOverlay(OVERLAY_ACTION);
                             }
                         }
                         else
@@ -773,7 +188,7 @@ public class PortalActivity extends ARActivity implements PortalRenderer.NewMark
                                            Toast.LENGTH_SHORT)
                                  .show();
 
-                            setOverlay2(OVERLAY_ACTION);
+                            setOverlay(OVERLAY_ACTION);
                         }
                         else
                         {
@@ -923,7 +338,7 @@ public class PortalActivity extends ARActivity implements PortalRenderer.NewMark
                     @Override
                     public void onClick(View v)
                     {
-                        setOverlay2(OVERLAY_OPEN_DOOR);
+                        setOverlay(OVERLAY_OPEN_DOOR);
                     }
                 });
                 Button btnAttack = (Button) findViewById(R.id.btnAttack);
@@ -1094,7 +509,7 @@ public class PortalActivity extends ARActivity implements PortalRenderer.NewMark
                                                    Toast.LENGTH_SHORT)
                                          .show();
 
-                                    setOverlay2(OVERLAY_ACTION);
+                                    setOverlay(OVERLAY_ACTION);
                                 }
                                 else
                                 {
@@ -1127,7 +542,7 @@ public class PortalActivity extends ARActivity implements PortalRenderer.NewMark
                     @Override
                     public void onClick(View v)
                     {
-                        setOverlay2(OVERLAY_ACTION);
+                        setOverlay(OVERLAY_ACTION);
                     }
                 });
                 break;
@@ -1204,11 +619,6 @@ public class PortalActivity extends ARActivity implements PortalRenderer.NewMark
         }
 
         return -1;
-    }
-
-    public long getNextID(Hashtable<Long, ?> hashtable)
-    {
-        return ((hashtable.size() > 0) ? Collections.max(hashtable.keySet()) + 1 : 0);
     }
 
     short getWall(long room0, long room1)
@@ -1579,326 +989,6 @@ public class PortalActivity extends ARActivity implements PortalRenderer.NewMark
         }
 
         return res;
-    }
-
-    private void loadActorStats(Actor actor, int characterID)
-    {
-        String actorName;
-
-        switch (characterID)
-        {
-            case 0:
-                actorName = "knight";
-                break;
-            case 1:
-                actorName = "soldier";
-                break;
-            case 2:
-                actorName = "ranger";
-                break;
-            case 3:
-                actorName = "wizard";
-                break;
-            default:
-                return;
-        }
-
-        loadActorStats(actor, actorName);
-    }
-
-    private void loadActorStats(Actor actor, String actorName)
-    {
-        try
-        {
-            XmlPullParserFactory factory     = XmlPullParserFactory.newInstance();
-            XmlPullParser        actorParser = factory.newPullParser();
-
-            AssetManager assetManager     = getAssets();
-            InputStream  actorInputStream = assetManager.open("actors.xml");
-            actorParser.setInput(actorInputStream, null);
-
-            boolean foundCharacter    = false;
-            boolean finishedCharacter = false;
-            boolean foundSpecials     = false;
-            boolean finishedSpecials  = false;
-
-            ArrayList<String> actorSpecials = new ArrayList<>();
-
-            System.out.println("character is: " + actorName);
-
-            int event = actorParser.getEventType();
-            while (event != XmlPullParser.END_DOCUMENT && !finishedCharacter)
-            {
-                switch (event)
-                {
-                    case XmlPullParser.START_TAG:
-                        if (actorName.equals(actorParser.getName()))
-                        {
-                            foundCharacter = true;
-                            System.out.println("found character");
-                        }
-                        else if (foundCharacter)
-                        {
-                            if (actorParser.getName().equals("specials"))
-                            {
-                                foundSpecials = true;
-                                System.out.println("found character specials");
-                            }
-                            else if (foundSpecials && !finishedSpecials)
-                            {
-                                actorParser.next();
-                                actorSpecials.add(actorParser.getText());
-                                System.out.println("found special: " + actorParser.getText());
-                            }
-                            else if (actorParser.getName().equals("healthMaximum"))
-                            {
-                                actorParser.next();
-                                actor.setHealthMaximum(Integer.parseInt(actorParser.getText()));
-                                actor.setHealthCurrent(actor.getHealthMaximum());
-                                System.out.println(
-                                    "found health maximum: " + actorParser.getText());
-                            }
-                            else if (actorParser.getName().equals("attackRating"))
-                            {
-                                actorParser.next();
-                                actor.setAttackRating(Integer.parseInt(actorParser.getText()));
-                                System.out.println("found attack rating: " + actorParser.getText());
-                            }
-                            else if (actorParser.getName().equals("specialMaximum"))
-                            {
-                                actorParser.next();
-                                actor.setSpecialMaximum(Integer.parseInt(actorParser.getText()));
-                                actor.setSpecialCurrent(actor.getSpecialMaximum());
-                                System.out.println(
-                                    "found special maximum: " + actorParser.getText());
-                            }
-                            else if (actorParser.getName().equals("specialRating"))
-                            {
-                                actorParser.next();
-                                actor.setSpecialRating(Integer.parseInt(actorParser.getText()));
-                                System.out.println(
-                                    "found special rating: " + actorParser.getText());
-                            }
-                            else if (actorParser.getName().equals("defenceRating"))
-                            {
-                                actorParser.next();
-                                actor.setDefenceRating(Integer.parseInt(actorParser.getText()));
-                                System.out.println(
-                                    "found defence rating: " + actorParser.getText());
-                            }
-                        }
-                        break;
-                    case XmlPullParser.END_TAG:
-                        if (foundCharacter)
-                        {
-                            if (actorName.equals(actorParser.getName()))
-                            {
-                                finishedCharacter = true;
-                                System.out.println("finished character");
-                            }
-                            else if (foundSpecials && !finishedSpecials)
-                            {
-                                if (actorParser.getName().equals("specials"))
-                                {
-                                    finishedSpecials = true;
-                                    System.out.println("finished character specials");
-                                }
-                            }
-                        }
-                        break;
-                }
-                event = actorParser.next();
-            }
-
-            for (String specialName : actorSpecials)
-            {
-                System.out.println("special is: " + specialName);
-
-                boolean specialLoaded = false;
-
-                for (Long specialId : specials.keySet())
-                {
-                    Special special = specials.get(specialId);
-                    if (specialName.equals(special.getName()))
-                    {
-                        actor.addSpecial(special);
-                        specialLoaded = true;
-                        break;
-                    }
-                }
-
-                if (!specialLoaded)
-                {
-                    XmlPullParser specialParser      = factory.newPullParser();
-                    InputStream   specialInputStream = assetManager.open("specials.xml");
-                    specialParser.setInput(specialInputStream, null);
-
-                    boolean foundSpecial    = false;
-                    boolean finishedSpecial = false;
-                    boolean foundEffects    = false;
-                    boolean finishedEffects = false;
-
-                    int               cost          = -1;
-                    int               duration      = -1;
-                    String            targetingType = "";
-                    ArrayList<String> effects       = new ArrayList<>();
-
-                    event = specialParser.getEventType();
-                    while (event != XmlPullParser.END_DOCUMENT && !finishedSpecial)
-                    {
-                        switch (event)
-                        {
-                            case XmlPullParser.START_TAG:
-                                if (specialName.equals(specialParser.getName()))
-                                {
-                                    foundSpecial = true;
-                                    System.out.println("found special");
-                                }
-                                else if (foundSpecial)
-                                {
-                                    if (specialParser.getName().equals("effects"))
-                                    {
-                                        foundEffects = true;
-                                        System.out.println("found special effects");
-                                    }
-                                    else if (foundEffects && !finishedEffects)
-                                    {
-                                        specialParser.next();
-                                        effects.add(specialParser.getText());
-                                        System.out.println(
-                                            "found effect: " + specialParser.getText());
-                                    }
-                                    else if (specialParser.getName().equals("cost"))
-                                    {
-                                        specialParser.next();
-                                        cost = Integer.parseInt(specialParser.getText());
-                                        System.out.println(
-                                            "found cost: " + specialParser.getText());
-                                    }
-                                    else if (specialParser.getName().equals("duration"))
-                                    {
-                                        specialParser.next();
-                                        duration = Integer.parseInt(specialParser.getText());
-                                        System.out.println(
-                                            "found duration: " + specialParser.getText());
-                                    }
-                                    else if (specialParser.getName().equals("targetingType"))
-                                    {
-                                        specialParser.next();
-                                        targetingType = specialParser.getText();
-                                        System.out.println(
-                                            "found targeting type: " + specialParser.getText());
-                                    }
-                                }
-                                break;
-                            case XmlPullParser.END_TAG:
-                                if (foundSpecial)
-                                {
-                                    if (specialName.equals(specialParser.getName()))
-                                    {
-                                        finishedSpecial = true;
-                                        System.out.println("finished special");
-                                    }
-                                    else if (foundEffects && !finishedEffects)
-                                    {
-                                        if (specialParser.getName().equals("effects"))
-                                        {
-                                            finishedEffects = true;
-                                            System.out.println("finished special effects");
-                                        }
-                                    }
-                                }
-                                break;
-                        }
-                        event = specialParser.next();
-                    }
-
-                    Special.E_TARGETING_TYPE specialTargetingType;
-
-                    switch (targetingType)
-                    {
-                        case "SINGLE_PLAYER":
-                            specialTargetingType = Special.E_TARGETING_TYPE.SINGLE_PLAYER;
-                            break;
-                        case "SINGLE_NON_PLAYER":
-                            specialTargetingType = Special.E_TARGETING_TYPE.SINGLE_NON_PLAYER;
-                            break;
-                        case "AOE_PLAYER":
-                            specialTargetingType = Special.E_TARGETING_TYPE.AOE_PLAYER;
-                            break;
-                        case "AOE_NON_PLAYER":
-                            specialTargetingType = Special.E_TARGETING_TYPE.AOE_NON_PLAYER;
-                            break;
-                        default:
-                            specialTargetingType = Special.E_TARGETING_TYPE.SINGLE_NON_PLAYER;
-                            break;
-                    }
-
-                    if (finishedSpecial)
-                    {
-                        Special special = new Special(getNextID(specials),
-                                                      specialName,
-                                                      cost,
-                                                      duration,
-                                                      specialTargetingType);
-
-                        for (String effect : effects)
-                        {
-                            switch (effect)
-                            {
-                                case "HEAL":
-                                    special.addEffect(Effect.E_EFFECT.HEAL);
-                                    break;
-                                case "ATTACK":
-                                    special.addEffect(Effect.E_EFFECT.ATTACK);
-                                    break;
-                                case "HEALTH_MAXIMUM_UP":
-                                    special.addEffect(Effect.E_EFFECT.HEALTH_MAXIMUM_UP);
-                                    break;
-                                case "HEALTH_MAXIMUM_DOWN":
-                                    special.addEffect(Effect.E_EFFECT.HEALTH_MAXIMUM_DOWN);
-                                    break;
-                                case "ATTACK_RATING_UP":
-                                    special.addEffect(Effect.E_EFFECT.ATTACK_RATING_UP);
-                                    break;
-                                case "ATTACK_RATING_DOWN":
-                                    special.addEffect(Effect.E_EFFECT.ATTACK_RATING_DOWN);
-                                    break;
-                                case "SPECIAL_MAXIMUM_UP":
-                                    special.addEffect(Effect.E_EFFECT.SPECIAL_MAXIMUM_UP);
-                                    break;
-                                case "SPECIAL_MAXIMUM_DOWN":
-                                    special.addEffect(Effect.E_EFFECT.SPECIAL_MAXIMUM_DOWN);
-                                    break;
-                                case "SPECIAL_RATING_UP":
-                                    special.addEffect(Effect.E_EFFECT.SPECIAL_RATING_UP);
-                                    break;
-                                case "SPECIAL_RATING_DOWN":
-                                    special.addEffect(Effect.E_EFFECT.SPECIAL_RATING_DOWN);
-                                    break;
-                                case "DEFENCE_RATING_UP":
-                                    special.addEffect(Effect.E_EFFECT.DEFENCE_RATING_UP);
-                                    break;
-                                case "DEFENCE_RATING_DOWN":
-                                    special.addEffect(Effect.E_EFFECT.DEFENCE_RATING_DOWN);
-                                    break;
-                            }
-                        }
-
-                        specials.put(special.getId(), special);
-                        actor.addSpecial(special);
-                    }
-                }
-            }
-        }
-        catch (XmlPullParserException e)
-        {
-            e.printStackTrace();
-        }
-        catch (IOException e)
-        {
-            e.printStackTrace();
-        }
     }
 
     /*private class GameMaster extends Thread {

@@ -12,3 +12,5 @@ _report invalid moves in real time
 _generate new room when unassigned marker comes into view
 
 _handle death of non-player actors, removal from room, actor table, loot?
+
+_self targeting targeting type
