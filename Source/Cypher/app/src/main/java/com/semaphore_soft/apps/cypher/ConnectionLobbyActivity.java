@@ -101,7 +101,9 @@ public class ConnectionLobbyActivity extends AppCompatActivity
             }
 
             // ServerThread is not static so it requires an instance of the outer class
-            new Thread(new DeviceThreads(ConnectionLobbyActivity.this).new ServerThread()).start();
+            DeviceThreads.ServerThread server = new DeviceThreads(this).new ServerThread();
+            new Thread(server).start();
+            server.write("Hello, World!");
 
             TextView ipAddress = (TextView) findViewById(R.id.ip_address);
             ipAddress.setText("Your IP Address is: " + ip);
@@ -129,14 +131,9 @@ public class ConnectionLobbyActivity extends AppCompatActivity
             {
                 InetAddress addr = InetAddress.getByName(getIntent().getStringExtra("address"));
                 // ClientThread is not static so it requires an instance of the outer class
-                new Thread(new DeviceThreads(this).new ClientThread(addr)).start();
-                String str = DeviceThreads.clientRead();
-                Toast.makeText(this, str, Toast.LENGTH_SHORT).show();
-                if (DeviceThreads.clientWrite("Test string") == 1)
-                {
-                    // Socket was null, try again?
-                    //TODO
-                }
+                DeviceThreads.ClientThread client = new DeviceThreads(this).new ClientThread(addr);
+                new Thread(client).start();
+                client.write("Test string");
             }
             catch (UnknownHostException e)
             {
