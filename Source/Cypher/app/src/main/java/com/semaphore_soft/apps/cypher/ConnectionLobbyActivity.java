@@ -103,7 +103,7 @@ public class ConnectionLobbyActivity extends AppCompatActivity
             // ServerThread is not static so it requires an instance of the outer class
             DeviceThreads.ServerThread server = new DeviceThreads(this).new ServerThread();
             new Thread(server).start();
-            server.write("Hello, World!");
+//            server.write("Hello, World!");
 
             TextView ipAddress = (TextView) findViewById(R.id.ip_address);
             ipAddress.setText("Your IP Address is: " + ip);

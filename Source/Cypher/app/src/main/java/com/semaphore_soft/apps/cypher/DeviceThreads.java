@@ -88,14 +88,7 @@ public class DeviceThreads
                 makeToast("Connection made");
                 try
                 {
-                    DataOutputStream out = new DataOutputStream(mySocket.getOutputStream());
-                    // This may or may not be needed
-                    out.flush();
                     DataInputStream in = new DataInputStream((mySocket.getInputStream()));
-                    out.writeUTF("Hello, World!");
-                    // flush after write or inputStream will hang on read
-                    out.flush();
-                    Log.d("ServerThread", "sent message");
                     makeToast(in.readUTF());
                     Log.d("ServerThread", "received message");
                 }
@@ -108,7 +101,15 @@ public class DeviceThreads
 
         public void write(String str)
         {
-            //TODO
+            try {
+                DataOutputStream out = new DataOutputStream(mySocket.getOutputStream());
+                out.writeUTF(str);
+                // flush after write or inputStream will hang on read
+                out.flush();
+                Log.d("ServerThread", "sent message");
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
         }
     }
 
@@ -137,8 +138,6 @@ public class DeviceThreads
             if (mySocket != null) {
                 Log.i("ClientThread", "Connection made");
                 try {
-                    DataOutputStream out = new DataOutputStream(mySocket.getOutputStream());
-                    out.flush();
                     DataInputStream in = new DataInputStream(mySocket.getInputStream());
                     makeToast(in.readUTF());
                     Log.d("ClientThread", "read message");
@@ -152,7 +151,15 @@ public class DeviceThreads
 
         public void write(String str)
         {
-            //TODO
+            try {
+                DataOutputStream out = new DataOutputStream(mySocket.getOutputStream());
+                out.writeUTF(str);
+                // flush after write or inputStream will hang on read
+                out.flush();
+                Log.d("ServerThread", "sent message");
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
         }
 
     }
