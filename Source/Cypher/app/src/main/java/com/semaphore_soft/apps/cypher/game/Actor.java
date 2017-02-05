@@ -67,6 +67,11 @@ public class Actor
         this.charID = -1;
         this.roomID = roomID;
         isPlayer = false;
+        state = E_STATE.SPECIAL;
+
+        specials = new Hashtable<>();
+        items = new Hashtable<>();
+        statuses = new Hashtable<>();
     }
 
     public long getId()

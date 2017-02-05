@@ -242,8 +242,16 @@ public class PortalActivity extends ARActivity implements PortalRenderer.NewMark
                                 }
                                 else
                                 {
+                                    if (!rooms.get(nearestRoomID).getPlaced())
+                                    {
+                                        Toast.makeText(getApplicationContext(),
+                                                       "Cannot move to room, room has not been placed",
+                                                       Toast.LENGTH_SHORT)
+                                             .show();
+                                    }
                                     //check for valid move
-                                    if (getValidPath(actors.get(playerID).getRoom(), nearestRoomID))
+                                    else if (getValidPath(actors.get(playerID).getRoom(),
+                                                          nearestRoomID))
                                     {
                                         //if the actor was previously in a room, remove it from that room
                                         if (actors.get(playerID).getRoom() > -1)
@@ -316,6 +324,16 @@ public class PortalActivity extends ARActivity implements PortalRenderer.NewMark
                                 room.addEntity(entityID);
                             }
 
+                            Actor actor = new Actor(getNextID(actors), room.getId());
+                            GameStatLoader.loadActorStats(actor,
+                                                          "lil_ghost",
+                                                          specials,
+                                                          getApplicationContext());
+                            actors.put(actor.getId(), actor);
+                            room.addActor(actor.getId());
+
+                            System.out.println("put lil_ghost in room: " + roomID);
+
                             renderer.createRoom(room);
 
                             Toast.makeText(getApplicationContext(),
@@ -350,11 +368,15 @@ public class PortalActivity extends ARActivity implements PortalRenderer.NewMark
                         Actor            actor   = actors.get(playerID);
                         Room             room    = rooms.get(actor.getRoom());
                         ArrayList<Actor> targets = new ArrayList<>();
+
+                        System.out.println("looking for targets in room: " + actor.getRoom());
+
                         for (Long targetId : room.getResidentActors())
                         {
                             Actor target = actors.get(targetId);
                             if (!target.isPlayer())
                             {
+                                System.out.println("found valid target: " + target.getId());
                                 targets.add(target);
                             }
                         }
@@ -366,7 +388,14 @@ public class PortalActivity extends ARActivity implements PortalRenderer.NewMark
                         }
                         else if (targets.size() == 1)
                         {
+                            System.out.println("Attacking target: " + targets.get(0).getId());
+                            System.out.println(
+                                "Actor Attack Rating: " + actor.getRealAttackRating());
+                            System.out.println(
+                                "Target HP before attack: " + targets.get(0).getHealthCurrent());
                             actor.attack(targets.get(0));
+                            System.out.println(
+                                "Target HP after attack: " + targets.get(0).getHealthCurrent());
                         }
                         else
                         {
