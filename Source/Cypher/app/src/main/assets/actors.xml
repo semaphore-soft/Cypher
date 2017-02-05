@@ -1,0 +1,82 @@
+<!--Characters-->
+<characters>
+    <!--Soldier-->
+    <soldier>
+        <healthMaximum>200</healthMaximum>
+        <specialMaximum>50</specialMaximum>
+        <attackRating>8</attackRating>
+        <defenceRating>6</defenceRating>
+        <specialRating>5</specialRating>
+        <specials>
+            <name>flurry_of_fists</name>
+            <name>take_a_shit</name>
+        </specials>
+    </soldier>
+
+    <!--Knight-->
+    <knight>
+        <healthMaximum>250</healthMaximum>
+        <specialMaximum>150</specialMaximum>
+        <attackRating>5</attackRating>
+        <defenceRating>8</defenceRating>
+        <specialRating>6</specialRating>
+        <specials>
+            <name>heal</name>
+            <name>protect</name>
+        </specials>
+    </knight>
+
+    <!--Wizard-->
+    <wizard>
+        <healthMaximum>150</healthMaximum>
+        <specialMaximum>200</specialMaximum>
+        <attackRating>3</attackRating>
+        <defenceRating>4</defenceRating>
+        <specialRating>8</specialRating>
+        <specials>
+            <name>flame_shot</name>
+            <name>chill</name>
+        </specials>
+    </wizard>
+
+    <!--Ranger-->
+    <ranger>
+        <healthMaximum>175</healthMaximum>
+        <specialMaximum>100</specialMaximum>
+        <attackRating>7</attackRating>
+        <defenceRating>5</defenceRating>
+        <specialRating>4</specialRating>
+        <specials>
+            <name>multishot</name>
+            <name>pin</name>
+        </specials>
+    </ranger>
+</characters>
+
+        <!--Enemies-->
+<enemies>
+<!--'Lil Ghost-->
+<lil_ghost>
+    <healthMaximum>30</healthMaximum>
+    <specialMaximum>10</specialMaximum>
+    <attackRating>2</attackRating>
+    <defenceRating>1</defenceRating>
+    <specialRating>3</specialRating>
+    <specials>
+        <name>ignus_fatuus</name>
+    </specials>
+</lil_ghost>
+
+<!--Groblin-->
+<groblin>
+    <healthMaximum>45</healthMaximum>
+    <specialMaximum>10</specialMaximum>
+    <attackRating>4</attackRating>
+    <defenceRating>2</defenceRating>
+    <specialRating>2</specialRating>
+    <specials>
+        <name>suckerpunch</name>
+        <name>spear_toss</name>
+    </specials>
+</groblin>
+</enemies>

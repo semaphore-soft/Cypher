@@ -1,0 +1,16 @@
+<!--Itemps-->
+<items>
+    <!--Delightful Bread-->
+    <delightful_bread>
+        <effect>heal</effect>
+        <effectRating>1</effectRating>
+        <duration>0</duration>
+    </delightful_bread>
+
+    <!--Potion of Buffness-->
+    <potion_of_buffness>
+        <effect>beef_increase</effect>
+        <effectRating>1</effectRating>
+        <duration>5</duration>
+    </potion_of_buffness>
+</items>

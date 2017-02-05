@@ -15,6 +15,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.semaphore_soft.apps.cypher.game.Actor;
+import com.semaphore_soft.apps.cypher.game.Effect;
 import com.semaphore_soft.apps.cypher.game.Entity;
 import com.semaphore_soft.apps.cypher.game.Item;
 import com.semaphore_soft.apps.cypher.game.Map;
@@ -1582,33 +1583,40 @@ public class PortalActivity extends ARActivity implements PortalRenderer.NewMark
 
     private void loadActorStats(Actor actor, int characterID)
     {
+        String actorName;
+
+        switch (characterID)
+        {
+            case 0:
+                actorName = "knight";
+                break;
+            case 1:
+                actorName = "soldier";
+                break;
+            case 2:
+                actorName = "ranger";
+                break;
+            case 3:
+                actorName = "wizard";
+                break;
+            default:
+                return;
+        }
+
+        loadActorStats(actor, actorName);
+    }
+
+    private void loadActorStats(Actor actor, String actorName)
+    {
         try
         {
             XmlPullParserFactory factory     = XmlPullParserFactory.newInstance();
             XmlPullParser        actorParser = factory.newPullParser();
 
             AssetManager assetManager     = getAssets();
-            InputStream  actorInputStream = assetManager.open("playerActors.xml");
+            InputStream  actorInputStream = assetManager.open("actors.xml");
             actorParser.setInput(actorInputStream, null);
 
-            String characterName;
-            switch (characterID)
-            {
-                case 0:
-                    characterName = "knight";
-                    break;
-                case 1:
-                    characterName = "soldier";
-                    break;
-                case 2:
-                    characterName = "ranger";
-                    break;
-                case 3:
-                    characterName = "wizard";
-                    break;
-                default:
-                    return;
-            }
             boolean foundCharacter    = false;
             boolean finishedCharacter = false;
             boolean foundSpecials     = false;
@@ -1616,7 +1624,7 @@ public class PortalActivity extends ARActivity implements PortalRenderer.NewMark
 
             ArrayList<String> actorSpecials = new ArrayList<>();
 
-            System.out.println("character is: " + characterName);
+            System.out.println("character is: " + actorName);
 
             int event = actorParser.getEventType();
             while (event != XmlPullParser.END_DOCUMENT && !finishedCharacter)
@@ -1624,7 +1632,7 @@ public class PortalActivity extends ARActivity implements PortalRenderer.NewMark
                 switch (event)
                 {
                     case XmlPullParser.START_TAG:
-                        if (characterName.equals(actorParser.getName()))
+                        if (actorName.equals(actorParser.getName()))
                         {
                             foundCharacter = true;
                             System.out.println("found character");
@@ -1683,7 +1691,7 @@ public class PortalActivity extends ARActivity implements PortalRenderer.NewMark
                     case XmlPullParser.END_TAG:
                         if (foundCharacter)
                         {
-                            if (characterName.equals(actorParser.getName()))
+                            if (actorName.equals(actorParser.getName()))
                             {
                                 finishedCharacter = true;
                                 System.out.println("finished character");
@@ -1839,40 +1847,40 @@ public class PortalActivity extends ARActivity implements PortalRenderer.NewMark
                             switch (effect)
                             {
                                 case "HEAL":
-                                    special.addEffect(Special.E_SPECIAL_EFFECT.HEAL);
+                                    special.addEffect(Effect.E_EFFECT.HEAL);
                                     break;
                                 case "ATTACK":
-                                    special.addEffect(Special.E_SPECIAL_EFFECT.ATTACK);
+                                    special.addEffect(Effect.E_EFFECT.ATTACK);
                                     break;
                                 case "HEALTH_MAXIMUM_UP":
-                                    special.addEffect(Special.E_SPECIAL_EFFECT.HEALTH_MAXIMUM_UP);
+                                    special.addEffect(Effect.E_EFFECT.HEALTH_MAXIMUM_UP);
                                     break;
                                 case "HEALTH_MAXIMUM_DOWN":
-                                    special.addEffect(Special.E_SPECIAL_EFFECT.HEALTH_MAXIMUM_DOWN);
+                                    special.addEffect(Effect.E_EFFECT.HEALTH_MAXIMUM_DOWN);
                                     break;
                                 case "ATTACK_RATING_UP":
-                                    special.addEffect(Special.E_SPECIAL_EFFECT.ATTACK_RATING_UP);
+                                    special.addEffect(Effect.E_EFFECT.ATTACK_RATING_UP);
                                     break;
                                 case "ATTACK_RATING_DOWN":
-                                    special.addEffect(Special.E_SPECIAL_EFFECT.ATTACK_RATING_DOWN);
+                                    special.addEffect(Effect.E_EFFECT.ATTACK_RATING_DOWN);
                                     break;
                                 case "SPECIAL_MAXIMUM_UP":
-                                    special.addEffect(Special.E_SPECIAL_EFFECT.SPECIAL_MAXIMUM_UP);
+                                    special.addEffect(Effect.E_EFFECT.SPECIAL_MAXIMUM_UP);
                                     break;
                                 case "SPECIAL_MAXIMUM_DOWN":
-                                    special.addEffect(Special.E_SPECIAL_EFFECT.SPECIAL_MAXIMUM_DOWN);
+                                    special.addEffect(Effect.E_EFFECT.SPECIAL_MAXIMUM_DOWN);
                                     break;
                                 case "SPECIAL_RATING_UP":
-                                    special.addEffect(Special.E_SPECIAL_EFFECT.SPECIAL_RATING_UP);
+                                    special.addEffect(Effect.E_EFFECT.SPECIAL_RATING_UP);
                                     break;
                                 case "SPECIAL_RATING_DOWN":
-                                    special.addEffect(Special.E_SPECIAL_EFFECT.SPECIAL_RATING_DOWN);
+                                    special.addEffect(Effect.E_EFFECT.SPECIAL_RATING_DOWN);
                                     break;
                                 case "DEFENCE_RATING_UP":
-                                    special.addEffect(Special.E_SPECIAL_EFFECT.DEFENCE_RATING_UP);
+                                    special.addEffect(Effect.E_EFFECT.DEFENCE_RATING_UP);
                                     break;
                                 case "DEFENCE_RATING_DOWN":
-                                    special.addEffect(Special.E_SPECIAL_EFFECT.DEFENCE_RATING_DOWN);
+                                    special.addEffect(Effect.E_EFFECT.DEFENCE_RATING_DOWN);
                                     break;
                             }
                         }
