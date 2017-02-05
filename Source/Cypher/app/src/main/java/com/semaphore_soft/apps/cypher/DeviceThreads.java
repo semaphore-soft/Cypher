@@ -22,12 +22,11 @@ import java.util.ArrayList;
 
 public class DeviceThreads
 {
-//    private final ConnectionLobbyActivity mActivity;
-private ArrayList<ServerThread> clients        = new ArrayList<>();
-public  Boolean                 accepting      = false;
-private Context                 mContext       = MainApplication.getInstance()
-                                                                .getApplicationContext();
-private Intent                  mServiceIntent = new Intent(mContext, NetworkingService.class);
+    private ArrayList<ServerThread> clients        = new ArrayList<>();
+    public  Boolean                 accepting      = false;
+    private Context                 mContext       = MainApplication.getInstance()
+                                                                    .getApplicationContext();
+    private Intent                  mServiceIntent = new Intent(mContext, NetworkingService.class);
 
 
     public DeviceThreads()
@@ -124,7 +123,7 @@ private Intent                  mServiceIntent = new Intent(mContext, Networking
     {
         // The local server socket
         Socket mySocket;
-        int id;
+        int    id;
 
         public ServerThread(Socket socket, int id)
         {
@@ -152,13 +151,16 @@ private Intent                  mServiceIntent = new Intent(mContext, Networking
 
         public void write(String str)
         {
-            try {
+            try
+            {
                 DataOutputStream out = new DataOutputStream(mySocket.getOutputStream());
                 out.writeUTF(str);
                 // flush after write or inputStream will hang on read
                 out.flush();
                 Log.d("ServerThread", "sent message");
-            } catch (IOException e) {
+            }
+            catch (IOException e)
+            {
                 e.printStackTrace();
             }
         }
@@ -196,7 +198,8 @@ private Intent                  mServiceIntent = new Intent(mContext, Networking
         public void run()
         {
             // Connection was accepted
-            if (mySocket != null) {
+            if (mySocket != null)
+            {
                 Log.i("ClientThread", "Connection made");
                 Boolean running = true;
                 while (running)
@@ -217,13 +220,16 @@ private Intent                  mServiceIntent = new Intent(mContext, Networking
 
         public void write(String str)
         {
-            try {
+            try
+            {
                 DataOutputStream out = new DataOutputStream(mySocket.getOutputStream());
                 out.writeUTF(str);
                 // flush after write or inputStream will hang on read
                 out.flush();
                 Log.d("ClientThread", "sent message");
-            } catch (IOException e) {
+            }
+            catch (IOException e)
+            {
                 e.printStackTrace();
             }
         }

@@ -9,6 +9,7 @@ import java.net.UnknownHostException;
 
 /**
  * Created by Evan on 2/5/2017.
+ * Service so threads can survive multiple activities
  */
 
 public class NetworkingService extends IntentService
