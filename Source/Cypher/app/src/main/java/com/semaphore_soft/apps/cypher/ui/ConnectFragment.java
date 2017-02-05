@@ -1,4 +1,4 @@
-package com.semaphore_soft.apps.cypher;
+package com.semaphore_soft.apps.cypher.ui;
 
 
 import android.content.Context;
@@ -10,6 +10,8 @@ import android.view.ViewGroup;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.Button;
 import android.widget.EditText;
+
+import com.semaphore_soft.apps.cypher.R;
 
 /**
  * Created by Evan on 1/31/2017.

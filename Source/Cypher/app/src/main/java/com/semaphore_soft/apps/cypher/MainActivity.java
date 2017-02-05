@@ -14,6 +14,7 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.Toast;
 
+import com.semaphore_soft.apps.cypher.ui.ConnectFragment;
 import com.semaphore_soft.apps.cypher.ui.GetNameDialogFragment;
 
 public class MainActivity extends AppCompatActivity implements GetNameDialogFragment.GetNameDialogListener, ConnectFragment.callback
