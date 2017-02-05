@@ -1,13 +1,14 @@
 package com.semaphore_soft.apps.cypher;
 
+import android.content.Context;
 import android.opengl.GLES20;
 import android.opengl.Matrix;
 
 import com.semaphore_soft.apps.cypher.game.Room;
+import com.semaphore_soft.apps.cypher.opengl.ARLoaderGLES20;
 import com.semaphore_soft.apps.cypher.opengl.ARRoom;
 import com.semaphore_soft.apps.cypher.opengl.ARRoomGLES20;
 import com.semaphore_soft.apps.cypher.opengl.ARSquareGLES20;
-import com.semaphore_soft.apps.cypher.opengl.ARLoaderGLES20;
 import com.semaphore_soft.apps.cypher.opengl.shader.SimpleFragmentShader;
 import com.semaphore_soft.apps.cypher.opengl.shader.SimpleShaderProgram;
 import com.semaphore_soft.apps.cypher.opengl.shader.SimpleVertexShader;
@@ -29,6 +30,7 @@ import javax.microedition.khronos.opengles.GL10;
 
 class PortalRenderer extends ARRendererGLES20
 {
+    private Context context;
 
     private int character = 0;
 
@@ -37,16 +39,21 @@ class PortalRenderer extends ARRendererGLES20
     private int[] characterMarkerIDs;
     private int[] characterRoomIDs;
 
-    private CubeGLES20       cube;
+    private CubeGLES20     cube;
     private ARLoaderGLES20 arLoaderGLES20;
-    private ARSquareGLES20   arSquareGLES20;
+    private ARSquareGLES20 arSquareGLES20;
 
     private ArrayList<ARLoaderGLES20> characterModels;
-    private ArrayList<ARSquareGLES20>   roomModels;
+    private ArrayList<ARSquareGLES20> roomModels;
 
     private Hashtable<Integer, ARRoomGLES20> arRoomModels;
 
     private SimpleShaderProgram roomShaderProgram;
+
+    public void setContext(Context context)
+    {
+        this.context = context;
+    }
 
     @Override
     public boolean configureARScene()
@@ -104,10 +111,15 @@ class PortalRenderer extends ARRendererGLES20
             new SimpleShaderProgram(3, new SimpleVertexShader(), new SimpleFragmentShader());
         if (arLoaderGLES20 == null)
         {
-            arLoaderGLES20 = new ARLoaderGLES20(40.0f, 0.0f, 0.0f, 0.0f, "R.assets.models.lowPolyLink");
+            arLoaderGLES20 =
+                new ARLoaderGLES20(40.0f, 0.0f, 0.0f, 0.0f, "models/lowPolyLink.obj", context);
             arLoaderGLES20.setCharacter(character);
         }
-        arLoaderGLES20.setShaderProgram(triangleShaderProgram);
+        ShaderProgram arLoaderShaderProgram =
+            new SimpleShaderProgram(arLoaderGLES20.getNumIndices(),
+                                    new SimpleVertexShader(),
+                                    new SimpleFragmentShader());
+        arLoaderGLES20.setShaderProgram(arLoaderShaderProgram);
 
         ShaderProgram squareShaderProgram =
             new SimpleShaderProgram(6, new SimpleVertexShader(), new SimpleFragmentShader());
@@ -122,10 +134,15 @@ class PortalRenderer extends ARRendererGLES20
 
         for (int i = 0; i < 4; ++i)
         {
-            ShaderProgram characterShaderProgram =
-                new SimpleShaderProgram(3, new SimpleVertexShader(), new SimpleFragmentShader());
-            ARLoaderGLES20 characterModel = new ARLoaderGLES20(40.0f, 0.0f, 0.0f, 0.0f);
+            //ShaderProgram characterShaderProgram =
+            //    new SimpleShaderProgram(3, new SimpleVertexShader(), new SimpleFragmentShader());
+            ARLoaderGLES20 characterModel =
+                new ARLoaderGLES20(40.0f, 0.0f, 0.0f, 0.0f, "models/lowPolyLink.obj", context);
             characterModel.setCharacter(i);
+            ShaderProgram characterShaderProgram =
+                new SimpleShaderProgram(arLoaderGLES20.getNumIndices(),
+                                        new SimpleVertexShader(),
+                                        new SimpleFragmentShader());
             characterModel.setShaderProgram(characterShaderProgram);
             characterModels.add(characterModel);
         }

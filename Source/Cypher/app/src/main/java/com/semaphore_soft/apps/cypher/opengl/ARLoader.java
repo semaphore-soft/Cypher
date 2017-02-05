@@ -1,12 +1,10 @@
 package com.semaphore_soft.apps.cypher.opengl;
 
+import android.content.Context;
 import android.opengl.GLES10;
-
-import com.semaphore_soft.apps.cypher.game.Room;
 
 import org.artoolkit.ar.base.rendering.RenderUtils;
 
-import java.nio.ByteBuffer;
 import java.nio.FloatBuffer;
 import java.nio.ShortBuffer;
 import java.util.ArrayList;
@@ -21,15 +19,18 @@ import javax.microedition.khronos.opengles.GL10;
 public class ARLoader
 {
     public static final int NUM_INDICES = 18;
+    private int vectorSize;
     private int character;
 
     private FloatBuffer mVertexBuffer;
     private FloatBuffer mColorBuffer;
     private ShortBuffer mIndexBuffer;
     private fileLoader file = null;
-    String filename;
+    String  filename;
+    Context context;
     private ArrayList<Long> characters = null;
 
+    /*
     public ARLoader()
     {
         this(1.0F);
@@ -52,10 +53,12 @@ public class ARLoader
 
         characters = new ArrayList<>();
     }
-
-    public ARLoader(float size, float x, float y, float z, String filename)
+    */
+    public ARLoader(float size, float x, float y, float z, String filename, Context context)
     {
         this.filename = filename;
+        this.context = context;
+        file = new fileLoader(filename, context);
         this.setArrays(size, x, y, z);
 
         characters = new ArrayList<>();
@@ -78,16 +81,15 @@ public class ARLoader
 
     private void setArrays(float size, float x, float y, float z)
     {
-        file.getData(filename);
         float hs = size / 2.0f;
 
-        int vectorSize = file.getVerts().size();
+        vectorSize = file.getVerts().size();
         int i = 0;
         Vector<Float> vecVert = file.getVerts();
         float vertices[] = new float[vectorSize];
         while (i < vectorSize)
         {
-            vertices[i] = vecVert.elementAt(i);
+            vertices[i] = hs * vecVert.elementAt(i);
             i++;
         }
 
@@ -153,41 +155,45 @@ public class ARLoader
 
         float c = 1.0f;
 
-        float colors[] = {
-            c, c, c, c,
-            c, c, c, c,
-            c, c, c, c
-        };
+        float colors[] = new float[vectorSize * 4];
 
         switch (character)
         {
             case 0:
-                colors = new float[]{
-                    c, c, c, c,
-                    c, c, c, c,
-                    c, c, c, c
-                };
+                for (int i = 0; i < vectorSize * 4; i += 4)
+                {
+                    colors[i] = c;
+                    colors[i + 1] = c;
+                    colors[i + 2] = c;
+                    colors[i + 3] = c;
+                }
                 break;
             case 1:
-                colors = new float[]{
-                    c, 0, 0, c,
-                    c, 0, 0, c,
-                    c, 0, 0, c
-                };
+                for (int i = 0; i < vectorSize * 4; i += 4)
+                {
+                    colors[i] = c;
+                    colors[i + 1] = 0;
+                    colors[i + 2] = 0;
+                    colors[i + 3] = c;
+                }
                 break;
             case 2:
-                colors = new float[]{
-                    0, c, 0, c,
-                    0, c, 0, c,
-                    0, c, 0, c
-                };
+                for (int i = 0; i < vectorSize * 4; i += 4)
+                {
+                    colors[i] = 0;
+                    colors[i + 1] = c;
+                    colors[i + 2] = 0;
+                    colors[i + 3] = c;
+                }
                 break;
             case 3:
-                colors = new float[]{
-                    c, 0, c, c,
-                    c, 0, c, c,
-                    c, 0, c, c
-                };
+                for (int i = 0; i < vectorSize * 4; i += 4)
+                {
+                    colors[i] = c;
+                    colors[i + 1] = 0;
+                    colors[i + 2] = c;
+                    colors[i + 3] = c;
+                }
                 break;
         }
 
@@ -195,4 +201,9 @@ public class ARLoader
     }
 
     public void setName(String filename) {this.filename = filename;}
+
+    public int getNumIndices()
+    {
+        return file.getIndices().size();
+    }
 }

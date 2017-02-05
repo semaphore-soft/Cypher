@@ -73,7 +73,7 @@ public class PortalActivity extends ARActivity implements PortalRenderer.NewMark
         characterID = getIntent().getIntExtra("character", 0);
 
         renderer = new PortalRenderer();
-
+        renderer.setContext(this);
 
         actors = new Hashtable<>();
         rooms = new Hashtable<>();

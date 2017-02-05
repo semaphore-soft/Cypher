@@ -1,5 +1,7 @@
 package com.semaphore_soft.apps.cypher.opengl;
 
+import android.content.Context;
+
 import com.semaphore_soft.apps.cypher.opengl.shader.SimpleShaderProgram;
 
 import org.artoolkit.ar.base.rendering.gles20.ARDrawableOpenGLES20;
@@ -13,6 +15,7 @@ public class ARLoaderGLES20 extends ARLoader implements ARDrawableOpenGLES20
 {
     private SimpleShaderProgram shaderProgram;
 
+    /*
     public ARLoaderGLES20(SimpleShaderProgram shaderProgram)
     {
         super();
@@ -28,10 +31,10 @@ public class ARLoaderGLES20 extends ARLoader implements ARDrawableOpenGLES20
     {
         super(size, x, y, z);
     }
-
-    public ARLoaderGLES20(float size, float x, float y, float z, String f)
+    */
+    public ARLoaderGLES20(float size, float x, float y, float z, String f, Context context)
     {
-        super(size, x, y, z, f);
+        super(size, x, y, z, f, context);
     }
     @Override
     /**
