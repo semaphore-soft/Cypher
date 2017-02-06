@@ -10,8 +10,8 @@ import android.widget.FrameLayout;
 import android.widget.Toast;
 
 import com.semaphore_soft.apps.cypher.ui.GetNameDialogFragment;
-import com.semaphore_soft.apps.cypher.ui.MainActivityView;
 import com.semaphore_soft.apps.cypher.ui.UIListener;
+import com.semaphore_soft.apps.cypher.ui.UIMainActivity;
 
 public class MainActivity extends AppCompatActivity implements GetNameDialogFragment.GetNameDialogListener,
                                                                UIListener
@@ -24,11 +24,11 @@ public class MainActivity extends AppCompatActivity implements GetNameDialogFrag
         super.onCreate(savedInstanceState);
         setContentView(R.layout.empty);
 
-        MainActivityView activityView = new MainActivityView(this);
-        ((FrameLayout) findViewById(R.id.empty)).addView(activityView);
-        activityView.setUIListener(this);
+        UIMainActivity UIMainActivity = new UIMainActivity(this);
+        ((FrameLayout) findViewById(R.id.empty)).addView(UIMainActivity);
+        UIMainActivity.setUIListener(this);
 
-        setSupportActionBar(activityView.getToolbar());
+        setSupportActionBar(UIMainActivity.getToolbar());
     }
 
     public void showGetNameDialog()
