@@ -34,7 +34,7 @@ public abstract class UIBase extends FrameLayout
         createUI();
     }
 
-    public abstract void createUI();
+    protected abstract void createUI();
 
     protected View makeView(int resource)
     {
