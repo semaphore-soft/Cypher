@@ -133,5 +133,6 @@ public class MainActivity extends AppCompatActivity implements GetNameDialogFrag
     @Override
     public void onCommand(String cmd) {
         //write ya shit
+        //button click code goes here
     }
 }
