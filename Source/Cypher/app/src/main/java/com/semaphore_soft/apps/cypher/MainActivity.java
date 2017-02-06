@@ -17,7 +17,7 @@ import android.widget.Toast;
 import com.semaphore_soft.apps.cypher.ui.ConnectFragment;
 import com.semaphore_soft.apps.cypher.ui.GetNameDialogFragment;
 
-public class MainActivity extends AppCompatActivity implements GetNameDialogFragment.GetNameDialogListener, ConnectFragment.callback
+public class MainActivity extends AppCompatActivity implements GetNameDialogFragment.GetNameDialogListener, ConnectFragment.Callback
 {
     boolean host = false;
 
@@ -117,8 +117,7 @@ public class MainActivity extends AppCompatActivity implements GetNameDialogFrag
         return super.onOptionsItemSelected(item);
     }
 
-    @Override
-    public void doNetwork(String addr, String name)
+    public void startClientLobby(String addr, String name)
     {
         Toast.makeText(getApplicationContext(), "Moving to Connection Lobby",
                 Toast.LENGTH_SHORT).show();

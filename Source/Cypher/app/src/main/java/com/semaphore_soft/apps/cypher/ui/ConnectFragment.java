@@ -23,7 +23,7 @@ public class ConnectFragment extends DialogFragment
     private EditText name;
     private EditText addr;
 
-    private callback myListener;
+    private Callback myListener;
 
     public ConnectFragment()
     {
@@ -56,12 +56,12 @@ public class ConnectFragment extends DialogFragment
             @Override
             public void onClick(View view)
             {
-                myListener.doNetwork(addr.getText().toString(), name.getText().toString());
+                myListener.startClientLobby(addr.getText().toString(), name.getText().toString());
 
                 // hide keyboard on fragment exit
                 InputMethodManager imm = (InputMethodManager) getActivity()
                         .getSystemService(Context.INPUT_METHOD_SERVICE);
-                boolean b = imm.hideSoftInputFromWindow(getView().getWindowToken(), 0);
+                imm.hideSoftInputFromWindow(getView().getWindowToken(), 0);
 
                 dismiss();
             }
@@ -70,11 +70,12 @@ public class ConnectFragment extends DialogFragment
         return myView;
     }
 
-    public interface callback {
-        void doNetwork(String addr, String name);
+    public interface Callback
+    {
+        void startClientLobby(String addr, String name);
     }
 
-    public void setListener(callback c)
+    public void setListener(Callback c)
     {
         myListener = c;
     }
