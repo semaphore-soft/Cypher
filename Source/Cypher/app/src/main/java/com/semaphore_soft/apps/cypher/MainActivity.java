@@ -2,21 +2,19 @@ package com.semaphore_soft.apps.cypher;
 
 import android.content.Intent;
 import android.os.Bundle;
-import android.support.design.widget.FloatingActionButton;
 import android.support.v4.app.FragmentManager;
 import android.support.v7.app.AppCompatActivity;
-import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuItem;
-import android.view.View;
-import android.widget.Button;
+import android.widget.FrameLayout;
 import android.widget.Toast;
 
 import com.semaphore_soft.apps.cypher.ui.GetNameDialogFragment;
 import com.semaphore_soft.apps.cypher.ui.MainActivityView;
 import com.semaphore_soft.apps.cypher.ui.UIListener;
 
-public class MainActivity extends AppCompatActivity implements GetNameDialogFragment.GetNameDialogListener, UIListener
+public class MainActivity extends AppCompatActivity implements GetNameDialogFragment.GetNameDialogListener,
+                                                               UIListener
 {
     boolean host = false;
 
@@ -24,54 +22,13 @@ public class MainActivity extends AppCompatActivity implements GetNameDialogFrag
     public void onCreate(Bundle savedInstanceState)
     {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_main);
-        Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
-        setSupportActionBar(toolbar);
+        setContentView(R.layout.empty);
 
-        MainActivityView activityView = new MainActivityView(this,this);
+        MainActivityView activityView = new MainActivityView(this);
+        ((FrameLayout) findViewById(R.id.empty)).addView(activityView);
+        activityView.setUIListener(this);
 
-        FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
-        fab.setOnClickListener(new View.OnClickListener()
-        {
-            @Override
-            public void onClick(View view)
-            {
-                Toast.makeText(getApplicationContext(), "gtfo actually", Toast.LENGTH_SHORT)
-                     .show();
-//                Toast.makeText(getApplicationContext(), "Launching AR Activity", Toast.LENGTH_SHORT)
-//                     .show();
-//
-//                Intent intent = new Intent(getBaseContext(), PortalActivity.class);
-//                intent.putExtra("host", true);
-//                intent.putExtra("player", 0);
-//                intent.putExtra("character", 0);
-//                startActivity(intent);
-            }
-        });
-
-        Button btnHost = (Button) findViewById(R.id.btnHost);
-
-        btnHost.setOnClickListener(new View.OnClickListener()
-        {
-            @Override
-            public void onClick(View view)
-            {
-                host = true;
-                showGetNameDialog();
-            }
-        });
-
-        Button btnJoin = (Button) findViewById(R.id.btnJoin);
-
-        btnJoin.setOnClickListener(new View.OnClickListener()
-        {
-            @Override
-            public void onClick(View view)
-            {
-                host = false;
-                showGetNameDialog();
-            }
-        });
+        setSupportActionBar(activityView.getToolbar());
     }
 
     public void showGetNameDialog()
@@ -131,8 +88,31 @@ public class MainActivity extends AppCompatActivity implements GetNameDialogFrag
     }
 
     @Override
-    public void onCommand(String cmd) {
-        //write ya shit
-        //button click code goes here
+    public void onCommand(String cmd)
+    {
+        switch (cmd)
+        {
+            case "cmd_btnHost":
+                host = true;
+                showGetNameDialog();
+                break;
+            case "cmd_btnJoin":
+                host = false;
+                showGetNameDialog();
+                break;
+            case "cmd_btnLaunch":
+                Toast.makeText(getApplicationContext(), "Launching AR Activity", Toast.LENGTH_SHORT)
+                     .show();
+
+                Intent intent = new Intent(getBaseContext(), PortalActivity.class);
+                intent.putExtra("host", true);
+                intent.putExtra("player", 0);
+                intent.putExtra("character", 0);
+                startActivity(intent);
+                break;
+            default:
+                Toast.makeText(this, "UI interaction not handled", Toast.LENGTH_SHORT).show();
+                break;
+        }
     }
 }
