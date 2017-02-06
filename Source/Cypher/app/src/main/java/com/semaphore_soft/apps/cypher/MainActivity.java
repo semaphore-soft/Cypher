@@ -13,8 +13,10 @@ import android.widget.Button;
 import android.widget.Toast;
 
 import com.semaphore_soft.apps.cypher.ui.GetNameDialogFragment;
+import com.semaphore_soft.apps.cypher.ui.MainActivityView;
+import com.semaphore_soft.apps.cypher.ui.UIListener;
 
-public class MainActivity extends AppCompatActivity implements GetNameDialogFragment.GetNameDialogListener
+public class MainActivity extends AppCompatActivity implements GetNameDialogFragment.GetNameDialogListener, UIListener
 {
     boolean host = false;
 
@@ -26,20 +28,24 @@ public class MainActivity extends AppCompatActivity implements GetNameDialogFrag
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
+        MainActivityView activityView = new MainActivityView(this,this);
+
         FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
         fab.setOnClickListener(new View.OnClickListener()
         {
             @Override
             public void onClick(View view)
             {
-                Toast.makeText(getApplicationContext(), "Launching AR Activity", Toast.LENGTH_SHORT)
+                Toast.makeText(getApplicationContext(), "gtfo actually", Toast.LENGTH_SHORT)
                      .show();
-
-                Intent intent = new Intent(getBaseContext(), PortalActivity.class);
-                intent.putExtra("host", true);
-                intent.putExtra("player", 0);
-                intent.putExtra("character", 0);
-                startActivity(intent);
+//                Toast.makeText(getApplicationContext(), "Launching AR Activity", Toast.LENGTH_SHORT)
+//                     .show();
+//
+//                Intent intent = new Intent(getBaseContext(), PortalActivity.class);
+//                intent.putExtra("host", true);
+//                intent.putExtra("player", 0);
+//                intent.putExtra("character", 0);
+//                startActivity(intent);
             }
         });
 
@@ -122,5 +128,10 @@ public class MainActivity extends AppCompatActivity implements GetNameDialogFrag
             intent.putExtra("name", name);
             startActivity(intent);
         }
+    }
+
+    @Override
+    public void onCommand(String cmd) {
+        //write ya shit
     }
 }
