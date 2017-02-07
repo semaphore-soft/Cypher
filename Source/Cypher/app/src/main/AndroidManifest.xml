@@ -63,6 +63,13 @@
                 <action android:name="android.intent.action.MAIN" />
             </intent-filter>
         </activity>
+
+        <service
+            android:name=".networking.ServerService"
+            android:exported="false"/>
+        <service
+            android:name=".networking.ClientService"
+            android:exported="false"/>
         <activity android:name="org.artoolkit.ar.base.camera.CameraPreferencesActivity" />
     </application>
 
