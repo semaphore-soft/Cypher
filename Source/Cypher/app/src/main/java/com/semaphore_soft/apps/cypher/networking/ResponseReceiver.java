@@ -7,6 +7,7 @@ import android.util.Log;
 
 /**
  * Created by Evan on 2/6/2017.
+ * Broadcast Receiver for network events
  */
 
 public class ResponseReceiver extends BroadcastReceiver
@@ -19,17 +20,17 @@ public class ResponseReceiver extends BroadcastReceiver
     {
         String action = intent.getAction();
         Log.d("BR", action);
-        if (ClientService.BROADCAST_MESSAGE.equals(action))
+        if (NetworkConstants.BROADCAST_MESSAGE.equals(action))
         {
             // Message from other devices
-            String msg = intent.getStringExtra(ClientService.MESSAGE);
+            String msg = intent.getStringExtra(NetworkConstants.MESSAGE);
             Log.i("BR", msg);
             //            toasts(msg);
         }
-        else if (ClientService.BROADCAST_STATUS.equals(action))
+        else if (NetworkConstants.BROADCAST_STATUS.equals(action))
         {
             // Thread status updates
-            String msg = intent.getStringExtra(ClientService.MESSAGE);
+            String msg = intent.getStringExtra(NetworkConstants.MESSAGE);
             Log.i("BR", msg);
             //            toasts(msg);
         }
