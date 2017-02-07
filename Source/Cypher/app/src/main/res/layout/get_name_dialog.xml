@@ -28,7 +28,8 @@
             android:layout_height="wrap_content"
             android:id="@+id/txtName"
             android:layout_weight="1"
-            android:inputType="text"/>
+            android:inputType="text"
+            android:hint="Name"/>
 
     </LinearLayout>
 
@@ -36,6 +37,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="Done"
-        android:id="@+id/btnDone"/>
+        android:id="@+id/btnDone"
+        style="@style/Widget.AppCompat.Button.Borderless"/>
 
 </LinearLayout>
