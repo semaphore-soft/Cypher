@@ -10,8 +10,10 @@ import android.content.IntentFilter;
 public class NetworkConstants
 {
     // Custom Intent action
-    public static final String BROADCAST_MESSAGE = "com.semaphore_soft.apps.cypher.networking.BROADCAST";
-    public static final String BROADCAST_STATUS  = "com.semaphore_soft.apps.cypher.networking.STATUS";
+    public static final String BROADCAST_MESSAGE =
+        "com.semaphore_soft.apps.cypher.networking.BROADCAST";
+    public static final String BROADCAST_STATUS  =
+        "com.semaphore_soft.apps.cypher.networking.STATUS";
 
     // Defines the key for the status "extra" in an Intent
     public static final String MESSAGE = "com.semaphore_soft.apps.cypher.MESSAGE";

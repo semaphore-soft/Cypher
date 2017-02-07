@@ -45,17 +45,17 @@ public class ServerService extends IntentService
         else if (dataString.equals(NetworkConstants.THREAD_READ))
         {
             Log.d(TAG, "Sending thread read");
-            String msg         = intent.getStringExtra(NetworkConstants.MSG_EXTRA);
+            String msg = intent.getStringExtra(NetworkConstants.MSG_EXTRA);
             Intent localIntent = new Intent(NetworkConstants.BROADCAST_MESSAGE)
-                    .putExtra(NetworkConstants.MESSAGE, msg);
+                .putExtra(NetworkConstants.MESSAGE, msg);
             LocalBroadcastManager.getInstance(this).sendBroadcast(localIntent);
         }
         else if (dataString.equals(NetworkConstants.THREAD_UPDATE))
         {
             Log.d(TAG, "Sending thread update");
-            String msg         = intent.getStringExtra(NetworkConstants.MSG_EXTRA);
+            String msg = intent.getStringExtra(NetworkConstants.MSG_EXTRA);
             Intent localIntent = new Intent(NetworkConstants.BROADCAST_STATUS)
-                    .putExtra(NetworkConstants.MESSAGE, msg);
+                .putExtra(NetworkConstants.MESSAGE, msg);
             LocalBroadcastManager.getInstance(this).sendBroadcast(localIntent);
         }
     }

@@ -30,7 +30,9 @@ public class ConnectFragment extends DialogFragment
 
     }
 
-    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState)
+    public View onCreateView(LayoutInflater inflater,
+                             ViewGroup container,
+                             Bundle savedInstanceState)
     {
         View myView = inflater.inflate(R.layout.connect, container, false);
 
@@ -60,7 +62,7 @@ public class ConnectFragment extends DialogFragment
 
                 // hide keyboard on fragment exit
                 InputMethodManager imm = (InputMethodManager) getActivity()
-                        .getSystemService(Context.INPUT_METHOD_SERVICE);
+                    .getSystemService(Context.INPUT_METHOD_SERVICE);
                 imm.hideSoftInputFromWindow(getView().getWindowToken(), 0);
 
                 dismiss();

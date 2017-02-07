@@ -89,10 +89,12 @@ public class ConnectionLobbyActivity extends AppCompatActivity
             String ip = "";
             try
             {
-                for (Enumeration<NetworkInterface> en = NetworkInterface.getNetworkInterfaces(); en.hasMoreElements();)
+                for (Enumeration<NetworkInterface> en = NetworkInterface.getNetworkInterfaces();
+                     en.hasMoreElements(); )
                 {
                     NetworkInterface ni = en.nextElement();
-                    for (Enumeration<InetAddress> addresses = ni.getInetAddresses(); addresses.hasMoreElements();)
+                    for (Enumeration<InetAddress> addresses = ni.getInetAddresses();
+                         addresses.hasMoreElements(); )
                     {
                         InetAddress inetAddress = addresses.nextElement();
                         // Limit IP addresses shown to IPv4
@@ -143,7 +145,7 @@ public class ConnectionLobbyActivity extends AppCompatActivity
             mServiceIntent = new Intent(this, ClientService.class);
             mServiceIntent.setData(Uri.parse(NetworkConstants.SETUP_CLIENT));
             mServiceIntent
-                    .putExtra(NetworkConstants.ADDR_EXTRA, getIntent().getStringExtra("address"));
+                .putExtra(NetworkConstants.ADDR_EXTRA, getIntent().getStringExtra("address"));
             startService(mServiceIntent);
 
             mServiceIntent.setData(Uri.parse(NetworkConstants.CLIENT_WRITE));

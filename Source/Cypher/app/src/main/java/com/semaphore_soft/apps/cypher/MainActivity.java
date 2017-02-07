@@ -16,7 +16,8 @@ import com.semaphore_soft.apps.cypher.ui.UIListener;
 import com.semaphore_soft.apps.cypher.ui.UIMainActivity;
 
 public class MainActivity extends AppCompatActivity implements GetNameDialogFragment.GetNameDialogListener,
-                                                               UIListener, ConnectFragment.Callback
+                                                               UIListener,
+                                                               ConnectFragment.Callback
 {
     boolean host = false;
 
@@ -35,7 +36,8 @@ public class MainActivity extends AppCompatActivity implements GetNameDialogFrag
 
         setSupportActionBar(UIMainActivity.getToolbar());
 
-        StrictMode.ThreadPolicy policy = new StrictMode.ThreadPolicy.Builder().permitNetwork().build();
+        StrictMode.ThreadPolicy policy =
+            new StrictMode.ThreadPolicy.Builder().permitNetwork().build();
         StrictMode.setThreadPolicy(policy);
     }
 
@@ -49,7 +51,7 @@ public class MainActivity extends AppCompatActivity implements GetNameDialogFrag
 
     public void showConnectDialog()
     {
-        FragmentManager fm = getSupportFragmentManager();
+        FragmentManager fm              = getSupportFragmentManager();
         ConnectFragment connectFragment = new ConnectFragment();
         connectFragment.setListener(this);
         connectFragment.show(fm, "connect_dialog");
@@ -82,7 +84,7 @@ public class MainActivity extends AppCompatActivity implements GetNameDialogFrag
     public void startClientLobby(String addr, String name)
     {
         Toast.makeText(getApplicationContext(), "Moving to Connection Lobby",
-                Toast.LENGTH_SHORT).show();
+                       Toast.LENGTH_SHORT).show();
         Intent intent = new Intent(getBaseContext(), ConnectionLobbyActivity.class);
         intent.putExtra("name", name);
         intent.putExtra("address", addr);
@@ -93,7 +95,7 @@ public class MainActivity extends AppCompatActivity implements GetNameDialogFrag
     public void onFinishGetName(String name)
     {
         Toast.makeText(getApplicationContext(), "Moving to Connection Lobby",
-                Toast.LENGTH_SHORT).show();
+                       Toast.LENGTH_SHORT).show();
         Intent intent = new Intent(getBaseContext(), ConnectionLobbyActivity.class);
         intent.putExtra("host", host);
         intent.putExtra("name", name);
