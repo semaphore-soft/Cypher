@@ -29,6 +29,7 @@ public class Server
     private Context                  mContext       = MainApplication.getInstance()
                                                                      .getApplicationContext();
     private Intent                   mServiceIntent = new Intent(mContext, ServerService.class);
+    private int                      maxPlayers     = 4;
 
 
     public Server()
@@ -86,7 +87,7 @@ public class Server
         {
             accepting = true;
             int id = 0;
-            while (accepting)
+            while (accepting && id < maxPlayers - 1)
             {
                 try
                 {
