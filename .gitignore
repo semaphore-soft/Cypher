@@ -1,9 +1,66 @@
-*.iml
-.gradle
-/local.properties
-/.idea/workspace.xml
-/.idea/libraries
-.DS_Store
-/build
-/captures
-.externalNativeBuild
+/Source/Cypher/.gradle
+/Source/Cypher/local.properties
+/Source/Cypher/.DS_Store
+/Source/Cypher/build
+/Source/Cypher/captures
+/Source/Cypher/projectFilesBackup
+/Source/Cypher/.idea/vcs.xml
+/Source/Cypher/.idea/codeStyleSettings.xml
+/Source/Cypher/.idea/encodings.xml
+/Source/Cypher/.idea/inspectionProfiles/
+
+# Created by https://www.gitignore.io/api/jetbrains
+
+### JetBrains ###
+# Covers JetBrains IDEs: IntelliJ, RubyMine, PhpStorm, AppCode, PyCharm, CLion, Android Studio and Webstorm
+# Reference: https://intellij-support.jetbrains.com/hc/en-us/articles/206544839
+
+# User-specific stuff:
+/Source/Cypher/.idea/workspace.xml
+/Source/Cypher/.idea/tasks.xml
+
+# Sensitive or high-churn files:
+/Source/Cypher/.idea/dataSources/
+/Source/Cypher/.idea/dataSources.ids
+/Source/Cypher/.idea/dataSources.xml
+/Source/Cypher/.idea/dataSources.local.xml
+/Source/Cypher/.idea/sqlDataSources.xml
+/Source/Cypher/.idea/dynamic.xml
+/Source/Cypher/.idea/uiDesigner.xml
+
+# Gradle:
+/Source/Cypher/.idea/gradle.xml
+/Source/Cypher/.idea/libraries
+
+# Mongo Explorer plugin:
+/Source/Cypher/.idea/mongoSettings.xml
+
+## File-based project format:
+/Source/Cypher/*.iws
+
+## Plugin-specific files:
+
+# IntelliJ
+/Source/Cypher/out/
+
+# mpeltonen/sbt-idea plugin
+/Source/Cypher/.idea_modules/
+
+# JIRA plugin
+/Source/Cypher/atlassian-ide-plugin.xml
+
+# Crashlytics plugin (for Android Studio and IntelliJ)
+/Source/Cypher/com_crashlytics_export_strings.xml
+/Source/Cypher/crashlytics.properties
+/Source/Cypher/crashlytics-build.properties
+/Source/Cypher/fabric.properties
+
+### JetBrains Patch ###
+# Comment Reason: https://github.com/joeblau/gitignore.io/issues/186#issuecomment-215987721
+
+/Source/Cypher/*.iml
+# modules.xml
+/Source/Cypher/.idea/misc.xml
+# *.ipr
+
+# End of https://www.gitignore.io/api/jetbrains

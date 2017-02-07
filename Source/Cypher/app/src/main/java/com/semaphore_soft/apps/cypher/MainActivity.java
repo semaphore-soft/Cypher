@@ -2,6 +2,7 @@ package com.semaphore_soft.apps.cypher;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.os.StrictMode;
 import android.support.v4.app.FragmentManager;
 import android.support.v7.app.AppCompatActivity;
 import android.view.Menu;
@@ -9,14 +10,18 @@ import android.view.MenuItem;
 import android.widget.FrameLayout;
 import android.widget.Toast;
 
+import com.semaphore_soft.apps.cypher.ui.ConnectFragment;
 import com.semaphore_soft.apps.cypher.ui.GetNameDialogFragment;
 import com.semaphore_soft.apps.cypher.ui.UIListener;
 import com.semaphore_soft.apps.cypher.ui.UIMainActivity;
 
 public class MainActivity extends AppCompatActivity implements GetNameDialogFragment.GetNameDialogListener,
-                                                               UIListener
+                                                               UIListener, ConnectFragment.Callback
 {
     boolean host = false;
+
+    // Port should be between 49152-65535
+    public final static int SERVER_PORT = 58008;
 
     @Override
     public void onCreate(Bundle savedInstanceState)
@@ -29,6 +34,9 @@ public class MainActivity extends AppCompatActivity implements GetNameDialogFrag
         UIMainActivity.setUIListener(this);
 
         setSupportActionBar(UIMainActivity.getToolbar());
+
+        StrictMode.ThreadPolicy policy = new StrictMode.ThreadPolicy.Builder().permitNetwork().build();
+        StrictMode.setThreadPolicy(policy);
     }
 
     public void showGetNameDialog()
@@ -37,6 +45,14 @@ public class MainActivity extends AppCompatActivity implements GetNameDialogFrag
         GetNameDialogFragment getNameDialogFragment = new GetNameDialogFragment();
         getNameDialogFragment.setListener(this);
         getNameDialogFragment.show(fm, "get_name_dialog");
+    }
+
+    public void showConnectDialog()
+    {
+        FragmentManager fm = getSupportFragmentManager();
+        ConnectFragment connectFragment = new ConnectFragment();
+        connectFragment.setListener(this);
+        connectFragment.show(fm, "connect_dialog");
     }
 
     @Override
@@ -55,7 +71,6 @@ public class MainActivity extends AppCompatActivity implements GetNameDialogFrag
         // as you specify a parent activity in AndroidManifest.xml.
         int id = item.getItemId();
 
-        //noinspection SimplifiableIfStatement
         if (id == R.id.action_settings)
         {
             return true;
@@ -64,27 +79,25 @@ public class MainActivity extends AppCompatActivity implements GetNameDialogFrag
         return super.onOptionsItemSelected(item);
     }
 
+    public void startClientLobby(String addr, String name)
+    {
+        Toast.makeText(getApplicationContext(), "Moving to Connection Lobby",
+                Toast.LENGTH_SHORT).show();
+        Intent intent = new Intent(getBaseContext(), ConnectionLobbyActivity.class);
+        intent.putExtra("name", name);
+        intent.putExtra("address", addr);
+        startActivity(intent);
+    }
+
     @Override
     public void onFinishGetName(String name)
     {
-        if (host)
-        {
-            Toast.makeText(getApplicationContext(),
-                           "Moving to Connection Lobby",
-                           Toast.LENGTH_SHORT).show();
-            Intent intent = new Intent(getBaseContext(), ConnectionLobbyActivity.class);
-            intent.putExtra("host", host);
-            intent.putExtra("name", name);
-            startActivity(intent);
-        }
-        else
-        {
-            Toast.makeText(getApplicationContext(), "Moving to Join Game Lobby", Toast.LENGTH_SHORT)
-                 .show();
-            Intent intent = new Intent(getBaseContext(), JoinGameActivity.class);
-            intent.putExtra("name", name);
-            startActivity(intent);
-        }
+        Toast.makeText(getApplicationContext(), "Moving to Connection Lobby",
+                Toast.LENGTH_SHORT).show();
+        Intent intent = new Intent(getBaseContext(), ConnectionLobbyActivity.class);
+        intent.putExtra("host", host);
+        intent.putExtra("name", name);
+        startActivity(intent);
     }
 
     @Override
