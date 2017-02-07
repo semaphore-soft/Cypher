@@ -8,11 +8,11 @@ import java.net.InetAddress;
 import java.net.UnknownHostException;
 
 /**
- * Created by Evan on 2/5/2017.
- * Service so threads can survive multiple activities
+ * Created by Evan on 2/6/2017.
+ * Client service
  */
 
-public class NetworkingService extends IntentService
+public class ClientService extends IntentService
 {
     // Custom Intent action
     public static final String BROADCAST_MESSAGE = "com.semaphore_soft.apps.cypher.networking.BROADCAST";
@@ -21,20 +21,17 @@ public class NetworkingService extends IntentService
     // Defines the key for the status "extra" in an Intent
     public static final String MESSAGE = "com.semaphore_soft.apps.cypher.MESSAGE";
 
-    public static final String SETUP_SERVER    = "SERVER_SETUP";
-    public static final String SETUP_CLIENT    = "CLIENT_SETUP";
-    public static final String CLIENT_WRITE    = "CLIENT_WRITE";
-    public static final String WRITE_TO_CLIENT = "SINGLE_WRITE";
-    public static final String WRITE_ALL       = "WRITE_ALL";
-    public static final String THREAD_READ     = "THREAD_READ";
-    public static final String THREAD_UPDATE   = "THREAD_UPDATE";
+    public static final String SETUP_CLIENT  = "CLIENT_SETUP";
+    public static final String CLIENT_WRITE  = "CLIENT_WRITE";
+    public static final String THREAD_READ   = "THREAD_READ";
+    public static final String THREAD_UPDATE = "THREAD_UPDATE";
 
-    private DeviceThreads deviceThreads = new DeviceThreads();
-    private DeviceThreads.ClientThread clientThread = null;
+    private Client              client       = new Client();
+    private Client.ClientThread clientThread = null;
 
-    public NetworkingService()
+    public ClientService()
     {
-        super("Cypher");
+        super("Cypher_client");
     }
 
     @Override
@@ -42,15 +39,12 @@ public class NetworkingService extends IntentService
     {
         // Gets data from the incoming intent
         String dataString = intent.getDataString();
-        if (dataString.equals(SETUP_SERVER))
-        {
-            deviceThreads.startAcceptor();
-        }
-        else if (dataString.equals(SETUP_CLIENT))
+        if (dataString.equals(SETUP_CLIENT))
         {
             try
             {
-                clientThread = deviceThreads.startClient(InetAddress.getByName(intent.getStringExtra("address")));
+                clientThread = client.startClient(
+                        InetAddress.getByName(intent.getStringExtra("address")));
             }
             catch (UnknownHostException e)
             {
@@ -65,17 +59,9 @@ public class NetworkingService extends IntentService
                 clientThread.write(intent.getStringExtra("message"));
             }
         }
-        else if (dataString.equals(WRITE_TO_CLIENT))
-        {
-            deviceThreads.writeToClient(intent.getStringExtra("message"), intent.getIntExtra("index", -1));
-        }
-        else if (dataString.equals(WRITE_ALL))
-        {
-            deviceThreads.writeAll(intent.getStringExtra("message"));
-        }
         else if (dataString.equals(THREAD_READ))
         {
-            String msg = intent.getStringExtra("message");
+            String msg         = intent.getStringExtra("message");
             Intent localIntent = new Intent(BROADCAST_MESSAGE).putExtra(MESSAGE, msg);
             LocalBroadcastManager.getInstance(this).sendBroadcast(localIntent);
         }

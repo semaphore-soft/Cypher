@@ -18,7 +18,8 @@ import android.widget.Button;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.semaphore_soft.apps.cypher.networking.NetworkingService;
+import com.semaphore_soft.apps.cypher.networking.ClientService;
+import com.semaphore_soft.apps.cypher.networking.ServerService;
 import com.semaphore_soft.apps.cypher.ui.PlayerID;
 import com.semaphore_soft.apps.cypher.ui.PlayerIDAdapter;
 
@@ -55,8 +56,8 @@ public class ConnectionLobbyActivity extends AppCompatActivity
 
         IntentFilter mIntentFilter = new IntentFilter();
 
-        mIntentFilter.addAction(NetworkingService.BROADCAST_MESSAGE);
-        mIntentFilter.addAction(NetworkingService.BROADCAST_STATUS);
+        mIntentFilter.addAction(ServerService.BROADCAST_MESSAGE);
+        mIntentFilter.addAction(ServerService.BROADCAST_STATUS);
 
         // TODO register and unregister in OnResume and OnPause
         LocalBroadcastManager.getInstance(this)
@@ -113,12 +114,12 @@ public class ConnectionLobbyActivity extends AppCompatActivity
             {
                 Log.e("Lobby", ex.toString());
             }
-            
-            mServiceIntent = new Intent(this, NetworkingService.class);
-            mServiceIntent.setData(Uri.parse(NetworkingService.SETUP_SERVER));
+
+            mServiceIntent = new Intent(this, ServerService.class);
+            mServiceIntent.setData(Uri.parse(ServerService.SETUP_SERVER));
             startService(mServiceIntent);
 
-            mServiceIntent.setData(Uri.parse(NetworkingService.WRITE_TO_CLIENT));
+            mServiceIntent.setData(Uri.parse(ServerService.WRITE_TO_CLIENT));
             mServiceIntent.putExtra("message", "Hello, World!");
             mServiceIntent.putExtra("index", 0);
             startService(mServiceIntent);
@@ -145,12 +146,12 @@ public class ConnectionLobbyActivity extends AppCompatActivity
         {
             btnStart.setEnabled(false);
 
-            mServiceIntent = new Intent(this, NetworkingService.class);
-            mServiceIntent.setData(Uri.parse(NetworkingService.SETUP_CLIENT));
+            mServiceIntent = new Intent(this, ClientService.class);
+            mServiceIntent.setData(Uri.parse(ClientService.SETUP_CLIENT));
             mServiceIntent.putExtra("address", getIntent().getStringExtra("address"));
             startService(mServiceIntent);
 
-            mServiceIntent.setData(Uri.parse(NetworkingService.CLIENT_WRITE));
+            mServiceIntent.setData(Uri.parse(ClientService.CLIENT_WRITE));
             mServiceIntent.putExtra("message", "Hello, World!");
             startService(mServiceIntent);
         }
@@ -179,17 +180,17 @@ public class ConnectionLobbyActivity extends AppCompatActivity
         {
             String action = intent.getAction();
             Log.d("BR", action);
-            if (NetworkingService.BROADCAST_MESSAGE.equals(action))
+            if (ClientService.BROADCAST_MESSAGE.equals(action))
             {
                 // Message from other devices
-                String msg = intent.getStringExtra(NetworkingService.MESSAGE);
+                String msg = intent.getStringExtra(ClientService.MESSAGE);
                 Log.i("BR", msg);
                 toasts(msg);
             }
-            else if (NetworkingService.BROADCAST_STATUS.equals(action))
+            else if (ClientService.BROADCAST_STATUS.equals(action))
             {
                 // Thread status updates
-                String msg = intent.getStringExtra(NetworkingService.MESSAGE);
+                String msg = intent.getStringExtra(ClientService.MESSAGE);
                 Log.i("BR", msg);
                 toasts(msg);
             }

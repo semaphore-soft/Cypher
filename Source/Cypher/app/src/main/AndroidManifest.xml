@@ -64,9 +64,6 @@
             </intent-filter>
         </activity>
         <activity android:name="org.artoolkit.ar.base.camera.CameraPreferencesActivity" />
-        <service
-            android:name=".networking.NetworkingService"
-            android:exported="false"/>
     </application>
 
 </manifest>
