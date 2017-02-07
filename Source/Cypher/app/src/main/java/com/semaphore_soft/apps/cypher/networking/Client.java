@@ -52,8 +52,8 @@ public class Client
             {
                 e.printStackTrace();
                 Log.e("ClientThread", "Failed to start socket");
-                mServiceIntent.setData(Uri.parse(ClientService.THREAD_UPDATE));
-                mServiceIntent.putExtra("message", "Failed to start socket");
+                mServiceIntent.setData(Uri.parse(NetworkConstants.THREAD_UPDATE));
+                mServiceIntent.putExtra(NetworkConstants.MSG_EXTRA, "Failed to start socket");
                 mContext.startService(mServiceIntent);
             }
         }
@@ -100,8 +100,8 @@ public class Client
         private void processMessage(String msg)
         {
             Log.i("ClientThread", msg);
-            mServiceIntent.setData(Uri.parse(ClientService.THREAD_READ));
-            mServiceIntent.putExtra("message", msg);
+            mServiceIntent.setData(Uri.parse(NetworkConstants.THREAD_READ));
+            mServiceIntent.putExtra(NetworkConstants.MSG_EXTRA, msg);
             mContext.startService(mServiceIntent);
         }
     }

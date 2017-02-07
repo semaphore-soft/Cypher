@@ -21,10 +21,7 @@ public class ClientService extends IntentService
     // Defines the key for the status "extra" in an Intent
     public static final String MESSAGE = "com.semaphore_soft.apps.cypher.MESSAGE";
 
-    public static final String SETUP_CLIENT  = "CLIENT_SETUP";
-    public static final String CLIENT_WRITE  = "CLIENT_WRITE";
-    public static final String THREAD_READ   = "THREAD_READ";
-    public static final String THREAD_UPDATE = "THREAD_UPDATE";
+
 
     private Client              client       = new Client();
     private Client.ClientThread clientThread = null;
@@ -39,12 +36,12 @@ public class ClientService extends IntentService
     {
         // Gets data from the incoming intent
         String dataString = intent.getDataString();
-        if (dataString.equals(SETUP_CLIENT))
+        if (dataString.equals(NetworkConstants.SETUP_CLIENT))
         {
             try
             {
                 clientThread = client.startClient(
-                        InetAddress.getByName(intent.getStringExtra("address")));
+                        InetAddress.getByName(intent.getStringExtra(NetworkConstants.ADDR_EXTRA)));
             }
             catch (UnknownHostException e)
             {
@@ -52,22 +49,22 @@ public class ClientService extends IntentService
                 // TODO sent intent for error?
             }
         }
-        else if (dataString.equals(CLIENT_WRITE))
+        else if (dataString.equals(NetworkConstants.CLIENT_WRITE))
         {
             if (clientThread != null)
             {
-                clientThread.write(intent.getStringExtra("message"));
+                clientThread.write(intent.getStringExtra(NetworkConstants.MSG_EXTRA));
             }
         }
-        else if (dataString.equals(THREAD_READ))
+        else if (dataString.equals(NetworkConstants.THREAD_READ))
         {
-            String msg         = intent.getStringExtra("message");
+            String msg         = intent.getStringExtra(NetworkConstants.MSG_EXTRA);
             Intent localIntent = new Intent(BROADCAST_MESSAGE).putExtra(MESSAGE, msg);
             LocalBroadcastManager.getInstance(this).sendBroadcast(localIntent);
         }
-        else if (dataString.equals(THREAD_UPDATE))
+        else if (dataString.equals(NetworkConstants.THREAD_UPDATE))
         {
-            String msg         = intent.getStringExtra("message");
+            String msg         = intent.getStringExtra(NetworkConstants.MSG_EXTRA);
             Intent localIntent = new Intent(BROADCAST_STATUS).putExtra(MESSAGE, msg);
             LocalBroadcastManager.getInstance(this).sendBroadcast(localIntent);
         }

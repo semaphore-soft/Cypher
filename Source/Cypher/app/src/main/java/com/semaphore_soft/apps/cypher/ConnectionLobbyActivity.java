@@ -1,9 +1,6 @@
 package com.semaphore_soft.apps.cypher;
 
-import android.content.BroadcastReceiver;
-import android.content.Context;
 import android.content.Intent;
-import android.content.IntentFilter;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.design.widget.Snackbar;
@@ -16,9 +13,10 @@ import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import com.semaphore_soft.apps.cypher.networking.ClientService;
+import com.semaphore_soft.apps.cypher.networking.NetworkConstants;
+import com.semaphore_soft.apps.cypher.networking.ResponseReceiver;
 import com.semaphore_soft.apps.cypher.networking.ServerService;
 import com.semaphore_soft.apps.cypher.ui.PlayerID;
 import com.semaphore_soft.apps.cypher.ui.PlayerIDAdapter;
@@ -54,14 +52,10 @@ public class ConnectionLobbyActivity extends AppCompatActivity
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
-        IntentFilter mIntentFilter = new IntentFilter();
-
-        mIntentFilter.addAction(ServerService.BROADCAST_MESSAGE);
-        mIntentFilter.addAction(ServerService.BROADCAST_STATUS);
-
         // TODO register and unregister in OnResume and OnPause
         LocalBroadcastManager.getInstance(this)
-                             .registerReceiver(new ResponseReceiver(), mIntentFilter);
+                             .registerReceiver(new ResponseReceiver(),
+                                               NetworkConstants.getFilter());
 
 
         host = getIntent().getBooleanExtra("host", false);
@@ -116,12 +110,12 @@ public class ConnectionLobbyActivity extends AppCompatActivity
             }
 
             mServiceIntent = new Intent(this, ServerService.class);
-            mServiceIntent.setData(Uri.parse(ServerService.SETUP_SERVER));
+            mServiceIntent.setData(Uri.parse(NetworkConstants.SETUP_SERVER));
             startService(mServiceIntent);
 
-            mServiceIntent.setData(Uri.parse(ServerService.WRITE_TO_CLIENT));
-            mServiceIntent.putExtra("message", "Hello, World!");
-            mServiceIntent.putExtra("index", 0);
+            mServiceIntent.setData(Uri.parse(NetworkConstants.WRITE_TO_CLIENT));
+            mServiceIntent.putExtra(NetworkConstants.MSG_EXTRA, "Hello, World!");
+            mServiceIntent.putExtra(NetworkConstants.INDEX_EXTRA, 0);
             startService(mServiceIntent);
 
             TextView ipAddress = (TextView) findViewById(R.id.ip_address);
@@ -147,12 +141,13 @@ public class ConnectionLobbyActivity extends AppCompatActivity
             btnStart.setEnabled(false);
 
             mServiceIntent = new Intent(this, ClientService.class);
-            mServiceIntent.setData(Uri.parse(ClientService.SETUP_CLIENT));
-            mServiceIntent.putExtra("address", getIntent().getStringExtra("address"));
+            mServiceIntent.setData(Uri.parse(NetworkConstants.SETUP_CLIENT));
+            mServiceIntent
+                    .putExtra(NetworkConstants.ADDR_EXTRA, getIntent().getStringExtra("address"));
             startService(mServiceIntent);
 
-            mServiceIntent.setData(Uri.parse(ClientService.CLIENT_WRITE));
-            mServiceIntent.putExtra("message", "Hello, World!");
+            mServiceIntent.setData(Uri.parse(NetworkConstants.CLIENT_WRITE));
+            mServiceIntent.putExtra(NetworkConstants.MSG_EXTRA, "Hello, World!");
             startService(mServiceIntent);
         }
     }
@@ -166,39 +161,6 @@ public class ConnectionLobbyActivity extends AppCompatActivity
             playerID.setPlayerName("player" + i);
             //gameIDAdapter.pushGameID(gameID);
             playersList.add(playerID);
-        }
-    }
-
-    private class ResponseReceiver extends BroadcastReceiver
-    {
-        // Prevents instantiation
-        private ResponseReceiver()
-        {
-        }
-
-        public void onReceive(Context context, Intent intent)
-        {
-            String action = intent.getAction();
-            Log.d("BR", action);
-            if (ClientService.BROADCAST_MESSAGE.equals(action))
-            {
-                // Message from other devices
-                String msg = intent.getStringExtra(ClientService.MESSAGE);
-                Log.i("BR", msg);
-                toasts(msg);
-            }
-            else if (ClientService.BROADCAST_STATUS.equals(action))
-            {
-                // Thread status updates
-                String msg = intent.getStringExtra(ClientService.MESSAGE);
-                Log.i("BR", msg);
-                toasts(msg);
-            }
-        }
-
-        private void toasts(String str)
-        {
-            Toast.makeText(ConnectionLobbyActivity.this, str, Toast.LENGTH_SHORT).show();
         }
     }
 }

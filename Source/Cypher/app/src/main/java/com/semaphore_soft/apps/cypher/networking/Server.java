@@ -91,8 +91,8 @@ public class Server
                 try
                 {
                     Log.i("ClientHandler", "Waiting on accept");
-                    mServiceIntent.setData(Uri.parse(ServerService.THREAD_UPDATE));
-                    mServiceIntent.putExtra("message", "Waiting on accept");
+                    mServiceIntent.setData(Uri.parse(NetworkConstants.THREAD_UPDATE));
+                    mServiceIntent.putExtra(NetworkConstants.MSG_EXTRA, "Waiting on accept");
                     mContext.startService(mServiceIntent);
 
                     mySocket = serverSocket.accept();
@@ -163,8 +163,8 @@ public class Server
         private void processMessage(String msg)
         {
             Log.i("ClientHandler", msg);
-            mServiceIntent.setData(Uri.parse(ServerService.THREAD_READ));
-            mServiceIntent.putExtra("message", msg);
+            mServiceIntent.setData(Uri.parse(NetworkConstants.THREAD_READ));
+            mServiceIntent.putExtra(NetworkConstants.MSG_EXTRA, msg);
             mContext.startService(mServiceIntent);
         }
     }
