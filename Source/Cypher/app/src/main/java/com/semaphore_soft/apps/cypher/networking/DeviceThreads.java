@@ -1,10 +1,13 @@
-package com.semaphore_soft.apps.cypher;
+package com.semaphore_soft.apps.cypher.networking;
 
 import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
 import android.util.Log;
 import android.widget.Toast;
+
+import com.semaphore_soft.apps.cypher.MainActivity;
+import com.semaphore_soft.apps.cypher.MainApplication;
 
 import java.io.DataInputStream;
 import java.io.DataOutputStream;

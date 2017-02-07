@@ -1,4 +1,4 @@
-package com.semaphore_soft.apps.cypher;
+package com.semaphore_soft.apps.cypher.networking;
 
 import android.app.IntentService;
 import android.content.Intent;
@@ -15,8 +15,8 @@ import java.net.UnknownHostException;
 public class NetworkingService extends IntentService
 {
     // Custom Intent action
-    public static final String BROADCAST_MESSAGE = "com.semaphore_soft.apps.cypher.BROADCAST";
-    public static final String BROADCAST_STATUS  = "com.semaphore_soft.apps.cypher.STATUS";
+    public static final String BROADCAST_MESSAGE = "com.semaphore_soft.apps.cypher.networking.BROADCAST";
+    public static final String BROADCAST_STATUS  = "com.semaphore_soft.apps.cypher.networking.STATUS";
 
     // Defines the key for the status "extra" in an Intent
     public static final String MESSAGE = "com.semaphore_soft.apps.cypher.MESSAGE";
