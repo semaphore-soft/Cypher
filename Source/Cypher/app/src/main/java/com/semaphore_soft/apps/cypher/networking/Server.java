@@ -11,6 +11,7 @@ import com.semaphore_soft.apps.cypher.MainApplication;
 
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
+import java.io.EOFException;
 import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
@@ -121,6 +122,8 @@ public class Server
         Socket mySocket;
         int    id;
 
+        private boolean running = true;
+
         public ClientHandler(Socket socket, int id)
         {
             mySocket = socket;
@@ -129,18 +132,12 @@ public class Server
 
         public void run()
         {
-            Boolean running = true;
             while (running)
             {
-                try
+                String msg = read();
+                if (msg != null)
                 {
-                    DataInputStream in = new DataInputStream(mySocket.getInputStream());
-                    processMessage(in.readUTF());
-                }
-                catch (IOException e)
-                {
-                    e.printStackTrace();
-                    running = false;
+                    processMessage(msg);
                 }
             }
         }
@@ -159,6 +156,28 @@ public class Server
             {
                 e.printStackTrace();
             }
+        }
+
+        private String read()
+        {
+            try
+            {
+                DataInputStream in = new DataInputStream(mySocket.getInputStream());
+                try
+                {
+                    return in.readUTF();
+                }
+                catch (EOFException e)
+                {
+                    return null;
+                }
+            }
+            catch (IOException e)
+            {
+                e.printStackTrace();
+                running = false;
+            }
+            return null;
         }
 
         private void processMessage(String msg)

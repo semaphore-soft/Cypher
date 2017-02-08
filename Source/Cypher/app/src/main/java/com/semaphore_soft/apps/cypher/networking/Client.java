@@ -10,6 +10,7 @@ import com.semaphore_soft.apps.cypher.MainApplication;
 
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
+import java.io.EOFException;
 import java.io.IOException;
 import java.net.InetAddress;
 import java.net.Socket;
@@ -40,6 +41,7 @@ public class Client
     public class ClientThread extends Thread
     {
         Socket mySocket = null;
+        private boolean running = true;
 
         public ClientThread(InetAddress address)
         {
@@ -64,18 +66,12 @@ public class Client
             if (mySocket != null)
             {
                 Log.i("ClientThread", "Connection made");
-                Boolean running = true;
                 while (running)
                 {
-                    try
+                    String msg = read();
+                    if (msg != null)
                     {
-                        DataInputStream in = new DataInputStream(mySocket.getInputStream());
-                        processMessage(in.readUTF());
-                    }
-                    catch (IOException e)
-                    {
-                        e.printStackTrace();
-                        running = false;
+                        processMessage(msg);
                     }
                 }
             }
@@ -95,6 +91,28 @@ public class Client
             {
                 e.printStackTrace();
             }
+        }
+
+        private String read()
+        {
+            try
+            {
+                DataInputStream in = new DataInputStream(mySocket.getInputStream());
+                try
+                {
+                    return in.readUTF();
+                }
+                catch (EOFException e)
+                {
+                    return null;
+                }
+            }
+            catch (IOException e)
+            {
+                e.printStackTrace();
+                running = false;
+            }
+            return null;
         }
 
         private void processMessage(String msg)
