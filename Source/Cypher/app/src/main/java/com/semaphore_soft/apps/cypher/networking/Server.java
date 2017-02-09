@@ -84,7 +84,9 @@ public class Server
             {
                 e.printStackTrace();
                 Log.e("ClientHandler", "Failed to start server");
-                Toast.makeText(mContext, "Failed to start server", Toast.LENGTH_SHORT).show();
+                mServiceIntent.setData(Uri.parse(NetworkConstants.THREAD_ERROR));
+                mServiceIntent.putExtra(NetworkConstants.MSG_EXTRA, "Failed to start server");
+                mContext.startService(mServiceIntent);
             }
         }
 
