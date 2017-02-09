@@ -34,7 +34,7 @@ public class ResponseReceiver extends BroadcastReceiver
             // Thread status updates
             String msg = intent.getStringExtra(NetworkConstants.MESSAGE);
             Log.i("BR", msg);
-            listener.handleRead(msg);
+            listener.handleStatus(msg);
         }
         else if (NetworkConstants.BROADCAST_ERROR.equals(action))
         {
@@ -49,6 +49,7 @@ public class ResponseReceiver extends BroadcastReceiver
     {
         void handleRead(String msg);
 
+        void handleStatus(String msg);
         void handleError(String msg);
     }
 

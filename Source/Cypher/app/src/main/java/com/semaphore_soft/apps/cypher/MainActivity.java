@@ -134,8 +134,7 @@ public class MainActivity extends AppCompatActivity implements GetNameDialogFrag
         // Try to connect to the socket before moving to connection lobby
         Intent mServiceIntent = new Intent(this, ClientService.class);
         mServiceIntent.setData(Uri.parse(NetworkConstants.SETUP_CLIENT));
-        mServiceIntent
-            .putExtra(NetworkConstants.ADDR_EXTRA, addr);
+        mServiceIntent.putExtra(NetworkConstants.ADDR_EXTRA, addr);
         startService(mServiceIntent);
     }
 
@@ -158,7 +157,11 @@ public class MainActivity extends AppCompatActivity implements GetNameDialogFrag
     public void handleRead(String msg)
     {
         Toast.makeText(this, msg, Toast.LENGTH_SHORT).show();
+    }
 
+    @Override
+    public void handleStatus(String msg)
+    {
         Toast.makeText(getApplicationContext(), "Moving to Connection Lobby", Toast.LENGTH_SHORT)
              .show();
         Intent intent = new Intent(getBaseContext(), ConnectionLobbyActivity.class);
