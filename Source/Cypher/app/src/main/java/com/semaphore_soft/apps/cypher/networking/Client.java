@@ -21,9 +21,10 @@ import java.net.Socket;
 
 public class Client
 {
-    private Context mContext       = MainApplication.getInstance()
+    private        Context      mContext       = MainApplication.getInstance()
                                                     .getApplicationContext();
-    private Intent  mServiceIntent = new Intent(mContext, ClientService.class);
+    private        Intent       mServiceIntent = new Intent(mContext, ClientService.class);
+    private static ClientThread clientThread   = null;
 
 
     public Client()
@@ -32,8 +33,13 @@ public class Client
 
     public ClientThread startClient(InetAddress addr)
     {
-        ClientThread clientThread = new ClientThread(addr);
+        clientThread = new ClientThread(addr);
         clientThread.start();
+        return clientThread;
+    }
+
+    public ClientThread getClientThread()
+    {
         return clientThread;
     }
 
