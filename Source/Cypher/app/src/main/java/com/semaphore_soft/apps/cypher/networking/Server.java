@@ -25,7 +25,7 @@ import java.util.ArrayList;
 public class Server
 {
     private ArrayList<ClientHandler> clients        = new ArrayList<>();
-    private Boolean                  accepting      = false;
+    private static Boolean accepting = false;
     private Context                  mContext       = MainApplication.getInstance()
                                                                      .getApplicationContext();
     private Intent                   mServiceIntent = new Intent(mContext, ServerService.class);
@@ -36,7 +36,7 @@ public class Server
     {
     }
 
-    public void setAccepting(Boolean bool)
+    public static void setAccepting(Boolean bool)
     {
         accepting = bool;
     }
