@@ -7,6 +7,7 @@ import android.os.Bundle;
 import android.os.StrictMode;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v4.app.FragmentManager;
+import android.support.v4.content.LocalBroadcastManager;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.view.Menu;
@@ -16,11 +17,14 @@ import android.widget.Button;
 import android.widget.Toast;
 
 import com.semaphore_soft.apps.cypher.networking.NetworkConstants;
+import com.semaphore_soft.apps.cypher.networking.ResponseReceiver;
 import com.semaphore_soft.apps.cypher.networking.ServerService;
 import com.semaphore_soft.apps.cypher.ui.ConnectFragment;
 import com.semaphore_soft.apps.cypher.ui.GetNameDialogFragment;
 
-public class MainActivity extends AppCompatActivity implements GetNameDialogFragment.GetNameDialogListener, ConnectFragment.Callback
+public class MainActivity extends AppCompatActivity implements GetNameDialogFragment.GetNameDialogListener,
+                                                               ConnectFragment.Callback,
+                                                               ResponseReceiver.Receiver
 {
     boolean host = false;
 
@@ -52,6 +56,12 @@ public class MainActivity extends AppCompatActivity implements GetNameDialogFrag
         // Allow network connections
         StrictMode.ThreadPolicy policy = new StrictMode.ThreadPolicy.Builder().permitNetwork().build();
         StrictMode.setThreadPolicy(policy);
+
+        ResponseReceiver responseReceiver = new ResponseReceiver();
+        responseReceiver.setListener(this);
+        LocalBroadcastManager.getInstance(this)
+                             .registerReceiver(responseReceiver,
+                                               NetworkConstants.getFilter());
 
         Button btnHost = (Button) findViewById(R.id.btnHost);
 
@@ -141,5 +151,11 @@ public class MainActivity extends AppCompatActivity implements GetNameDialogFrag
         intent.putExtra("host", host);
         intent.putExtra("name", name);
         startActivity(intent);
+    }
+
+    @Override
+    public void handleRead(String msg)
+    {
+        Toast.makeText(this, msg, Toast.LENGTH_SHORT).show();
     }
 }
