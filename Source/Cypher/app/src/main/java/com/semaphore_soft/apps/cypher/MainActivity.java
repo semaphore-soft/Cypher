@@ -29,6 +29,7 @@ public class MainActivity extends AppCompatActivity implements GetNameDialogFrag
 {
     boolean host = false;
     private String name = "";
+    private ResponseReceiver responseReceiver;
 
     @Override
     public void onCreate(Bundle savedInstanceState)
@@ -60,7 +61,7 @@ public class MainActivity extends AppCompatActivity implements GetNameDialogFrag
             new StrictMode.ThreadPolicy.Builder().permitNetwork().build();
         StrictMode.setThreadPolicy(policy);
 
-        ResponseReceiver responseReceiver = new ResponseReceiver();
+        responseReceiver = new ResponseReceiver();
         responseReceiver.setListener(this);
         LocalBroadcastManager.getInstance(this)
                              .registerReceiver(responseReceiver,
@@ -161,6 +162,7 @@ public class MainActivity extends AppCompatActivity implements GetNameDialogFrag
     @Override
     public void handleStatus(String msg)
     {
+        LocalBroadcastManager.getInstance(this).unregisterReceiver(responseReceiver);
         Toast.makeText(getApplicationContext(), "Moving to Connection Lobby", Toast.LENGTH_SHORT)
              .show();
         Intent intent = new Intent(getBaseContext(), ConnectionLobbyActivity.class);
