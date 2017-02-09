@@ -5,7 +5,6 @@ import android.content.Intent;
 import android.net.Uri;
 import android.util.Log;
 
-import com.semaphore_soft.apps.cypher.MainActivity;
 import com.semaphore_soft.apps.cypher.MainApplication;
 
 import java.io.DataInputStream;
@@ -48,7 +47,7 @@ public class Client
             try
             {
                 // creates and connects to address at specified port
-                mySocket = new Socket(address, MainActivity.SERVER_PORT);
+                mySocket = new Socket(address, NetworkConstants.SERVER_PORT);
             }
             catch (IOException e)
             {

@@ -6,7 +6,6 @@ import android.net.Uri;
 import android.util.Log;
 import android.widget.Toast;
 
-import com.semaphore_soft.apps.cypher.MainActivity;
 import com.semaphore_soft.apps.cypher.MainApplication;
 
 import java.io.DataInputStream;
@@ -73,7 +72,7 @@ public class Server
         {
             try
             {
-                serverSocket = new ServerSocket(MainActivity.SERVER_PORT);
+                serverSocket = new ServerSocket(NetworkConstants.SERVER_PORT);
 
             }
             catch (IOException e)
