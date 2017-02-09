@@ -114,9 +114,6 @@ public class ConnectionLobbyActivity extends AppCompatActivity implements Respon
             }
 
             mServiceIntent = new Intent(this, ServerService.class);
-            //            mServiceIntent.setData(Uri.parse(NetworkConstants.SETUP_SERVER));
-            //            startService(mServiceIntent);
-
             mServiceIntent.setData(Uri.parse(NetworkConstants.WRITE_TO_CLIENT));
             mServiceIntent.putExtra(NetworkConstants.MSG_EXTRA, "Hello, World!");
             mServiceIntent.putExtra(NetworkConstants.INDEX_EXTRA, 0);
@@ -145,10 +142,10 @@ public class ConnectionLobbyActivity extends AppCompatActivity implements Respon
             btnStart.setEnabled(false);
 
             mServiceIntent = new Intent(this, ClientService.class);
-            mServiceIntent.setData(Uri.parse(NetworkConstants.SETUP_CLIENT));
-            mServiceIntent
-                    .putExtra(NetworkConstants.ADDR_EXTRA, getIntent().getStringExtra("address"));
-            startService(mServiceIntent);
+            //            mServiceIntent.setData(Uri.parse(NetworkConstants.SETUP_CLIENT));
+            //            mServiceIntent
+            //                    .putExtra(NetworkConstants.ADDR_EXTRA, getIntent().getStringExtra("address"));
+            //            startService(mServiceIntent);
 
             mServiceIntent.setData(Uri.parse(NetworkConstants.CLIENT_WRITE));
             mServiceIntent.putExtra(NetworkConstants.MSG_EXTRA, "Hello, World!");
@@ -170,6 +167,12 @@ public class ConnectionLobbyActivity extends AppCompatActivity implements Respon
 
     @Override
     public void handleRead(String msg)
+    {
+        Toast.makeText(this, msg, Toast.LENGTH_SHORT).show();
+    }
+
+    @Override
+    public void handleError(String msg)
     {
         Toast.makeText(this, msg, Toast.LENGTH_SHORT).show();
     }

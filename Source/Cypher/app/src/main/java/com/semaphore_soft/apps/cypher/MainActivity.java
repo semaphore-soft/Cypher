@@ -16,6 +16,7 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.Toast;
 
+import com.semaphore_soft.apps.cypher.networking.ClientService;
 import com.semaphore_soft.apps.cypher.networking.NetworkConstants;
 import com.semaphore_soft.apps.cypher.networking.ResponseReceiver;
 import com.semaphore_soft.apps.cypher.networking.ServerService;
@@ -130,12 +131,12 @@ public class MainActivity extends AppCompatActivity implements GetNameDialogFrag
     @Override
     public void startClientLobby(String addr, String name)
     {
-        Toast.makeText(getApplicationContext(), "Moving to Connection Lobby",
-                Toast.LENGTH_SHORT).show();
-        Intent intent = new Intent(getBaseContext(), ConnectionLobbyActivity.class);
-        intent.putExtra("name", name);
-        intent.putExtra("address", addr);
-        startActivity(intent);
+        // Try to connect to the socket before moving to connection lobby
+        Intent mServiceIntent = new Intent(this, ClientService.class);
+        mServiceIntent.setData(Uri.parse(NetworkConstants.SETUP_CLIENT));
+        mServiceIntent
+            .putExtra(NetworkConstants.ADDR_EXTRA, addr);
+        startService(mServiceIntent);
     }
 
     @Override
@@ -155,6 +156,19 @@ public class MainActivity extends AppCompatActivity implements GetNameDialogFrag
 
     @Override
     public void handleRead(String msg)
+    {
+        Toast.makeText(this, msg, Toast.LENGTH_SHORT).show();
+
+        Toast.makeText(getApplicationContext(), "Moving to Connection Lobby", Toast.LENGTH_SHORT)
+             .show();
+        Intent intent = new Intent(getBaseContext(), ConnectionLobbyActivity.class);
+        String name   = "";
+        intent.putExtra("name", name);
+        startActivity(intent);
+    }
+
+    @Override
+    public void handleError(String msg)
     {
         Toast.makeText(this, msg, Toast.LENGTH_SHORT).show();
     }

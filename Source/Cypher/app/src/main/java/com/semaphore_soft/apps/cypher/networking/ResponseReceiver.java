@@ -41,13 +41,15 @@ public class ResponseReceiver extends BroadcastReceiver
             // Thread errors
             String msg = intent.getStringExtra(NetworkConstants.MESSAGE);
             Log.i("BR", msg);
-            listener.handleRead(msg);
+            listener.handleError(msg);
         }
     }
 
     public interface Receiver
     {
         void handleRead(String msg);
+
+        void handleError(String msg);
     }
 
     public void setListener(Receiver r)
