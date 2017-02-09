@@ -48,7 +48,6 @@ public class ResponseReceiver extends BroadcastReceiver
     public interface Receiver
     {
         void handleRead(String msg);
-
         void handleStatus(String msg);
         void handleError(String msg);
     }

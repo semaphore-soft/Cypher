@@ -28,6 +28,7 @@ public class MainActivity extends AppCompatActivity implements GetNameDialogFrag
                                                                ResponseReceiver.Receiver
 {
     boolean host = false;
+    private String name = "";
 
     @Override
     public void onCreate(Bundle savedInstanceState)
@@ -44,7 +45,7 @@ public class MainActivity extends AppCompatActivity implements GetNameDialogFrag
             public void onClick(View view)
             {
                 Toast.makeText(getApplicationContext(), "Launching AR Activity", Toast.LENGTH_SHORT)
-                        .show();
+                     .show();
 
                 Intent intent = new Intent(getBaseContext(), PortalActivity.class);
                 intent.putExtra("host", true);
@@ -55,7 +56,8 @@ public class MainActivity extends AppCompatActivity implements GetNameDialogFrag
         });
 
         // Allow network connections
-        StrictMode.ThreadPolicy policy = new StrictMode.ThreadPolicy.Builder().permitNetwork().build();
+        StrictMode.ThreadPolicy policy =
+            new StrictMode.ThreadPolicy.Builder().permitNetwork().build();
         StrictMode.setThreadPolicy(policy);
 
         ResponseReceiver responseReceiver = new ResponseReceiver();
@@ -98,7 +100,7 @@ public class MainActivity extends AppCompatActivity implements GetNameDialogFrag
 
     public void showConnectDialog()
     {
-        FragmentManager fm = getSupportFragmentManager();
+        FragmentManager fm              = getSupportFragmentManager();
         ConnectFragment connectFragment = new ConnectFragment();
         connectFragment.setListener(this);
         connectFragment.show(fm, "connect_dialog");
@@ -131,6 +133,7 @@ public class MainActivity extends AppCompatActivity implements GetNameDialogFrag
     @Override
     public void startClientLobby(String addr, String name)
     {
+        this.name = name;
         // Try to connect to the socket before moving to connection lobby
         Intent mServiceIntent = new Intent(this, ClientService.class);
         mServiceIntent.setData(Uri.parse(NetworkConstants.SETUP_CLIENT));
@@ -141,16 +144,12 @@ public class MainActivity extends AppCompatActivity implements GetNameDialogFrag
     @Override
     public void onFinishGetName(String name)
     {
+        this.name = name;
+        // Start the server service, which will start
+        // the connection lobby when it starts accepting connections
         Intent mServiceIntent = new Intent(this, ServerService.class);
         mServiceIntent.setData(Uri.parse(NetworkConstants.SETUP_SERVER));
         startService(mServiceIntent);
-
-        Toast.makeText(getApplicationContext(), "Moving to Connection Lobby",
-                Toast.LENGTH_SHORT).show();
-        Intent intent = new Intent(getBaseContext(), ConnectionLobbyActivity.class);
-        intent.putExtra("host", host);
-        intent.putExtra("name", name);
-        startActivity(intent);
     }
 
     @Override
@@ -165,7 +164,7 @@ public class MainActivity extends AppCompatActivity implements GetNameDialogFrag
         Toast.makeText(getApplicationContext(), "Moving to Connection Lobby", Toast.LENGTH_SHORT)
              .show();
         Intent intent = new Intent(getBaseContext(), ConnectionLobbyActivity.class);
-        String name   = "";
+        intent.putExtra("host", host);
         intent.putExtra("name", name);
         startActivity(intent);
     }
