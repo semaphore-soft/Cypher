@@ -93,6 +93,9 @@ public class ConnectionLobbyActivity extends AppCompatActivity implements Respon
             String ip = "";
             try
             {
+                // Use a label to break out of a nested for loop
+                // Note: probably better to use a method for the inner loop, but this works
+                outerloop:
                 for (Enumeration<NetworkInterface> en = NetworkInterface.getNetworkInterfaces(); en.hasMoreElements();)
                 {
                     NetworkInterface ni = en.nextElement();
@@ -104,7 +107,7 @@ public class ConnectionLobbyActivity extends AppCompatActivity implements Respon
                         {
                             ip = inetAddress.getHostAddress();
                             Log.i("Lobby", ip);
-                            break;
+                            break outerloop;
                         }
                     }
                 }
