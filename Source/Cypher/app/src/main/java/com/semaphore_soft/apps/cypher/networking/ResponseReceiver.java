@@ -12,6 +12,8 @@ import android.util.Log;
 
 public class ResponseReceiver extends BroadcastReceiver
 {
+    private Receiver listener;
+
     public ResponseReceiver()
     {
     }
@@ -26,6 +28,7 @@ public class ResponseReceiver extends BroadcastReceiver
             String msg = intent.getStringExtra(NetworkConstants.MESSAGE);
             Log.i("BR", msg);
             //            toasts(msg);
+            listener.handleRead(msg);
         }
         else if (NetworkConstants.BROADCAST_STATUS.equals(action))
         {
@@ -33,7 +36,18 @@ public class ResponseReceiver extends BroadcastReceiver
             String msg = intent.getStringExtra(NetworkConstants.MESSAGE);
             Log.i("BR", msg);
             //            toasts(msg);
+            listener.handleRead(msg);
         }
+    }
+
+    public interface Receiver
+    {
+        void handleRead(String msg);
+    }
+
+    public void setListener(Receiver r)
+    {
+        listener = r;
     }
 
     //    private void toasts(String str)

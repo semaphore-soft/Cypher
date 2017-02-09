@@ -13,6 +13,7 @@ import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.semaphore_soft.apps.cypher.networking.ClientService;
 import com.semaphore_soft.apps.cypher.networking.NetworkConstants;
@@ -32,7 +33,7 @@ import java.util.Enumeration;
  * Created by Scorple on 1/9/2017.
  */
 
-public class ConnectionLobbyActivity extends AppCompatActivity
+public class ConnectionLobbyActivity extends AppCompatActivity implements ResponseReceiver.Receiver
 {
     String              name;
     boolean             host;
@@ -42,7 +43,8 @@ public class ConnectionLobbyActivity extends AppCompatActivity
     private PlayerIDAdapter playerIDAdapter;
 
     RecyclerView recyclerView;
-    private Intent mServiceIntent;
+    private Intent           mServiceIntent;
+    private ResponseReceiver responseReceiver;
 
     @Override
     public void onCreate(Bundle savedInstanceState)
@@ -52,9 +54,11 @@ public class ConnectionLobbyActivity extends AppCompatActivity
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
+        responseReceiver = new ResponseReceiver();
+        responseReceiver.setListener(this);
         // TODO register and unregister in OnResume and OnPause
         LocalBroadcastManager.getInstance(this)
-                             .registerReceiver(new ResponseReceiver(),
+                             .registerReceiver(responseReceiver,
                                                NetworkConstants.getFilter());
 
 
@@ -162,5 +166,11 @@ public class ConnectionLobbyActivity extends AppCompatActivity
             //gameIDAdapter.pushGameID(gameID);
             playersList.add(playerID);
         }
+    }
+
+    @Override
+    public void handleRead(String msg)
+    {
+        Toast.makeText(this, msg, Toast.LENGTH_SHORT).show();
     }
 }
