@@ -114,8 +114,8 @@ public class ConnectionLobbyActivity extends AppCompatActivity implements Respon
             }
 
             mServiceIntent = new Intent(this, ServerService.class);
-            mServiceIntent.setData(Uri.parse(NetworkConstants.SETUP_SERVER));
-            startService(mServiceIntent);
+            //            mServiceIntent.setData(Uri.parse(NetworkConstants.SETUP_SERVER));
+            //            startService(mServiceIntent);
 
             mServiceIntent.setData(Uri.parse(NetworkConstants.WRITE_TO_CLIENT));
             mServiceIntent.putExtra(NetworkConstants.MSG_EXTRA, "Hello, World!");
@@ -150,9 +150,9 @@ public class ConnectionLobbyActivity extends AppCompatActivity implements Respon
                     .putExtra(NetworkConstants.ADDR_EXTRA, getIntent().getStringExtra("address"));
             startService(mServiceIntent);
 
-            //            mServiceIntent.setData(Uri.parse(NetworkConstants.CLIENT_WRITE));
-            //            mServiceIntent.putExtra(NetworkConstants.MSG_EXTRA, "Hello, World!");
-            //            startService(mServiceIntent);
+            mServiceIntent.setData(Uri.parse(NetworkConstants.CLIENT_WRITE));
+            mServiceIntent.putExtra(NetworkConstants.MSG_EXTRA, "Hello, World!");
+            startService(mServiceIntent);
         }
     }
 

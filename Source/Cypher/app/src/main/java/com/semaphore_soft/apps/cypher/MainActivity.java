@@ -2,6 +2,7 @@ package com.semaphore_soft.apps.cypher;
 
 
 import android.content.Intent;
+import android.net.Uri;
 import android.os.Bundle;
 import android.os.StrictMode;
 import android.support.design.widget.FloatingActionButton;
@@ -14,6 +15,8 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.Toast;
 
+import com.semaphore_soft.apps.cypher.networking.NetworkConstants;
+import com.semaphore_soft.apps.cypher.networking.ServerService;
 import com.semaphore_soft.apps.cypher.ui.ConnectFragment;
 import com.semaphore_soft.apps.cypher.ui.GetNameDialogFragment;
 
@@ -114,6 +117,7 @@ public class MainActivity extends AppCompatActivity implements GetNameDialogFrag
         return super.onOptionsItemSelected(item);
     }
 
+    @Override
     public void startClientLobby(String addr, String name)
     {
         Toast.makeText(getApplicationContext(), "Moving to Connection Lobby",
@@ -127,6 +131,10 @@ public class MainActivity extends AppCompatActivity implements GetNameDialogFrag
     @Override
     public void onFinishGetName(String name)
     {
+        Intent mServiceIntent = new Intent(this, ServerService.class);
+        mServiceIntent.setData(Uri.parse(NetworkConstants.SETUP_SERVER));
+        startService(mServiceIntent);
+
         Toast.makeText(getApplicationContext(), "Moving to Connection Lobby",
                 Toast.LENGTH_SHORT).show();
         Intent intent = new Intent(getBaseContext(), ConnectionLobbyActivity.class);

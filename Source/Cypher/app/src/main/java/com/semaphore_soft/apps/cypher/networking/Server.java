@@ -53,7 +53,7 @@ public class Server
 
     public void writeToClient(String str, int index)
     {
-        Log.d("Threads", "Attempting to write to client " + String.valueOf(index));
+        Log.d("Server", "Attempting to write to client " + String.valueOf(index));
         // TODO call writeALL if index invalid?
         // Service will default to -1 if no index is given
         if (!clients.isEmpty() && index > 0)
