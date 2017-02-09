@@ -58,5 +58,14 @@ public class ServerService extends IntentService
                     .putExtra(NetworkConstants.MESSAGE, msg);
             LocalBroadcastManager.getInstance(this).sendBroadcast(localIntent);
         }
+        else if (dataString.equals(NetworkConstants.THREAD_ERROR))
+        {
+            Log.d(TAG, "Sending thread error");
+            String msg         = intent.getStringExtra(NetworkConstants.MSG_EXTRA);
+            Intent localIntent = new Intent(NetworkConstants.BROADCAST_ERROR).putExtra(
+                NetworkConstants.MESSAGE,
+                msg);
+            LocalBroadcastManager.getInstance(this).sendBroadcast(localIntent);
+        }
     }
 }

@@ -53,7 +53,7 @@ public class Client
             {
                 e.printStackTrace();
                 Log.e("ClientThread", "Failed to start socket");
-                mServiceIntent.setData(Uri.parse(NetworkConstants.THREAD_UPDATE));
+                mServiceIntent.setData(Uri.parse(NetworkConstants.THREAD_ERROR));
                 mServiceIntent.putExtra(NetworkConstants.MSG_EXTRA, "Failed to start socket");
                 mContext.startService(mServiceIntent);
             }
@@ -65,6 +65,9 @@ public class Client
             if (mySocket != null)
             {
                 Log.i("ClientThread", "Connection made");
+                mServiceIntent.setData(Uri.parse(NetworkConstants.THREAD_UPDATE));
+                mServiceIntent.putExtra(NetworkConstants.MSG_EXTRA, "Connection made");
+                mContext.startService(mServiceIntent);
                 while (running)
                 {
                     String msg = read();

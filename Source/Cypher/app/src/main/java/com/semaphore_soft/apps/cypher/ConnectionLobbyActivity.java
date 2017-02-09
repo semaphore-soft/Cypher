@@ -150,9 +150,9 @@ public class ConnectionLobbyActivity extends AppCompatActivity implements Respon
                     .putExtra(NetworkConstants.ADDR_EXTRA, getIntent().getStringExtra("address"));
             startService(mServiceIntent);
 
-            mServiceIntent.setData(Uri.parse(NetworkConstants.CLIENT_WRITE));
-            mServiceIntent.putExtra(NetworkConstants.MSG_EXTRA, "Hello, World!");
-            startService(mServiceIntent);
+            //            mServiceIntent.setData(Uri.parse(NetworkConstants.CLIENT_WRITE));
+            //            mServiceIntent.putExtra(NetworkConstants.MSG_EXTRA, "Hello, World!");
+            //            startService(mServiceIntent);
         }
     }
 

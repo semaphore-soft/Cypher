@@ -27,7 +27,6 @@ public class ResponseReceiver extends BroadcastReceiver
             // Message from other devices
             String msg = intent.getStringExtra(NetworkConstants.MESSAGE);
             Log.i("BR", msg);
-            //            toasts(msg);
             listener.handleRead(msg);
         }
         else if (NetworkConstants.BROADCAST_STATUS.equals(action))
@@ -35,7 +34,13 @@ public class ResponseReceiver extends BroadcastReceiver
             // Thread status updates
             String msg = intent.getStringExtra(NetworkConstants.MESSAGE);
             Log.i("BR", msg);
-            //            toasts(msg);
+            listener.handleRead(msg);
+        }
+        else if (NetworkConstants.BROADCAST_ERROR.equals(action))
+        {
+            // Thread errors
+            String msg = intent.getStringExtra(NetworkConstants.MESSAGE);
+            Log.i("BR", msg);
             listener.handleRead(msg);
         }
     }
@@ -49,9 +54,4 @@ public class ResponseReceiver extends BroadcastReceiver
     {
         listener = r;
     }
-
-    //    private void toasts(String str)
-    //    {
-    //        Toast.makeText(ConnectionLobbyActivity.this, str, Toast.LENGTH_SHORT).show();
-    //    }
 }
