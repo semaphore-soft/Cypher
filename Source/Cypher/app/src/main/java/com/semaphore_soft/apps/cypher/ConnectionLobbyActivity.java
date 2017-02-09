@@ -142,11 +142,6 @@ public class ConnectionLobbyActivity extends AppCompatActivity implements Respon
             btnStart.setEnabled(false);
 
             mServiceIntent = new Intent(this, ClientService.class);
-            //            mServiceIntent.setData(Uri.parse(NetworkConstants.SETUP_CLIENT));
-            //            mServiceIntent
-            //                    .putExtra(NetworkConstants.ADDR_EXTRA, getIntent().getStringExtra("address"));
-            //            startService(mServiceIntent);
-
             mServiceIntent.setData(Uri.parse(NetworkConstants.CLIENT_WRITE));
             mServiceIntent.putExtra(NetworkConstants.MSG_EXTRA, "Hello, World!");
             startService(mServiceIntent);
@@ -167,6 +162,12 @@ public class ConnectionLobbyActivity extends AppCompatActivity implements Respon
 
     @Override
     public void handleRead(String msg)
+    {
+        Toast.makeText(this, msg, Toast.LENGTH_SHORT).show();
+    }
+
+    @Override
+    public void handleStatus(String msg)
     {
         Toast.makeText(this, msg, Toast.LENGTH_SHORT).show();
     }
