@@ -135,6 +135,7 @@ public class ConnectionLobbyActivity extends AppCompatActivity implements Respon
                 public void onClick(View view)
                 {
                     Server.setAccepting(false);
+                    LocalBroadcastManager.getInstance(ConnectionLobbyActivity.this).unregisterReceiver(responseReceiver);
                     Snackbar.make(view, "Moving to Character Select", Snackbar.LENGTH_LONG).show();
                     Intent intent = new Intent(getBaseContext(), CharacterSelectActivity.class);
                     intent.putExtra("host", host);
