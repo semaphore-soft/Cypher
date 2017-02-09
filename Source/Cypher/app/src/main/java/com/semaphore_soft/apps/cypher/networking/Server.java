@@ -25,7 +25,7 @@ import java.util.ArrayList;
 public class Server
 {
     private ArrayList<ClientHandler> clients        = new ArrayList<>();
-    public  Boolean                  accepting      = false;
+    private Boolean                  accepting      = false;
     private Context                  mContext       = MainApplication.getInstance()
                                                                      .getApplicationContext();
     private Intent                   mServiceIntent = new Intent(mContext, ServerService.class);
@@ -34,6 +34,11 @@ public class Server
 
     public Server()
     {
+    }
+
+    public void setAccepting(Boolean bool)
+    {
+        accepting = bool;
     }
 
     public void startAcceptor()
@@ -101,7 +106,6 @@ public class Server
                     clients.add(serverThread);
                     serverThread.start();
                     id++;
-                    accepting = false;
                 }
                 catch (SocketException e)
                 {
