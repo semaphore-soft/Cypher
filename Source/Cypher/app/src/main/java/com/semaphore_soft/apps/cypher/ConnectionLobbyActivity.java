@@ -104,6 +104,7 @@ public class ConnectionLobbyActivity extends AppCompatActivity implements Respon
                         {
                             ip = inetAddress.getHostAddress();
                             Log.i("Lobby", ip);
+                            break;
                         }
                     }
                 }

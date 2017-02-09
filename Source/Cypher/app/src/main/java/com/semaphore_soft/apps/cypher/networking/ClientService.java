@@ -51,6 +51,10 @@ public class ClientService extends IntentService
                 Log.d(TAG, "Writing to server");
                 clientThread.write(intent.getStringExtra(NetworkConstants.MSG_EXTRA));
             }
+            else
+            {
+                Log.d(TAG, "clientThread null");
+            }
         }
         else if (dataString.equals(NetworkConstants.THREAD_READ))
         {
