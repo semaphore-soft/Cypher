@@ -1,187 +1,77 @@
 package com.semaphore_soft.apps.cypher.opengl;
 
-import android.opengl.GLES10;
+import android.opengl.Matrix;
 
-import com.semaphore_soft.apps.cypher.game.Room;
-
-import org.artoolkit.ar.base.rendering.RenderUtils;
-
-import java.nio.FloatBuffer;
-import java.nio.ShortBuffer;
-import java.util.ArrayList;
-
-import javax.microedition.khronos.opengles.GL10;
+import java.util.Hashtable;
 
 /**
- * Created by Scorple on 1/27/2017.
+ * Created by rickm on 2/10/2017.
  */
 
 public class ARRoom
 {
-    public static final int NUM_INDICES = 18;
+    ARModelGLES20                  roomModel;
+    Hashtable<Long, ARModelGLES20> playerLine;
+    Hashtable<Long, ARModelGLES20> enemyLine;
+    Hashtable<Long, ARModelGLES20> entityPile;
 
-    private FloatBuffer mVertexBuffer;
-    private FloatBuffer mColorBuffer;
-    private ShortBuffer mIndexBuffer;
-
-    private ArrayList<Long> characters;
-
-    public ARRoom()
+    ARRoom()
     {
-        this(1.0F);
+        playerLine = new Hashtable<>();
+        enemyLine = new Hashtable<>();
+        entityPile = new Hashtable<>();
     }
 
-    public ARRoom(float size)
+    public void setRoomModel(ARModelGLES20 roomModel)
     {
-        this(size, 0.0F, 0.0F, 0.0F);
+        this.roomModel = roomModel;
     }
 
-    public ARRoom(float size, float x, float y, float z)
+    public void addPlayer(long id, ARModelGLES20 playerModel)
     {
-        this.setArrays(size, x, y, z);
-
-        characters = new ArrayList<>();
+        playerLine.put(id, playerModel);
     }
 
-    public FloatBuffer getmVertexBuffer()
+    public void addEnemy(long id, ARModelGLES20 enemyModel)
     {
-        return this.mVertexBuffer;
+        enemyLine.put(id, enemyModel);
     }
 
-    public FloatBuffer getmColorBuffer()
+    public void addEntity(long id, ARModelGLES20 entityModel)
     {
-        return this.mColorBuffer;
+        entityPile.put(id, entityModel);
     }
 
-    public ShortBuffer getmIndexBuffer()
+    public void draw(float[] projectionMatrix, float[] modelViewMatrix)
     {
-        return this.mIndexBuffer;
-    }
+        roomModel.draw(projectionMatrix, modelViewMatrix);
 
-    private void setArrays(float size, float x, float y, float z)
-    {
-
-        float hs = size / 2.0f;
-
-        float vertices[] = {
-            x - hs, y + hs, z,
-            x, y + (hs * 2), z,
-            x + hs, y + hs, z,
-            x + (hs * 2), y, z,
-            x + hs, y - hs, z,
-            x, y - (hs * 2), z,
-            x - hs, y - hs, z,
-            x - (hs * 2), y, z,
-        };
-
-        float c = 1.0f;
-        float colors[] = {
-            c, c, c, c,
-            c, c, c, c,
-            c, c, c, c,
-            c, c, c, c,
-            c, c, c, c,
-            c, c, c, c,
-            c, c, c, c,
-            c, c, c, c,
-        };
-
-        short indices[] = {
-            0, 1, 2,
-            2, 3, 4,
-            4, 5, 6,
-            6, 7, 0,
-            0, 2, 4,
-            0, 4, 6
-        };
-
-        mVertexBuffer = RenderUtils.buildFloatBuffer(vertices);
-        mColorBuffer = RenderUtils.buildFloatBuffer(colors);
-        mIndexBuffer = RenderUtils.buildShortBuffer(indices);
-    }
-
-    public void draw(GL10 unused)
-    {
-        GLES10.glColorPointer(4, GLES10.GL_FLOAT, 0, mColorBuffer);
-        GLES10.glVertexPointer(3, GLES10.GL_FLOAT, 0, mVertexBuffer);
-
-        GLES10.glEnableClientState(GLES10.GL_COLOR_ARRAY);
-        GLES10.glEnableClientState(GLES10.GL_VERTEX_ARRAY);
-
-        GLES10.glDrawElements(GLES10.GL_TRIANGLES,
-                              NUM_INDICES, GLES10.GL_UNSIGNED_BYTE, mIndexBuffer);
-
-        GLES10.glDisableClientState(GLES10.GL_COLOR_ARRAY);
-        GLES10.glDisableClientState(GLES10.GL_VERTEX_ARRAY);
-
-    }
-
-    public void addCharacter(long character)
-    {
-        if (!characters.contains(character))
+        for (Long id : playerLine.keySet())
         {
-            characters.add(character);
-        }
-    }
-
-    public void removeCharacter(long character)
-    {
-        if (characters.contains(character))
-        {
-            characters.remove(character);
-        }
-    }
-
-    public void setWall(short wall, Room.E_WALL_TYPE type)
-    {
-        float c = 1.0f;
-
-        int[]   toChange;
-        float[] color;
-
-        toChange = new int[]{
-            4 + (8 * wall),
-            5 + (8 * wall),
-            6 + (8 * wall),
-            7 + (8 * wall),
-        };
-
-        color = new float[4];
-
-        switch (type)
-        {
-            case NO_DOOR:
-                color = new float[]{
-                    0, 0, 0, c, //black
-                };
-                break;
-            case DOOR_UNLOCKED:
-                color = new float[]{
-                    0, c, 0, c, //green
-                };
-                break;
-            case DOOR_OPEN:
-                color = new float[]{
-                    c, c, c, c, //white
-                };
-                break;
-            case DOOR_LOCKED:
-                color = new float[]{
-                    c, 0, 0, c, //red
-                };
-                break;
-            default:
-                break;
+            float[] transformationMatrix = new float[16];
+            System.arraycopy(modelViewMatrix, 0, transformationMatrix, 0, 16);
+            ARModelGLES20 playerModel = playerLine.get(id);
+            Matrix.translateM(transformationMatrix, 0, -30.0f, 0.0f, 0.0f);
+            Matrix.rotateM(transformationMatrix, 0, 0.0f, 0.0f, 0.0f, (float) Math.PI);
+            playerModel.draw(projectionMatrix, transformationMatrix);
         }
 
-        float colors[] = new float[getmColorBuffer().capacity()];
-        getmColorBuffer().get(colors);
-
-        for (Integer i : toChange)
+        for (Long id : enemyLine.keySet())
         {
-            colors[i] = color[i % 4];
+            float[] transformationMatrix = new float[16];
+            System.arraycopy(modelViewMatrix, 0, transformationMatrix, 0, 16);
+            ARModelGLES20 enemyModel = enemyLine.get(id);
+            Matrix.translateM(transformationMatrix, 0, 30.0f, 0.0f, 0.0f);
+            enemyModel.draw(projectionMatrix, transformationMatrix);
         }
 
-        mColorBuffer = RenderUtils.buildFloatBuffer(colors);
+        for (Long id : entityPile.keySet())
+        {
+            float[] transformationMatrix = new float[16];
+            System.arraycopy(modelViewMatrix, 0, transformationMatrix, 0, 16);
+            ARModelGLES20 entityModel = entityPile.get(id);
+            Matrix.translateM(transformationMatrix, 0, 0.0f, 0.0f, 0.0f);
+            entityModel.draw(projectionMatrix, transformationMatrix);
+        }
     }
 }

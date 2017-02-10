@@ -4,8 +4,8 @@ import android.opengl.GLES20;
 import android.opengl.Matrix;
 
 import com.semaphore_soft.apps.cypher.game.Room;
-import com.semaphore_soft.apps.cypher.opengl.ARRoom;
-import com.semaphore_soft.apps.cypher.opengl.ARRoomGLES20;
+import com.semaphore_soft.apps.cypher.opengl.ARRoomProto;
+import com.semaphore_soft.apps.cypher.opengl.ARRoomProtoGLES20;
 import com.semaphore_soft.apps.cypher.opengl.ARSquareGLES20;
 import com.semaphore_soft.apps.cypher.opengl.ARTriangleGLES20;
 import com.semaphore_soft.apps.cypher.opengl.shader.SimpleFragmentShader;
@@ -44,7 +44,7 @@ class PortalRenderer extends ARRendererGLES20
     private ArrayList<ARTriangleGLES20> characterModels;
     private ArrayList<ARSquareGLES20>   roomModels;
 
-    private Hashtable<Integer, ARRoomGLES20> arRoomModels;
+    private Hashtable<Integer, ARRoomProtoGLES20> arRoomModels;
 
     private SimpleShaderProgram roomShaderProgram;
 
@@ -145,7 +145,7 @@ class PortalRenderer extends ARRendererGLES20
         arRoomModels = new Hashtable<>();
 
         roomShaderProgram =
-            new SimpleShaderProgram(ARRoom.NUM_INDICES,
+            new SimpleShaderProgram(ARRoomProto.NUM_INDICES,
                                     new SimpleVertexShader(),
                                     new SimpleFragmentShader());
     }
@@ -603,7 +603,7 @@ class PortalRenderer extends ARRendererGLES20
 
     public void createRoom(Room room)
     {
-        ARRoomGLES20 arRoom = new ARRoomGLES20(80.0f, 0.0f, 0.0f, 0.0f);
+        ARRoomProtoGLES20 arRoom = new ARRoomProtoGLES20(80.0f, 0.0f, 0.0f, 0.0f);
         arRoom.setShaderProgram(roomShaderProgram);
         for (short i = 0; i < 4; ++i)
         {
@@ -614,7 +614,7 @@ class PortalRenderer extends ARRendererGLES20
 
     public void updateRoom(Room room)
     {
-        ARRoomGLES20 arRoom = arRoomModels.get(room.getMarker());
+        ARRoomProtoGLES20 arRoom = arRoomModels.get(room.getMarker());
         for (short i = 0; i < 4; ++i)
         {
             arRoom.setWall(i, room.getWallType(i));

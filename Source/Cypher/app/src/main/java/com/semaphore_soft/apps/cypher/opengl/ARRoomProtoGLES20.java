@@ -9,22 +9,22 @@ import org.artoolkit.ar.base.rendering.gles20.ShaderProgram;
  * Created by Scorple on 1/27/2017.
  */
 
-public class ARRoomGLES20 extends ARRoom implements ARDrawableOpenGLES20
+public class ARRoomProtoGLES20 extends ARRoomProto implements ARDrawableOpenGLES20
 {
     private SimpleShaderProgram shaderProgram;
 
-    public ARRoomGLES20(SimpleShaderProgram shaderProgram)
+    public ARRoomProtoGLES20(SimpleShaderProgram shaderProgram)
     {
         super();
         this.shaderProgram = shaderProgram;
     }
 
-    public ARRoomGLES20(float size)
+    public ARRoomProtoGLES20(float size)
     {
         super(size);
     }
 
-    public ARRoomGLES20(float size, float x, float y, float z)
+    public ARRoomProtoGLES20(float size, float x, float y, float z)
     {
         super(size, x, y, z);
     }
