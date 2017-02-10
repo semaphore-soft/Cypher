@@ -13,7 +13,7 @@ import java.util.Vector;
  * Created by ceroj on 2/1/2017.
  */
 
-public class fileLoader
+public class ModelLoader
 {
     String filename = null;
     Context context;
@@ -22,9 +22,11 @@ public class fileLoader
     Vector<Short> indices= null;
     Vector<Float> texCoord= null;
 
-    public fileLoader(){ }
+    public ModelLoader()
+    {
+    }
 
-    public fileLoader(String filename, Context context)
+    public ModelLoader(String filename, Context context)
     {
         this.filename = filename;
         this.context = context;

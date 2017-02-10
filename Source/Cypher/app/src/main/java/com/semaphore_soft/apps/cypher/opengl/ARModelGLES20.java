@@ -11,28 +11,28 @@ import org.artoolkit.ar.base.rendering.gles20.ShaderProgram;
  * Created by ceroj on 2/1/2017.
  */
 
-public class ARLoaderGLES20 extends ARLoader implements ARDrawableOpenGLES20
+public class ARModelGLES20 extends ARModel implements ARDrawableOpenGLES20
 {
     private SimpleShaderProgram shaderProgram;
 
     /*
-    public ARLoaderGLES20(SimpleShaderProgram shaderProgram)
+    public ARModelGLES20(SimpleShaderProgram shaderProgram)
     {
         super();
         this.shaderProgram = shaderProgram;
     }
 
-    public ARLoaderGLES20(float size)
+    public ARModelGLES20(float size)
     {
         super(size);
     }
 
-    public ARLoaderGLES20(float size, float x, float y, float z)
+    public ARModelGLES20(float size, float x, float y, float z)
     {
         super(size, x, y, z);
     }
     */
-    public ARLoaderGLES20(float size, float x, float y, float z, String f, Context context)
+    public ARModelGLES20(float size, float x, float y, float z, String f, Context context)
     {
         super(size, x, y, z, f, context);
     }

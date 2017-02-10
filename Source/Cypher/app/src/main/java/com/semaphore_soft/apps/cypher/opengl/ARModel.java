@@ -16,7 +16,7 @@ import javax.microedition.khronos.opengles.GL10;
  * Created by ceroj on 2/1/2017.
  */
 
-public class ARLoader
+public class ARModel
 {
     public static final int NUM_INDICES = 18;
     private int vectorSize;
@@ -25,40 +25,40 @@ public class ARLoader
     private FloatBuffer mVertexBuffer;
     private FloatBuffer mColorBuffer;
     private ShortBuffer mIndexBuffer;
-    private fileLoader file = null;
+    private ModelLoader file = null;
     String  filename;
     Context context;
     private ArrayList<Long> characters = null;
 
     /*
-    public ARLoader()
+    public ARModel()
     {
         this(1.0F);
     }
 
-    public ARLoader(String filename)
+    public ARModel(String filename)
     {
         this(1.0F);
         file.setName(filename);
     }
 
-    public ARLoader(float size)
+    public ARModel(float size)
     {
         this(size, 0.0F, 0.0F, 0.0F);
     }
 
-    public ARLoader(float size, float x, float y, float z)
+    public ARModel(float size, float x, float y, float z)
     {
         this.setArrays(size, x, y, z);
 
         characters = new ArrayList<>();
     }
     */
-    public ARLoader(float size, float x, float y, float z, String filename, Context context)
+    public ARModel(float size, float x, float y, float z, String filename, Context context)
     {
         this.filename = filename;
         this.context = context;
-        file = new fileLoader(filename, context);
+        file = new ModelLoader(filename, context);
         this.setArrays(size, x, y, z);
 
         characters = new ArrayList<>();
