@@ -10,8 +10,10 @@ import android.content.IntentFilter;
 public class NetworkConstants
 {
     // Custom Intent action
-    public static final String BROADCAST_MESSAGE = "com.semaphore_soft.apps.cypher.networking.BROADCAST";
-    public static final String BROADCAST_STATUS  = "com.semaphore_soft.apps.cypher.networking.STATUS";
+    public static final String BROADCAST_MESSAGE =
+        "com.semaphore_soft.apps.cypher.networking.BROADCAST";
+    public static final String BROADCAST_STATUS  =
+        "com.semaphore_soft.apps.cypher.networking.STATUS";
     public static final String BROADCAST_ERROR   =
         "com.semaphore_soft.apps.cypher.networking.ERROR";
 
@@ -32,6 +34,8 @@ public class NetworkConstants
     public static final String ADDR_EXTRA  = "address";
 
     public static final String GAME_START = "GAME_START";
+
+    public static final String ERROR_CLIENT_SOCKET = "Failed to start socket";
 
     // Port should be between 49152-65535
     public final static int SERVER_PORT = 58008;

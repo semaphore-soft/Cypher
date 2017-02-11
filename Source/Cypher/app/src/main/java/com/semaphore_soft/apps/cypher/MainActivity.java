@@ -1,6 +1,7 @@
 package com.semaphore_soft.apps.cypher;
 
 
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
@@ -8,6 +9,7 @@ import android.os.StrictMode;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.content.LocalBroadcastManager;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.view.Menu;
@@ -175,5 +177,22 @@ public class MainActivity extends AppCompatActivity implements GetNameDialogFrag
     public void handleError(String msg)
     {
         Toast.makeText(this, msg, Toast.LENGTH_SHORT).show();
+        if (msg.equals(NetworkConstants.ERROR_CLIENT_SOCKET))
+        {
+            // Show a dialog to inform the user that the connection couldn't be made
+            AlertDialog.Builder builder = new AlertDialog.Builder(this);
+            builder.setTitle("Error");
+            builder.setMessage("Unable to connect to host \nPlease try again");
+            builder.setPositiveButton("OK", new DialogInterface.OnClickListener()
+            {
+                @Override
+                public void onClick(DialogInterface dialogInterface, int i)
+                {
+                    dialogInterface.dismiss();
+                }
+            });
+            AlertDialog alert = builder.create();
+            alert.show();
+        }
     }
 }
