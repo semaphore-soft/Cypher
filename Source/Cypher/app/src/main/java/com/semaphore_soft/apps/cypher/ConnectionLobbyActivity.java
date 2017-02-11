@@ -151,6 +151,9 @@ public class ConnectionLobbyActivity extends AppCompatActivity implements Respon
         {
             btnStart.setEnabled(false);
 
+            TextView ipAddress = (TextView) findViewById(R.id.ip_address);
+            ipAddress.setVisibility(View.GONE);
+
             mServiceIntent = new Intent(this, ClientService.class);
             mServiceIntent.setData(Uri.parse(NetworkConstants.CLIENT_WRITE));
             mServiceIntent.putExtra(NetworkConstants.MSG_EXTRA, NetworkConstants.PF_NAME + name);

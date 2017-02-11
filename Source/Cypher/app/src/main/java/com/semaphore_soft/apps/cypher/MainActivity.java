@@ -134,7 +134,7 @@ public class MainActivity extends AppCompatActivity implements GetNameDialogFrag
     }
 
     @Override
-    public void startClientLobby(String addr, String name)
+    public void startClient(String addr, String name)
     {
         this.name = name;
         // Try to connect to the socket before moving to connection lobby
