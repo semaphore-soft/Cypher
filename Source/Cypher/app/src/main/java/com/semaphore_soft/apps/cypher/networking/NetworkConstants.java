@@ -35,6 +35,8 @@ public class NetworkConstants
 
     public static final String GAME_START = "GAME_START";
 
+    public static final String PF_NAME = "NAME:";
+
     public static final String ERROR_CLIENT_SOCKET = "Failed to start socket";
 
     // Port should be between 49152-65535

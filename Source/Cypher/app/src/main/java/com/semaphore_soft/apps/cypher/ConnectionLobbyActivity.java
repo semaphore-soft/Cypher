@@ -57,7 +57,6 @@ public class ConnectionLobbyActivity extends AppCompatActivity implements Respon
 
         responseReceiver = new ResponseReceiver();
         responseReceiver.setListener(this);
-        // TODO register and unregister in OnResume and OnPause
         LocalBroadcastManager.getInstance(this)
                              .registerReceiver(responseReceiver,
                                                NetworkConstants.getFilter());
@@ -154,7 +153,7 @@ public class ConnectionLobbyActivity extends AppCompatActivity implements Respon
 
             mServiceIntent = new Intent(this, ClientService.class);
             mServiceIntent.setData(Uri.parse(NetworkConstants.CLIENT_WRITE));
-            mServiceIntent.putExtra(NetworkConstants.MSG_EXTRA, name);
+            mServiceIntent.putExtra(NetworkConstants.MSG_EXTRA, NetworkConstants.PF_NAME + name);
             startService(mServiceIntent);
         }
     }
@@ -171,10 +170,19 @@ public class ConnectionLobbyActivity extends AppCompatActivity implements Respon
         }
     }
 
+    private void addPlayers(String player, int id)
+    {
+        PlayerID playerID = new PlayerID();
+        playerID.setID(id);
+        playerID.setPlayerName(player);
+        playersList.add(playerID);
+        playerIDAdapter.notifyDataSetChanged();
+    }
+
     @Override
     public void handleRead(String msg)
     {
-        Toast.makeText(this, msg, Toast.LENGTH_SHORT).show();
+        Toast.makeText(this, "Read: " + msg, Toast.LENGTH_SHORT).show();
         if (msg.equals(NetworkConstants.GAME_START))
         {
             // Start character select activity after host has started game
@@ -183,17 +191,21 @@ public class ConnectionLobbyActivity extends AppCompatActivity implements Respon
             intent.putExtra("player", playerID);
             startActivity(intent);
         }
+        else if (msg.startsWith(NetworkConstants.PF_NAME))
+        {
+            addPlayers(msg.substring(5), 0);
+        }
     }
 
     @Override
     public void handleStatus(String msg)
     {
-        Toast.makeText(this, msg, Toast.LENGTH_SHORT).show();
+        Toast.makeText(this, "Status: " + msg, Toast.LENGTH_SHORT).show();
     }
 
     @Override
     public void handleError(String msg)
     {
-        Toast.makeText(this, msg, Toast.LENGTH_SHORT).show();
+        Toast.makeText(this, "Error: " + msg, Toast.LENGTH_SHORT).show();
     }
 }
