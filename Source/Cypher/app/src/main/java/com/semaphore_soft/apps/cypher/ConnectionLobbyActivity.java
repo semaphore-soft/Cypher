@@ -135,6 +135,10 @@ public class ConnectionLobbyActivity extends AppCompatActivity implements Respon
                 public void onClick(View view)
                 {
                     Server.setAccepting(false);
+                    mServiceIntent.setData(Uri.parse(NetworkConstants.WRITE_ALL));
+                    mServiceIntent.putExtra(NetworkConstants.MSG_EXTRA,
+                                            NetworkConstants.GAME_START);
+                    startService(mServiceIntent);
                     LocalBroadcastManager.getInstance(ConnectionLobbyActivity.this).unregisterReceiver(responseReceiver);
                     Snackbar.make(view, "Moving to Character Select", Snackbar.LENGTH_LONG).show();
                     Intent intent = new Intent(getBaseContext(), CharacterSelectActivity.class);
@@ -150,7 +154,7 @@ public class ConnectionLobbyActivity extends AppCompatActivity implements Respon
 
             mServiceIntent = new Intent(this, ClientService.class);
             mServiceIntent.setData(Uri.parse(NetworkConstants.CLIENT_WRITE));
-            mServiceIntent.putExtra(NetworkConstants.MSG_EXTRA, "Hello, World!");
+            mServiceIntent.putExtra(NetworkConstants.MSG_EXTRA, name);
             startService(mServiceIntent);
         }
     }
@@ -171,6 +175,14 @@ public class ConnectionLobbyActivity extends AppCompatActivity implements Respon
     public void handleRead(String msg)
     {
         Toast.makeText(this, msg, Toast.LENGTH_SHORT).show();
+        if (msg.equals(NetworkConstants.GAME_START))
+        {
+            // Start character select activity after host has started game
+            Intent intent = new Intent(getBaseContext(), CharacterSelectActivity.class);
+            intent.putExtra("host", host);
+            intent.putExtra("player", playerID);
+            startActivity(intent);
+        }
     }
 
     @Override

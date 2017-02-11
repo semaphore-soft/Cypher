@@ -31,6 +31,8 @@ public class NetworkConstants
     public static final String INDEX_EXTRA = "index";
     public static final String ADDR_EXTRA  = "address";
 
+    public static final String GAME_START = "GAME_START";
+
     // Port should be between 49152-65535
     public final static int SERVER_PORT = 58008;
 

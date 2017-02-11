@@ -4,7 +4,6 @@ import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
 import android.util.Log;
-import android.widget.Toast;
 
 import com.semaphore_soft.apps.cypher.MainApplication;
 
@@ -24,12 +23,12 @@ import java.util.ArrayList;
 
 public class Server
 {
-    private ArrayList<ClientHandler> clients        = new ArrayList<>();
-    private static Boolean accepting = false;
-    private Context                  mContext       = MainApplication.getInstance()
+    private static ArrayList<ClientHandler> clients        = new ArrayList<>();
+    private static Boolean                  accepting      = false;
+    private        Context                  mContext       = MainApplication.getInstance()
                                                                      .getApplicationContext();
-    private Intent                   mServiceIntent = new Intent(mContext, ServerService.class);
-    private int                      maxPlayers     = 4;
+    private        Intent                   mServiceIntent = new Intent(mContext, ServerService.class);
+    private        int                      maxPlayers     = 4;
 
 
     public Server()
@@ -52,6 +51,7 @@ public class Server
         Log.d("Server", "Attempting to write to all clients");
         for (ClientHandler server : clients)
         {
+            Log.d("Server", "Writing to client");
             server.write(str);
         }
     }
