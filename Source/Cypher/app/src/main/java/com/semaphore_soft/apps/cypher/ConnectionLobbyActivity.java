@@ -78,7 +78,6 @@ public class ConnectionLobbyActivity extends AppCompatActivity implements Respon
         recyclerView.setLayoutManager(llm);
 
         playersList = new ArrayList<>();
-        addTestPlayers();
 
         playerIDAdapter = new PlayerIDAdapter(this, playersList);
 
@@ -116,12 +115,6 @@ public class ConnectionLobbyActivity extends AppCompatActivity implements Respon
             {
                 Log.e("Lobby", ex.toString());
             }
-
-            mServiceIntent = new Intent(this, ServerService.class);
-            mServiceIntent.setData(Uri.parse(NetworkConstants.WRITE_TO_CLIENT));
-            mServiceIntent.putExtra(NetworkConstants.MSG_EXTRA, "Hello, World!");
-            mServiceIntent.putExtra(NetworkConstants.INDEX_EXTRA, 0);
-            startService(mServiceIntent);
 
             TextView ipAddress = (TextView) findViewById(R.id.ip_address);
             ipAddress.setText("Your IP Address is: " + ip);
@@ -161,18 +154,6 @@ public class ConnectionLobbyActivity extends AppCompatActivity implements Respon
         }
     }
 
-    private void addTestPlayers()
-    {
-        for (int i = 0; i < 3; ++i)
-        {
-            PlayerID playerID = new PlayerID();
-            playerID.setID(i);
-            playerID.setPlayerName("player" + i);
-            //gameIDAdapter.pushGameID(gameID);
-            playersList.add(playerID);
-        }
-    }
-
     private void addPlayers(String player, int id)
     {
         PlayerID playerID = new PlayerID();
@@ -180,6 +161,14 @@ public class ConnectionLobbyActivity extends AppCompatActivity implements Respon
         playerID.setPlayerName(player);
         playersList.add(playerID);
         playerIDAdapter.notifyDataSetChanged();
+        if (host)
+        {
+            mServiceIntent = new Intent(this, ServerService.class);
+            mServiceIntent.setData(Uri.parse(NetworkConstants.WRITE_ALL));
+            mServiceIntent.putExtra(NetworkConstants.MSG_EXTRA,
+                                    NetworkConstants.PF_PLAYER + player + ":" + id);
+            startService(mServiceIntent);
+        }
     }
 
     @Override
@@ -196,7 +185,14 @@ public class ConnectionLobbyActivity extends AppCompatActivity implements Respon
         }
         else if (msg.startsWith(NetworkConstants.PF_NAME))
         {
-            addPlayers(msg.substring(5), 0);
+            // add players on server
+            addPlayers(msg.substring(5), (int) ++playerID);
+        }
+        else if (msg.startsWith(NetworkConstants.PF_PLAYER))
+        {
+            // add players on client
+            String args[] = msg.split(":");
+            addPlayers(args[1], Integer.valueOf(args[2]));
         }
     }
 
