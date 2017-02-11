@@ -51,7 +51,6 @@ public class Server
         Log.d("Server", "Attempting to write to all clients");
         for (ClientHandler server : clients)
         {
-            Log.d("Server", "Writing to client");
             server.write(str);
         }
     }
@@ -61,7 +60,7 @@ public class Server
         Log.d("Server", "Attempting to write to client " + String.valueOf(index));
         // TODO call writeALL if index invalid?
         // Service will default to -1 if no index is given
-        if (!clients.isEmpty() && index > 0)
+        if (!clients.isEmpty() && index >= 0)
         {
             clients.get(index).write(str);
         }
@@ -133,6 +132,10 @@ public class Server
         {
             mySocket = socket;
             this.id = id;
+            mServiceIntent.setData(Uri.parse(NetworkConstants.THREAD_UPDATE));
+            mServiceIntent.putExtra(NetworkConstants.MSG_EXTRA,
+                                    NetworkConstants.STATUS_SERVER_START);
+            mContext.startService(mServiceIntent);
         }
 
         public void run()
@@ -155,7 +158,7 @@ public class Server
                 out.writeUTF(str);
                 // flush after write or inputStream will hang on read
                 out.flush();
-                Log.d("ClientHandler", "sent message");
+                Log.d("ClientHandler", "sent message: " + str);
             }
             catch (IOException e)
             {

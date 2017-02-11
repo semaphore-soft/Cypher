@@ -119,6 +119,8 @@ public class ConnectionLobbyActivity extends AppCompatActivity implements Respon
             TextView ipAddress = (TextView) findViewById(R.id.ip_address);
             ipAddress.setText("Your IP Address is: " + ip);
 
+            addPlayers(name, (int) playerID);
+
             btnStart.setEnabled(true);
 
             btnStart.setOnClickListener(new View.OnClickListener()
@@ -200,6 +202,21 @@ public class ConnectionLobbyActivity extends AppCompatActivity implements Respon
     public void handleStatus(String msg)
     {
         Toast.makeText(this, "Status: " + msg, Toast.LENGTH_SHORT).show();
+        if (msg.equals(NetworkConstants.STATUS_SERVER_START))
+        {
+            // Update client with all connected players
+            mServiceIntent = new Intent(this, ServerService.class);
+            mServiceIntent.setData(Uri.parse(NetworkConstants.WRITE_TO_CLIENT));
+            // this is probably a terrible way to get the client, but it works
+            mServiceIntent.putExtra(NetworkConstants.INDEX_EXTRA, (int) playerID);
+            for (PlayerID pid : playersList)
+            {
+                mServiceIntent.putExtra(NetworkConstants.MSG_EXTRA,
+                                        NetworkConstants.PF_PLAYER + pid.getPlayerName() + ":" +
+                                        pid.getID());
+                startService(mServiceIntent);
+            }
+        }
     }
 
     @Override

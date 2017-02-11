@@ -94,7 +94,7 @@ public class Client
                 out.writeUTF(str);
                 // flush after write or inputStream will hang on read
                 out.flush();
-                Log.d("ClientThread", "sent message");
+                Log.d("ClientThread", "sent message: " + str);
             }
             catch (IOException e)
             {

@@ -35,12 +35,15 @@ public class NetworkConstants
     public static final String INDEX_EXTRA = "index";
     public static final String ADDR_EXTRA  = "address";
 
+    // Constants for read codes
     // Constants for game status updates
     public static final String GAME_START = "GAME_START";
-
     // Constants to use as prefixes to exchange information with other devices
     public static final String PF_NAME   = "NAME:";
     public static final String PF_PLAYER = "PLAYER:";
+
+    // Constants for status codes
+    public static final String STATUS_SERVER_START = "Server thread started";
 
     // Constants for error codes
     public static final String ERROR_CLIENT_SOCKET = "Failed to start socket";
