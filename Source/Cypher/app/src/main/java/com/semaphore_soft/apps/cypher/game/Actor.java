@@ -12,6 +12,7 @@ import static com.semaphore_soft.apps.cypher.utils.CollectionManager.getNextID;
 public class Actor
 {
     private long    id;
+    private String  name;
     private int     markerID;
     private int     charID;
     private long    roomID;
@@ -39,19 +40,18 @@ public class Actor
 
     public Actor(long id)
     {
-        this(id, -1);
+        this(id, "error");
     }
 
-    public Actor(long id, int charID)
+    public Actor(long id, String name)
     {
-        this(id, charID, -1);
+        this(id, name, -1);
     }
 
-    public Actor(long id, int charID, int markerID)
+    public Actor(long id, String name, int markerID)
     {
         this.id = id;
         this.markerID = markerID;
-        this.charID = charID;
         roomID = -1;
         isPlayer = true;
 
@@ -62,9 +62,14 @@ public class Actor
 
     public Actor(long id, long roomID)
     {
+        this(id, roomID, "error");
+    }
+
+    public Actor(long id, long roomID, String name)
+    {
         this.id = id;
         this.markerID = -1;
-        this.charID = -1;
+        this.name = name;
         this.roomID = roomID;
         isPlayer = false;
         state = E_STATE.SPECIAL;
@@ -79,6 +84,16 @@ public class Actor
         return id;
     }
 
+    public String getName()
+    {
+        return name;
+    }
+
+    public void setName(String name)
+    {
+        this.name = name;
+    }
+
     public void setMarker(int tagID)
     {
         this.markerID = tagID;
@@ -87,16 +102,6 @@ public class Actor
     public int getMarker()
     {
         return markerID;
-    }
-
-    public void setChar(int charID)
-    {
-        this.charID = charID;
-    }
-
-    public int getChar()
-    {
-        return charID;
     }
 
     public void setRoom(long roomID)

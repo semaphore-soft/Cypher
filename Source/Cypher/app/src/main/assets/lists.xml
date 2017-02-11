@@ -1,18 +1,21 @@
 <!--Lists-->
 <lists>
-    <!--Characters-->
-    <characters>
-        <name>soldier</name>
-        <name>knight</name>
-        <name>wizard</name>
-        <name>ranger</name>
-    </characters>
+    <!--Actors-->
+    <actors>
+        <!--Characters-->
+        <characters>
+            <name>soldier</name>
+            <name>knight</name>
+            <name>wizard</name>
+            <name>ranger</name>
+        </characters>
 
-    <!--Enemies-->
-    <enemies>
-        <name>lil_ghost</name>
-        <name>groblin</name>
-    </enemies>
+        <!--Enemies-->
+        <enemies>
+            <name>lil_ghost</name>
+            <name>groblin</name>
+        </enemies>
+    </actors>
 
     <!--Items-->
     <items>

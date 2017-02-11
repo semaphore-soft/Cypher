@@ -44,14 +44,12 @@ public class PortalActivity extends ARActivity implements PortalRenderer.NewMark
 
     boolean host;
 
-    Long playerID;
-    int  characterID;
+    Long   playerID;
+    String characterName;
 
     PortalRenderer renderer;
     int            overlayID;
     FrameLayout    overlay_layout;
-
-    private int playerMarkerID = -1;
 
     private Hashtable<Long, Room>    rooms;
     private Hashtable<Long, Actor>   actors;
@@ -73,7 +71,7 @@ public class PortalActivity extends ARActivity implements PortalRenderer.NewMark
         host = getIntent().getBooleanExtra("host", false);
 
         playerID = getIntent().getLongExtra("player", 0);
-        characterID = getIntent().getIntExtra("character", 0);
+        characterName = getIntent().getExtras().getString("character", "knight");
 
         renderer = new PortalRenderer();
         renderer.setContext(this);
@@ -118,13 +116,13 @@ public class PortalActivity extends ARActivity implements PortalRenderer.NewMark
                         int mark = getFirstUnreservedMarker();
                         if (mark > -1)
                         {
-                            Actor actor = new Actor(playerID, characterID, mark);
+                            Actor actor = new Actor(playerID, characterName, mark);
                             GameStatLoader.loadActorStats(actor,
-                                                          characterID,
+                                                          characterName,
                                                           specials,
                                                           getApplicationContext());
                             actors.put(playerID, actor);
-                            renderer.setCharacterMarker(characterID, mark);
+                            renderer.setPlayerMarker(playerID, mark);
 
                             Item item = GameStatLoader.loadItemStats("delightful_bread",
                                                                      items,
@@ -265,9 +263,6 @@ public class PortalActivity extends ARActivity implements PortalRenderer.NewMark
                                         //update the actor's room and the new room's actor list
                                         actors.get(playerID).setRoom(nearestRoomID);
                                         rooms.get(nearestRoomID).addActor(playerID);
-
-                                        //notify the renderer of the actor's new location
-                                        renderer.setCharacterRoom(characterID, nearestMarkerID);
 
                                         Toast.makeText(getApplicationContext(),
                                                        "Updated Player Room",
@@ -515,8 +510,8 @@ public class PortalActivity extends ARActivity implements PortalRenderer.NewMark
                                         room1MapPos.second);
                                     map.print();
 
-                                    renderer.updateRoom(room0);
-                                    renderer.updateRoom(room1);
+                                    renderer.updateRoomWalls(room0);
+                                    renderer.updateRoomWalls(room1);
 
                                     Hashtable<Long, Pair<Short, Short>> adjacentRoomsAndWalls =
                                         map.getAdjacentRoomsAndWalls(nearestRoomID);
@@ -530,8 +525,8 @@ public class PortalActivity extends ARActivity implements PortalRenderer.NewMark
                                                  .setWallType(adjacentRoomsAndWalls.get(id).second,
                                                               DOOR_OPEN);
 
-                                            renderer.updateRoom(room1);
-                                            renderer.updateRoom(rooms.get(id));
+                                            renderer.updateRoomWalls(room1);
+                                            renderer.updateRoomWalls(rooms.get(id));
                                         }
                                     }
 

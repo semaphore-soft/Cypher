@@ -1,6 +1,5 @@
 package com.semaphore_soft.apps.cypher.opengl;
 
-import android.content.Context;
 import android.opengl.GLES10;
 
 import org.artoolkit.ar.base.rendering.RenderUtils;
@@ -8,7 +7,6 @@ import org.artoolkit.ar.base.rendering.RenderUtils;
 import java.nio.FloatBuffer;
 import java.nio.ShortBuffer;
 import java.util.ArrayList;
-import java.util.Vector;
 
 import javax.microedition.khronos.opengles.GL10;
 
@@ -18,149 +16,112 @@ import javax.microedition.khronos.opengles.GL10;
 
 public class ARModel
 {
-    public static final int NUM_INDICES = 18;
-    private int vectorSize;
-    private int character;
+    public static int NUM_VERTICES;
+    public static int NUM_INDICES;
 
-    private FloatBuffer mVertexBuffer;
-    private FloatBuffer mColorBuffer;
-    private ShortBuffer mIndexBuffer;
-    private ModelLoader file = null;
-    String  filename;
-    Context context;
-    private ArrayList<Long> characters = null;
+    private FloatBuffer vertexBuffer;
+    private FloatBuffer colorBuffer;
+    private ShortBuffer indexBuffer;
 
-    /*
+    private float size;
+
     public ARModel()
     {
-        this(1.0F);
-    }
-
-    public ARModel(String filename)
-    {
-        this(1.0F);
-        file.setName(filename);
+        this(40.0f);
     }
 
     public ARModel(float size)
     {
-        this(size, 0.0F, 0.0F, 0.0F);
+        this.size = size;
     }
 
-    public ARModel(float size, float x, float y, float z)
+    public FloatBuffer getVertexBuffer()
     {
-        this.setArrays(size, x, y, z);
-
-        characters = new ArrayList<>();
-    }
-    */
-    public ARModel(float size, float x, float y, float z, String filename, Context context)
-    {
-        this.filename = filename;
-        this.context = context;
-        file = new ModelLoader(filename, context);
-        this.setArrays(size, x, y, z);
-
-        characters = new ArrayList<>();
+        return this.vertexBuffer;
     }
 
-    public FloatBuffer getmVertexBuffer()
+    public FloatBuffer getColorBuffer()
     {
-        return this.mVertexBuffer;
+        return this.colorBuffer;
     }
 
-    public FloatBuffer getmColorBuffer()
+    public ShortBuffer getIndexBuffer()
     {
-        return this.mColorBuffer;
+        return this.indexBuffer;
     }
 
-    public ShortBuffer getmIndexBuffer()
+    public void makeVertexBuffer(ArrayList<Float> vertices)
     {
-        return this.mIndexBuffer;
-    }
+        float[] vertexArray = new float[vertices.size()];
 
-    private void setArrays(float size, float x, float y, float z)
-    {
-        float hs = size / 2.0f;
+        float sizeModifier = size / 2.0f;
 
-        vectorSize = file.getVerts().size();
-        int           i          = 0;
-        Vector<Float> vecVert    = file.getVerts();
-        float         vertices[] = new float[vectorSize];
-        while (i < vectorSize)
+        for (int i = 0; i < vertexArray.length; ++i)
         {
-            vertices[i] = hs * vecVert.elementAt(i);
-            i++;
+            vertexArray[i] = vertices.get(i) * sizeModifier;
         }
 
-        float c        = 1.0f;
-        float colors[] = new float[vectorSize * 4];
-        i = 0;
-        while (i < vectorSize * 4)
+        vertexBuffer = RenderUtils.buildFloatBuffer(vertexArray);
+
+        NUM_VERTICES = vertexArray.length;
+    }
+
+    public void makeIndexBuffer(ArrayList<Short> indices)
+    {
+        short[] indexArray = new short[indices.size()];
+
+        for (int i = 0; i < indexArray.length; ++i)
         {
-            colors[i] = c;
-            i++;
+            indexArray[i] = indices.get(i);
         }
 
-        i = 0;
-        Vector<Short> vecInd      = file.getIndices();
-        int           indicesSize = file.getIndices().size();
-        short         indices[]   = new short[indicesSize];
-        while (i < indicesSize)
+        indexBuffer = RenderUtils.buildShortBuffer(indexArray);
+
+        NUM_INDICES = indexArray.length;
+    }
+
+    public void makeColorBuffer()
+    {
+        float[] colorArray = new float[NUM_VERTICES * 4];
+
+        float c = 1.0f;
+
+        for (int i = 0; i < NUM_VERTICES * 4; i += 4)
         {
-            indices[i] = vecInd.elementAt(i);
-            i++;
+            colorArray[i] = c;
+            colorArray[i + 1] = c;
+            colorArray[i + 2] = c;
+            colorArray[i + 3] = c;
         }
 
-        mVertexBuffer = RenderUtils.buildFloatBuffer(vertices);
-        mColorBuffer = RenderUtils.buildFloatBuffer(colors);
-        mIndexBuffer = RenderUtils.buildShortBuffer(indices);
+        colorBuffer = RenderUtils.buildFloatBuffer(colorArray);
     }
 
     public void draw(GL10 unused)
     {
-        GLES10.glColorPointer(4, GLES10.GL_FLOAT, 0, mColorBuffer);
-        GLES10.glVertexPointer(3, GLES10.GL_FLOAT, 0, mVertexBuffer);
+        GLES10.glColorPointer(4, GLES10.GL_FLOAT, 0, colorBuffer);
+        GLES10.glVertexPointer(3, GLES10.GL_FLOAT, 0, vertexBuffer);
 
         GLES10.glEnableClientState(GLES10.GL_COLOR_ARRAY);
         GLES10.glEnableClientState(GLES10.GL_VERTEX_ARRAY);
 
         GLES10.glDrawElements(GLES10.GL_TRIANGLES,
-                              NUM_INDICES, GLES10.GL_UNSIGNED_BYTE, mIndexBuffer);
+                              NUM_INDICES, GLES10.GL_UNSIGNED_BYTE, indexBuffer);
 
         GLES10.glDisableClientState(GLES10.GL_COLOR_ARRAY);
         GLES10.glDisableClientState(GLES10.GL_VERTEX_ARRAY);
-
-    }
-
-    public void addCharacter(long character)
-    {
-        if (!characters.contains(character))
-        {
-            characters.add(character);
-        }
-    }
-
-    public void removeCharacter(long character)
-    {
-        if (characters.contains(character))
-        {
-            characters.remove(character);
-        }
     }
 
     public void setCharacter(int character)
     {
-        this.character = character;
-
         float c = 1.0f;
 
-        float colors[] = new float[vectorSize * 4];
+        float colors[] = new float[NUM_VERTICES * 4];
 
         switch (character)
         {
             case 0:
-                for (int i = 0; i < vectorSize * 4; i += 4)
+                for (int i = 0; i < NUM_VERTICES * 4; i += 4)
                 {
                     colors[i] = c;
                     colors[i + 1] = c;
@@ -169,7 +130,7 @@ public class ARModel
                 }
                 break;
             case 1:
-                for (int i = 0; i < vectorSize * 4; i += 4)
+                for (int i = 0; i < NUM_VERTICES * 4; i += 4)
                 {
                     colors[i] = c;
                     colors[i + 1] = 0;
@@ -178,7 +139,7 @@ public class ARModel
                 }
                 break;
             case 2:
-                for (int i = 0; i < vectorSize * 4; i += 4)
+                for (int i = 0; i < NUM_VERTICES * 4; i += 4)
                 {
                     colors[i] = 0;
                     colors[i + 1] = c;
@@ -187,7 +148,7 @@ public class ARModel
                 }
                 break;
             case 3:
-                for (int i = 0; i < vectorSize * 4; i += 4)
+                for (int i = 0; i < NUM_VERTICES * 4; i += 4)
                 {
                     colors[i] = c;
                     colors[i + 1] = 0;
@@ -197,16 +158,11 @@ public class ARModel
                 break;
         }
 
-        mColorBuffer = RenderUtils.buildFloatBuffer(colors);
-    }
-
-    public void setName(String filename)
-    {
-        this.filename = filename;
+        colorBuffer = RenderUtils.buildFloatBuffer(colors);
     }
 
     public int getNumIndices()
     {
-        return file.getIndices().size();
+        return NUM_INDICES;
     }
 }

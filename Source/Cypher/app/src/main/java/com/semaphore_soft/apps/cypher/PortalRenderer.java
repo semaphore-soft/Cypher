@@ -4,18 +4,22 @@ import android.content.Context;
 import android.opengl.GLES20;
 import android.opengl.Matrix;
 
+import com.semaphore_soft.apps.cypher.game.Actor;
 import com.semaphore_soft.apps.cypher.game.Room;
+import com.semaphore_soft.apps.cypher.opengl.ARModel;
 import com.semaphore_soft.apps.cypher.opengl.ARModelGLES20;
+import com.semaphore_soft.apps.cypher.opengl.ARRoom;
 import com.semaphore_soft.apps.cypher.opengl.ARRoomProto;
 import com.semaphore_soft.apps.cypher.opengl.ARRoomProtoGLES20;
-import com.semaphore_soft.apps.cypher.opengl.ARSquareGLES20;
+import com.semaphore_soft.apps.cypher.opengl.ModelLoader;
 import com.semaphore_soft.apps.cypher.opengl.shader.SimpleFragmentShader;
 import com.semaphore_soft.apps.cypher.opengl.shader.SimpleShaderProgram;
 import com.semaphore_soft.apps.cypher.opengl.shader.SimpleVertexShader;
+import com.semaphore_soft.apps.cypher.utils.GameStatLoader;
 
 import org.artoolkit.ar.base.ARToolKit;
+import org.artoolkit.ar.base.rendering.gles20.ARDrawableOpenGLES20;
 import org.artoolkit.ar.base.rendering.gles20.ARRendererGLES20;
-import org.artoolkit.ar.base.rendering.gles20.CubeGLES20;
 import org.artoolkit.ar.base.rendering.gles20.ShaderProgram;
 
 import java.util.ArrayList;
@@ -32,21 +36,16 @@ class PortalRenderer extends ARRendererGLES20
 {
     private Context context;
 
-    private int character = 0;
-
     private ArrayList<Integer> markers;
 
-    private int[] characterMarkerIDs;
-    private int[] characterRoomIDs;
+    private int[] playerMarkerIDs;
 
-    private CubeGLES20     cube;
-    private ARModelGLES20  arModelGLES20;
-    private ARSquareGLES20 arSquareGLES20;
+    private ArrayList<ARModelGLES20> characterModels;
 
-    private ArrayList<ARModelGLES20>  characterModels;
-    private ArrayList<ARSquareGLES20> roomModels;
+    private Hashtable<String, ARModel> models;
 
-    private Hashtable<Integer, ARRoomProtoGLES20> arRoomModels;
+    //private Hashtable<Integer, ARRoomProtoGLES20> arRoomModels;
+    private Hashtable<Integer, ARRoom> arRooms;
 
     private SimpleShaderProgram roomShaderProgram;
 
@@ -89,8 +88,7 @@ class PortalRenderer extends ARRendererGLES20
             }
         }
 
-        characterMarkerIDs = new int[]{-1, -1, -1, -1};
-        characterRoomIDs = new int[]{-1, -1, -1, -1};
+        playerMarkerIDs = new int[]{-1, -1, -1, -1};
 
         return true;
     }
@@ -102,160 +100,40 @@ class PortalRenderer extends ARRendererGLES20
     {
         super.onSurfaceCreated(unused, config);
 
-        ShaderProgram cubeShaderProgram =
-            new SimpleShaderProgram(36, new SimpleVertexShader(), new SimpleFragmentShader());
-        cube = new CubeGLES20(40.0f, 0.0f, 0.0f, 20.0f);
-        cube.setShaderProgram(cubeShaderProgram);
-
-        ShaderProgram triangleShaderProgram =
-            new SimpleShaderProgram(3, new SimpleVertexShader(), new SimpleFragmentShader());
-        if (arModelGLES20 == null)
-        {
-            arModelGLES20 =
-                new ARModelGLES20(40.0f, 0.0f, 0.0f, 0.0f, "models/lowPolyLink.obj", context);
-            arModelGLES20.setCharacter(character);
-        }
-        ShaderProgram arLoaderShaderProgram =
-            new SimpleShaderProgram(arModelGLES20.getNumIndices(),
-                                    new SimpleVertexShader(),
-                                    new SimpleFragmentShader());
-        arModelGLES20.setShaderProgram(arLoaderShaderProgram);
-
-        ShaderProgram squareShaderProgram =
-            new SimpleShaderProgram(6, new SimpleVertexShader(), new SimpleFragmentShader());
-        if (arSquareGLES20 == null)
-        {
-            arSquareGLES20 = new ARSquareGLES20(40.0f, 0.0f, 0.0f, 0.0f);
-            arSquareGLES20.setCharacter(character);
-        }
-        arSquareGLES20.setShaderProgram(squareShaderProgram);
-
         characterModels = new ArrayList<>();
 
         for (int i = 0; i < 4; ++i)
         {
-            //ShaderProgram characterShaderProgram =
-            //    new SimpleShaderProgram(3, new SimpleVertexShader(), new SimpleFragmentShader());
             ARModelGLES20 characterModel =
-                new ARModelGLES20(40.0f, 0.0f, 0.0f, 0.0f, "models/lowPolyLink.obj", context);
+                ModelLoader.loadModel(context, "models/garbage_man.obj", 40.0f);
+            //new ARModelGLES20(40.0f, 0.0f, 0.0f, 0.0f, "models/garbage_man.obj", context);
             characterModel.setCharacter(i);
             ShaderProgram characterShaderProgram =
-                new SimpleShaderProgram(arModelGLES20.getNumIndices(),
+                new SimpleShaderProgram(characterModel.getNumIndices(),
                                         new SimpleVertexShader(),
                                         new SimpleFragmentShader());
             characterModel.setShaderProgram(characterShaderProgram);
             characterModels.add(characterModel);
         }
 
-        roomModels = new ArrayList<>();
-
-        for (int i = 0; i < 4; ++i)
-        {
-            ShaderProgram roomShaderProgram =
-                new SimpleShaderProgram(6, new SimpleVertexShader(), new SimpleFragmentShader());
-            ARSquareGLES20 roomModel = new ARSquareGLES20(40.0f, 0.0f, 0.0f, 0.0f);
-            roomModel.setCharacter(i);
-            roomModel.setShaderProgram(roomShaderProgram);
-            roomModels.add(roomModel);
-        }
-
-        arRoomModels = new Hashtable<>();
-
         roomShaderProgram =
             new SimpleShaderProgram(ARRoomProto.NUM_INDICES,
                                     new SimpleVertexShader(),
                                     new SimpleFragmentShader());
-    }
 
-    /**
-     * Override the draw function from ARRenderer.
-     */
-    /*@Override
-    public void draw(GL10 gl)
-    {
+        arRooms = new Hashtable<>();
 
-        gl.glClear(GL10.GL_COLOR_BUFFER_BIT | GL10.GL_DEPTH_BUFFER_BIT);
+        models = new Hashtable<>();
 
-        gl.glMatrixMode(GL10.GL_PROJECTION);
-        gl.glLoadMatrixf(ARToolKit.getInstance().getProjectionMatrix(), 0);
-
-        gl.glEnable(GL10.GL_CULL_FACE);
-        gl.glShadeModel(GL10.GL_SMOOTH);
-        gl.glEnable(GL10.GL_DEPTH_TEST);
-        gl.glFrontFace(GL10.GL_CW);
-
-        gl.glMatrixMode(GL10.GL_MODELVIEW);
-
-        if (ARToolKit.getInstance().queryMarkerVisible(mark0) &&
-            ARToolKit.getInstance().queryMarkerVisible(mark1) &&
-            ARToolKit.getInstance().queryMarkerVisible(mark2))
+        ArrayList<String> actorNames = GameStatLoader.getList(context, "actors");
+        if (actorNames != null)
         {
-            float[] mark0TransInfo = ARToolKit.getInstance().queryMarkerTransformation(mark0);
-            float[] mark0PosInfo =
-                {mark0TransInfo[mark0TransInfo.length - 4], mark0TransInfo[mark0TransInfo.length -
-                                                                           3], mark0TransInfo[
-                    mark0TransInfo.length - 2]};
-
-            System.out.println("begin mark0 pos matrix");
-            for (float x : mark0PosInfo)
+            for (String name : actorNames)
             {
-                System.out.println(x);
+
             }
-            System.out.println("end mark0 pos matrix");
-
-            float[] mark1TransInfo = ARToolKit.getInstance().queryMarkerTransformation(mark1);
-            float[] mark1PosInfo =
-                {mark1TransInfo[mark1TransInfo.length - 4], mark1TransInfo[mark1TransInfo.length -
-                                                                           3], mark1TransInfo[
-                    mark1TransInfo.length - 2]};
-
-            System.out.println("begin mark1 pos matrix");
-            for (float x : mark1PosInfo)
-            {
-                System.out.println(x);
-            }
-            System.out.println("end mark1 pos matrix");
-
-            float[] mark2TransInfo = ARToolKit.getInstance().queryMarkerTransformation(mark2);
-            float[] mark2PosInfo =
-                {mark2TransInfo[mark2TransInfo.length - 4], mark2TransInfo[mark2TransInfo.length -
-                                                                           3], mark2TransInfo[
-                    mark2TransInfo.length - 2]};
-
-            System.out.println("begin mark2 pos matrix");
-            for (float x : mark2PosInfo)
-            {
-                System.out.println(x);
-            }
-            System.out.println("end mark2 pos matrix");
-
-            double distanceMark0Mark1 = Math.sqrt(Math.pow(mark0PosInfo[0] - mark1PosInfo[0], 2) +
-                                                  Math.pow(mark0PosInfo[1] - mark1PosInfo[1], 2) +
-                                                  Math.pow(mark0PosInfo[2] - mark1PosInfo[2], 2));
-
-            double distanceMark0Mark2 = Math.sqrt(Math.pow(mark0PosInfo[0] - mark2PosInfo[0], 2) +
-                                                  Math.pow(mark0PosInfo[1] - mark2PosInfo[1], 2) +
-                                                  Math.pow(mark0PosInfo[2] - mark2PosInfo[2], 2));
-
-            System.out.println("distance between mark0 and mark1 is " + distanceMark0Mark1);
-            System.out.println("distance between mark0 and mark2 is " + distanceMark0Mark2);
-
-            if (distanceMark0Mark1 < distanceMark0Mark2)
-            {
-                System.out.println("mark0 is closer to mark1");
-                gl.glLoadMatrixf(ARToolKit.getInstance().queryMarkerTransformation(mark1), 0);
-            }
-            else
-            {
-                System.out.println("mark0 is closer to mark2");
-                gl.glLoadMatrixf(ARToolKit.getInstance().queryMarkerTransformation(mark2), 0);
-            }
-
-            gl.glPushMatrix();
-            cube.draw(gl);
-            gl.glPopMatrix();
         }
-    }*/
+    }
 
     /**
      * Override the render function from {@link ARRendererGLES20}.
@@ -271,145 +149,26 @@ class PortalRenderer extends ARRendererGLES20
 
         float[] projectionMatrix = ARToolKit.getInstance().getProjectionMatrix();
 
-        //TODO make marker generic
-        // If the marker is visible, apply its transformation, and render a triangle
-        /*if (ARToolKit.getInstance().queryMarkerVisible(mark0))
+        for (int i = 0; i < playerMarkerIDs.length; ++i)
         {
-            arModelGLES20.draw(projectionMatrix,
-                                  ARToolKit.getInstance().queryMarkerTransformation(mark0));
-        }*/
-
-        if (markers != null)
-        {
-            for (Integer id : markers)
-            {
-                if (ARToolKit.getInstance().queryMarkerVisible(id))
-                {
-                    //System.out.println("marker " + id + " visible");
-                }
-            }
-        }
-
-        /*if (playerMarkerID > -1 && ARToolKit.getInstance().queryMarkerVisible(playerMarkerID))
-        {
-            arModelGLES20.draw(projectionMatrix,
-                                  ARToolKit.getInstance()
-                                           .queryMarkerTransformation(playerMarkerID));
-        }
-
-        if (playerRoomID > -1 && ARToolKit.getInstance().queryMarkerVisible(playerRoomID))
-        {
-            arSquareGLES20.draw(projectionMatrix,
-                                ARToolKit.getInstance().queryMarkerTransformation(playerRoomID));
-        }*/
-
-        for (int i = 0; i < characterMarkerIDs.length; ++i)
-        {
-            if (characterMarkerIDs[i] > -1 &&
-                ARToolKit.getInstance().queryMarkerVisible(characterMarkerIDs[i]))
+            if (playerMarkerIDs[i] > -1 &&
+                ARToolKit.getInstance().queryMarkerVisible(playerMarkerIDs[i]))
             {
                 characterModels.get(i).draw(projectionMatrix,
                                             ARToolKit.getInstance()
-                                                     .queryMarkerTransformation(characterMarkerIDs[i]));
+                                                     .queryMarkerTransformation(playerMarkerIDs[i]));
             }
         }
 
-        for (int i = 0; i < characterRoomIDs.length; ++i)
-        {
-            if (characterRoomIDs[i] > -1 &&
-                ARToolKit.getInstance().queryMarkerVisible(characterRoomIDs[i]))
-            {
-                roomModels.get(i).draw(projectionMatrix,
-                                       ARToolKit.getInstance()
-                                                .queryMarkerTransformation(characterRoomIDs[i]));
-            }
-        }
-
-        for (Integer i : arRoomModels.keySet())
+        for (Integer i : arRooms.keySet())
         {
             if (ARToolKit.getInstance().queryMarkerVisible(i))
             {
-                arRoomModels.get(i)
-                            .draw(projectionMatrix,
-                                  ARToolKit.getInstance().queryMarkerTransformation(i));
+                arRooms.get(i)
+                       .draw(projectionMatrix,
+                             ARToolKit.getInstance().queryMarkerTransformation(i));
             }
         }
-
-        /*for (Integer markerID : characterMarkerIDs) {
-            if (markerID > -1 && ARToolKit.getInstance().queryMarkerVisible(markerID)) {
-                characterModels
-            }
-        }*/
-
-        //TODO make marker generic
-        /*if (ARToolKit.getInstance().queryMarkerVisible(mark0) &&
-            ARToolKit.getInstance().queryMarkerVisible(mark1) &&
-            ARToolKit.getInstance().queryMarkerVisible(mark2))
-        {
-            float[] mark0TransInfo = ARToolKit.getInstance().queryMarkerTransformation(mark0);
-            float[] mark0PosInfo =
-                {mark0TransInfo[mark0TransInfo.length - 4], mark0TransInfo[mark0TransInfo.length -
-                                                                           3], mark0TransInfo[
-                    mark0TransInfo.length - 2]};
-
-            System.out.println("begin mark0 pos matrix");
-            for (float x : mark0PosInfo)
-            {
-                System.out.println(x);
-            }
-            System.out.println("end mark0 pos matrix");
-
-            float[] mark1TransInfo = ARToolKit.getInstance().queryMarkerTransformation(mark1);
-            float[] mark1PosInfo =
-                {mark1TransInfo[mark1TransInfo.length - 4], mark1TransInfo[mark1TransInfo.length -
-                                                                           3], mark1TransInfo[
-                    mark1TransInfo.length - 2]};
-
-            System.out.println("begin mark1 pos matrix");
-            for (float x : mark1PosInfo)
-            {
-                System.out.println(x);
-            }
-            System.out.println("end mark1 pos matrix");
-
-            float[] mark2TransInfo = ARToolKit.getInstance().queryMarkerTransformation(mark2);
-            float[] mark2PosInfo =
-                {mark2TransInfo[mark2TransInfo.length - 4], mark2TransInfo[mark2TransInfo.length -
-                                                                           3], mark2TransInfo[
-                    mark2TransInfo.length - 2]};
-
-            System.out.println("begin mark2 pos matrix");
-            for (float x : mark2PosInfo)
-            {
-                System.out.println(x);
-            }
-            System.out.println("end mark2 pos matrix");
-
-            double distanceMark0Mark1 = Math.sqrt(Math.pow(mark0PosInfo[0] - mark1PosInfo[0], 2) +
-                                                  Math.pow(mark0PosInfo[1] - mark1PosInfo[1], 2) +
-                                                  Math.pow(mark0PosInfo[2] - mark1PosInfo[2], 2));
-
-            double distanceMark0Mark2 = Math.sqrt(Math.pow(mark0PosInfo[0] - mark2PosInfo[0], 2) +
-                                                  Math.pow(mark0PosInfo[1] - mark2PosInfo[1], 2) +
-                                                  Math.pow(mark0PosInfo[2] - mark2PosInfo[2], 2));
-
-            System.out.println("distance between mark0 and mark1 is " + distanceMark0Mark1);
-            System.out.println("distance between mark0 and mark2 is " + distanceMark0Mark2);
-
-            if (distanceMark0Mark1 < distanceMark0Mark2)
-            {
-                System.out.println("mark0 is closer to mark1");
-                cube.draw(projectionMatrix,
-                          ARToolKit.getInstance().queryMarkerTransformation(mark1));
-            }
-            else
-            {
-                System.out.println("mark0 is closer to mark2");
-                cube.draw(projectionMatrix,
-                          ARToolKit.getInstance().queryMarkerTransformation(mark2));
-            }
-        }
-        */
     }
 
     public int getFirstMarker()
@@ -601,40 +360,58 @@ class PortalRenderer extends ARRendererGLES20
         resAngle *= (180 / Math.PI);
         resAngle = ((resAngle < 0) ? (360 + resAngle) : resAngle);
 
-        //output += resAngle;
         System.out.println(output);
 
         return ((Float.isNaN(resAngle)) ? 0 : resAngle);
     }
 
-    public void setCharacterMarker(int characterID, int markerID)
+    public void setPlayerMarker(long playerID, int markerID)
     {
-        characterMarkerIDs[characterID] = markerID;
-        characterRoomIDs[characterID] = -1; //reset player room for good measure
-    }
-
-    public void setCharacterRoom(int characterID, int roomID)
-    {
-        characterRoomIDs[characterID] = roomID;
+        playerMarkerIDs[(int) playerID] = markerID;
     }
 
     public void createRoom(Room room)
     {
-        ARRoomProtoGLES20 arRoom = new ARRoomProtoGLES20(80.0f, 0.0f, 0.0f, 0.0f);
-        arRoom.setShaderProgram(roomShaderProgram);
+        ARRoom            arRoom      = new ARRoom();
+        ARRoomProtoGLES20 arRoomProto = new ARRoomProtoGLES20(80.0f, 0.0f, 0.0f, 0.0f);
+        arRoomProto.setShaderProgram(roomShaderProgram);
         for (short i = 0; i < 4; ++i)
         {
-            arRoom.setWall(i, room.getWallType(i));
+            arRoomProto.setWall(i, room.getWallType(i));
         }
-        arRoomModels.put(room.getMarker(), arRoom);
+        //arRoomModels.put(room.getMarker(), arRoomProto);
+        arRoom.setRoomModel(arRoomProto);
+        arRooms.put(room.getMarker(), arRoom);
     }
 
-    public void updateRoom(Room room)
+    public void updateRoomWalls(Room room)
     {
-        ARRoomProtoGLES20 arRoom = arRoomModels.get(room.getMarker());
-        for (short i = 0; i < 4; ++i)
+        ARRoom      arRoom      = arRooms.get(room.getMarker());
+        ARRoomProto arRoomModel = arRoom.getRoomModelAsRoomProto();
+        if (arRoomModel != null)
         {
-            arRoom.setWall(i, room.getWallType(i));
+            for (short i = 0; i < 4; ++i)
+            {
+                arRoomModel.setWall(i, room.getWallType(i));
+            }
+        }
+    }
+
+    public void updateRoomResidents(Room room, Hashtable<Long, Actor> actors)
+    {
+        ARRoom arRoom = arRooms.get(room.getMarker());
+        arRoom.removeActors();
+        for (Long id : room.getResidentActors())
+        {
+            Actor actor = actors.get(id);
+            if (actor.isPlayer())
+            {
+                arRoom.addPlayer(id, (ARDrawableOpenGLES20) models.get(actor.getName()));
+            }
+            else
+            {
+                arRoom.addEnemy(id, (ARDrawableOpenGLES20) models.get(actor.getName()));
+            }
         }
     }
 

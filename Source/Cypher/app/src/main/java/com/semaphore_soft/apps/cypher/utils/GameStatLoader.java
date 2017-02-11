@@ -27,6 +27,69 @@ import static com.semaphore_soft.apps.cypher.utils.CollectionManager.getNextID;
 
 public class GameStatLoader
 {
+    public static ArrayList<String> getList(Context context, String listName)
+    {
+        try
+        {
+            XmlPullParserFactory factory    = XmlPullParserFactory.newInstance();
+            XmlPullParser        listParser = factory.newPullParser();
+
+            AssetManager assetManager    = context.getAssets();
+            InputStream  listInputStream = assetManager.open("lists.xml");
+            listParser.setInput(listInputStream, null);
+
+            boolean foundList    = false;
+            boolean finishedList = false;
+
+            System.out.println("loading list");
+            System.out.println("list name is: " + listName);
+
+            ArrayList<String> res = new ArrayList<>();
+
+            int event = listParser.getEventType();
+            while (event != XmlPullParser.END_DOCUMENT && !finishedList)
+            {
+                switch (event)
+                {
+                    case XmlPullParser.START_TAG:
+                        if (listName.equals(listParser.getName()))
+                        {
+                            foundList = true;
+                            System.out.println("found list");
+                        }
+                        else if (foundList && listParser.getName().equals("name"))
+                        {
+                            listParser.next();
+                            res.add(listParser.getText());
+                            System.out.println("added list member: " + listParser.getText());
+                        }
+                        break;
+                    case XmlPullParser.END_TAG:
+                        if (listName.equals(listParser.getName()))
+                        {
+                            finishedList = true;
+                            System.out.println("finished list");
+                        }
+                        break;
+                    default:
+                        break;
+                }
+                event = listParser.next();
+            }
+            System.out.println("finished loading list");
+            return res;
+        }
+        catch (XmlPullParserException e)
+        {
+            e.printStackTrace();
+        }
+        catch (IOException e)
+        {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
     public static void loadActorStats(Actor actor,
                                       int characterID,
                                       Hashtable<Long, Special> specials,
