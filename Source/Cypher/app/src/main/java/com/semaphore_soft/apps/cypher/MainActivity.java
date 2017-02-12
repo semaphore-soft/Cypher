@@ -1,11 +1,15 @@
 package com.semaphore_soft.apps.cypher;
 
 
+import android.content.DialogInterface;
 import android.content.Intent;
+import android.net.Uri;
 import android.os.Bundle;
 import android.os.StrictMode;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v4.app.FragmentManager;
+import android.support.v4.content.LocalBroadcastManager;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.view.Menu;
@@ -14,15 +18,20 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.Toast;
 
+import com.semaphore_soft.apps.cypher.networking.ClientService;
+import com.semaphore_soft.apps.cypher.networking.NetworkConstants;
+import com.semaphore_soft.apps.cypher.networking.ResponseReceiver;
+import com.semaphore_soft.apps.cypher.networking.ServerService;
 import com.semaphore_soft.apps.cypher.ui.ConnectFragment;
 import com.semaphore_soft.apps.cypher.ui.GetNameDialogFragment;
 
-public class MainActivity extends AppCompatActivity implements GetNameDialogFragment.GetNameDialogListener, ConnectFragment.Callback
+public class MainActivity extends AppCompatActivity implements GetNameDialogFragment.GetNameDialogListener,
+                                                               ConnectFragment.Callback,
+                                                               ResponseReceiver.Receiver
 {
     boolean host = false;
-
-    // Port should be between 49152-65535
-    public final static int SERVER_PORT = 58008;
+    private String name = "";
+    private ResponseReceiver responseReceiver;
 
     @Override
     public void onCreate(Bundle savedInstanceState)
@@ -39,7 +48,7 @@ public class MainActivity extends AppCompatActivity implements GetNameDialogFrag
             public void onClick(View view)
             {
                 Toast.makeText(getApplicationContext(), "Launching AR Activity", Toast.LENGTH_SHORT)
-                        .show();
+                     .show();
 
                 Intent intent = new Intent(getBaseContext(), PortalActivity.class);
                 intent.putExtra("host", true);
@@ -50,8 +59,15 @@ public class MainActivity extends AppCompatActivity implements GetNameDialogFrag
         });
 
         // Allow network connections
-        StrictMode.ThreadPolicy policy = new StrictMode.ThreadPolicy.Builder().permitNetwork().build();
+        StrictMode.ThreadPolicy policy =
+            new StrictMode.ThreadPolicy.Builder().permitNetwork().build();
         StrictMode.setThreadPolicy(policy);
+
+        responseReceiver = new ResponseReceiver();
+        responseReceiver.setListener(this);
+        LocalBroadcastManager.getInstance(this)
+                             .registerReceiver(responseReceiver,
+                                               NetworkConstants.getFilter());
 
         Button btnHost = (Button) findViewById(R.id.btnHost);
 
@@ -87,7 +103,7 @@ public class MainActivity extends AppCompatActivity implements GetNameDialogFrag
 
     public void showConnectDialog()
     {
-        FragmentManager fm = getSupportFragmentManager();
+        FragmentManager fm              = getSupportFragmentManager();
         ConnectFragment connectFragment = new ConnectFragment();
         connectFragment.setListener(this);
         connectFragment.show(fm, "connect_dialog");
@@ -117,24 +133,72 @@ public class MainActivity extends AppCompatActivity implements GetNameDialogFrag
         return super.onOptionsItemSelected(item);
     }
 
-    public void startClientLobby(String addr, String name)
+    @Override
+    public void startClient(String addr, String name)
     {
-        Toast.makeText(getApplicationContext(), "Moving to Connection Lobby",
-                Toast.LENGTH_SHORT).show();
-        Intent intent = new Intent(getBaseContext(), ConnectionLobbyActivity.class);
-        intent.putExtra("name", name);
-        intent.putExtra("address", addr);
-        startActivity(intent);
+        this.name = name;
+        // Try to connect to the socket before moving to connection lobby
+        Intent mServiceIntent = new Intent(this, ClientService.class);
+        mServiceIntent.setData(Uri.parse(NetworkConstants.SETUP_CLIENT));
+        mServiceIntent.putExtra(NetworkConstants.ADDR_EXTRA, addr);
+        startService(mServiceIntent);
     }
 
     @Override
     public void onFinishGetName(String name)
     {
-        Toast.makeText(getApplicationContext(), "Moving to Connection Lobby",
-                Toast.LENGTH_SHORT).show();
-        Intent intent = new Intent(getBaseContext(), ConnectionLobbyActivity.class);
-        intent.putExtra("host", host);
-        intent.putExtra("name", name);
-        startActivity(intent);
+        this.name = name;
+        // Start the server service, which will start
+        // the connection lobby when it starts accepting connections
+        Intent mServiceIntent = new Intent(this, ServerService.class);
+        mServiceIntent.setData(Uri.parse(NetworkConstants.SETUP_SERVER));
+        startService(mServiceIntent);
+    }
+
+    @Override
+    public void handleRead(String msg)
+    {
+        Toast.makeText(this, msg, Toast.LENGTH_SHORT).show();
+    }
+
+    @Override
+    public void handleStatus(String msg)
+    {
+        if (msg.equals(NetworkConstants.STATUS_CLIENT_CONNECT) ||
+            msg.equals(NetworkConstants.STATUS_SERVER_WAIT))
+        {
+            LocalBroadcastManager.getInstance(this).unregisterReceiver(responseReceiver);
+            Toast.makeText(getApplicationContext(),
+                           "Moving to Connection Lobby",
+                           Toast.LENGTH_SHORT)
+                 .show();
+            Intent intent = new Intent(getBaseContext(), ConnectionLobbyActivity.class);
+            intent.putExtra("host", host);
+            intent.putExtra("name", name);
+            startActivity(intent);
+        }
+    }
+
+    @Override
+    public void handleError(String msg)
+    {
+        Toast.makeText(this, msg, Toast.LENGTH_SHORT).show();
+        if (msg.equals(NetworkConstants.ERROR_CLIENT_SOCKET))
+        {
+            // Show a dialog to inform the user that the connection couldn't be made
+            AlertDialog.Builder builder = new AlertDialog.Builder(this);
+            builder.setTitle("Error");
+            builder.setMessage("Unable to connect to host \nPlease try again");
+            builder.setPositiveButton("OK", new DialogInterface.OnClickListener()
+            {
+                @Override
+                public void onClick(DialogInterface dialogInterface, int i)
+                {
+                    dialogInterface.dismiss();
+                }
+            });
+            AlertDialog alert = builder.create();
+            alert.show();
+        }
     }
 }
