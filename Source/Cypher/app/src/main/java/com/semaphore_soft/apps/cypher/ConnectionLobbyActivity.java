@@ -13,10 +13,12 @@ import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.semaphore_soft.apps.cypher.networking.ClientService;
 import com.semaphore_soft.apps.cypher.networking.NetworkConstants;
 import com.semaphore_soft.apps.cypher.networking.ResponseReceiver;
+import com.semaphore_soft.apps.cypher.networking.Server;
 import com.semaphore_soft.apps.cypher.networking.ServerService;
 import com.semaphore_soft.apps.cypher.ui.PlayerID;
 import com.semaphore_soft.apps.cypher.ui.PlayerIDAdapter;
@@ -32,7 +34,7 @@ import java.util.Enumeration;
  * Created by Scorple on 1/9/2017.
  */
 
-public class ConnectionLobbyActivity extends AppCompatActivity
+public class ConnectionLobbyActivity extends AppCompatActivity implements ResponseReceiver.Receiver
 {
     String              name;
     boolean             host;
@@ -42,7 +44,8 @@ public class ConnectionLobbyActivity extends AppCompatActivity
     private PlayerIDAdapter playerIDAdapter;
 
     RecyclerView recyclerView;
-    private Intent mServiceIntent;
+    private Intent           mServiceIntent;
+    private ResponseReceiver responseReceiver;
 
     @Override
     public void onCreate(Bundle savedInstanceState)
@@ -52,9 +55,10 @@ public class ConnectionLobbyActivity extends AppCompatActivity
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
-        // TODO register and unregister in OnResume and OnPause
+        responseReceiver = new ResponseReceiver();
+        responseReceiver.setListener(this);
         LocalBroadcastManager.getInstance(this)
-                             .registerReceiver(new ResponseReceiver(),
+                             .registerReceiver(responseReceiver,
                                                NetworkConstants.getFilter());
 
 
@@ -74,7 +78,6 @@ public class ConnectionLobbyActivity extends AppCompatActivity
         recyclerView.setLayoutManager(llm);
 
         playersList = new ArrayList<>();
-        addTestPlayers();
 
         playerIDAdapter = new PlayerIDAdapter(this, playersList);
 
@@ -89,6 +92,9 @@ public class ConnectionLobbyActivity extends AppCompatActivity
             String ip = "";
             try
             {
+                // Use a label to break out of a nested for loop
+                // Note: probably better to use a method for the inner loop, but this works
+                outerloop:
                 for (Enumeration<NetworkInterface> en = NetworkInterface.getNetworkInterfaces(); en.hasMoreElements();)
                 {
                     NetworkInterface ni = en.nextElement();
@@ -100,6 +106,7 @@ public class ConnectionLobbyActivity extends AppCompatActivity
                         {
                             ip = inetAddress.getHostAddress();
                             Log.i("Lobby", ip);
+                            break outerloop;
                         }
                     }
                 }
@@ -109,17 +116,10 @@ public class ConnectionLobbyActivity extends AppCompatActivity
                 Log.e("Lobby", ex.toString());
             }
 
-            mServiceIntent = new Intent(this, ServerService.class);
-            mServiceIntent.setData(Uri.parse(NetworkConstants.SETUP_SERVER));
-            startService(mServiceIntent);
-
-            mServiceIntent.setData(Uri.parse(NetworkConstants.WRITE_TO_CLIENT));
-            mServiceIntent.putExtra(NetworkConstants.MSG_EXTRA, "Hello, World!");
-            mServiceIntent.putExtra(NetworkConstants.INDEX_EXTRA, 0);
-            startService(mServiceIntent);
-
             TextView ipAddress = (TextView) findViewById(R.id.ip_address);
             ipAddress.setText("Your IP Address is: " + ip);
+
+            addPlayer(name, (int) playerID);
 
             btnStart.setEnabled(true);
 
@@ -128,6 +128,12 @@ public class ConnectionLobbyActivity extends AppCompatActivity
                 @Override
                 public void onClick(View view)
                 {
+                    Server.setAccepting(false);
+                    mServiceIntent.setData(Uri.parse(NetworkConstants.WRITE_ALL));
+                    mServiceIntent.putExtra(NetworkConstants.MSG_EXTRA,
+                                            NetworkConstants.GAME_START);
+                    startService(mServiceIntent);
+                    LocalBroadcastManager.getInstance(ConnectionLobbyActivity.this).unregisterReceiver(responseReceiver);
                     Snackbar.make(view, "Moving to Character Select", Snackbar.LENGTH_LONG).show();
                     Intent intent = new Intent(getBaseContext(), CharacterSelectActivity.class);
                     intent.putExtra("host", host);
@@ -140,27 +146,82 @@ public class ConnectionLobbyActivity extends AppCompatActivity
         {
             btnStart.setEnabled(false);
 
-            mServiceIntent = new Intent(this, ClientService.class);
-            mServiceIntent.setData(Uri.parse(NetworkConstants.SETUP_CLIENT));
-            mServiceIntent
-                    .putExtra(NetworkConstants.ADDR_EXTRA, getIntent().getStringExtra("address"));
-            startService(mServiceIntent);
+            TextView ipAddress = (TextView) findViewById(R.id.ip_address);
+            ipAddress.setVisibility(View.GONE);
 
+            mServiceIntent = new Intent(this, ClientService.class);
             mServiceIntent.setData(Uri.parse(NetworkConstants.CLIENT_WRITE));
-            mServiceIntent.putExtra(NetworkConstants.MSG_EXTRA, "Hello, World!");
+            mServiceIntent.putExtra(NetworkConstants.MSG_EXTRA, NetworkConstants.PF_NAME + name);
             startService(mServiceIntent);
         }
     }
 
-    private void addTestPlayers()
+    private void addPlayer(String player, int id)
     {
-        for (int i = 0; i < 3; ++i)
+        PlayerID playerID = new PlayerID();
+        playerID.setID(id);
+        playerID.setPlayerName(player);
+        playersList.add(playerID);
+        playerIDAdapter.notifyDataSetChanged();
+        if (host)
         {
-            PlayerID playerID = new PlayerID();
-            playerID.setID(i);
-            playerID.setPlayerName("player" + i);
-            //gameIDAdapter.pushGameID(gameID);
-            playersList.add(playerID);
+            mServiceIntent = new Intent(this, ServerService.class);
+            mServiceIntent.setData(Uri.parse(NetworkConstants.WRITE_ALL));
+            mServiceIntent.putExtra(NetworkConstants.MSG_EXTRA,
+                                    NetworkConstants.PF_PLAYER + player + ":" + id);
+            startService(mServiceIntent);
         }
+    }
+
+    @Override
+    public void handleRead(String msg)
+    {
+        Toast.makeText(this, "Read: " + msg, Toast.LENGTH_SHORT).show();
+        if (msg.equals(NetworkConstants.GAME_START))
+        {
+            // Start character select activity after host has started game
+            Intent intent = new Intent(getBaseContext(), CharacterSelectActivity.class);
+            intent.putExtra("host", host);
+            intent.putExtra("player", playerID);
+            startActivity(intent);
+        }
+        else if (msg.startsWith(NetworkConstants.PF_NAME))
+        {
+            // add players on server
+            addPlayer(msg.substring(5), (int) ++playerID);
+        }
+        else if (msg.startsWith(NetworkConstants.PF_PLAYER))
+        {
+            // add players on client
+            String args[] = msg.split(":");
+            addPlayer(args[1], Integer.valueOf(args[2]));
+        }
+    }
+
+    @Override
+    public void handleStatus(String msg)
+    {
+        Toast.makeText(this, "Status: " + msg, Toast.LENGTH_SHORT).show();
+        if (msg.equals(NetworkConstants.STATUS_SERVER_START))
+        {
+            // Update client with all connected players
+            mServiceIntent = new Intent(this, ServerService.class);
+            mServiceIntent.setData(Uri.parse(NetworkConstants.WRITE_TO_CLIENT));
+            // this is probably a terrible way to get the client, but it works
+            mServiceIntent.putExtra(NetworkConstants.INDEX_EXTRA, (int) playerID);
+            for (PlayerID pid : playersList)
+            {
+                mServiceIntent.putExtra(NetworkConstants.MSG_EXTRA,
+                                        NetworkConstants.PF_PLAYER + pid.getPlayerName() + ":" +
+                                        pid.getID());
+                startService(mServiceIntent);
+            }
+        }
+    }
+
+    @Override
+    public void handleError(String msg)
+    {
+        Toast.makeText(this, "Error: " + msg, Toast.LENGTH_SHORT).show();
     }
 }

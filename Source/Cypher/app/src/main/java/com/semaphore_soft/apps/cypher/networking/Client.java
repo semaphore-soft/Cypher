@@ -5,11 +5,11 @@ import android.content.Intent;
 import android.net.Uri;
 import android.util.Log;
 
-import com.semaphore_soft.apps.cypher.MainActivity;
 import com.semaphore_soft.apps.cypher.MainApplication;
 
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
+import java.io.EOFException;
 import java.io.IOException;
 import java.net.InetAddress;
 import java.net.Socket;
@@ -21,9 +21,10 @@ import java.net.Socket;
 
 public class Client
 {
-    private Context mContext       = MainApplication.getInstance()
+    private        Context      mContext       = MainApplication.getInstance()
                                                     .getApplicationContext();
-    private Intent  mServiceIntent = new Intent(mContext, ClientService.class);
+    private        Intent       mServiceIntent = new Intent(mContext, ClientService.class);
+    private static ClientThread clientThread   = null;
 
 
     public Client()
@@ -32,28 +33,35 @@ public class Client
 
     public ClientThread startClient(InetAddress addr)
     {
-        ClientThread clientThread = new ClientThread(addr);
+        clientThread = new ClientThread(addr);
         clientThread.start();
+        return clientThread;
+    }
+
+    public ClientThread getClientThread()
+    {
         return clientThread;
     }
 
     public class ClientThread extends Thread
     {
         Socket mySocket = null;
+        private boolean running = true;
 
         public ClientThread(InetAddress address)
         {
             try
             {
                 // creates and connects to address at specified port
-                mySocket = new Socket(address, MainActivity.SERVER_PORT);
+                mySocket = new Socket(address, NetworkConstants.SERVER_PORT);
             }
             catch (IOException e)
             {
                 e.printStackTrace();
                 Log.e("ClientThread", "Failed to start socket");
-                mServiceIntent.setData(Uri.parse(NetworkConstants.THREAD_UPDATE));
-                mServiceIntent.putExtra(NetworkConstants.MSG_EXTRA, "Failed to start socket");
+                mServiceIntent.setData(Uri.parse(NetworkConstants.THREAD_ERROR));
+                mServiceIntent.putExtra(NetworkConstants.MSG_EXTRA,
+                                        NetworkConstants.ERROR_CLIENT_SOCKET);
                 mContext.startService(mServiceIntent);
             }
         }
@@ -64,18 +72,16 @@ public class Client
             if (mySocket != null)
             {
                 Log.i("ClientThread", "Connection made");
-                Boolean running = true;
+                mServiceIntent.setData(Uri.parse(NetworkConstants.THREAD_UPDATE));
+                mServiceIntent.putExtra(NetworkConstants.MSG_EXTRA,
+                                        NetworkConstants.STATUS_CLIENT_CONNECT);
+                mContext.startService(mServiceIntent);
                 while (running)
                 {
-                    try
+                    String msg = read();
+                    if (msg != null)
                     {
-                        DataInputStream in = new DataInputStream(mySocket.getInputStream());
-                        processMessage(in.readUTF());
-                    }
-                    catch (IOException e)
-                    {
-                        e.printStackTrace();
-                        running = false;
+                        processMessage(msg);
                     }
                 }
             }
@@ -89,12 +95,34 @@ public class Client
                 out.writeUTF(str);
                 // flush after write or inputStream will hang on read
                 out.flush();
-                Log.d("ClientThread", "sent message");
+                Log.d("ClientThread", "sent message: " + str);
             }
             catch (IOException e)
             {
                 e.printStackTrace();
             }
+        }
+
+        private String read()
+        {
+            try
+            {
+                DataInputStream in = new DataInputStream(mySocket.getInputStream());
+                try
+                {
+                    return in.readUTF();
+                }
+                catch (EOFException e)
+                {
+                    return null;
+                }
+            }
+            catch (IOException e)
+            {
+                e.printStackTrace();
+                running = false;
+            }
+            return null;
         }
 
         private void processMessage(String msg)

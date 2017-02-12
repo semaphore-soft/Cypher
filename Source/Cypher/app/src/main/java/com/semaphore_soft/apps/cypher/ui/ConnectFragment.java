@@ -56,7 +56,7 @@ public class ConnectFragment extends DialogFragment
             @Override
             public void onClick(View view)
             {
-                myListener.startClientLobby(addr.getText().toString(), name.getText().toString());
+                myListener.startClient(addr.getText().toString(), name.getText().toString());
 
                 // hide keyboard on fragment exit
                 InputMethodManager imm = (InputMethodManager) getActivity()
@@ -72,7 +72,7 @@ public class ConnectFragment extends DialogFragment
 
     public interface Callback
     {
-        void startClientLobby(String addr, String name);
+        void startClient(String addr, String name);
     }
 
     public void setListener(Callback c)
