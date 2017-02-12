@@ -51,6 +51,7 @@ public class Actor
     public Actor(long id, String name, int markerID)
     {
         this.id = id;
+        this.name = name;
         this.markerID = markerID;
         roomID = -1;
         isPlayer = true;

@@ -175,11 +175,17 @@ public class PortalActivity extends ARActivity implements PortalRenderer.NewMark
                             rooms.put(roomID, room);
                             renderer.createRoom(room);
 
-                            //place every actor in that room
+                            //place every player actor in that room
                             for (Actor actor : actors.values())
                             {
-                                actor.setRoom(roomID);
+                                if (actor.isPlayer())
+                                {
+                                    actor.setRoom(roomID);
+                                    room.addActor(actor.getId());
+                                }
                             }
+
+                            renderer.updateRoomResidents(room, actors);
 
                             map.init(roomID);
 
@@ -264,6 +270,9 @@ public class PortalActivity extends ARActivity implements PortalRenderer.NewMark
                                         actors.get(playerID).setRoom(nearestRoomID);
                                         rooms.get(nearestRoomID).addActor(playerID);
 
+                                        renderer.updateRoomResidents(rooms.get(nearestRoomID),
+                                                                     actors);
+
                                         Toast.makeText(getApplicationContext(),
                                                        "Updated Player Room",
                                                        Toast.LENGTH_SHORT)
@@ -321,7 +330,7 @@ public class PortalActivity extends ARActivity implements PortalRenderer.NewMark
                                 room.addEntity(entityID);
                             }
 
-                            Actor actor = new Actor(getNextID(actors), room.getId());
+                            Actor actor = new Actor(getNextID(actors), room.getId(), "lil_ghost");
                             GameStatLoader.loadActorStats(actor,
                                                           "lil_ghost",
                                                           specials,

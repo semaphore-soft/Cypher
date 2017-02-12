@@ -13,7 +13,7 @@ import java.util.ArrayList;
 
 public class ModelLoader
 {
-    public static ARModel loadModel(Context context, String filename)
+    public static ARModelGLES20 loadModel(Context context, String filename)
     {
         return loadModel(context, filename, 40.0f);
     }

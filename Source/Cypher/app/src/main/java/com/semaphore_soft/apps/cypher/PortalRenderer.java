@@ -104,16 +104,16 @@ class PortalRenderer extends ARRendererGLES20
 
         for (int i = 0; i < 4; ++i)
         {
-            ARModelGLES20 characterModel =
-                ModelLoader.loadModel(context, "models/garbage_man.obj", 40.0f);
+            ARModelGLES20 playerMarkerModel =
+                ModelLoader.loadModel(context, "models/waypoint.obj", 40.0f);
             //new ARModelGLES20(40.0f, 0.0f, 0.0f, 0.0f, "models/garbage_man.obj", context);
-            characterModel.setCharacter(i);
+            playerMarkerModel.setCharacter(i);
             ShaderProgram characterShaderProgram =
-                new SimpleShaderProgram(characterModel.getNumIndices(),
+                new SimpleShaderProgram(playerMarkerModel.getNumIndices(),
                                         new SimpleVertexShader(),
                                         new SimpleFragmentShader());
-            characterModel.setShaderProgram(characterShaderProgram);
-            characterModels.add(characterModel);
+            playerMarkerModel.setShaderProgram(characterShaderProgram);
+            characterModels.add(playerMarkerModel);
         }
 
         roomShaderProgram =
@@ -130,7 +130,17 @@ class PortalRenderer extends ARRendererGLES20
         {
             for (String name : actorNames)
             {
-
+                ARModelGLES20 actorModel =
+                    ModelLoader.loadModel(context, "models/actors/" + name + ".obj");
+                if (actorModel != null)
+                {
+                    ShaderProgram actorShaderProgram =
+                        new SimpleShaderProgram(actorModel.getNumIndices(),
+                                                new SimpleVertexShader(),
+                                                new SimpleFragmentShader());
+                    actorModel.setShaderProgram(actorShaderProgram);
+                    models.put(name, actorModel);
+                }
             }
         }
     }
@@ -403,14 +413,20 @@ class PortalRenderer extends ARRendererGLES20
         arRoom.removeActors();
         for (Long id : room.getResidentActors())
         {
+            String name = actors.get(id).getName();
+            System.out.println("adding actor:" + id + ":" + name + " to room:" + room.getId());
             Actor actor = actors.get(id);
-            if (actor.isPlayer())
+
+            if (name != null && models.keySet().contains(name))
             {
-                arRoom.addPlayer(id, (ARDrawableOpenGLES20) models.get(actor.getName()));
-            }
-            else
-            {
-                arRoom.addEnemy(id, (ARDrawableOpenGLES20) models.get(actor.getName()));
+                if (actor.isPlayer())
+                {
+                    arRoom.addPlayer(id, (ARDrawableOpenGLES20) models.get(name));
+                }
+                else
+                {
+                    arRoom.addEnemy(id, (ARDrawableOpenGLES20) models.get(name));
+                }
             }
         }
     }

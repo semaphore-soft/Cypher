@@ -111,7 +111,7 @@ public class ARRoom
             float[] transformationMatrix = new float[16];
             System.arraycopy(modelViewMatrix, 0, transformationMatrix, 0, 16);
             ARDrawableOpenGLES20 playerModel = playerLine.get(id);
-            Matrix.translateM(transformationMatrix, 0, -30.0f, 0.0f, 0.0f);
+            Matrix.translateM(transformationMatrix, 0, 0, -30.0f, 0.0f);
             Matrix.rotateM(transformationMatrix, 0, 0.0f, 0.0f, 0.0f, (float) Math.PI);
             playerModel.draw(projectionMatrix, transformationMatrix);
         }
@@ -121,7 +121,7 @@ public class ARRoom
             float[] transformationMatrix = new float[16];
             System.arraycopy(modelViewMatrix, 0, transformationMatrix, 0, 16);
             ARDrawableOpenGLES20 enemyModel = enemyLine.get(id);
-            Matrix.translateM(transformationMatrix, 0, 30.0f, 0.0f, 0.0f);
+            Matrix.translateM(transformationMatrix, 0, 0, 30.0f, 0.0f);
             enemyModel.draw(projectionMatrix, transformationMatrix);
         }
 
