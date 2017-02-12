@@ -12,8 +12,8 @@ import java.util.Hashtable;
 
 public class ARRoom
 {
-    int markerID = -1;
-    ARDrawableOpenGLES20                  roomModel;
+    ARDrawableOpenGLES20 roomModel;
+    ARDrawableOpenGLES20 walls[] = {null, null, null, null};
     Hashtable<Long, ARDrawableOpenGLES20> playerLine;
     Hashtable<Long, ARDrawableOpenGLES20> enemyLine;
     Hashtable<Long, ARDrawableOpenGLES20> entityPile;
@@ -37,6 +37,11 @@ public class ARRoom
             return (ARRoomProto) roomModel;
         }
         return null;
+    }
+
+    public void setWall(int index, ARDrawableOpenGLES20 door)
+    {
+        walls[index] = door;
     }
 
     public void addPlayer(long id, ARDrawableOpenGLES20 playerModel)
@@ -106,6 +111,22 @@ public class ARRoom
             roomModel.draw(projectionMatrix, modelViewMatrix);
         }
 
+        for (int i = 0; i < 4; ++i)
+        {
+            if (walls[i] != null)
+            {
+                float[] transformationMatrix = new float[16];
+                System.arraycopy(modelViewMatrix, 0, transformationMatrix, 0, 16);
+                Matrix.rotateM(transformationMatrix,
+                               0,
+                               i * -90.0f,
+                               0.0f,
+                               0.0f,
+                               1.0f);
+                walls[i].draw(projectionMatrix, transformationMatrix);
+            }
+        }
+
         int   i          = 0;
         float spread     = (playerLine.size() - 1) * 60.0f;
         float lineOffset = -(spread / 2.0f);
@@ -116,7 +137,7 @@ public class ARRoom
             System.arraycopy(modelViewMatrix, 0, transformationMatrix, 0, 16);
             ARDrawableOpenGLES20 playerModel = playerLine.get(id);
             Matrix.translateM(transformationMatrix, 0, actorOffset, -80.0f, 0.0f);
-            Matrix.rotateM(transformationMatrix, 0, 0.0f, 0.0f, 0.0f, (float) Math.PI);
+            Matrix.rotateM(transformationMatrix, 0, 180.0f, 0.0f, 0.0f, 1.0f);
             playerModel.draw(projectionMatrix, transformationMatrix);
             ++i;
         }

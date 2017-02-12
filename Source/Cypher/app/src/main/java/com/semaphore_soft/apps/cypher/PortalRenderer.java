@@ -156,6 +156,36 @@ class PortalRenderer extends ARRendererGLES20
         roomBase.setShaderProgram(roomBaseShaderProgram);
         roomBase.setColor(0.5f, 0.5f, 0.5f, 1.0f);
         models.put("room_base", roomBase);
+
+        ARModelGLES20 roomWall =
+            ModelLoader.loadModel(context, "models/room_door_north.obj", 120.0f);
+        ShaderProgram roomWallShaderProgram =
+            new SimpleShaderProgram(roomWall.getNumIndices(),
+                                    new SimpleVertexShader(),
+                                    new SimpleFragmentShader());
+        roomWall.setShaderProgram(roomWallShaderProgram);
+        roomWall.setColor(0.5f, 0.5f, 0.5f, 1.0f);
+        models.put("room_wall", roomWall);
+
+        ARModelGLES20 roomDoor =
+            ModelLoader.loadModel(context, "models/room_door_north.obj", 120.0f);
+        ShaderProgram roomDoorShaderProgram =
+            new SimpleShaderProgram(roomDoor.getNumIndices(),
+                                    new SimpleVertexShader(),
+                                    new SimpleFragmentShader());
+        roomDoor.setShaderProgram(roomDoorShaderProgram);
+        roomDoor.setColor(0.5f, 0.25f, 0.125f, 1.0f);
+        models.put("room_door_unlocked", roomDoor);
+
+        ARModelGLES20 roomDoorOpen =
+            ModelLoader.loadModel(context, "models/room_door_north_open.obj", 120.0f);
+        ShaderProgram roomDoorOpenShaderProgram =
+            new SimpleShaderProgram(roomDoorOpen.getNumIndices(),
+                                    new SimpleVertexShader(),
+                                    new SimpleFragmentShader());
+        roomDoorOpen.setShaderProgram(roomDoorOpenShaderProgram);
+        roomDoorOpen.setColor(0.75f, 0.75f, 0.75f, 1.0f);
+        models.put("room_door_open", roomDoorOpen);
     }
 
     /**
@@ -395,7 +425,7 @@ class PortalRenderer extends ARRendererGLES20
 
     public void createRoom(Room room)
     {
-        ARRoom            arRoom      = new ARRoom();
+        ARRoom arRoom = new ARRoom();
         /*ARRoomProtoGLES20 arRoomProto = new ARRoomProtoGLES20(80.0f, 0.0f, 0.0f, 0.0f);
         arRoomProto.setShaderProgram(roomShaderProgram);
         for (short i = 0; i < 4; ++i)
@@ -405,6 +435,24 @@ class PortalRenderer extends ARRendererGLES20
         //arRoomModels.put(room.getMarker(), arRoomProto);
         arRoom.setRoomModel(arRoomProto);*/
         arRoom.setRoomModel(models.get("room_base"));
+        for (short i = 0; i < 4; ++i)
+        {
+            switch (room.getWallType(i))
+            {
+                case NO_DOOR:
+                    arRoom.setWall(i, models.get("room_wall"));
+                    break;
+                case DOOR_UNLOCKED:
+                    arRoom.setWall(i, models.get("room_door_unlocked"));
+                    break;
+                case DOOR_OPEN:
+                    arRoom.setWall(i, models.get("room_door_open"));
+                    break;
+                case DOOR_LOCKED:
+                    arRoom.setWall(i, models.get("room_door_locked"));
+                    break;
+            }
+        }
         arRooms.put(room.getMarker(), arRoom);
     }
 
@@ -417,6 +465,27 @@ class PortalRenderer extends ARRendererGLES20
             for (short i = 0; i < 4; ++i)
             {
                 arRoomModel.setWall(i, room.getWallType(i));
+            }
+        }
+        else
+        {
+            for (short i = 0; i < 4; ++i)
+            {
+                switch (room.getWallType(i))
+                {
+                    case NO_DOOR:
+                        arRoom.setWall(i, models.get("room_wall"));
+                        break;
+                    case DOOR_UNLOCKED:
+                        arRoom.setWall(i, models.get("room_door_unlocked"));
+                        break;
+                    case DOOR_OPEN:
+                        arRoom.setWall(i, models.get("room_door_open"));
+                        break;
+                    case DOOR_LOCKED:
+                        arRoom.setWall(i, models.get("room_door_locked"));
+                        break;
+                }
             }
         }
     }
