@@ -119,7 +119,7 @@ public class ConnectionLobbyActivity extends AppCompatActivity implements Respon
             TextView ipAddress = (TextView) findViewById(R.id.ip_address);
             ipAddress.setText("Your IP Address is: " + ip);
 
-            addPlayers(name, (int) playerID);
+            addPlayer(name, (int) playerID);
 
             btnStart.setEnabled(true);
 
@@ -156,7 +156,7 @@ public class ConnectionLobbyActivity extends AppCompatActivity implements Respon
         }
     }
 
-    private void addPlayers(String player, int id)
+    private void addPlayer(String player, int id)
     {
         PlayerID playerID = new PlayerID();
         playerID.setID(id);
@@ -188,13 +188,13 @@ public class ConnectionLobbyActivity extends AppCompatActivity implements Respon
         else if (msg.startsWith(NetworkConstants.PF_NAME))
         {
             // add players on server
-            addPlayers(msg.substring(5), (int) ++playerID);
+            addPlayer(msg.substring(5), (int) ++playerID);
         }
         else if (msg.startsWith(NetworkConstants.PF_PLAYER))
         {
             // add players on client
             String args[] = msg.split(":");
-            addPlayers(args[1], Integer.valueOf(args[2]));
+            addPlayer(args[1], Integer.valueOf(args[2]));
         }
     }
 

@@ -43,7 +43,9 @@ public class NetworkConstants
     public static final String PF_PLAYER = "PLAYER:";
 
     // Constants for status codes
-    public static final String STATUS_SERVER_START = "Server thread started";
+    public static final String STATUS_SERVER_START   = "Server thread started";
+    public static final String STATUS_CLIENT_CONNECT = "Connection made";
+    public static final String STATUS_SERVER_WAIT    = "Waiting on accept";
 
     // Constants for error codes
     public static final String ERROR_CLIENT_SOCKET = "Failed to start socket";

@@ -164,13 +164,19 @@ public class MainActivity extends AppCompatActivity implements GetNameDialogFrag
     @Override
     public void handleStatus(String msg)
     {
-        LocalBroadcastManager.getInstance(this).unregisterReceiver(responseReceiver);
-        Toast.makeText(getApplicationContext(), "Moving to Connection Lobby", Toast.LENGTH_SHORT)
-             .show();
-        Intent intent = new Intent(getBaseContext(), ConnectionLobbyActivity.class);
-        intent.putExtra("host", host);
-        intent.putExtra("name", name);
-        startActivity(intent);
+        if (msg.equals(NetworkConstants.STATUS_CLIENT_CONNECT) ||
+            msg.equals(NetworkConstants.STATUS_SERVER_WAIT))
+        {
+            LocalBroadcastManager.getInstance(this).unregisterReceiver(responseReceiver);
+            Toast.makeText(getApplicationContext(),
+                           "Moving to Connection Lobby",
+                           Toast.LENGTH_SHORT)
+                 .show();
+            Intent intent = new Intent(getBaseContext(), ConnectionLobbyActivity.class);
+            intent.putExtra("host", host);
+            intent.putExtra("name", name);
+            startActivity(intent);
+        }
     }
 
     @Override

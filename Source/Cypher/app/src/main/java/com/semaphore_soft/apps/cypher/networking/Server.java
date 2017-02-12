@@ -99,7 +99,8 @@ public class Server
                 {
                     Log.i("ClientHandler", "Waiting on accept");
                     mServiceIntent.setData(Uri.parse(NetworkConstants.THREAD_UPDATE));
-                    mServiceIntent.putExtra(NetworkConstants.MSG_EXTRA, "Waiting on accept");
+                    mServiceIntent.putExtra(NetworkConstants.MSG_EXTRA,
+                                            NetworkConstants.STATUS_SERVER_WAIT);
                     mContext.startService(mServiceIntent);
 
                     mySocket = serverSocket.accept();

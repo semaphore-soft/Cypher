@@ -73,7 +73,8 @@ public class Client
             {
                 Log.i("ClientThread", "Connection made");
                 mServiceIntent.setData(Uri.parse(NetworkConstants.THREAD_UPDATE));
-                mServiceIntent.putExtra(NetworkConstants.MSG_EXTRA, "Connection made");
+                mServiceIntent.putExtra(NetworkConstants.MSG_EXTRA,
+                                        NetworkConstants.STATUS_CLIENT_CONNECT);
                 mContext.startService(mServiceIntent);
                 while (running)
                 {
