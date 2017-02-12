@@ -264,6 +264,8 @@ public class PortalActivity extends ARActivity implements PortalRenderer.NewMark
                                         {
                                             rooms.get(actors.get(playerID).getRoom())
                                                  .removeActor(playerID);
+                                            renderer.updateRoomResidents(rooms.get(actors.get(
+                                                playerID).getRoom()), actors);
                                         }
 
                                         //update the actor's room and the new room's actor list

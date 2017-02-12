@@ -6,7 +6,6 @@ import android.opengl.Matrix;
 
 import com.semaphore_soft.apps.cypher.game.Actor;
 import com.semaphore_soft.apps.cypher.game.Room;
-import com.semaphore_soft.apps.cypher.opengl.ARModel;
 import com.semaphore_soft.apps.cypher.opengl.ARModelGLES20;
 import com.semaphore_soft.apps.cypher.opengl.ARRoom;
 import com.semaphore_soft.apps.cypher.opengl.ARRoomProto;
@@ -18,7 +17,6 @@ import com.semaphore_soft.apps.cypher.opengl.shader.SimpleVertexShader;
 import com.semaphore_soft.apps.cypher.utils.GameStatLoader;
 
 import org.artoolkit.ar.base.ARToolKit;
-import org.artoolkit.ar.base.rendering.gles20.ARDrawableOpenGLES20;
 import org.artoolkit.ar.base.rendering.gles20.ARRendererGLES20;
 import org.artoolkit.ar.base.rendering.gles20.ShaderProgram;
 
@@ -42,9 +40,8 @@ class PortalRenderer extends ARRendererGLES20
 
     private ArrayList<ARModelGLES20> characterModels;
 
-    private Hashtable<String, ARModel> models;
+    private Hashtable<String, ARModelGLES20> models;
 
-    //private Hashtable<Integer, ARRoomProtoGLES20> arRoomModels;
     private Hashtable<Integer, ARRoom> arRooms;
 
     private SimpleShaderProgram roomShaderProgram;
@@ -125,6 +122,14 @@ class PortalRenderer extends ARRendererGLES20
 
         models = new Hashtable<>();
 
+        ARModelGLES20 waypoint =
+            ModelLoader.loadModel(context, "models/waypoint.obj", 40.0f);
+        ShaderProgram waypointShaderProgram = new SimpleShaderProgram(waypoint.getNumIndices(),
+                                                                      new SimpleVertexShader(),
+                                                                      new SimpleFragmentShader());
+        waypoint.setShaderProgram(waypointShaderProgram);
+        models.put("waypoint", waypoint);
+
         ArrayList<String> actorNames = GameStatLoader.getList(context, "actors");
         if (actorNames != null)
         {
@@ -143,6 +148,15 @@ class PortalRenderer extends ARRendererGLES20
                 }
             }
         }
+
+        ARModelGLES20 roomBase =
+            ModelLoader.loadModel(context, "models/room_base.obj", 80.0f);
+        ShaderProgram roomBaseShaderProgram = new SimpleShaderProgram(roomBase.getNumIndices(),
+                                                                      new SimpleVertexShader(),
+                                                                      new SimpleFragmentShader());
+        roomBase.setShaderProgram(roomBaseShaderProgram);
+        roomBase.setColor(0.5f, 0.5f, 0.5f, 1.0f);
+        models.put("room_base", roomBase);
     }
 
     /**
@@ -391,6 +405,7 @@ class PortalRenderer extends ARRendererGLES20
         }
         //arRoomModels.put(room.getMarker(), arRoomProto);
         arRoom.setRoomModel(arRoomProto);
+        //arRoom.setRoomModel(models.get("room_base"));
         arRooms.put(room.getMarker(), arRoom);
     }
 
@@ -421,11 +436,11 @@ class PortalRenderer extends ARRendererGLES20
             {
                 if (actor.isPlayer())
                 {
-                    arRoom.addPlayer(id, (ARDrawableOpenGLES20) models.get(name));
+                    arRoom.addPlayer(id, models.get(name));
                 }
                 else
                 {
-                    arRoom.addEnemy(id, (ARDrawableOpenGLES20) models.get(name));
+                    arRoom.addEnemy(id, models.get(name));
                 }
             }
         }

@@ -112,53 +112,40 @@ public class ARModel
         GLES10.glDisableClientState(GLES10.GL_VERTEX_ARRAY);
     }
 
+    public void setColor(float r, float g, float b, float o)
+    {
+        float colors[] = new float[NUM_VERTICES * 4];
+
+        for (int i = 0; i < NUM_VERTICES * 4; i += 4)
+        {
+            colors[i] = r;
+            colors[i + 1] = g;
+            colors[i + 2] = b;
+            colors[i + 3] = o;
+        }
+
+        colorBuffer = RenderUtils.buildFloatBuffer(colors);
+    }
+
     public void setCharacter(int character)
     {
         float c = 1.0f;
 
-        float colors[] = new float[NUM_VERTICES * 4];
-
         switch (character)
         {
             case 0:
-                for (int i = 0; i < NUM_VERTICES * 4; i += 4)
-                {
-                    colors[i] = c;
-                    colors[i + 1] = c;
-                    colors[i + 2] = c;
-                    colors[i + 3] = c;
-                }
+                setColor(c, c, c, c);
                 break;
             case 1:
-                for (int i = 0; i < NUM_VERTICES * 4; i += 4)
-                {
-                    colors[i] = c;
-                    colors[i + 1] = 0;
-                    colors[i + 2] = 0;
-                    colors[i + 3] = c;
-                }
+                setColor(c, 0, 0, c);
                 break;
             case 2:
-                for (int i = 0; i < NUM_VERTICES * 4; i += 4)
-                {
-                    colors[i] = 0;
-                    colors[i + 1] = c;
-                    colors[i + 2] = 0;
-                    colors[i + 3] = c;
-                }
+                setColor(0, c, 0, c);
                 break;
             case 3:
-                for (int i = 0; i < NUM_VERTICES * 4; i += 4)
-                {
-                    colors[i] = c;
-                    colors[i + 1] = 0;
-                    colors[i + 2] = c;
-                    colors[i + 3] = c;
-                }
+                setColor(c, 0, c, c);
                 break;
         }
-
-        colorBuffer = RenderUtils.buildFloatBuffer(colors);
     }
 
     public int getNumIndices()
