@@ -9,7 +9,6 @@ import com.semaphore_soft.apps.cypher.game.Room;
 import com.semaphore_soft.apps.cypher.opengl.ARModelGLES20;
 import com.semaphore_soft.apps.cypher.opengl.ARRoom;
 import com.semaphore_soft.apps.cypher.opengl.ARRoomProto;
-import com.semaphore_soft.apps.cypher.opengl.ARRoomProtoGLES20;
 import com.semaphore_soft.apps.cypher.opengl.ModelLoader;
 import com.semaphore_soft.apps.cypher.opengl.shader.SimpleFragmentShader;
 import com.semaphore_soft.apps.cypher.opengl.shader.SimpleShaderProgram;
@@ -150,7 +149,7 @@ class PortalRenderer extends ARRendererGLES20
         }
 
         ARModelGLES20 roomBase =
-            ModelLoader.loadModel(context, "models/room_base.obj", 80.0f);
+            ModelLoader.loadModel(context, "models/room_base.obj", 120.0f);
         ShaderProgram roomBaseShaderProgram = new SimpleShaderProgram(roomBase.getNumIndices(),
                                                                       new SimpleVertexShader(),
                                                                       new SimpleFragmentShader());
@@ -397,15 +396,15 @@ class PortalRenderer extends ARRendererGLES20
     public void createRoom(Room room)
     {
         ARRoom            arRoom      = new ARRoom();
-        ARRoomProtoGLES20 arRoomProto = new ARRoomProtoGLES20(80.0f, 0.0f, 0.0f, 0.0f);
+        /*ARRoomProtoGLES20 arRoomProto = new ARRoomProtoGLES20(80.0f, 0.0f, 0.0f, 0.0f);
         arRoomProto.setShaderProgram(roomShaderProgram);
         for (short i = 0; i < 4; ++i)
         {
             arRoomProto.setWall(i, room.getWallType(i));
         }
         //arRoomModels.put(room.getMarker(), arRoomProto);
-        arRoom.setRoomModel(arRoomProto);
-        //arRoom.setRoomModel(models.get("room_base"));
+        arRoom.setRoomModel(arRoomProto);*/
+        arRoom.setRoomModel(models.get("room_base"));
         arRooms.put(room.getMarker(), arRoom);
     }
 

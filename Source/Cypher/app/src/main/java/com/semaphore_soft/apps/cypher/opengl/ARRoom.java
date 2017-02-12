@@ -107,30 +107,30 @@ public class ARRoom
         }
 
         int   i          = 0;
-        float spread     = (playerLine.size() - 1) * 20.0f;
+        float spread     = (playerLine.size() - 1) * 60.0f;
         float lineOffset = -(spread / 2.0f);
         for (Long id : playerLine.keySet())
         {
-            float   actorOffset          = lineOffset + (20.0f * i);
+            float   actorOffset          = lineOffset + (60.0f * i);
             float[] transformationMatrix = new float[16];
             System.arraycopy(modelViewMatrix, 0, transformationMatrix, 0, 16);
             ARDrawableOpenGLES20 playerModel = playerLine.get(id);
-            Matrix.translateM(transformationMatrix, 0, actorOffset, -30.0f, 0.0f);
+            Matrix.translateM(transformationMatrix, 0, actorOffset, -80.0f, 0.0f);
             Matrix.rotateM(transformationMatrix, 0, 0.0f, 0.0f, 0.0f, (float) Math.PI);
             playerModel.draw(projectionMatrix, transformationMatrix);
             ++i;
         }
 
         i = 0;
-        spread = (enemyLine.size() - 1) * 20.0f;
+        spread = (enemyLine.size() - 1) * 60.0f;
         lineOffset = -(spread / 2.0f);
         for (Long id : enemyLine.keySet())
         {
-            float   actorOffset          = lineOffset + (20.0f * i);
+            float   actorOffset          = lineOffset + (60.0f * i);
             float[] transformationMatrix = new float[16];
             System.arraycopy(modelViewMatrix, 0, transformationMatrix, 0, 16);
             ARDrawableOpenGLES20 enemyModel = enemyLine.get(id);
-            Matrix.translateM(transformationMatrix, 0, actorOffset, 30.0f, 0.0f);
+            Matrix.translateM(transformationMatrix, 0, actorOffset, 80.0f, 0.0f);
             enemyModel.draw(projectionMatrix, transformationMatrix);
             ++i;
         }
