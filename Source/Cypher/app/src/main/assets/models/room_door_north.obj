@@ -1,0 +1,12 @@
+# Blender v2.78 (sub 0) OBJ File: 'room_door_north.blend'
+# www.blender.org
+mtllib room_door_north.mtl
+v 0.666667 2.000000 0.000000
+v -0.666667 2.000000 0.000000
+v 0.666667 2.500000 0.500000
+v -0.666667 2.500000 0.500000
+vn 0.0000 -0.7071 0.7071
+usemtl None
+s off
+f 3//1 2//1 1//1
+f 3//1 4//1 2//1
