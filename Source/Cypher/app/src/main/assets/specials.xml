@@ -1,0 +1,23 @@
+<!--Specials-->
+<specials>
+    <!--Heal-->
+    <heal>
+        <name>Heal</name>
+        <cost>10</cost>
+        <targetingType>SINGLE_PLAYER</targetingType>
+        <effects>
+            <effect>HEAL</effect>
+        </effects>
+    </heal>
+
+    <!--Protect-->
+    <beef_increase>
+        <name>Beef Incease</name>
+        <cost>5</cost>
+        <duration>2</duration>
+        <targetingType>SINGLE_PLAYER</targetingType>
+        <effects>
+            <effect>DEFENCE_RATING_UP</effect>
+        </effects>
+    </beef_increase>
+</specials>

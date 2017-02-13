@@ -36,12 +36,12 @@
             android:layout_alignParentEnd="true"/>
 
     <Button
-            android:text="Magic"
+            android:text="Special"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_alignParentBottom="true"
             android:layout_alignParentEnd="true"
-            android:id="@+id/btnMagic"/>
+            android:id="@+id/btnSpecial"/>
 
     <Button
             android:text="Generate\nRoom"

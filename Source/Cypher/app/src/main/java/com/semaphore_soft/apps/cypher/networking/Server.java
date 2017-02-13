@@ -4,13 +4,12 @@ import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
 import android.util.Log;
-import android.widget.Toast;
 
-import com.semaphore_soft.apps.cypher.MainActivity;
 import com.semaphore_soft.apps.cypher.MainApplication;
 
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
+import java.io.EOFException;
 import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
@@ -24,16 +23,21 @@ import java.util.ArrayList;
 
 public class Server
 {
-    private ArrayList<ClientHandler> clients        = new ArrayList<>();
-    public  Boolean                  accepting      = false;
-    private Context                  mContext       = MainApplication.getInstance()
+    private static ArrayList<ClientHandler> clients        = new ArrayList<>();
+    private static Boolean                  accepting      = false;
+    private        Context                  mContext       = MainApplication.getInstance()
                                                                      .getApplicationContext();
-    private Intent                   mServiceIntent = new Intent(mContext, ServerService.class);
-    private int                      maxPlayers     = 4;
+    private        Intent                   mServiceIntent = new Intent(mContext, ServerService.class);
+    private        int                      maxPlayers     = 4;
 
 
     public Server()
     {
+    }
+
+    public static void setAccepting(Boolean bool)
+    {
+        accepting = bool;
     }
 
     public void startAcceptor()
@@ -53,10 +57,10 @@ public class Server
 
     public void writeToClient(String str, int index)
     {
-        Log.d("Threads", "Attempting to write to client " + String.valueOf(index));
+        Log.d("Server", "Attempting to write to client " + String.valueOf(index));
         // TODO call writeALL if index invalid?
         // Service will default to -1 if no index is given
-        if (!clients.isEmpty() && index > 0)
+        if (!clients.isEmpty() && index >= 0)
         {
             clients.get(index).write(str);
         }
@@ -72,14 +76,16 @@ public class Server
         {
             try
             {
-                serverSocket = new ServerSocket(MainActivity.SERVER_PORT);
+                serverSocket = new ServerSocket(NetworkConstants.SERVER_PORT);
 
             }
             catch (IOException e)
             {
                 e.printStackTrace();
                 Log.e("ClientHandler", "Failed to start server");
-                Toast.makeText(mContext, "Failed to start server", Toast.LENGTH_SHORT).show();
+                mServiceIntent.setData(Uri.parse(NetworkConstants.THREAD_ERROR));
+                mServiceIntent.putExtra(NetworkConstants.MSG_EXTRA, "Failed to start server");
+                mContext.startService(mServiceIntent);
             }
         }
 
@@ -93,7 +99,8 @@ public class Server
                 {
                     Log.i("ClientHandler", "Waiting on accept");
                     mServiceIntent.setData(Uri.parse(NetworkConstants.THREAD_UPDATE));
-                    mServiceIntent.putExtra(NetworkConstants.MSG_EXTRA, "Waiting on accept");
+                    mServiceIntent.putExtra(NetworkConstants.MSG_EXTRA,
+                                            NetworkConstants.STATUS_SERVER_WAIT);
                     mContext.startService(mServiceIntent);
 
                     mySocket = serverSocket.accept();
@@ -101,7 +108,6 @@ public class Server
                     clients.add(serverThread);
                     serverThread.start();
                     id++;
-                    accepting = false;
                 }
                 catch (SocketException e)
                 {
@@ -121,26 +127,26 @@ public class Server
         Socket mySocket;
         int    id;
 
+        private boolean running = true;
+
         public ClientHandler(Socket socket, int id)
         {
             mySocket = socket;
             this.id = id;
+            mServiceIntent.setData(Uri.parse(NetworkConstants.THREAD_UPDATE));
+            mServiceIntent.putExtra(NetworkConstants.MSG_EXTRA,
+                                    NetworkConstants.STATUS_SERVER_START);
+            mContext.startService(mServiceIntent);
         }
 
         public void run()
         {
-            Boolean running = true;
             while (running)
             {
-                try
+                String msg = read();
+                if (msg != null)
                 {
-                    DataInputStream in = new DataInputStream(mySocket.getInputStream());
-                    processMessage(in.readUTF());
-                }
-                catch (IOException e)
-                {
-                    e.printStackTrace();
-                    running = false;
+                    processMessage(msg);
                 }
             }
         }
@@ -153,12 +159,34 @@ public class Server
                 out.writeUTF(str);
                 // flush after write or inputStream will hang on read
                 out.flush();
-                Log.d("ClientHandler", "sent message");
+                Log.d("ClientHandler", "sent message: " + str);
             }
             catch (IOException e)
             {
                 e.printStackTrace();
             }
+        }
+
+        private String read()
+        {
+            try
+            {
+                DataInputStream in = new DataInputStream(mySocket.getInputStream());
+                try
+                {
+                    return in.readUTF();
+                }
+                catch (EOFException e)
+                {
+                    return null;
+                }
+            }
+            catch (IOException e)
+            {
+                e.printStackTrace();
+                running = false;
+            }
+            return null;
         }
 
         private void processMessage(String msg)

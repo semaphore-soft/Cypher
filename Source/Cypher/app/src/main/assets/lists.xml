@@ -1,0 +1,31 @@
+<!--Lists-->
+<lists>
+    <!--Actors-->
+    <actors>
+        <!--Characters-->
+        <characters>
+            <name>soldier</name>
+            <name>knight</name>
+            <name>wizard</name>
+            <name>ranger</name>
+        </characters>
+
+        <!--Enemies-->
+        <enemies>
+            <name>lil_ghost</name>
+            <name>groblin</name>
+        </enemies>
+    </actors>
+
+    <!--Items-->
+    <items>
+        <name>delightful_bread</name>
+        <name>potion_of_buffness</name>
+    </items>
+
+    <!--Special-->
+    <specials>
+        <name>heal</name>
+        <name>beef_increase</name>
+    </specials>
+</lists>

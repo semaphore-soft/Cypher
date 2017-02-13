@@ -15,8 +15,7 @@ import java.net.UnknownHostException;
 
 public class ClientService extends IntentService
 {
-    private Client              client       = new Client();
-    private Client.ClientThread clientThread = null;
+    private Client client = new Client();
 
     private static final String TAG = "ClientService";
 
@@ -35,21 +34,29 @@ public class ClientService extends IntentService
             Log.d(TAG, "Staring client thread");
             try
             {
-                clientThread = client.startClient(
-                    InetAddress.getByName(intent.getStringExtra(NetworkConstants.ADDR_EXTRA)));
+                client.startClient(InetAddress.getByName(intent.getStringExtra(NetworkConstants.ADDR_EXTRA)));
             }
             catch (UnknownHostException e)
             {
                 e.printStackTrace();
-                // TODO sent intent for error?
+                Log.e(TAG, "Could not resolve host");
+                Intent localIntent = new Intent(NetworkConstants.BROADCAST_ERROR).putExtra(
+                    NetworkConstants.MESSAGE,
+                    NetworkConstants.ERROR_CLIENT_SOCKET);
+                LocalBroadcastManager.getInstance(this).sendBroadcast(localIntent);
             }
         }
         else if (dataString.equals(NetworkConstants.CLIENT_WRITE))
         {
+            Client.ClientThread clientThread = client.getClientThread();
             if (clientThread != null)
             {
                 Log.d(TAG, "Writing to server");
                 clientThread.write(intent.getStringExtra(NetworkConstants.MSG_EXTRA));
+            }
+            else
+            {
+                Log.d(TAG, "clientThread null");
             }
         }
         else if (dataString.equals(NetworkConstants.THREAD_READ))
@@ -66,6 +73,15 @@ public class ClientService extends IntentService
             String msg = intent.getStringExtra(NetworkConstants.MSG_EXTRA);
             Intent localIntent = new Intent(NetworkConstants.BROADCAST_STATUS)
                 .putExtra(NetworkConstants.MESSAGE, msg);
+            LocalBroadcastManager.getInstance(this).sendBroadcast(localIntent);
+        }
+        else if (dataString.equals(NetworkConstants.THREAD_ERROR))
+        {
+            Log.d(TAG, "Sending thread error");
+            String msg = intent.getStringExtra(NetworkConstants.MSG_EXTRA);
+            Intent localIntent = new Intent(NetworkConstants.BROADCAST_ERROR).putExtra(
+                NetworkConstants.MESSAGE,
+                msg);
             LocalBroadcastManager.getInstance(this).sendBroadcast(localIntent);
         }
     }
