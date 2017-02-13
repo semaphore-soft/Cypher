@@ -15,7 +15,7 @@ import java.net.UnknownHostException;
 
 public class ClientService extends IntentService
 {
-    private Client              client       = new Client();
+    private Client client = new Client();
 
     private static final String TAG = "ClientService";
 
@@ -39,7 +39,11 @@ public class ClientService extends IntentService
             catch (UnknownHostException e)
             {
                 e.printStackTrace();
-                // TODO sent intent for error?
+                Log.e(TAG, "Could not resolve host");
+                Intent localIntent = new Intent(NetworkConstants.BROADCAST_ERROR).putExtra(
+                    NetworkConstants.MESSAGE,
+                    NetworkConstants.ERROR_CLIENT_SOCKET);
+                LocalBroadcastManager.getInstance(this).sendBroadcast(localIntent);
             }
         }
         else if (dataString.equals(NetworkConstants.CLIENT_WRITE))
