@@ -138,7 +138,7 @@ public class ConnectionLobbyActivity extends AppCompatActivity implements Respon
                     Intent intent = new Intent(getBaseContext(), CharacterSelectActivity.class);
                     intent.putExtra("host", host);
                     intent.putExtra("player", (long) 0);
-                    intent.putExtra("numPlayers", (int) playerID);
+                    intent.putExtra("numClients", (int) playerID);
                     startActivity(intent);
                 }
             });

@@ -26,7 +26,7 @@ public class CharacterSelectActivity extends AppCompatActivity implements Respon
     boolean host;
     long    playerID;
     private ResponseReceiver responseReceiver;
-    private int              numPlayers;
+    private int              numClients;
     private int playersReady = 0;
     private Button      btnGo;
     private TextView    status;
@@ -59,13 +59,13 @@ public class CharacterSelectActivity extends AppCompatActivity implements Respon
         {
             // Make sure host can't start game until everyone has picked a character,
             // unless no clients are connected
-            if (numPlayers != 0)
+            if (numClients != 0)
             {
                 btnGo.setEnabled(false);
             }
-            numPlayers = getIntent().getIntExtra("numPlayers", 0);
+            numClients = getIntent().getIntExtra("numClients", 0);
             // Include host when displaying connected players
-            status.setText(1 + "/" + (numPlayers + 1) + " connected");
+            status.setText(1 + "/" + (numClients + 1) + " connected");
         }
 
 
@@ -140,13 +140,13 @@ public class CharacterSelectActivity extends AppCompatActivity implements Respon
         {
             playersReady++;
             // Since default value is 0, allow host to start game
-            // even if numPlayers == 0 and clients are connected
-            if (playersReady >= numPlayers)
+            // even if numClients == 0 and clients are connected
+            if (playersReady >= numClients)
             {
                 btnGo.setEnabled(true);
             }
             // Include host when displaying connected players
-            status.setText((playersReady + 1) + "/" + (numPlayers + 1) + " connected");
+            status.setText((playersReady + 1) + "/" + (numClients + 1) + " connected");
         }
         else if (msg.equals(NetworkConstants.GAME_AR_START))
         {
