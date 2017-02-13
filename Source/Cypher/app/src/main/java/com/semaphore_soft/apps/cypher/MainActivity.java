@@ -66,8 +66,7 @@ public class MainActivity extends AppCompatActivity implements GetNameDialogFrag
         responseReceiver = new ResponseReceiver();
         responseReceiver.setListener(this);
         LocalBroadcastManager.getInstance(this)
-                             .registerReceiver(responseReceiver,
-                                               NetworkConstants.getFilter());
+                             .registerReceiver(responseReceiver, NetworkConstants.getFilter());
 
         Button btnHost = (Button) findViewById(R.id.btnHost);
 
