@@ -37,10 +37,12 @@ public class NetworkConstants
 
     // Constants for read codes
     // Constants for game status updates
-    public static final String GAME_START = "GAME_START";
+    public static final String GAME_START    = "GAME_START";
+    public static final String GAME_READY    = "GAME_READY";
+    public static final String GAME_AR_START = "GAME_AR_START";
     // Constants to use as prefixes to exchange information with other devices
-    public static final String PF_NAME   = "NAME:";
-    public static final String PF_PLAYER = "PLAYER:";
+    public static final String PF_NAME       = "NAME:";
+    public static final String PF_PLAYER     = "PLAYER:";
 
     // Constants for status codes
     public static final String STATUS_SERVER_START   = "Server thread started";
