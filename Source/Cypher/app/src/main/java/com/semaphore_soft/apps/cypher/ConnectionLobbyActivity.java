@@ -3,7 +3,6 @@ package com.semaphore_soft.apps.cypher;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
-import android.support.design.widget.Snackbar;
 import android.support.v4.content.LocalBroadcastManager;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
@@ -58,8 +57,7 @@ public class ConnectionLobbyActivity extends AppCompatActivity implements Respon
         responseReceiver = new ResponseReceiver();
         responseReceiver.setListener(this);
         LocalBroadcastManager.getInstance(this)
-                             .registerReceiver(responseReceiver,
-                                               NetworkConstants.getFilter());
+                             .registerReceiver(responseReceiver, NetworkConstants.getFilter());
 
 
         host = getIntent().getBooleanExtra("host", false);
@@ -134,10 +132,13 @@ public class ConnectionLobbyActivity extends AppCompatActivity implements Respon
                                             NetworkConstants.GAME_START);
                     startService(mServiceIntent);
                     LocalBroadcastManager.getInstance(ConnectionLobbyActivity.this).unregisterReceiver(responseReceiver);
-                    Snackbar.make(view, "Moving to Character Select", Snackbar.LENGTH_LONG).show();
+                    Toast.makeText(ConnectionLobbyActivity.this,
+                                   "Moving to Character Select",
+                                   Toast.LENGTH_SHORT).show();
                     Intent intent = new Intent(getBaseContext(), CharacterSelectActivity.class);
                     intent.putExtra("host", host);
-                    intent.putExtra("player", 0);
+                    intent.putExtra("player", (long) 0);
+                    intent.putExtra("numPlayers", (int) playerID);
                     startActivity(intent);
                 }
             });
