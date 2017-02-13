@@ -14,3 +14,7 @@ _handle death of actors, removal from room, actor table, loot?
 _self targeting targeting type
 
 _dynamically assign room side for player/enemy lines
+
+_rewrite shader/renderer code, write glsl loader?
+
+_comment model loader
