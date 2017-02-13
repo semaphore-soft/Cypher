@@ -248,6 +248,11 @@ public class SimpleShaderProgram extends ShaderProgram
         return GLES20.glGetUniformLocation(shaderProgramHandle, "u_Texture");
     }
 
+    public int getUniformLightPosHandle()
+    {
+        return GLES20.glGetUniformLocation(shaderProgramHandle, "u_LightPos");
+    }
+
     public void render(FloatBuffer vertexBuffer,
                        FloatBuffer colorBuffer,
                        FloatBuffer normalBuffer,
@@ -303,21 +308,11 @@ public class SimpleShaderProgram extends ShaderProgram
 
         GLES20.glEnableVertexAttribArray(getTexCoordinateHandle());
 
+        //GLES20.glUniform3f(getUniformLightPosHandle(), 0.0f, 0.0f, 0.0f);
+
         GLES20.glDrawElements(GLES20.GL_TRIANGLES,
                               numIndices,
                               GLES20.GL_UNSIGNED_SHORT,
                               indexBuffer);
-
-        /*float[] mvpMatrix = new float[16];
-
-        System.arraycopy(modelViewMatrix, 0, mvpMatrix, 0, 16);
-
-        GLES20.glUniformMatrix4fv(getModelViewMatrixHandle(), 1, false, mvpMatrix, 0);
-
-        Matrix.multiplyMM(mvpMatrix, 0, projectionMatrix, 0, mvpMatrix, 0);
-
-        GLES20.glUniformMatrix4fv(getUniformModelViewProjectionMatrixHandle(), 1, false, mvpMatrix, 0);
-
-        GLES20.glDrawArrays(GLES20.GL_TRIANGLES, 0, numIndices);*/
     }
 }

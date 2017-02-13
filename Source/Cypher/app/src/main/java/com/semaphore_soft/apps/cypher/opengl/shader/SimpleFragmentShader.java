@@ -81,7 +81,7 @@ public class SimpleFragmentShader extends BaseFragmentShader
     final String fragmentShader2 =
         "precision mediump float;\n"
 
-        + "uniform vec3 u_LightPos;\n"
+        //+ "uniform vec3 u_LightPos;\n"
         + "uniform sampler2D u_Texture;\n"
 
         + "varying vec3 v_Position;\n"
@@ -92,11 +92,11 @@ public class SimpleFragmentShader extends BaseFragmentShader
 
         + "void main()\n"
         + "{\n"
-        + "   float distance = length(u_LightPos - v_Position);\n"
-        + "   vec3 lightVector = normalize(u_LightPos - v_Position);\n"
-        + "   float diffuse = max(dot(v_Normal, lightVector), 0.0);\n"
-        + "   diffuse = diffuse * (1.0 / (1.0 + (0.10 * distance)));\n"
-        + "   diffuse = diffuse + 0.3;\n"
+        //+ "   float distance = length(u_LightPos - v_Position);\n"
+        //+ "   vec3 lightVector = normalize(u_LightPos - v_Position);\n"
+        //+ "   float diffuse = max(dot(v_Normal, lightVector), 0.1);\n"
+        //+ "   diffuse = diffuse * (1.0 / (1.0 + (0.25 * distance)));\n"
+        //+ "   diffuse = diffuse + 0.3;\n"
         + "   gl_FragColor = (v_Color"
         //+ " * diffuse"
         + " * texture2D(u_Texture, v_TexCoordinate));\n"
