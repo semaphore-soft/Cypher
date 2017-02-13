@@ -18,12 +18,10 @@ import java.util.ArrayList;
 
 public class PlayerIDAdapter extends RecyclerView.Adapter<PlayerIDAdapter.PlayerIDViewHolder>
 {
-    ConnectionLobbyActivity parent;
     ArrayList<PlayerID>     playersList;
 
-    public PlayerIDAdapter(ConnectionLobbyActivity parent, ArrayList<PlayerID> playersList)
+    public PlayerIDAdapter(ArrayList<PlayerID> playersList)
     {
-        this.parent = parent;
         this.playersList = playersList;
     }
 
