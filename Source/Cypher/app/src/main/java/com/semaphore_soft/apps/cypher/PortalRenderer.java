@@ -107,7 +107,7 @@ class PortalRenderer extends ARRendererGLES20
             ShaderProgram characterShaderProgram =
                 new SimpleShaderProgram(playerMarkerModel.getNumIndices(),
                                         new SimpleVertexShader(),
-                                        new SimpleFragmentShader());
+                                        new SimpleFragmentShader(true));
             playerMarkerModel.setShaderProgram(characterShaderProgram);
             characterModels.add(playerMarkerModel);
         }
@@ -125,7 +125,7 @@ class PortalRenderer extends ARRendererGLES20
             ModelLoader.loadModel(context, "models/waypoint.obj", 40.0f);
         ShaderProgram waypointShaderProgram = new SimpleShaderProgram(waypoint.getNumIndices(),
                                                                       new SimpleVertexShader(),
-                                                                      new SimpleFragmentShader());
+                                                                      new SimpleFragmentShader(true));
         waypoint.setShaderProgram(waypointShaderProgram);
         models.put("waypoint", waypoint);
 

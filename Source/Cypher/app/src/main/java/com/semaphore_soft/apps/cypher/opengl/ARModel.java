@@ -27,7 +27,7 @@ public class ARModel
     private ShortBuffer texCoordinateIndexBuffer;
     private ShortBuffer normalIndexBuffer;
 
-    protected boolean textured = false;
+    public boolean textured = false;
     private int textureHandle;
 
     private float size;

@@ -47,6 +47,19 @@ import org.artoolkit.ar.base.rendering.gles20.BaseFragmentShader;
  */
 public class SimpleFragmentShader extends BaseFragmentShader
 {
+    private boolean textured;
+
+    public SimpleFragmentShader()
+    {
+        super();
+        textured = false;
+    }
+
+    public SimpleFragmentShader(boolean textured)
+    {
+        super();
+        this.textured = textured;
+    }
 
     /**
      * We get the color to apply to the rendered geometry from the vertex shader.
@@ -100,7 +113,14 @@ public class SimpleFragmentShader extends BaseFragmentShader
     @Override
     public int configureShader()
     {
-        this.setShaderSource(fragmentShader2);
+        if (textured)
+        {
+            this.setShaderSource(fragmentShader2);
+        }
+        else
+        {
+            this.setShaderSource(fragmentShader);
+        }
         return super.configureShader();
     }
 }
