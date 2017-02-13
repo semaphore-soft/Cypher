@@ -57,8 +57,12 @@ public class CharacterSelectActivity extends AppCompatActivity implements Respon
         btnGo = (Button) findViewById(R.id.btnGo);
         if (host)
         {
-            // Make sure host can't start game until everyone has picked a character
-            btnGo.setEnabled(false);
+            // Make sure host can't start game until everyone has picked a character,
+            // unless no clients are connected
+            if (numPlayers != 0)
+            {
+                btnGo.setEnabled(false);
+            }
             numPlayers = getIntent().getIntExtra("numPlayers", 0);
             // Include host when displaying connected players
             status.setText(1 + "/" + (numPlayers + 1) + " connected");
@@ -135,7 +139,8 @@ public class CharacterSelectActivity extends AppCompatActivity implements Respon
         if (msg.equals(NetworkConstants.GAME_READY))
         {
             playersReady++;
-            // Since default value is 0, allow host to start game even if numPlayers == 0
+            // Since default value is 0, allow host to start game
+            // even if numPlayers == 0 and clients are connected
             if (playersReady >= numPlayers)
             {
                 btnGo.setEnabled(true);
