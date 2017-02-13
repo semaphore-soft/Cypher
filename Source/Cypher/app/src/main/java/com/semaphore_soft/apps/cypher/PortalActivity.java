@@ -1,6 +1,7 @@
 package com.semaphore_soft.apps.cypher;
 
 import android.os.Bundle;
+import android.support.v4.content.LocalBroadcastManager;
 import android.util.Pair;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -15,6 +16,8 @@ import com.semaphore_soft.apps.cypher.game.Item;
 import com.semaphore_soft.apps.cypher.game.Map;
 import com.semaphore_soft.apps.cypher.game.Room;
 import com.semaphore_soft.apps.cypher.game.Special;
+import com.semaphore_soft.apps.cypher.networking.NetworkConstants;
+import com.semaphore_soft.apps.cypher.networking.ResponseReceiver;
 import com.semaphore_soft.apps.cypher.utils.GameStatLoader;
 
 import org.artoolkit.ar.base.ARActivity;
@@ -31,7 +34,8 @@ import static com.semaphore_soft.apps.cypher.utils.CollectionManager.getNextID;
  * Created by rickm on 11/9/2016.
  */
 
-public class PortalActivity extends ARActivity implements PortalRenderer.NewMarkerListener
+public class PortalActivity extends ARActivity implements PortalRenderer.NewMarkerListener,
+                                                          ResponseReceiver.Receiver
 {
     //TODO this class is too large, some methods should be exported
 
@@ -57,13 +61,14 @@ public class PortalActivity extends ARActivity implements PortalRenderer.NewMark
     private Hashtable<Long, Entity>  entities;
     private Hashtable<Long, Item>    items;
     private Map                      map;
+    private ResponseReceiver         responseReceiver;
 
     //GameMaster gameMaster;
 
     @Override
     public void onCreate(Bundle savedInstanceState)
     {
-        super.onCreate(savedInstanceState); //Calls ARActivity's ctor, abstract class of ARBaseLib
+        super.onCreate(savedInstanceState); //Calls ARActivity's actor, abstract class of ARBaseLib
         setContentView(R.layout.main_portal);
 
         overlay_layout = (FrameLayout) findViewById(R.id.overlay_frame);
@@ -84,6 +89,11 @@ public class PortalActivity extends ARActivity implements PortalRenderer.NewMark
         items = new Hashtable<>();
 
         map = new Map();
+
+        responseReceiver = new ResponseReceiver();
+        responseReceiver.setListener(this);
+        LocalBroadcastManager.getInstance(this)
+                             .registerReceiver(responseReceiver, NetworkConstants.getFilter());
 
         setOverlay(OVERLAY_PLAYER_MARKER_SELECT);
 
@@ -1026,6 +1036,24 @@ public class PortalActivity extends ARActivity implements PortalRenderer.NewMark
         }
 
         return res;
+    }
+
+    @Override
+    public void handleRead(String msg)
+    {
+        Toast.makeText(this, "Read: " + msg, Toast.LENGTH_SHORT).show();
+    }
+
+    @Override
+    public void handleStatus(String msg)
+    {
+        Toast.makeText(this, "Status: " + msg, Toast.LENGTH_SHORT).show();
+    }
+
+    @Override
+    public void handleError(String msg)
+    {
+        Toast.makeText(this, "Error: " + msg, Toast.LENGTH_SHORT).show();
     }
 
     /*private class GameMaster extends Thread {
