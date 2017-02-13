@@ -176,7 +176,7 @@ public class MainActivity extends AppCompatActivity implements GetNameDialogFrag
                 break;
             case "cmd_btnJoin":
                 host = false;
-                showGetNameDialog();
+                showConnectDialog();
                 break;
             case "cmd_btnLaunch":
                 Toast.makeText(getApplicationContext(), "Launching AR Activity", Toast.LENGTH_SHORT)

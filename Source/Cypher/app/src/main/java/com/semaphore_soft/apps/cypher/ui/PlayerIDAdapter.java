@@ -7,7 +7,6 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
 
-import com.semaphore_soft.apps.cypher.ConnectionLobbyActivity;
 import com.semaphore_soft.apps.cypher.R;
 
 import java.util.ArrayList;
@@ -18,7 +17,7 @@ import java.util.ArrayList;
 
 public class PlayerIDAdapter extends RecyclerView.Adapter<PlayerIDAdapter.PlayerIDViewHolder>
 {
-    ArrayList<PlayerID>     playersList;
+    ArrayList<PlayerID> playersList;
 
     public PlayerIDAdapter(ArrayList<PlayerID> playersList)
     {

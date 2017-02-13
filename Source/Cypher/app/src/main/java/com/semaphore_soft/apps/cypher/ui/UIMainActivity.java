@@ -39,7 +39,7 @@ public class UIMainActivity extends UIBase
         makeView(R.layout.activity_main);
 
         //Host Button
-        Button btnHost = (Button) view.findViewById(R.id.btnHost);
+        Button btnHost = (Button) findViewById(R.id.btnHost);
         btnHost.setOnClickListener(new View.OnClickListener()
         {
             @Override
@@ -50,7 +50,7 @@ public class UIMainActivity extends UIBase
         });
 
         //Join Button
-        Button btnJoin = (Button) view.findViewById(R.id.btnJoin);
+        Button btnJoin = (Button) findViewById(R.id.btnJoin);
         btnJoin.setOnClickListener(new View.OnClickListener()
         {
             @Override
@@ -61,7 +61,7 @@ public class UIMainActivity extends UIBase
         });
 
         //Launch Button
-        Button btnLaunch = (Button) view.findViewById(R.id.btnLaunch);
+        Button btnLaunch = (Button) findViewById(R.id.btnLaunch);
         btnLaunch.setOnClickListener(new View.OnClickListener()
         {
             @Override

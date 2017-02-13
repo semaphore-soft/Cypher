@@ -5,14 +5,8 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.support.v4.content.LocalBroadcastManager;
 import android.support.v7.app.AppCompatActivity;
-import android.support.v7.widget.LinearLayoutManager;
-import android.support.v7.widget.RecyclerView;
-import android.support.v7.widget.Toolbar;
 import android.util.Log;
-import android.view.View;
-import android.widget.Button;
 import android.widget.FrameLayout;
-import android.widget.TextView;
 import android.widget.Toast;
 
 import com.semaphore_soft.apps.cypher.networking.ClientService;
@@ -21,7 +15,6 @@ import com.semaphore_soft.apps.cypher.networking.ResponseReceiver;
 import com.semaphore_soft.apps.cypher.networking.Server;
 import com.semaphore_soft.apps.cypher.networking.ServerService;
 import com.semaphore_soft.apps.cypher.ui.PlayerID;
-import com.semaphore_soft.apps.cypher.ui.PlayerIDAdapter;
 import com.semaphore_soft.apps.cypher.ui.UIConnectionLobby;
 import com.semaphore_soft.apps.cypher.ui.UIListener;
 
@@ -44,9 +37,6 @@ public class ConnectionLobbyActivity extends AppCompatActivity implements Respon
     long                playerID;
     ArrayList<PlayerID> playersList;
 
-    //private PlayerIDAdapter playerIDAdapter;
-
-    RecyclerView recyclerView;
     private Intent           mServiceIntent;
     private ResponseReceiver responseReceiver;
 
@@ -57,8 +47,6 @@ public class ConnectionLobbyActivity extends AppCompatActivity implements Respon
     {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.empty);
-        Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
-        setSupportActionBar(toolbar);
 
         uiConnectionLobby = new UIConnectionLobby(this);
         ((FrameLayout) findViewById(R.id.empty)).addView(uiConnectionLobby);
@@ -70,24 +58,15 @@ public class ConnectionLobbyActivity extends AppCompatActivity implements Respon
         LocalBroadcastManager.getInstance(this)
                              .registerReceiver(responseReceiver, NetworkConstants.getFilter());
 
-
         host = getIntent().getBooleanExtra("host", false);
-
-        //TextView txtDisplayName = (TextView) findViewById(R.id.txtDisplayName);
-
         name = getIntent().getStringExtra("name");
 
         String welcomeText = "Welcome " + name;
-        //txtDisplayName.setText(welcomeText);
         uiConnectionLobby.setTxtDisplayName(welcomeText);
 
         playersList = new ArrayList<>();
-        addTestPlayers();
         uiConnectionLobby.setPlayersList(playersList);
-
-        //playerIDAdapter = new PlayerIDAdapter(this, playersList);
-        //recyclerView.setAdapter(playerIDAdapter);
-        //Button btnStart = (Button) findViewById(R.id.btnStart);
+        uiConnectionLobby.setHost(host);
 
         if (host)
         {
@@ -120,40 +99,12 @@ public class ConnectionLobbyActivity extends AppCompatActivity implements Respon
                 Log.e("Lobby", ex.toString());
             }
 
-            //TextView ipAddress = (TextView) findViewById(R.id.ip_address);
-            //ipAddress.setText("Your IP Address is: " + ip);
             uiConnectionLobby.setTextIP("Your IP Address is: " + ip);
 
             addPlayer(name, 0);
-
-            btnStart.setEnabled(true);
-
-            btnStart.setOnClickListener(new View.OnClickListener()
-            {
-                @Override
-                public void onClick(View view)
-                {
-                    Server.setAccepting(false);
-                    mServiceIntent.setData(Uri.parse(NetworkConstants.WRITE_ALL));
-                    mServiceIntent.putExtra(NetworkConstants.MSG_EXTRA,
-                                            NetworkConstants.GAME_START);
-                    startService(mServiceIntent);
-                    LocalBroadcastManager.getInstance(ConnectionLobbyActivity.this).unregisterReceiver(responseReceiver);
-                    Toast.makeText(ConnectionLobbyActivity.this,
-                                   "Moving to Character Select",
-                                   Toast.LENGTH_SHORT).show();
-                    Intent intent = new Intent(getBaseContext(), CharacterSelectActivity.class);
-                    intent.putExtra("host", host);
-                    intent.putExtra("player", (long) 0);
-                    intent.putExtra("numPlayers", (int) playerID);
-                    startActivity(intent);
-                }
-            });
         }
         else
         {
-            uiConnectionLobby.setHost(false);
-
             mServiceIntent = new Intent(this, ClientService.class);
             mServiceIntent.setData(Uri.parse(NetworkConstants.CLIENT_WRITE));
             mServiceIntent.putExtra(NetworkConstants.MSG_EXTRA, NetworkConstants.PF_NAME + name);
@@ -167,7 +118,6 @@ public class ConnectionLobbyActivity extends AppCompatActivity implements Respon
         playerID.setID(id);
         playerID.setPlayerName(player);
         playersList.add(playerID);
-        //playerIDAdapter.notifyDataSetChanged();
         uiConnectionLobby.setPlayersList(playersList);
         if (host)
         {
@@ -183,10 +133,20 @@ public class ConnectionLobbyActivity extends AppCompatActivity implements Respon
     {
         switch (cmd) {
             case "cmd_btnStart":
-                Toast.makeText(getApplicationContext(), "Moving to Character Select", Toast.LENGTH_LONG).show();
+                Server.setAccepting(false);
+                mServiceIntent.setData(Uri.parse(NetworkConstants.WRITE_ALL));
+                mServiceIntent.putExtra(NetworkConstants.MSG_EXTRA,
+                                        NetworkConstants.GAME_START);
+                startService(mServiceIntent);
+                LocalBroadcastManager.getInstance(ConnectionLobbyActivity.this)
+                                     .unregisterReceiver(responseReceiver);
+                Toast.makeText(ConnectionLobbyActivity.this,
+                               "Moving to Character Select",
+                               Toast.LENGTH_SHORT).show();
                 Intent intent = new Intent(getBaseContext(), CharacterSelectActivity.class);
                 intent.putExtra("host", host);
-                intent.putExtra("player", playerID);
+                intent.putExtra("player", (long) 0);
+                intent.putExtra("numPlayers", (int) playerID);
                 startActivity(intent);
                 break;
             default:
