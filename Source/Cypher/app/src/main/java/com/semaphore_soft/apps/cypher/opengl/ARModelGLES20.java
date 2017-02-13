@@ -32,13 +32,24 @@ public class ARModelGLES20 extends ARModel implements ARDrawableOpenGLES20
      */
     public void draw(float[] projectionMatrix, float[] modelViewMatrix)
     {
-
         shaderProgram.setProjectionMatrix(projectionMatrix);
         shaderProgram.setModelViewMatrix(modelViewMatrix);
 
-        shaderProgram.render(this.getVertexBuffer(),
-                             this.getColorBuffer(),
-                             this.getIndexBuffer());
+        if (textured)
+        {
+            shaderProgram.render(getVertexBuffer(),
+                                 getColorBuffer(),
+                                 getNormalBuffer(),
+                                 getTexCoordinateBuffer(),
+                                 getVertexIndexBuffer(),
+                                 getTextureHandle());
+        }
+        else
+        {
+            shaderProgram.render(this.getVertexBuffer(),
+                                 this.getColorBuffer(),
+                                 this.getVertexIndexBuffer());
+        }
     }
 
     @Override

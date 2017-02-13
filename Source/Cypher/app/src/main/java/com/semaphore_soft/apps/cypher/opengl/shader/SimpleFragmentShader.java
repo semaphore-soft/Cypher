@@ -65,6 +65,30 @@ public class SimpleFragmentShader extends BaseFragmentShader
         + "   gl_FragColor = v_Color;     \n"     // Pass the color directly through the pipeline.
         + "}                              \n";
 
+    final String fragmentShader2 =
+        "precision mediump float;\n"
+
+        + "uniform vec3 u_LightPos;\n"
+        + "uniform sampler2D u_Texture;\n"
+
+        + "varying vec3 v_Position;\n"
+        + "varying vec4 v_Color;\n"
+
+        + "varying vec3 v_Normal;\n"
+        + "varying vec2 v_TexCoordinate;\n"
+
+        + "void main()\n"
+        + "{\n"
+        + "   float distance = length(u_LightPos - v_Position);\n"
+        + "   vec3 lightVector = normalize(u_LightPos - v_Position);\n"
+        + "   float diffuse = max(dot(v_Normal, lightVector), 0.0);\n"
+        + "   diffuse = diffuse * (1.0 / (1.0 + (0.10 * distance)));\n"
+        + "   diffuse = diffuse + 0.3;\n"
+        + "   gl_FragColor = (v_Color"
+        //+ " * diffuse"
+        + " * texture2D(u_Texture, v_TexCoordinate));\n"
+        + "}\n";
+
     /**
      * This method gets called by the {@link org.artoolkit.ar.base.rendering.gles20.BaseShaderProgram}
      * during initializing the shaders.
@@ -76,7 +100,7 @@ public class SimpleFragmentShader extends BaseFragmentShader
     @Override
     public int configureShader()
     {
-        this.setShaderSource(fragmentShader);
+        this.setShaderSource(fragmentShader2);
         return super.configureShader();
     }
 }

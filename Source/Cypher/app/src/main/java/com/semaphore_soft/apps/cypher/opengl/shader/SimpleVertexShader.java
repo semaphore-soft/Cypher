@@ -79,6 +79,34 @@ public class SimpleVertexShader extends BaseVertexShader
         // Multiply the vertex by the matrix to get the final point in
         + "}                              \n";    // normalized screen coordinates.
 
+    final String vertexShader2 =
+        "uniform mat4 u_MVPMatrix;\n"
+
+        + "uniform mat4 " + OpenGLShader.projectionMatrixString + ";\n"
+        + "uniform mat4 " + OpenGLShader.modelViewMatrixString + ";\n"
+
+        + "attribute vec4 " + OpenGLShader.positionVectorString + " ;\n"
+        + "attribute vec4 a_Color;\n"
+        + "attribute vec3 a_Normal;\n"
+        + "attribute vec2 a_TexCoordinate;\n"
+
+        + "varying vec3 v_Position;\n"
+        + "varying vec4 v_Color;\n"
+        + "varying vec3 v_Normal;\n"
+        + "varying vec2 v_TexCoordinate;\n"
+
+        + "void main()\n"
+        + "{\n"
+        + "   v_Position = vec3(" + OpenGLShader.modelViewMatrixString + " * " +
+        OpenGLShader.positionVectorString + ");\n"
+        + "   v_Color = a_Color;\n"
+        + "   v_TexCoordinate = a_TexCoordinate;\n"
+        + "   v_Normal = vec3(" + OpenGLShader.modelViewMatrixString + " * vec4(a_Normal, 0.0));\n"
+        + "   vec4 p = " + OpenGLShader.modelViewMatrixString + " * " +
+        OpenGLShader.positionVectorString + ";\n "
+        + "   gl_Position = " + OpenGLShader.projectionMatrixString + " * p;\n"
+        + "}\n";
+
     @Override
     /**
      * This method gets called by the {@link org.artoolkit.ar.base.rendering.gles20.BaseShaderProgram}
@@ -90,7 +118,7 @@ public class SimpleVertexShader extends BaseVertexShader
      */
     public int configureShader()
     {
-        this.setShaderSource(vertexShader);
+        this.setShaderSource(vertexShader2);
         return super.configureShader();
     }
 }

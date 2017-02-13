@@ -496,20 +496,34 @@ class PortalRenderer extends ARRendererGLES20
         arRoom.removeActors();
         for (Long id : room.getResidentActors())
         {
-            String name = actors.get(id).getName();
-            System.out.println("adding actor:" + id + ":" + name + " to room:" + room.getId());
-            Actor actor = actors.get(id);
-
-            if (name != null && models.keySet().contains(name))
+            if (actors.keySet().contains(id))
             {
-                if (actor.isPlayer())
+                String name = actors.get(id).getName();
+                System.out.println("adding actor:" + id + ":" + name + " to room:" + room.getId());
+                Actor actor = actors.get(id);
+
+                if (name != null && models.keySet().contains(name))
                 {
-                    arRoom.addPlayer(id, models.get(name));
+                    if (actor.isPlayer())
+                    {
+                        arRoom.addPlayer(id, models.get(name));
+                    }
+                    else
+                    {
+                        arRoom.addEnemy(id, models.get(name));
+                    }
                 }
-                else
+                /*else
                 {
-                    arRoom.addEnemy(id, models.get(name));
-                }
+                    if (actor.isPlayer())
+                    {
+                        arRoom.addPlayer(id, models.get("error"));
+                    }
+                    else
+                    {
+                        arRoom.addEnemy(id, models.get("error"));
+                    }
+                }*/
             }
         }
     }

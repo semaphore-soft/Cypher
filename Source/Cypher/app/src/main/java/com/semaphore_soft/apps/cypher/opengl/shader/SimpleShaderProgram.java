@@ -200,16 +200,15 @@ public class SimpleShaderProgram extends ShaderProgram
 
         vertexBuffer.position(0);
 
-        //camPosition.length * 4 bytes per float
         GLES20.glVertexAttribPointer(this.getPositionHandle(),
                                      positionDataSize,
                                      GLES20.GL_FLOAT,
                                      false,
                                      positionStrideBytes,
                                      vertexBuffer);
+
         GLES20.glEnableVertexAttribArray(this.getPositionHandle());
 
-        // Pass in the color information
         colorBuffer.position(0);
 
         GLES20.glVertexAttribPointer(this.getColorHandle(), colorDataSize, GLES20.GL_FLOAT, false,
@@ -217,14 +216,108 @@ public class SimpleShaderProgram extends ShaderProgram
 
         GLES20.glEnableVertexAttribArray(this.getColorHandle());
 
-        //Finally draw the geometry as triangles
-        //The geometry consists of 36 points each represented by a x,y,z vector
-        //The index buffer tells the renderer how the vector points are combined together.
-        //eg. combine vertex 1,2,3 for the first triangle and 2,3,4 for the next triangle, ...
+        GLES20.glDrawElements(GLES20.GL_TRIANGLES,
+                              numIndices,
+                              GLES20.GL_UNSIGNED_SHORT,
+                              indexBuffer);
+    }
+
+    public int getNormalHandle()
+    {
+        return GLES20.glGetAttribLocation(shaderProgramHandle, "a_Normal");
+    }
+
+    protected final int normalDataSize    = 3;
+    protected final int normalStrideBytes = normalDataSize * mBytesPerFloat;
+
+    public int getTexCoordinateHandle()
+    {
+        return GLES20.glGetAttribLocation(shaderProgramHandle, "a_TexCoordinate");
+    }
+
+    protected final int texCoordinateDataSize    = 2;
+    protected final int texCoordinateStrideBytes = texCoordinateDataSize * mBytesPerFloat;
+
+    public int getUniformModelViewProjectionMatrixHandle()
+    {
+        return GLES20.glGetUniformLocation(shaderProgramHandle, "u_MVPMatrix");
+    }
+
+    public int getUniformTextureHandle()
+    {
+        return GLES20.glGetUniformLocation(shaderProgramHandle, "u_Texture");
+    }
+
+    public void render(FloatBuffer vertexBuffer,
+                       FloatBuffer colorBuffer,
+                       FloatBuffer normalBuffer,
+                       FloatBuffer texCoordinateBuffer,
+                       ShortBuffer indexBuffer,
+                       int textureHandle)
+    {
+        setupShaderUsage();
+
+        GLES20.glActiveTexture(GLES20.GL_TEXTURE0);
+
+        GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, textureHandle);
+
+        GLES20.glUniform1i(getUniformTextureHandle(), 0);
+
+        vertexBuffer.position(0);
+
+        GLES20.glVertexAttribPointer(getPositionHandle(),
+                                     positionDataSize,
+                                     GLES20.GL_FLOAT,
+                                     false,
+                                     positionStrideBytes,
+                                     vertexBuffer);
+
+        GLES20.glEnableVertexAttribArray(getPositionHandle());
+
+        colorBuffer.position(0);
+
+        GLES20.glVertexAttribPointer(getColorHandle(), colorDataSize, GLES20.GL_FLOAT, false,
+                                     colorStrideBytes, colorBuffer);
+
+        GLES20.glEnableVertexAttribArray(getColorHandle());
+
+        normalBuffer.position(0);
+
+        GLES20.glVertexAttribPointer(getNormalHandle(),
+                                     normalDataSize,
+                                     GLES20.GL_FLOAT,
+                                     false,
+                                     normalStrideBytes,
+                                     normalBuffer);
+
+        GLES20.glEnableVertexAttribArray(getNormalHandle());
+
+        texCoordinateBuffer.position(0);
+
+        GLES20.glVertexAttribPointer(getTexCoordinateHandle(),
+                                     texCoordinateDataSize,
+                                     GLES20.GL_FLOAT,
+                                     false,
+                                     texCoordinateStrideBytes,
+                                     texCoordinateBuffer);
+
+        GLES20.glEnableVertexAttribArray(getTexCoordinateHandle());
+
         GLES20.glDrawElements(GLES20.GL_TRIANGLES,
                               numIndices,
                               GLES20.GL_UNSIGNED_SHORT,
                               indexBuffer);
 
+        /*float[] mvpMatrix = new float[16];
+
+        System.arraycopy(modelViewMatrix, 0, mvpMatrix, 0, 16);
+
+        GLES20.glUniformMatrix4fv(getModelViewMatrixHandle(), 1, false, mvpMatrix, 0);
+
+        Matrix.multiplyMM(mvpMatrix, 0, projectionMatrix, 0, mvpMatrix, 0);
+
+        GLES20.glUniformMatrix4fv(getUniformModelViewProjectionMatrixHandle(), 1, false, mvpMatrix, 0);
+
+        GLES20.glDrawArrays(GLES20.GL_TRIANGLES, 0, numIndices);*/
     }
 }

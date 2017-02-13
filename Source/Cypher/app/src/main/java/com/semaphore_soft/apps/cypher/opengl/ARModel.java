@@ -21,7 +21,14 @@ public class ARModel
 
     private FloatBuffer vertexBuffer;
     private FloatBuffer colorBuffer;
-    private ShortBuffer indexBuffer;
+    private FloatBuffer normalBuffer;
+    private FloatBuffer texCoordinateBuffer;
+    private ShortBuffer vertexIndexBuffer;
+    private ShortBuffer texCoordinateIndexBuffer;
+    private ShortBuffer normalIndexBuffer;
+
+    protected boolean textured = false;
+    private int textureHandle;
 
     private float size;
 
@@ -45,9 +52,19 @@ public class ARModel
         return this.colorBuffer;
     }
 
-    public ShortBuffer getIndexBuffer()
+    public FloatBuffer getNormalBuffer()
     {
-        return this.indexBuffer;
+        return normalBuffer;
+    }
+
+    public FloatBuffer getTexCoordinateBuffer()
+    {
+        return texCoordinateBuffer;
+    }
+
+    public ShortBuffer getVertexIndexBuffer()
+    {
+        return this.vertexIndexBuffer;
     }
 
     public void makeVertexBuffer(ArrayList<Float> vertices)
@@ -64,20 +81,6 @@ public class ARModel
         vertexBuffer = RenderUtils.buildFloatBuffer(vertexArray);
 
         NUM_VERTICES = vertexArray.length;
-    }
-
-    public void makeIndexBuffer(ArrayList<Short> indices)
-    {
-        short[] indexArray = new short[indices.size()];
-
-        for (int i = 0; i < indexArray.length; ++i)
-        {
-            indexArray[i] = indices.get(i);
-        }
-
-        indexBuffer = RenderUtils.buildShortBuffer(indexArray);
-
-        NUM_INDICES = indexArray.length;
     }
 
     public void makeColorBuffer()
@@ -97,6 +100,80 @@ public class ARModel
         colorBuffer = RenderUtils.buildFloatBuffer(colorArray);
     }
 
+    public void makeNormalBuffer(ArrayList<Float> normals)
+    {
+        float[] normalArray = new float[normals.size()];
+
+        for (int i = 0; i < normalArray.length; ++i)
+        {
+            normalArray[i] = normals.get(i);
+        }
+
+        normalBuffer = RenderUtils.buildFloatBuffer(normalArray);
+    }
+
+    public void makeTexCoordinateBuffer(ArrayList<Float> texCoordinates)
+    {
+        float[] texCoordinateArray = new float[texCoordinates.size()];
+
+        for (int i = 0; i < texCoordinateArray.length; ++i)
+        {
+            texCoordinateArray[i] = texCoordinates.get(i);
+        }
+
+        texCoordinateBuffer = RenderUtils.buildFloatBuffer(texCoordinateArray);
+
+        textured = true;
+    }
+
+    public void makeVertexIndexBuffer(ArrayList<Short> indices)
+    {
+        short[] indexArray = new short[indices.size()];
+
+        for (int i = 0; i < indexArray.length; ++i)
+        {
+            indexArray[i] = indices.get(i);
+        }
+
+        vertexIndexBuffer = RenderUtils.buildShortBuffer(indexArray);
+
+        NUM_INDICES = indexArray.length;
+    }
+
+    public void makeTexCoordinateIndexBuffer(ArrayList<Short> indices)
+    {
+        short[] indexArray = new short[indices.size()];
+
+        for (int i = 0; i < indexArray.length; ++i)
+        {
+            indexArray[i] = indices.get(i);
+        }
+
+        texCoordinateIndexBuffer = RenderUtils.buildShortBuffer(indexArray);
+    }
+
+    public void makeNormalIndexBuffer(ArrayList<Short> indices)
+    {
+        short[] indexArray = new short[indices.size()];
+
+        for (int i = 0; i < indexArray.length; ++i)
+        {
+            indexArray[i] = indices.get(i);
+        }
+
+        normalIndexBuffer = RenderUtils.buildShortBuffer(indexArray);
+    }
+
+    public void setTextureHandle(int textureHandle)
+    {
+        this.textureHandle = textureHandle;
+    }
+
+    public int getTextureHandle()
+    {
+        return textureHandle;
+    }
+
     public void draw(GL10 unused)
     {
         GLES10.glColorPointer(4, GLES10.GL_FLOAT, 0, colorBuffer);
@@ -106,7 +183,7 @@ public class ARModel
         GLES10.glEnableClientState(GLES10.GL_VERTEX_ARRAY);
 
         GLES10.glDrawElements(GLES10.GL_TRIANGLES,
-                              NUM_INDICES, GLES10.GL_UNSIGNED_BYTE, indexBuffer);
+                              NUM_INDICES, GLES10.GL_UNSIGNED_BYTE, vertexIndexBuffer);
 
         GLES10.glDisableClientState(GLES10.GL_COLOR_ARRAY);
         GLES10.glDisableClientState(GLES10.GL_VERTEX_ARRAY);
