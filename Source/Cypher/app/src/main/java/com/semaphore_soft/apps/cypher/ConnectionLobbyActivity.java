@@ -119,7 +119,7 @@ public class ConnectionLobbyActivity extends AppCompatActivity implements Respon
             TextView ipAddress = (TextView) findViewById(R.id.ip_address);
             ipAddress.setText("Your IP Address is: " + ip);
 
-            addPlayer(name, (int) playerID);
+            addPlayer(name, 0);
 
             btnStart.setEnabled(true);
 
@@ -137,7 +137,7 @@ public class ConnectionLobbyActivity extends AppCompatActivity implements Respon
                     Snackbar.make(view, "Moving to Character Select", Snackbar.LENGTH_LONG).show();
                     Intent intent = new Intent(getBaseContext(), CharacterSelectActivity.class);
                     intent.putExtra("host", host);
-                    intent.putExtra("player", playerID);
+                    intent.putExtra("player", 0);
                     startActivity(intent);
                 }
             });
