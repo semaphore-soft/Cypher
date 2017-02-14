@@ -59,6 +59,19 @@ public class ClientService extends IntentService
                 Log.d(TAG, "clientThread null");
             }
         }
+        else if (dataString.equals(NetworkConstants.CLIENT_RECONNECT))
+        {
+            Client.ClientThread clientThread = client.getClientThread();
+            if (clientThread != null)
+            {
+                Log.d(TAG, "reconnecting...");
+                clientThread.reconnectSocket();
+            }
+            else
+            {
+                Log.d(TAG, "clientThread null");
+            }
+        }
         else if (dataString.equals(NetworkConstants.THREAD_READ))
         {
             Log.d(TAG, "Sending thread read");

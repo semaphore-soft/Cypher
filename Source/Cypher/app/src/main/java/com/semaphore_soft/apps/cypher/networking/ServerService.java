@@ -42,6 +42,11 @@ public class ServerService extends IntentService
             Log.d(TAG, "Writing to all clients");
             serverThread.writeAll(intent.getStringExtra(NetworkConstants.MSG_EXTRA));
         }
+        else if (dataString.equals(NetworkConstants.SERVER_RECONNECT))
+        {
+            Log.d(TAG, "reconnecting...");
+            serverThread.reconnectClient();
+        }
         else if (dataString.equals(NetworkConstants.THREAD_READ))
         {
             Log.d(TAG, "Sending thread read");

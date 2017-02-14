@@ -25,9 +25,11 @@ public class Server
 {
     private static ArrayList<ClientHandler> clients        = new ArrayList<>();
     private static Boolean                  accepting      = false;
+    private static ServerSocket             serverSocket   = null;
     private        Context                  mContext       = MainApplication.getInstance()
-                                                                     .getApplicationContext();
-    private        Intent                   mServiceIntent = new Intent(mContext, ServerService.class);
+                                                                            .getApplicationContext();
+    private        Intent                   mServiceIntent =
+        new Intent(mContext, ServerService.class);
     private        int                      maxPlayers     = 4;
 
 
@@ -69,10 +71,38 @@ public class Server
         }
     }
 
+    public void reconnectClient()
+    {
+        // Assume only one client needs to reconnect at a time
+        maxPlayers = 1;
+        if (serverSocket != null)
+        {
+            try
+            {
+                Log.i("ClientHandler", "Waiting on accept");
+                mServiceIntent.setData(Uri.parse(NetworkConstants.THREAD_UPDATE));
+                mServiceIntent.putExtra(NetworkConstants.MSG_EXTRA,
+                                        NetworkConstants.STATUS_SERVER_WAIT);
+                mContext.startService(mServiceIntent);
+
+                Socket        mySocket     = serverSocket.accept();
+                ClientHandler serverThread = new ClientHandler(mySocket);
+                clients.add(serverThread);
+                serverThread.start();
+            }
+            catch (SocketException e)
+            {
+                Log.i("AcceptorThread", "Socket closed");
+            }
+            catch (IOException e)
+            {
+                e.printStackTrace();
+            }
+        }
+    }
+
     private class AcceptorThread extends Thread
     {
-        // The local server socket
-        ServerSocket serverSocket = null;
         Socket mySocket;
 
         public AcceptorThread()
@@ -96,8 +126,8 @@ public class Server
         public void run()
         {
             accepting = true;
-            int id = 0;
-            while (accepting && id < maxPlayers - 1)
+            int index = 0;
+            while (accepting && index < maxPlayers - 1)
             {
                 try
                 {
@@ -111,7 +141,7 @@ public class Server
                     ClientHandler serverThread = new ClientHandler(mySocket);
                     clients.add(serverThread);
                     serverThread.start();
-                    id++;
+                    index++;
                 }
                 catch (SocketException e)
                 {
@@ -159,7 +189,7 @@ public class Server
             {
                 DataOutputStream out = new DataOutputStream(mySocket.getOutputStream());
                 out.writeUTF(str);
-                // flush after write or inputStream will hang on read
+                // Flush after write or inputStream will hang on read
                 out.flush();
                 Log.d("ClientHandler", "sent message: " + str);
             }
@@ -188,6 +218,8 @@ public class Server
             }
             catch (IOException e)
             {
+                // Remove bad socket
+                clients.remove(this);
                 e.printStackTrace();
                 running = false;
             }

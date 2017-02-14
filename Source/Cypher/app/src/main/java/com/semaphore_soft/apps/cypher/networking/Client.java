@@ -13,6 +13,7 @@ import java.io.EOFException;
 import java.io.IOException;
 import java.net.InetAddress;
 import java.net.Socket;
+import java.net.SocketException;
 
 /**
  * Created by Evan on 2/6/2017.
@@ -25,7 +26,6 @@ public class Client
                                                     .getApplicationContext();
     private        Intent       mServiceIntent = new Intent(mContext, ClientService.class);
     private static ClientThread clientThread   = null;
-
 
     public Client()
     {
@@ -46,14 +46,16 @@ public class Client
     public class ClientThread extends Thread
     {
         Socket mySocket = null;
-        private boolean running = true;
+        private boolean     running     = true;
+        private InetAddress inetAddress = null;
 
         public ClientThread(InetAddress address)
         {
             try
             {
-                // creates and connects to address at specified port
+                // Creates and connects to address at specified port
                 mySocket = new Socket(address, NetworkConstants.SERVER_PORT);
+                inetAddress = address;
             }
             catch (IOException e)
             {
@@ -93,7 +95,7 @@ public class Client
             {
                 DataOutputStream out = new DataOutputStream(mySocket.getOutputStream());
                 out.writeUTF(str);
-                // flush after write or inputStream will hang on read
+                // Flush after write or inputStream will hang on read
                 out.flush();
                 Log.d("ClientThread", "sent message: " + str);
             }
@@ -122,6 +124,13 @@ public class Client
             }
             catch (IOException e)
             {
+                if (e instanceof SocketException)
+                {
+                    mServiceIntent.setData(Uri.parse(NetworkConstants.THREAD_ERROR));
+                    mServiceIntent.putExtra(NetworkConstants.MSG_EXTRA,
+                                            NetworkConstants.ERROR_DISCONNECT_CLIENT);
+                    mContext.startService(mServiceIntent);
+                }
                 e.printStackTrace();
                 running = false;
             }
@@ -134,6 +143,11 @@ public class Client
             mServiceIntent.setData(Uri.parse(NetworkConstants.THREAD_READ));
             mServiceIntent.putExtra(NetworkConstants.MSG_EXTRA, msg);
             mContext.startService(mServiceIntent);
+        }
+
+        public void reconnectSocket()
+        {
+            startClient(inetAddress);
         }
     }
 }

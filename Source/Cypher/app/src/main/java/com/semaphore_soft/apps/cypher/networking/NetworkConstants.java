@@ -21,14 +21,17 @@ public class NetworkConstants
     public static final String MESSAGE = "com.semaphore_soft.apps.cypher.MESSAGE";
 
     // Constants for client and server services - used like methods by activities
-    public static final String SETUP_SERVER    = "SERVER_SETUP";
-    public static final String SETUP_CLIENT    = "CLIENT_SETUP";
-    public static final String WRITE_TO_CLIENT = "SINGLE_WRITE";
-    public static final String WRITE_ALL       = "WRITE_ALL";
-    public static final String CLIENT_WRITE    = "CLIENT_WRITE";
-    public static final String THREAD_READ     = "THREAD_READ";
-    public static final String THREAD_UPDATE   = "THREAD_UPDATE";
-    public static final String THREAD_ERROR    = "THREAD_ERROR";
+    public static final String SETUP_SERVER     = "SERVER_SETUP";
+    public static final String SETUP_CLIENT     = "CLIENT_SETUP";
+    public static final String WRITE_TO_CLIENT  = "SINGLE_WRITE";
+    public static final String WRITE_ALL        = "WRITE_ALL";
+    public static final String CLIENT_WRITE     = "CLIENT_WRITE";
+    public static final String CLIENT_RECONNECT = "CLIENT_RECONNECT";
+    public static final String SERVER_RECONNECT = "SERVER_RECONNECT";
+    public static final String THREAD_READ      = "THREAD_READ";
+    public static final String THREAD_UPDATE    = "THREAD_UPDATE";
+    public static final String THREAD_ERROR     = "THREAD_ERROR";
+
 
     // Constants for intent extras - used like parameters by activities
     public static final String MSG_EXTRA   = "message";
@@ -50,9 +53,11 @@ public class NetworkConstants
     public static final String STATUS_SERVER_WAIT    = "Waiting on accept";
 
     // Constants for error codes
-    public static final String ERROR_CLIENT_SOCKET = "Failed to start socket";
-    public static final String ERROR_SERVER_START  = "Failed to start server";
-    public static final String ERROR_WRITE         = "Error writing to socket";
+    public static final String ERROR_CLIENT_SOCKET     = "Failed to start socket";
+    public static final String ERROR_SERVER_START      = "Failed to start server";
+    public static final String ERROR_WRITE             = "Error writing to socket";
+    public static final String ERROR_DISCONNECT_CLIENT = "Socket has been disconnected";
+    public static final String ERROR_DISCONNECT_SERVER = "Client had been disconnected";
 
     // Port should be between 49152-65535
     public final static int SERVER_PORT = 58008;
