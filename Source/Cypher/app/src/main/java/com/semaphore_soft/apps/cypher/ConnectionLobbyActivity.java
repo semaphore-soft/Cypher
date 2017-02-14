@@ -127,6 +127,7 @@ public class ConnectionLobbyActivity extends AppCompatActivity implements Respon
                 public void onClick(View view)
                 {
                     Server.setAccepting(false);
+                    // Service intent initialized by addPlayer
                     mServiceIntent.setData(Uri.parse(NetworkConstants.WRITE_ALL));
                     mServiceIntent.putExtra(NetworkConstants.MSG_EXTRA,
                                             NetworkConstants.GAME_START);

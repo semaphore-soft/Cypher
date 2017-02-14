@@ -108,7 +108,7 @@ public class Server
                     mContext.startService(mServiceIntent);
 
                     mySocket = serverSocket.accept();
-                    ClientHandler serverThread = new ClientHandler(mySocket, id);
+                    ClientHandler serverThread = new ClientHandler(mySocket);
                     clients.add(serverThread);
                     serverThread.start();
                     id++;
@@ -129,14 +129,12 @@ public class Server
     {
         // The local server socket
         Socket mySocket;
-        int    id;
 
         private boolean running = true;
 
-        public ClientHandler(Socket socket, int id)
+        public ClientHandler(Socket socket)
         {
             mySocket = socket;
-            this.id = id;
             mServiceIntent.setData(Uri.parse(NetworkConstants.THREAD_UPDATE));
             mServiceIntent.putExtra(NetworkConstants.MSG_EXTRA,
                                     NetworkConstants.STATUS_SERVER_START);
