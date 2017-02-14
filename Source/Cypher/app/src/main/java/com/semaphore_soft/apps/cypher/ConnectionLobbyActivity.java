@@ -242,6 +242,7 @@ public class ConnectionLobbyActivity extends AppCompatActivity implements Respon
                     mServiceIntent = new Intent(ConnectionLobbyActivity.this, ClientService.class);
                     mServiceIntent.setData(Uri.parse(NetworkConstants.CLIENT_RECONNECT));
                     startService(mServiceIntent);
+                    playersList.clear();
                     dialogInterface.dismiss();
                 }
             });
