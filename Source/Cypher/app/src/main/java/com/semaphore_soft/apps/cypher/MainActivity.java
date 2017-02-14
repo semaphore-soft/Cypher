@@ -25,6 +25,8 @@ import com.semaphore_soft.apps.cypher.networking.ServerService;
 import com.semaphore_soft.apps.cypher.ui.ConnectFragment;
 import com.semaphore_soft.apps.cypher.ui.GetNameDialogFragment;
 
+import org.artoolkit.ar.base.camera.CameraPreferencesActivity;
+
 public class MainActivity extends AppCompatActivity implements GetNameDialogFragment.GetNameDialogListener,
                                                                ConnectFragment.Callback,
                                                                ResponseReceiver.Receiver
@@ -126,6 +128,7 @@ public class MainActivity extends AppCompatActivity implements GetNameDialogFrag
 
         if (id == R.id.action_settings)
         {
+            startActivity(new Intent(this, CameraPreferencesActivity.class));
             return true;
         }
 
