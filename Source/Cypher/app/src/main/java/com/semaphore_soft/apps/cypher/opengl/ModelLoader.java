@@ -133,9 +133,6 @@ public class ModelLoader
                     normalsInVertexOrder.add(0.0f);
                 }
 
-                System.out.println(texCoordinatesInVertexOrder.size());
-                System.out.println(normalsInVertexOrder.size());
-
                 if (texCoordinates.size() > 0)
                 {
                     for (short index : texCoordinatesByVertexIndex.keySet())
@@ -160,8 +157,11 @@ public class ModelLoader
 
                 System.out.println("closed file");
 
-                System.out.println("verts: " + vertices.size() / 3);
-                System.out.println("tris: " + vertexIndices.size() / 3);
+                System.out.println("indices: " + vertexIndices.size());
+                System.out.println("vertices: " + vertices.size() / VERTEX_SIZE);
+                System.out.println(
+                    "texCoordinates: " + texCoordinatesInVertexOrder.size() / TEX_COORDINATE_SIZE);
+                System.out.println("normals: " + normalsInVertexOrder.size() / NORMAL_SIZE);
 
                 System.out.println("making opengl object");
 

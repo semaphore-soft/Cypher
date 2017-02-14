@@ -8,16 +8,13 @@ import com.semaphore_soft.apps.cypher.game.Actor;
 import com.semaphore_soft.apps.cypher.game.Room;
 import com.semaphore_soft.apps.cypher.opengl.ARModelGLES20;
 import com.semaphore_soft.apps.cypher.opengl.ARRoom;
-import com.semaphore_soft.apps.cypher.opengl.ARRoomProto;
 import com.semaphore_soft.apps.cypher.opengl.ModelLoader;
-import com.semaphore_soft.apps.cypher.opengl.shader.SimpleFragmentShader;
-import com.semaphore_soft.apps.cypher.opengl.shader.SimpleShaderProgram;
-import com.semaphore_soft.apps.cypher.opengl.shader.SimpleVertexShader;
+import com.semaphore_soft.apps.cypher.opengl.shader.DynamicShaderProgram;
+import com.semaphore_soft.apps.cypher.opengl.shader.ShaderLoader;
 import com.semaphore_soft.apps.cypher.utils.GameStatLoader;
 
 import org.artoolkit.ar.base.ARToolKit;
 import org.artoolkit.ar.base.rendering.gles20.ARRendererGLES20;
-import org.artoolkit.ar.base.rendering.gles20.ShaderProgram;
 
 import java.util.ArrayList;
 import java.util.Hashtable;
@@ -42,8 +39,6 @@ class PortalRenderer extends ARRendererGLES20
     private Hashtable<String, ARModelGLES20> models;
 
     private Hashtable<Integer, ARRoom> arRooms;
-
-    private SimpleShaderProgram roomShaderProgram;
 
     public void setContext(Context context)
     {
@@ -102,20 +97,18 @@ class PortalRenderer extends ARRendererGLES20
         {
             ARModelGLES20 playerMarkerModel =
                 ModelLoader.loadModel(context, "models/waypoint.obj", 40.0f);
-            //new ARModelGLES20(40.0f, 0.0f, 0.0f, 0.0f, "models/garbage_man.obj", context);
             playerMarkerModel.setCharacter(i);
-            ShaderProgram characterShaderProgram =
-                new SimpleShaderProgram(playerMarkerModel.getNumIndices(),
-                                        new SimpleVertexShader(),
-                                        new SimpleFragmentShader(true));
+            DynamicShaderProgram characterShaderProgram =
+                new DynamicShaderProgram(ShaderLoader.createShader(context,
+                                                                   "shaders/vertexShaderTextured.glsl",
+                                                                   GLES20.GL_VERTEX_SHADER),
+                                         ShaderLoader.createShader(context,
+                                                                   "shaders/fragmentShaderTextured.glsl",
+                                                                   GLES20.GL_FRAGMENT_SHADER),
+                                         new String[]{"a_Position", "a_Color", "a_Normal", "a_TexCoordinate"});
             playerMarkerModel.setShaderProgram(characterShaderProgram);
             characterModels.add(playerMarkerModel);
         }
-
-        roomShaderProgram =
-            new SimpleShaderProgram(ARRoomProto.NUM_INDICES,
-                                    new SimpleVertexShader(),
-                                    new SimpleFragmentShader());
 
         arRooms = new Hashtable<>();
 
@@ -123,9 +116,14 @@ class PortalRenderer extends ARRendererGLES20
 
         ARModelGLES20 waypoint =
             ModelLoader.loadModel(context, "models/waypoint.obj", 40.0f);
-        ShaderProgram waypointShaderProgram = new SimpleShaderProgram(waypoint.getNumIndices(),
-                                                                      new SimpleVertexShader(),
-                                                                      new SimpleFragmentShader(true));
+        DynamicShaderProgram waypointShaderProgram =
+            new DynamicShaderProgram(ShaderLoader.createShader(context,
+                                                               "shaders/vertexShaderTextured.glsl",
+                                                               GLES20.GL_VERTEX_SHADER),
+                                     ShaderLoader.createShader(context,
+                                                               "shaders/fragmentShaderTextured.glsl",
+                                                               GLES20.GL_FRAGMENT_SHADER),
+                                     new String[]{"a_Position", "a_Color", "a_Normal", "a_TexCoordinate"});
         waypoint.setShaderProgram(waypointShaderProgram);
         models.put("waypoint", waypoint);
 
@@ -138,10 +136,14 @@ class PortalRenderer extends ARRendererGLES20
                     ModelLoader.loadModel(context, "models/actors/" + name + ".obj");
                 if (actorModel != null)
                 {
-                    ShaderProgram actorShaderProgram =
-                        new SimpleShaderProgram(actorModel.getNumIndices(),
-                                                new SimpleVertexShader(),
-                                                new SimpleFragmentShader());
+                    DynamicShaderProgram actorShaderProgram =
+                        new DynamicShaderProgram(ShaderLoader.createShader(context,
+                                                                           "shaders/vertexShaderUntextured.glsl",
+                                                                           GLES20.GL_VERTEX_SHADER),
+                                                 ShaderLoader.createShader(context,
+                                                                           "shaders/fragmentShaderUntextured.glsl",
+                                                                           GLES20.GL_FRAGMENT_SHADER),
+                                                 new String[]{"a_Position", "a_Color", "a_Normal"});
                     actorModel.setShaderProgram(actorShaderProgram);
                     models.put(name, actorModel);
                 }
@@ -150,39 +152,56 @@ class PortalRenderer extends ARRendererGLES20
 
         ARModelGLES20 roomBase =
             ModelLoader.loadModel(context, "models/room_base.obj", 120.0f);
-        ShaderProgram roomBaseShaderProgram = new SimpleShaderProgram(roomBase.getNumIndices(),
-                                                                      new SimpleVertexShader(),
-                                                                      new SimpleFragmentShader());
+        DynamicShaderProgram roomBaseShaderProgram =
+            new DynamicShaderProgram(ShaderLoader.createShader(context,
+                                                               "shaders/vertexShaderUntextured.glsl",
+                                                               GLES20.GL_VERTEX_SHADER),
+                                     ShaderLoader.createShader(context,
+                                                               "shaders/fragmentShaderUntextured.glsl",
+                                                               GLES20.GL_FRAGMENT_SHADER),
+                                     new String[]{"a_Position", "a_Color", "a_Normal"});
         roomBase.setShaderProgram(roomBaseShaderProgram);
         roomBase.setColor(0.5f, 0.5f, 0.5f, 1.0f);
         models.put("room_base", roomBase);
 
         ARModelGLES20 roomWall =
             ModelLoader.loadModel(context, "models/room_door_north.obj", 120.0f);
-        ShaderProgram roomWallShaderProgram =
-            new SimpleShaderProgram(roomWall.getNumIndices(),
-                                    new SimpleVertexShader(),
-                                    new SimpleFragmentShader());
+        DynamicShaderProgram roomWallShaderProgram =
+            new DynamicShaderProgram(ShaderLoader.createShader(context,
+                                                               "shaders/vertexShaderUntextured.glsl",
+                                                               GLES20.GL_VERTEX_SHADER),
+                                     ShaderLoader.createShader(context,
+                                                               "shaders/fragmentShaderUntextured.glsl",
+                                                               GLES20.GL_FRAGMENT_SHADER),
+                                     new String[]{"a_Position", "a_Color", "a_Normal"});
         roomWall.setShaderProgram(roomWallShaderProgram);
         roomWall.setColor(0.5f, 0.5f, 0.5f, 1.0f);
         models.put("room_wall", roomWall);
 
         ARModelGLES20 roomDoor =
             ModelLoader.loadModel(context, "models/room_door_north.obj", 120.0f);
-        ShaderProgram roomDoorShaderProgram =
-            new SimpleShaderProgram(roomDoor.getNumIndices(),
-                                    new SimpleVertexShader(),
-                                    new SimpleFragmentShader());
+        DynamicShaderProgram roomDoorShaderProgram =
+            new DynamicShaderProgram(ShaderLoader.createShader(context,
+                                                               "shaders/vertexShaderUntextured.glsl",
+                                                               GLES20.GL_VERTEX_SHADER),
+                                     ShaderLoader.createShader(context,
+                                                               "shaders/fragmentShaderUntextured.glsl",
+                                                               GLES20.GL_FRAGMENT_SHADER),
+                                     new String[]{"a_Position", "a_Color", "a_Normal"});
         roomDoor.setShaderProgram(roomDoorShaderProgram);
         roomDoor.setColor(0.5f, 0.25f, 0.125f, 1.0f);
         models.put("room_door_unlocked", roomDoor);
 
         ARModelGLES20 roomDoorOpen =
             ModelLoader.loadModel(context, "models/room_door_north_open.obj", 120.0f);
-        ShaderProgram roomDoorOpenShaderProgram =
-            new SimpleShaderProgram(roomDoorOpen.getNumIndices(),
-                                    new SimpleVertexShader(),
-                                    new SimpleFragmentShader());
+        DynamicShaderProgram roomDoorOpenShaderProgram =
+            new DynamicShaderProgram(ShaderLoader.createShader(context,
+                                                               "shaders/vertexShaderUntextured.glsl",
+                                                               GLES20.GL_VERTEX_SHADER),
+                                     ShaderLoader.createShader(context,
+                                                               "shaders/fragmentShaderUntextured.glsl",
+                                                               GLES20.GL_FRAGMENT_SHADER),
+                                     new String[]{"a_Position", "a_Color", "a_Normal"});
         roomDoorOpen.setShaderProgram(roomDoorOpenShaderProgram);
         roomDoorOpen.setColor(0.75f, 0.75f, 0.75f, 1.0f);
         models.put("room_door_open", roomDoorOpen);
@@ -426,14 +445,6 @@ class PortalRenderer extends ARRendererGLES20
     public void createRoom(Room room)
     {
         ARRoom arRoom = new ARRoom();
-        /*ARRoomProtoGLES20 arRoomProto = new ARRoomProtoGLES20(80.0f, 0.0f, 0.0f, 0.0f);
-        arRoomProto.setShaderProgram(roomShaderProgram);
-        for (short i = 0; i < 4; ++i)
-        {
-            arRoomProto.setWall(i, room.getWallType(i));
-        }
-        //arRoomModels.put(room.getMarker(), arRoomProto);
-        arRoom.setRoomModel(arRoomProto);*/
         arRoom.setRoomModel(models.get("room_base"));
         for (short i = 0; i < 4; ++i)
         {
@@ -458,34 +469,23 @@ class PortalRenderer extends ARRendererGLES20
 
     public void updateRoomWalls(Room room)
     {
-        ARRoom      arRoom      = arRooms.get(room.getMarker());
-        ARRoomProto arRoomModel = arRoom.getRoomModelAsRoomProto();
-        if (arRoomModel != null)
+        ARRoom arRoom = arRooms.get(room.getMarker());
+        for (short i = 0; i < 4; ++i)
         {
-            for (short i = 0; i < 4; ++i)
+            switch (room.getWallType(i))
             {
-                arRoomModel.setWall(i, room.getWallType(i));
-            }
-        }
-        else
-        {
-            for (short i = 0; i < 4; ++i)
-            {
-                switch (room.getWallType(i))
-                {
-                    case NO_DOOR:
-                        arRoom.setWall(i, models.get("room_wall"));
-                        break;
-                    case DOOR_UNLOCKED:
-                        arRoom.setWall(i, models.get("room_door_unlocked"));
-                        break;
-                    case DOOR_OPEN:
-                        arRoom.setWall(i, models.get("room_door_open"));
-                        break;
-                    case DOOR_LOCKED:
-                        arRoom.setWall(i, models.get("room_door_locked"));
-                        break;
-                }
+                case NO_DOOR:
+                    arRoom.setWall(i, models.get("room_wall"));
+                    break;
+                case DOOR_UNLOCKED:
+                    arRoom.setWall(i, models.get("room_door_unlocked"));
+                    break;
+                case DOOR_OPEN:
+                    arRoom.setWall(i, models.get("room_door_open"));
+                    break;
+                case DOOR_LOCKED:
+                    arRoom.setWall(i, models.get("room_door_locked"));
+                    break;
             }
         }
     }

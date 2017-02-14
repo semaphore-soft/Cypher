@@ -2,8 +2,6 @@ package com.semaphore_soft.apps.cypher.opengl;
 
 import android.opengl.Matrix;
 
-import org.artoolkit.ar.base.rendering.gles20.ARDrawableOpenGLES20;
-
 import java.util.Hashtable;
 
 /**
@@ -12,11 +10,11 @@ import java.util.Hashtable;
 
 public class ARRoom
 {
-    ARDrawableOpenGLES20 roomModel;
-    ARDrawableOpenGLES20 walls[] = {null, null, null, null};
-    Hashtable<Long, ARDrawableOpenGLES20> playerLine;
-    Hashtable<Long, ARDrawableOpenGLES20> enemyLine;
-    Hashtable<Long, ARDrawableOpenGLES20> entityPile;
+    ARModelGLES20 roomModel;
+    ARModelGLES20 walls[] = {null, null, null, null};
+    Hashtable<Long, ARModelGLES20> playerLine;
+    Hashtable<Long, ARModelGLES20> enemyLine;
+    Hashtable<Long, ARModelGLES20> entityPile;
 
     public ARRoom()
     {
@@ -25,26 +23,17 @@ public class ARRoom
         entityPile = new Hashtable<>();
     }
 
-    public void setRoomModel(ARDrawableOpenGLES20 roomModel)
+    public void setRoomModel(ARModelGLES20 roomModel)
     {
         this.roomModel = roomModel;
     }
 
-    public ARRoomProto getRoomModelAsRoomProto()
-    {
-        if (roomModel instanceof ARRoomProto)
-        {
-            return (ARRoomProto) roomModel;
-        }
-        return null;
-    }
-
-    public void setWall(int index, ARDrawableOpenGLES20 door)
+    public void setWall(int index, ARModelGLES20 door)
     {
         walls[index] = door;
     }
 
-    public void addPlayer(long id, ARDrawableOpenGLES20 playerModel)
+    public void addPlayer(long id, ARModelGLES20 playerModel)
     {
         if (!playerLine.keySet().contains(id))
         {
@@ -60,7 +49,7 @@ public class ARRoom
         }
     }
 
-    public void addEnemy(long id, ARDrawableOpenGLES20 enemyModel)
+    public void addEnemy(long id, ARModelGLES20 enemyModel)
     {
         if (!enemyLine.keySet().contains(id))
         {
@@ -88,7 +77,7 @@ public class ARRoom
         }
     }
 
-    public void addEntity(long id, ARDrawableOpenGLES20 entityModel)
+    public void addEntity(long id, ARModelGLES20 entityModel)
     {
         if (!entityPile.keySet().contains(id))
         {
@@ -106,9 +95,21 @@ public class ARRoom
 
     public void draw(float[] projectionMatrix, float[] modelViewMatrix)
     {
+        float[] lightPos = new float[3];
+
+        {
+            float[] transformationMatrix = new float[16];
+            System.arraycopy(modelViewMatrix, 0, transformationMatrix, 0, 16);
+            Matrix.translateM(transformationMatrix, 0, 0.0f, 0.0f, 80.0f);
+            for (int i = 0; i < 3; ++i)
+            {
+                lightPos[i] = transformationMatrix[i + 12];
+            }
+        }
+
         if (roomModel != null)
         {
-            roomModel.draw(projectionMatrix, modelViewMatrix);
+            roomModel.draw(projectionMatrix, modelViewMatrix, lightPos);
         }
 
         for (int i = 0; i < 4; ++i)
@@ -123,7 +124,7 @@ public class ARRoom
                                0.0f,
                                0.0f,
                                1.0f);
-                walls[i].draw(projectionMatrix, transformationMatrix);
+                walls[i].draw(projectionMatrix, transformationMatrix, lightPos);
             }
         }
 
@@ -135,10 +136,10 @@ public class ARRoom
             float   actorOffset          = lineOffset + (60.0f * i);
             float[] transformationMatrix = new float[16];
             System.arraycopy(modelViewMatrix, 0, transformationMatrix, 0, 16);
-            ARDrawableOpenGLES20 playerModel = playerLine.get(id);
+            ARModelGLES20 playerModel = playerLine.get(id);
             Matrix.translateM(transformationMatrix, 0, actorOffset, -80.0f, 0.0f);
             Matrix.rotateM(transformationMatrix, 0, 180.0f, 0.0f, 0.0f, 1.0f);
-            playerModel.draw(projectionMatrix, transformationMatrix);
+            playerModel.draw(projectionMatrix, transformationMatrix, lightPos);
             ++i;
         }
 
@@ -150,9 +151,9 @@ public class ARRoom
             float   actorOffset          = lineOffset + (60.0f * i);
             float[] transformationMatrix = new float[16];
             System.arraycopy(modelViewMatrix, 0, transformationMatrix, 0, 16);
-            ARDrawableOpenGLES20 enemyModel = enemyLine.get(id);
+            ARModelGLES20 enemyModel = enemyLine.get(id);
             Matrix.translateM(transformationMatrix, 0, actorOffset, 80.0f, 0.0f);
-            enemyModel.draw(projectionMatrix, transformationMatrix);
+            enemyModel.draw(projectionMatrix, transformationMatrix, lightPos);
             ++i;
         }
 
@@ -160,9 +161,9 @@ public class ARRoom
         {
             float[] transformationMatrix = new float[16];
             System.arraycopy(modelViewMatrix, 0, transformationMatrix, 0, 16);
-            ARDrawableOpenGLES20 entityModel = entityPile.get(id);
+            ARModelGLES20 entityModel = entityPile.get(id);
             Matrix.translateM(transformationMatrix, 0, 0.0f, 0.0f, 0.0f);
-            entityModel.draw(projectionMatrix, transformationMatrix);
+            entityModel.draw(projectionMatrix, transformationMatrix, lightPos);
         }
     }
 }

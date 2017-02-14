@@ -1,14 +1,10 @@
 package com.semaphore_soft.apps.cypher.opengl;
 
-import android.opengl.GLES10;
-
 import org.artoolkit.ar.base.rendering.RenderUtils;
 
 import java.nio.FloatBuffer;
 import java.nio.ShortBuffer;
 import java.util.ArrayList;
-
-import javax.microedition.khronos.opengles.GL10;
 
 /**
  * Created by ceroj on 2/1/2017.
@@ -16,19 +12,17 @@ import javax.microedition.khronos.opengles.GL10;
 
 public class ARModel
 {
-    public static int NUM_VERTICES;
-    public static int NUM_INDICES;
+    public int NUM_VERTICES;
+    public int NUM_INDICES;
 
-    private FloatBuffer vertexBuffer;
-    private FloatBuffer colorBuffer;
-    private FloatBuffer normalBuffer;
-    private FloatBuffer texCoordinateBuffer;
-    private ShortBuffer vertexIndexBuffer;
-    private ShortBuffer texCoordinateIndexBuffer;
-    private ShortBuffer normalIndexBuffer;
+    private FloatBuffer vertexBuffer        = null;
+    private FloatBuffer colorBuffer         = null;
+    private FloatBuffer normalBuffer        = null;
+    private FloatBuffer texCoordinateBuffer = null;
+    private ShortBuffer vertexIndexBuffer   = null;
 
-    public boolean textured = false;
-    private int textureHandle;
+    public  boolean textured      = false;
+    private int     textureHandle = -1;
 
     private float size;
 
@@ -137,31 +131,9 @@ public class ARModel
 
         vertexIndexBuffer = RenderUtils.buildShortBuffer(indexArray);
 
+        System.out.println("indices in ar model: " + indexArray.length);
+
         NUM_INDICES = indexArray.length;
-    }
-
-    public void makeTexCoordinateIndexBuffer(ArrayList<Short> indices)
-    {
-        short[] indexArray = new short[indices.size()];
-
-        for (int i = 0; i < indexArray.length; ++i)
-        {
-            indexArray[i] = indices.get(i);
-        }
-
-        texCoordinateIndexBuffer = RenderUtils.buildShortBuffer(indexArray);
-    }
-
-    public void makeNormalIndexBuffer(ArrayList<Short> indices)
-    {
-        short[] indexArray = new short[indices.size()];
-
-        for (int i = 0; i < indexArray.length; ++i)
-        {
-            indexArray[i] = indices.get(i);
-        }
-
-        normalIndexBuffer = RenderUtils.buildShortBuffer(indexArray);
     }
 
     public void setTextureHandle(int textureHandle)
@@ -172,21 +144,6 @@ public class ARModel
     public int getTextureHandle()
     {
         return textureHandle;
-    }
-
-    public void draw(GL10 unused)
-    {
-        GLES10.glColorPointer(4, GLES10.GL_FLOAT, 0, colorBuffer);
-        GLES10.glVertexPointer(3, GLES10.GL_FLOAT, 0, vertexBuffer);
-
-        GLES10.glEnableClientState(GLES10.GL_COLOR_ARRAY);
-        GLES10.glEnableClientState(GLES10.GL_VERTEX_ARRAY);
-
-        GLES10.glDrawElements(GLES10.GL_TRIANGLES,
-                              NUM_INDICES, GLES10.GL_UNSIGNED_BYTE, vertexIndexBuffer);
-
-        GLES10.glDisableClientState(GLES10.GL_COLOR_ARRAY);
-        GLES10.glDisableClientState(GLES10.GL_VERTEX_ARRAY);
     }
 
     public void setColor(float r, float g, float b, float o)
