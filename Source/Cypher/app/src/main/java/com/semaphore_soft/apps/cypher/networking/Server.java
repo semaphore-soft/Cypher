@@ -74,7 +74,6 @@ public class Server
     public void reconnectClient()
     {
         // Assume only one client needs to reconnect at a time
-        maxPlayers = 1;
         if (serverSocket != null)
         {
             try
@@ -220,6 +219,12 @@ public class Server
             {
                 // Remove bad socket
                 clients.remove(this);
+                if (e instanceof SocketException)
+                {
+                    mServiceIntent = new Intent(mContext, ServerService.class);
+                    mServiceIntent.setData(Uri.parse(NetworkConstants.SERVER_RECONNECT));
+                    mContext.startService(mServiceIntent);
+                }
                 e.printStackTrace();
                 running = false;
             }
