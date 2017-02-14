@@ -1,14 +1,10 @@
 package com.semaphore_soft.apps.cypher.opengl;
 
-import android.opengl.GLES10;
-
 import org.artoolkit.ar.base.rendering.RenderUtils;
 
 import java.nio.FloatBuffer;
 import java.nio.ShortBuffer;
 import java.util.ArrayList;
-
-import javax.microedition.khronos.opengles.GL10;
 
 /**
  * Created by ceroj on 2/1/2017.
@@ -16,12 +12,17 @@ import javax.microedition.khronos.opengles.GL10;
 
 public class ARModel
 {
-    public static int NUM_VERTICES;
-    public static int NUM_INDICES;
+    public int NUM_VERTICES;
+    public int NUM_INDICES;
 
-    private FloatBuffer vertexBuffer;
-    private FloatBuffer colorBuffer;
-    private ShortBuffer indexBuffer;
+    private FloatBuffer vertexBuffer        = null;
+    private FloatBuffer colorBuffer         = null;
+    private FloatBuffer normalBuffer        = null;
+    private FloatBuffer texCoordinateBuffer = null;
+    private ShortBuffer vertexIndexBuffer   = null;
+
+    public  boolean textured      = false;
+    private int     textureHandle = -1;
 
     private float size;
 
@@ -45,9 +46,19 @@ public class ARModel
         return this.colorBuffer;
     }
 
-    public ShortBuffer getIndexBuffer()
+    public FloatBuffer getNormalBuffer()
     {
-        return this.indexBuffer;
+        return normalBuffer;
+    }
+
+    public FloatBuffer getTexCoordinateBuffer()
+    {
+        return texCoordinateBuffer;
+    }
+
+    public ShortBuffer getVertexIndexBuffer()
+    {
+        return this.vertexIndexBuffer;
     }
 
     public void makeVertexBuffer(ArrayList<Float> vertices)
@@ -64,20 +75,6 @@ public class ARModel
         vertexBuffer = RenderUtils.buildFloatBuffer(vertexArray);
 
         NUM_VERTICES = vertexArray.length;
-    }
-
-    public void makeIndexBuffer(ArrayList<Short> indices)
-    {
-        short[] indexArray = new short[indices.size()];
-
-        for (int i = 0; i < indexArray.length; ++i)
-        {
-            indexArray[i] = indices.get(i);
-        }
-
-        indexBuffer = RenderUtils.buildShortBuffer(indexArray);
-
-        NUM_INDICES = indexArray.length;
     }
 
     public void makeColorBuffer()
@@ -97,19 +94,56 @@ public class ARModel
         colorBuffer = RenderUtils.buildFloatBuffer(colorArray);
     }
 
-    public void draw(GL10 unused)
+    public void makeNormalBuffer(ArrayList<Float> normals)
     {
-        GLES10.glColorPointer(4, GLES10.GL_FLOAT, 0, colorBuffer);
-        GLES10.glVertexPointer(3, GLES10.GL_FLOAT, 0, vertexBuffer);
+        float[] normalArray = new float[normals.size()];
 
-        GLES10.glEnableClientState(GLES10.GL_COLOR_ARRAY);
-        GLES10.glEnableClientState(GLES10.GL_VERTEX_ARRAY);
+        for (int i = 0; i < normalArray.length; ++i)
+        {
+            normalArray[i] = normals.get(i);
+        }
 
-        GLES10.glDrawElements(GLES10.GL_TRIANGLES,
-                              NUM_INDICES, GLES10.GL_UNSIGNED_BYTE, indexBuffer);
+        normalBuffer = RenderUtils.buildFloatBuffer(normalArray);
+    }
 
-        GLES10.glDisableClientState(GLES10.GL_COLOR_ARRAY);
-        GLES10.glDisableClientState(GLES10.GL_VERTEX_ARRAY);
+    public void makeTexCoordinateBuffer(ArrayList<Float> texCoordinates)
+    {
+        float[] texCoordinateArray = new float[texCoordinates.size()];
+
+        for (int i = 0; i < texCoordinateArray.length; ++i)
+        {
+            texCoordinateArray[i] = texCoordinates.get(i);
+        }
+
+        texCoordinateBuffer = RenderUtils.buildFloatBuffer(texCoordinateArray);
+
+        textured = true;
+    }
+
+    public void makeVertexIndexBuffer(ArrayList<Short> indices)
+    {
+        short[] indexArray = new short[indices.size()];
+
+        for (int i = 0; i < indexArray.length; ++i)
+        {
+            indexArray[i] = indices.get(i);
+        }
+
+        vertexIndexBuffer = RenderUtils.buildShortBuffer(indexArray);
+
+        System.out.println("indices in ar model: " + indexArray.length);
+
+        NUM_INDICES = indexArray.length;
+    }
+
+    public void setTextureHandle(int textureHandle)
+    {
+        this.textureHandle = textureHandle;
+    }
+
+    public int getTextureHandle()
+    {
+        return textureHandle;
     }
 
     public void setColor(float r, float g, float b, float o)
