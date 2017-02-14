@@ -51,6 +51,8 @@ public class NetworkConstants
 
     // Constants for error codes
     public static final String ERROR_CLIENT_SOCKET = "Failed to start socket";
+    public static final String ERROR_SERVER_START  = "Failed to start server";
+    public static final String ERROR_WRITE         = "Error writing to socket";
 
     // Port should be between 49152-65535
     public final static int SERVER_PORT = 58008;

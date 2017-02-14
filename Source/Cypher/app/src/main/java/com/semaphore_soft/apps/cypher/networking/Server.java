@@ -58,11 +58,14 @@ public class Server
     public void writeToClient(String str, int index)
     {
         Log.d("Server", "Attempting to write to client " + String.valueOf(index));
-        // TODO call writeALL if index invalid?
         // Service will default to -1 if no index is given
-        if (!clients.isEmpty() && index >= 0)
+        if (!clients.isEmpty() && index >= 0 && index <= clients.size())
         {
             clients.get(index).write(str);
+        }
+        else
+        {
+            Log.d("Server", "Could not write to client");
         }
     }
 
@@ -84,7 +87,8 @@ public class Server
                 e.printStackTrace();
                 Log.e("ClientHandler", "Failed to start server");
                 mServiceIntent.setData(Uri.parse(NetworkConstants.THREAD_ERROR));
-                mServiceIntent.putExtra(NetworkConstants.MSG_EXTRA, "Failed to start server");
+                mServiceIntent.putExtra(NetworkConstants.MSG_EXTRA,
+                                        NetworkConstants.ERROR_SERVER_START);
                 mContext.startService(mServiceIntent);
             }
         }
@@ -164,6 +168,9 @@ public class Server
             catch (IOException e)
             {
                 e.printStackTrace();
+                mServiceIntent.setData(Uri.parse(NetworkConstants.THREAD_ERROR));
+                mServiceIntent.putExtra(NetworkConstants.MSG_EXTRA, NetworkConstants.ERROR_WRITE);
+                mContext.startService(mServiceIntent);
             }
         }
 

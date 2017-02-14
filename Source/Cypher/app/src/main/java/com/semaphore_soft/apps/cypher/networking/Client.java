@@ -100,6 +100,9 @@ public class Client
             catch (IOException e)
             {
                 e.printStackTrace();
+                mServiceIntent.setData(Uri.parse(NetworkConstants.THREAD_ERROR));
+                mServiceIntent.putExtra(NetworkConstants.MSG_EXTRA, NetworkConstants.ERROR_WRITE);
+                mContext.startService(mServiceIntent);
             }
         }
 
