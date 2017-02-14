@@ -352,6 +352,16 @@ public class PortalActivity extends ARActivity implements PortalRenderer.NewMark
 
                             System.out.println("put lil_ghost in room: " + roomID);
 
+                            Actor actor2 = new Actor(getNextID(actors), room.getId(), "lil_ghost");
+                            GameStatLoader.loadActorStats(actor2,
+                                                          "lil_ghost",
+                                                          specials,
+                                                          getApplicationContext());
+                            actors.put(actor2.getId(), actor2);
+                            room.addActor(actor2.getId());
+
+                            System.out.println("put lil_ghost in room: " + roomID);
+
                             renderer.createRoom(room);
 
                             Toast.makeText(getApplicationContext(),
