@@ -6,6 +6,7 @@ import android.opengl.Matrix;
 
 import com.semaphore_soft.apps.cypher.game.Actor;
 import com.semaphore_soft.apps.cypher.game.Room;
+import com.semaphore_soft.apps.cypher.opengl.ARDrawableGLES20;
 import com.semaphore_soft.apps.cypher.opengl.ARModelGLES20;
 import com.semaphore_soft.apps.cypher.opengl.ARRoom;
 import com.semaphore_soft.apps.cypher.opengl.ModelLoader;
@@ -36,7 +37,7 @@ class PortalRenderer extends ARRendererGLES20
 
     private ArrayList<ARModelGLES20> characterModels;
 
-    private Hashtable<String, ARModelGLES20> models;
+    private Hashtable<String, ARDrawableGLES20> models;
 
     private Hashtable<Integer, ARRoom> arRooms;
 
@@ -96,7 +97,7 @@ class PortalRenderer extends ARRendererGLES20
         for (int i = 0; i < 4; ++i)
         {
             ARModelGLES20 playerMarkerModel =
-                ModelLoader.loadModel(context, "models/waypoint.obj", 40.0f);
+                (ARModelGLES20) ModelLoader.load(context, "waypoint", 40.0f);
             playerMarkerModel.setCharacter(i);
             DynamicShaderProgram characterShaderProgram =
                 new DynamicShaderProgram(ShaderLoader.createShader(context,
@@ -114,8 +115,8 @@ class PortalRenderer extends ARRendererGLES20
 
         models = new Hashtable<>();
 
-        ARModelGLES20 waypoint =
-            ModelLoader.loadModel(context, "models/waypoint.obj", 40.0f);
+        ARDrawableGLES20 waypoint =
+            ModelLoader.load(context, "waypoint", 40.0f);
         DynamicShaderProgram waypointShaderProgram =
             new DynamicShaderProgram(ShaderLoader.createShader(context,
                                                                "shaders/vertexShaderTextured.glsl",
@@ -132,8 +133,8 @@ class PortalRenderer extends ARRendererGLES20
         {
             for (String name : actorNames)
             {
-                ARModelGLES20 actorModel =
-                    ModelLoader.loadModel(context, "models/actors/" + name + ".obj");
+                ARDrawableGLES20 actorModel =
+                    ModelLoader.load(context, name, "actors");
                 if (actorModel != null)
                 {
                     DynamicShaderProgram actorShaderProgram =
@@ -150,8 +151,8 @@ class PortalRenderer extends ARRendererGLES20
             }
         }
 
-        ARModelGLES20 roomBase =
-            ModelLoader.loadModel(context, "models/room_base.obj", 120.0f);
+        ARDrawableGLES20 roomBase =
+            ModelLoader.load(context, "room_base", 120.0f);
         DynamicShaderProgram roomBaseShaderProgram =
             new DynamicShaderProgram(ShaderLoader.createShader(context,
                                                                "shaders/vertexShaderUntextured.glsl",
@@ -164,8 +165,8 @@ class PortalRenderer extends ARRendererGLES20
         roomBase.setColor(0.5f, 0.5f, 0.5f, 1.0f);
         models.put("room_base", roomBase);
 
-        ARModelGLES20 roomWall =
-            ModelLoader.loadModel(context, "models/room_door_north.obj", 120.0f);
+        ARDrawableGLES20 roomWall =
+            ModelLoader.load(context, "room_door_north", 120.0f);
         DynamicShaderProgram roomWallShaderProgram =
             new DynamicShaderProgram(ShaderLoader.createShader(context,
                                                                "shaders/vertexShaderUntextured.glsl",
@@ -178,8 +179,8 @@ class PortalRenderer extends ARRendererGLES20
         roomWall.setColor(0.5f, 0.5f, 0.5f, 1.0f);
         models.put("room_wall", roomWall);
 
-        ARModelGLES20 roomDoor =
-            ModelLoader.loadModel(context, "models/room_door_north.obj", 120.0f);
+        ARDrawableGLES20 roomDoor =
+            ModelLoader.load(context, "room_door_north", 120.0f);
         DynamicShaderProgram roomDoorShaderProgram =
             new DynamicShaderProgram(ShaderLoader.createShader(context,
                                                                "shaders/vertexShaderUntextured.glsl",
@@ -192,8 +193,8 @@ class PortalRenderer extends ARRendererGLES20
         roomDoor.setColor(0.5f, 0.25f, 0.125f, 1.0f);
         models.put("room_door_unlocked", roomDoor);
 
-        ARModelGLES20 roomDoorOpen =
-            ModelLoader.loadModel(context, "models/room_door_north_open.obj", 120.0f);
+        ARDrawableGLES20 roomDoorOpen =
+            ModelLoader.load(context, "room_door_north_open", 120.0f);
         DynamicShaderProgram roomDoorOpenShaderProgram =
             new DynamicShaderProgram(ShaderLoader.createShader(context,
                                                                "shaders/vertexShaderUntextured.glsl",
