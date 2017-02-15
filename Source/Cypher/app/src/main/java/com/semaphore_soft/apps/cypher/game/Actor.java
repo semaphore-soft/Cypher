@@ -20,6 +20,7 @@ public class Actor
 
     public enum E_STATE
     {
+        NEUTRAL,
         ATTACK,
         SPECIAL,
         DEFEND
@@ -55,6 +56,7 @@ public class Actor
         this.markerID = markerID;
         roomID = -1;
         isPlayer = true;
+        state = E_STATE.NEUTRAL;
 
         specials = new Hashtable<>();
         items = new Hashtable<>();
@@ -73,7 +75,7 @@ public class Actor
         this.name = name;
         this.roomID = roomID;
         isPlayer = false;
-        state = E_STATE.SPECIAL;
+        state = E_STATE.NEUTRAL;
 
         specials = new Hashtable<>();
         items = new Hashtable<>();
@@ -226,6 +228,7 @@ public class Actor
 
         switch (state)
         {
+            case NEUTRAL:
             case ATTACK:
                 damage = attackRating;
                 break;

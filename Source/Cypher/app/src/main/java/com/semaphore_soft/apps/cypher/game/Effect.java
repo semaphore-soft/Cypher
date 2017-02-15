@@ -47,6 +47,7 @@ public abstract class Effect
                     case ATTACK:
                         damage = effectRating * 2;
                         break;
+                    case NEUTRAL:
                     case SPECIAL:
                         damage = effectRating;
                         break;
@@ -162,6 +163,7 @@ public abstract class Effect
                     case ATTACK:
                         damage = effectRating * 2;
                         break;
+                    case NEUTRAL:
                     case SPECIAL:
                         damage = effectRating;
                         break;

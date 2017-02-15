@@ -513,6 +513,21 @@ class PortalRenderer extends ARRendererGLES20
                     {
                         arRoom.addEnemy(id, models.get(name));
                     }
+                    switch (actor.getState())
+                    {
+                        case NEUTRAL:
+                            arRoom.setResidentPose(id, "default");
+                            break;
+                        case ATTACK:
+                            arRoom.setResidentPose(id, "attack");
+                            break;
+                        case SPECIAL:
+                            arRoom.setResidentPose(id, "special");
+                            break;
+                        case DEFEND:
+                            arRoom.setResidentPose(id, "defend");
+                            break;
+                    }
                 }
                 /*else
                 {

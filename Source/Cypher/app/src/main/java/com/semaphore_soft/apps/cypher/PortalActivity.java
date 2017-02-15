@@ -352,7 +352,7 @@ public class PortalActivity extends ARActivity implements PortalRenderer.NewMark
 
                             System.out.println("put lil_ghost in room: " + roomID);
 
-                            Actor actor2 = new Actor(getNextID(actors), room.getId(), "lil_ghost");
+                            /*Actor actor2 = new Actor(getNextID(actors), room.getId(), "lil_ghost");
                             GameStatLoader.loadActorStats(actor2,
                                                           "lil_ghost",
                                                           specials,
@@ -360,7 +360,7 @@ public class PortalActivity extends ARActivity implements PortalRenderer.NewMark
                             actors.put(actor2.getId(), actor2);
                             room.addActor(actor2.getId());
 
-                            System.out.println("put lil_ghost in room: " + roomID);
+                            System.out.println("put lil_ghost in room: " + roomID);*/
 
                             renderer.createRoom(room);
 
@@ -421,9 +421,15 @@ public class PortalActivity extends ARActivity implements PortalRenderer.NewMark
                                 "Actor Attack Rating: " + actor.getRealAttackRating());
                             System.out.println(
                                 "Target HP before attack: " + targets.get(0).getHealthCurrent());
+                            actor.setState(Actor.E_STATE.ATTACK);
                             actor.attack(targets.get(0));
                             System.out.println(
                                 "Target HP after attack: " + targets.get(0).getHealthCurrent());
+                            if (targets.get(0).getHealthCurrent() <= 0)
+                            {
+                                room.removeActor(targets.get(0).getId());
+                            }
+                            renderer.updateRoomResidents(room, actors);
                         }
                         else
                         {
@@ -441,6 +447,8 @@ public class PortalActivity extends ARActivity implements PortalRenderer.NewMark
                     public void onClick(View v)
                     {
                         actors.get(playerID).setState(Actor.E_STATE.DEFEND);
+                        renderer.updateRoomResidents(rooms.get(actors.get(playerID).getRoom()),
+                                                     actors);
                         Toast.makeText(getApplicationContext(),
                                        "Happy defending bucko",
                                        Toast.LENGTH_SHORT).show();

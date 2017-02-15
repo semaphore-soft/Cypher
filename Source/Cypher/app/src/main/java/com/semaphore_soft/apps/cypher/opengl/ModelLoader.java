@@ -83,10 +83,10 @@ public class ModelLoader
                                 poseName = "default";
                             }
 
+                            System.out.println("found pose: " + poseName);
+
                             poseLib.put(poseName, loadModel(context, filename, size));
                         }
-
-                        System.out.println("found pose: " + poseFile);
                     }
 
                     return new ARPoseModel(poseLib, defaultPose);
