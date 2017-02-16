@@ -1,11 +1,6 @@
 package com.semaphore_soft.apps.cypher.networking;
 
-import android.content.Context;
-import android.content.Intent;
-import android.net.Uri;
 import android.util.Log;
-
-import com.semaphore_soft.apps.cypher.MainApplication;
 
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
@@ -26,11 +21,8 @@ public class Server
     private static ArrayList<ClientHandler> clients        = new ArrayList<>();
     private static Boolean                  accepting      = false;
     private static ServerSocket             serverSocket   = null;
-    private        Context                  mContext       = MainApplication.getInstance()
-                                                                            .getApplicationContext();
-    private        Intent                   mServiceIntent =
-        new Intent(mContext, ServerService.class);
     private        int                      maxPlayers     = 4;
+    private ServerService serverService;
 
 
     public Server()
@@ -42,8 +34,9 @@ public class Server
         accepting = bool;
     }
 
-    public void startAcceptor()
+    public void startAcceptor(ServerService service)
     {
+        serverService = service;
         AcceptorThread acceptorThread = new AcceptorThread();
         acceptorThread.start();
     }
@@ -79,10 +72,7 @@ public class Server
             try
             {
                 Log.i("ClientHandler", "Waiting on accept");
-                mServiceIntent.setData(Uri.parse(NetworkConstants.THREAD_UPDATE));
-                mServiceIntent.putExtra(NetworkConstants.MSG_EXTRA,
-                                        NetworkConstants.STATUS_SERVER_WAIT);
-                mContext.startService(mServiceIntent);
+                serverService.threadUpdate(NetworkConstants.STATUS_SERVER_WAIT);
 
                 Socket        mySocket     = serverSocket.accept();
                 ClientHandler serverThread = new ClientHandler(mySocket);
@@ -115,10 +105,7 @@ public class Server
             {
                 e.printStackTrace();
                 Log.e("ClientHandler", "Failed to start server");
-                mServiceIntent.setData(Uri.parse(NetworkConstants.THREAD_ERROR));
-                mServiceIntent.putExtra(NetworkConstants.MSG_EXTRA,
-                                        NetworkConstants.ERROR_SERVER_START);
-                mContext.startService(mServiceIntent);
+                serverService.threadError(NetworkConstants.ERROR_SERVER_START);
             }
         }
 
@@ -131,10 +118,7 @@ public class Server
                 try
                 {
                     Log.i("ClientHandler", "Waiting on accept");
-                    mServiceIntent.setData(Uri.parse(NetworkConstants.THREAD_UPDATE));
-                    mServiceIntent.putExtra(NetworkConstants.MSG_EXTRA,
-                                            NetworkConstants.STATUS_SERVER_WAIT);
-                    mContext.startService(mServiceIntent);
+                    serverService.threadUpdate(NetworkConstants.STATUS_SERVER_WAIT);
 
                     mySocket = serverSocket.accept();
                     ClientHandler serverThread = new ClientHandler(mySocket);
@@ -164,10 +148,7 @@ public class Server
         public ClientHandler(Socket socket)
         {
             mySocket = socket;
-            mServiceIntent.setData(Uri.parse(NetworkConstants.THREAD_UPDATE));
-            mServiceIntent.putExtra(NetworkConstants.MSG_EXTRA,
-                                    NetworkConstants.STATUS_SERVER_START);
-            mContext.startService(mServiceIntent);
+            serverService.threadUpdate(NetworkConstants.STATUS_SERVER_START);
         }
 
         public void run()
@@ -195,9 +176,7 @@ public class Server
             catch (IOException e)
             {
                 e.printStackTrace();
-                mServiceIntent.setData(Uri.parse(NetworkConstants.THREAD_ERROR));
-                mServiceIntent.putExtra(NetworkConstants.MSG_EXTRA, NetworkConstants.ERROR_WRITE);
-                mContext.startService(mServiceIntent);
+                serverService.threadError(NetworkConstants.ERROR_WRITE);
             }
         }
 
@@ -221,9 +200,7 @@ public class Server
                 clients.remove(this);
                 if (e instanceof SocketException)
                 {
-                    mServiceIntent = new Intent(mContext, ServerService.class);
-                    mServiceIntent.setData(Uri.parse(NetworkConstants.SERVER_RECONNECT));
-                    mContext.startService(mServiceIntent);
+                    Log.d("ClientHandler", "SocketException");
                 }
                 e.printStackTrace();
                 running = false;
@@ -234,9 +211,7 @@ public class Server
         private void processMessage(String msg)
         {
             Log.i("ClientHandler", msg);
-            mServiceIntent.setData(Uri.parse(NetworkConstants.THREAD_READ));
-            mServiceIntent.putExtra(NetworkConstants.MSG_EXTRA, msg);
-            mContext.startService(mServiceIntent);
+            serverService.threadRead(msg);
         }
     }
 }

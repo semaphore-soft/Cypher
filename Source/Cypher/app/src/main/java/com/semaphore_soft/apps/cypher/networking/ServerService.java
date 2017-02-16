@@ -1,7 +1,9 @@
 package com.semaphore_soft.apps.cypher.networking;
 
-import android.app.IntentService;
+import android.app.Service;
 import android.content.Intent;
+import android.os.Binder;
+import android.os.IBinder;
 import android.support.v4.content.LocalBroadcastManager;
 import android.util.Log;
 
@@ -10,67 +12,87 @@ import android.util.Log;
  * Server service
  */
 
-public class ServerService extends IntentService
+public class ServerService extends Service
 {
-    private Server serverThread = new Server();
+    private Server serverThread;
 
     private static final String TAG = "ServerService";
 
     public ServerService()
     {
-        super("Cypher_server");
+        super();
+    }
+
+    // Binder given to clients
+    private final IBinder mBinder = new LocalBinder();
+
+    public class LocalBinder extends Binder
+    {
+        public ServerService getService()
+        {
+            // Return this instance of ServerService so clients can call public methods
+            return ServerService.this;
+        }
     }
 
     @Override
-    protected void onHandleIntent(Intent intent)
+    public IBinder onBind(Intent intent)
     {
-        // Gets data from the incoming intent
-        String dataString = intent.getDataString();
-        if (dataString.equals(NetworkConstants.SETUP_SERVER))
-        {
-            Log.d(TAG, "Starting AcceptorThread");
-            serverThread.startAcceptor();
-        }
-        else if (dataString.equals(NetworkConstants.WRITE_TO_CLIENT))
-        {
-            Log.d(TAG, "Writing to single client");
-            serverThread.writeToClient(intent.getStringExtra(NetworkConstants.MSG_EXTRA),
-                                       intent.getIntExtra(NetworkConstants.INDEX_EXTRA, -1));
-        }
-        else if (dataString.equals(NetworkConstants.WRITE_ALL))
-        {
-            Log.d(TAG, "Writing to all clients");
-            serverThread.writeAll(intent.getStringExtra(NetworkConstants.MSG_EXTRA));
-        }
-        else if (dataString.equals(NetworkConstants.SERVER_RECONNECT))
-        {
-            Log.d(TAG, "reconnecting...");
-            serverThread.reconnectClient();
-        }
-        else if (dataString.equals(NetworkConstants.THREAD_READ))
-        {
-            Log.d(TAG, "Sending thread read");
-            String msg         = intent.getStringExtra(NetworkConstants.MSG_EXTRA);
-            Intent localIntent = new Intent(NetworkConstants.BROADCAST_MESSAGE)
-                    .putExtra(NetworkConstants.MESSAGE, msg);
-            LocalBroadcastManager.getInstance(this).sendBroadcast(localIntent);
-        }
-        else if (dataString.equals(NetworkConstants.THREAD_UPDATE))
-        {
-            Log.d(TAG, "Sending thread update");
-            String msg         = intent.getStringExtra(NetworkConstants.MSG_EXTRA);
-            Intent localIntent = new Intent(NetworkConstants.BROADCAST_STATUS)
-                    .putExtra(NetworkConstants.MESSAGE, msg);
-            LocalBroadcastManager.getInstance(this).sendBroadcast(localIntent);
-        }
-        else if (dataString.equals(NetworkConstants.THREAD_ERROR))
-        {
-            Log.d(TAG, "Sending thread error");
-            String msg         = intent.getStringExtra(NetworkConstants.MSG_EXTRA);
-            Intent localIntent = new Intent(NetworkConstants.BROADCAST_ERROR).putExtra(
-                NetworkConstants.MESSAGE,
-                msg);
-            LocalBroadcastManager.getInstance(this).sendBroadcast(localIntent);
-        }
+        return mBinder;
+    }
+
+    @Override
+    public void onCreate()
+    {
+        serverThread = new Server();
+    }
+
+    public void startServer()
+    {
+        Log.d(TAG, "Starting AcceptorThread");
+        serverThread.startAcceptor(this);
+    }
+
+    public void writeToClient(String msg, int client)
+    {
+        Log.d(TAG, "Writing to single client");
+        serverThread.writeToClient(msg, client);
+    }
+
+    public void writeAll(String msg)
+    {
+        Log.d(TAG, "Writing to all clients");
+        serverThread.writeAll(msg);
+    }
+
+    public void reconnect()
+    {
+        Log.d(TAG, "reconnecting...");
+        serverThread.reconnectClient();
+    }
+
+    public void threadRead(String msg)
+    {
+        Log.d(TAG, "Sending thread read");
+        Intent localIntent = new Intent(NetworkConstants.BROADCAST_MESSAGE)
+            .putExtra(NetworkConstants.MESSAGE, msg);
+        LocalBroadcastManager.getInstance(this).sendBroadcast(localIntent);
+    }
+
+    public void threadUpdate(String msg)
+    {
+        Log.d(TAG, "Sending thread update");
+        Intent localIntent = new Intent(NetworkConstants.BROADCAST_STATUS)
+            .putExtra(NetworkConstants.MESSAGE, msg);
+        LocalBroadcastManager.getInstance(this).sendBroadcast(localIntent);
+    }
+
+    public void threadError(String msg)
+    {
+        Log.d(TAG, "Sending thread error");
+        Intent localIntent = new Intent(NetworkConstants.BROADCAST_ERROR).putExtra(
+            NetworkConstants.MESSAGE,
+            msg);
+        LocalBroadcastManager.getInstance(this).sendBroadcast(localIntent);
     }
 }

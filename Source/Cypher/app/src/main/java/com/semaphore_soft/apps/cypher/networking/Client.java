@@ -1,11 +1,6 @@
 package com.semaphore_soft.apps.cypher.networking;
 
-import android.content.Context;
-import android.content.Intent;
-import android.net.Uri;
 import android.util.Log;
-
-import com.semaphore_soft.apps.cypher.MainApplication;
 
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
@@ -22,17 +17,16 @@ import java.net.SocketException;
 
 public class Client
 {
-    private        Context      mContext       = MainApplication.getInstance()
-                                                    .getApplicationContext();
-    private        Intent       mServiceIntent = new Intent(mContext, ClientService.class);
     private static ClientThread clientThread   = null;
+    private ClientService clientService;
 
     public Client()
     {
     }
 
-    public ClientThread startClient(InetAddress addr)
+    public ClientThread startClient(InetAddress addr, ClientService client)
     {
+        clientService = client;
         clientThread = new ClientThread(addr);
         clientThread.start();
         return clientThread;
@@ -61,10 +55,7 @@ public class Client
             {
                 e.printStackTrace();
                 Log.e("ClientThread", "Failed to start socket");
-                mServiceIntent.setData(Uri.parse(NetworkConstants.THREAD_ERROR));
-                mServiceIntent.putExtra(NetworkConstants.MSG_EXTRA,
-                                        NetworkConstants.ERROR_CLIENT_SOCKET);
-                mContext.startService(mServiceIntent);
+                clientService.threadError(NetworkConstants.ERROR_CLIENT_SOCKET);
             }
         }
 
@@ -74,10 +65,7 @@ public class Client
             if (mySocket != null)
             {
                 Log.i("ClientThread", "Connection made");
-                mServiceIntent.setData(Uri.parse(NetworkConstants.THREAD_UPDATE));
-                mServiceIntent.putExtra(NetworkConstants.MSG_EXTRA,
-                                        NetworkConstants.STATUS_CLIENT_CONNECT);
-                mContext.startService(mServiceIntent);
+                clientService.threadUpdate(NetworkConstants.STATUS_CLIENT_CONNECT);
                 while (running)
                 {
                     String msg = read();
@@ -102,9 +90,7 @@ public class Client
             catch (IOException e)
             {
                 e.printStackTrace();
-                mServiceIntent.setData(Uri.parse(NetworkConstants.THREAD_ERROR));
-                mServiceIntent.putExtra(NetworkConstants.MSG_EXTRA, NetworkConstants.ERROR_WRITE);
-                mContext.startService(mServiceIntent);
+                clientService.threadError(NetworkConstants.ERROR_WRITE);
             }
         }
 
@@ -126,10 +112,7 @@ public class Client
             {
                 if (e instanceof SocketException)
                 {
-                    mServiceIntent.setData(Uri.parse(NetworkConstants.THREAD_ERROR));
-                    mServiceIntent.putExtra(NetworkConstants.MSG_EXTRA,
-                                            NetworkConstants.ERROR_DISCONNECT_CLIENT);
-                    mContext.startService(mServiceIntent);
+                    clientService.threadError(NetworkConstants.ERROR_DISCONNECT_CLIENT);
                 }
                 e.printStackTrace();
                 running = false;
@@ -140,14 +123,12 @@ public class Client
         private void processMessage(String msg)
         {
             Log.i("ClientThread", msg);
-            mServiceIntent.setData(Uri.parse(NetworkConstants.THREAD_READ));
-            mServiceIntent.putExtra(NetworkConstants.MSG_EXTRA, msg);
-            mContext.startService(mServiceIntent);
+            clientService.threadRead(msg);
         }
 
         public void reconnectSocket()
         {
-            startClient(inetAddress);
+            startClient(inetAddress, clientService);
         }
     }
 }
