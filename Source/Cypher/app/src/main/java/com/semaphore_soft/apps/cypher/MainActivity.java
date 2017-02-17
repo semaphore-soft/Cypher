@@ -6,16 +6,13 @@ import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.StrictMode;
-import android.support.design.widget.FloatingActionButton;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.content.LocalBroadcastManager;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
-import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuItem;
-import android.view.View;
-import android.widget.Button;
+import android.widget.FrameLayout;
 import android.widget.Toast;
 
 import com.semaphore_soft.apps.cypher.networking.ClientService;
@@ -24,12 +21,15 @@ import com.semaphore_soft.apps.cypher.networking.ResponseReceiver;
 import com.semaphore_soft.apps.cypher.networking.ServerService;
 import com.semaphore_soft.apps.cypher.ui.ConnectFragment;
 import com.semaphore_soft.apps.cypher.ui.GetNameDialogFragment;
+import com.semaphore_soft.apps.cypher.ui.UIListener;
+import com.semaphore_soft.apps.cypher.ui.UIMainActivity;
 
 import org.artoolkit.ar.base.camera.CameraPreferencesActivity;
 
 public class MainActivity extends AppCompatActivity implements GetNameDialogFragment.GetNameDialogListener,
                                                                ConnectFragment.Callback,
-                                                               ResponseReceiver.Receiver
+                                                               ResponseReceiver.Receiver,
+                                                               UIListener
 {
     boolean host = false;
     private String name = "";
@@ -39,26 +39,13 @@ public class MainActivity extends AppCompatActivity implements GetNameDialogFrag
     public void onCreate(Bundle savedInstanceState)
     {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_main);
-        Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
-        setSupportActionBar(toolbar);
+        setContentView(R.layout.empty);
 
-        FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
-        fab.setOnClickListener(new View.OnClickListener()
-        {
-            @Override
-            public void onClick(View view)
-            {
-                Toast.makeText(getApplicationContext(), "Launching AR Activity", Toast.LENGTH_SHORT)
-                     .show();
+        UIMainActivity UIMainActivity = new UIMainActivity(this);
+        ((FrameLayout) findViewById(R.id.empty)).addView(UIMainActivity);
+        UIMainActivity.setUIListener(this);
 
-                Intent intent = new Intent(getBaseContext(), PortalActivity.class);
-                intent.putExtra("host", true);
-                intent.putExtra("player", 0);
-                intent.putExtra("character", 0);
-                startActivity(intent);
-            }
-        });
+        setSupportActionBar(UIMainActivity.getToolbar());
 
         // Allow network connections
         StrictMode.ThreadPolicy policy =
@@ -69,29 +56,6 @@ public class MainActivity extends AppCompatActivity implements GetNameDialogFrag
         responseReceiver.setListener(this);
         LocalBroadcastManager.getInstance(this)
                              .registerReceiver(responseReceiver, NetworkConstants.getFilter());
-
-        Button btnHost = (Button) findViewById(R.id.btnHost);
-
-        btnHost.setOnClickListener(new View.OnClickListener()
-        {
-            @Override
-            public void onClick(View view)
-            {
-                host = true;
-                showGetNameDialog();
-            }
-        });
-
-        Button btnJoin = (Button) findViewById(R.id.btnJoin);
-        btnJoin.setOnClickListener(new View.OnClickListener()
-        {
-            @Override
-            public void onClick(View view)
-            {
-                host = false;
-                showConnectDialog();
-            }
-        });
     }
 
     public void showGetNameDialog()
@@ -201,6 +165,35 @@ public class MainActivity extends AppCompatActivity implements GetNameDialogFrag
             });
             AlertDialog alert = builder.create();
             alert.show();
+        }
+    }
+
+    @Override
+    public void onCommand(String cmd)
+    {
+        switch (cmd)
+        {
+            case "cmd_btnHost":
+                host = true;
+                showGetNameDialog();
+                break;
+            case "cmd_btnJoin":
+                host = false;
+                showConnectDialog();
+                break;
+            case "cmd_btnLaunch":
+                Toast.makeText(getApplicationContext(), "Launching AR Activity", Toast.LENGTH_SHORT)
+                     .show();
+
+                Intent intent = new Intent(getBaseContext(), PortalActivity.class);
+                intent.putExtra("host", true);
+                intent.putExtra("player", 0);
+                intent.putExtra("character", 0);
+                startActivity(intent);
+                break;
+            default:
+                Toast.makeText(this, "UI interaction not handled", Toast.LENGTH_SHORT).show();
+                break;
         }
     }
 }
