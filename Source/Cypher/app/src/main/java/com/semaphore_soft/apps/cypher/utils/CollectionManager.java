@@ -9,7 +9,7 @@ import java.util.Hashtable;
 
 public class CollectionManager
 {
-    public static long getNextID(Hashtable<Long, ?> hashtable)
+    public static int getNextID(Hashtable<Integer, ?> hashtable)
     {
         return ((hashtable.size() > 0) ? Collections.max(hashtable.keySet()) + 1 : 0);
     }

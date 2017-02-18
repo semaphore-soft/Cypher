@@ -2,8 +2,8 @@ package com.semaphore_soft.apps.cypher.game;
 
 import java.util.ArrayList;
 
-import static com.semaphore_soft.apps.cypher.game.Room.E_WALL_TYPE.NO_DOOR;
 import static com.semaphore_soft.apps.cypher.game.Room.E_WALL_TYPE.DOOR_UNLOCKED;
+import static com.semaphore_soft.apps.cypher.game.Room.E_WALL_TYPE.NO_DOOR;
 
 /**
  * Created by rickm on 1/19/2017.
@@ -24,24 +24,24 @@ public class Room
         DOOR_LOCKED
     }
 
-    private long            id;
-    private int             markerID;
-    private boolean         placed;
-    private ArrayList<Long> residentActorIDs;
-    private ArrayList<Long> residentEntityIDs;
-    private E_WALL_TYPE[]   walls;
+    private int                id;
+    private int                markerID;
+    private boolean            placed;
+    private ArrayList<Integer> residentActorIDs;
+    private ArrayList<Integer> residentEntityIDs;
+    private E_WALL_TYPE[]      walls;
 
-    public Room(long id)
+    public Room(int id)
     {
         this(id, -1);
     }
 
-    public Room(long id, int markerID)
+    public Room(int id, int markerID)
     {
         this(id, markerID, false);
     }
 
-    public Room(long id, int markerID, boolean placed)
+    public Room(int id, int markerID, boolean placed)
     {
         this.id = id;
         this.markerID = markerID;
@@ -56,7 +56,7 @@ public class Room
         };
     }
 
-    public long getId()
+    public int getId()
     {
         return id;
     }
@@ -81,7 +81,7 @@ public class Room
         this.placed = placed;
     }
 
-    public void addActor(long actorID)
+    public void addActor(int actorID)
     {
         if (!residentActorIDs.contains(actorID))
         {
@@ -89,7 +89,7 @@ public class Room
         }
     }
 
-    public void removeActor(long actorID)
+    public void removeActor(int actorID)
     {
         if (residentActorIDs.contains(actorID))
         {
@@ -97,12 +97,12 @@ public class Room
         }
     }
 
-    public ArrayList<Long> getResidentActors()
+    public ArrayList<Integer> getResidentActors()
     {
         return residentActorIDs;
     }
 
-    public void addEntity(long entityID)
+    public void addEntity(int entityID)
     {
         if (!residentEntityIDs.contains(entityID))
         {
@@ -110,7 +110,7 @@ public class Room
         }
     }
 
-    public void removeEntity(long entityID)
+    public void removeEntity(int entityID)
     {
         if (residentEntityIDs.contains(entityID))
         {
@@ -118,7 +118,7 @@ public class Room
         }
     }
 
-    public ArrayList<Long> getResidentEntities()
+    public ArrayList<Integer> getResidentEntities()
     {
         return residentEntityIDs;
     }

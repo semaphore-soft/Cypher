@@ -3,8 +3,6 @@ _cleanup of messy room/move validity code
 _turn system for players
  gives turns to existing enemies after last actor turn - handled by host
 
-_interaction with MULTIPLE enemies/entities(/players?) in same room
-
 _report invalid moves in real time
 
 _generate new room when unassigned marker comes into view
@@ -15,6 +13,6 @@ _self targeting targeting type
 
 _dynamically assign room side for player/enemy lines
 
-_rewrite shader/renderer code, write glsl loader?
-
 _comment model loader
+
+_specials need a scalar

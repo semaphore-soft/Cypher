@@ -15,12 +15,12 @@ public class Map
     public static final short SOUTH = 2;
     public static final short WEST  = 3;
 
-    private long[][]  roomIDMap;
+    private int[][]   roomIDMap;
     private short[][] roomRotationMap;
 
     public Map()
     {
-        roomIDMap = new long[31][31];
+        roomIDMap = new int[31][31];
         roomRotationMap = new short[31][31];
         for (int i = 0; i < 31; ++i)
         {
@@ -32,18 +32,18 @@ public class Map
         }
     }
 
-    public void init(long id)
+    public void init(int id)
     {
         roomIDMap[15][15] = id;
         roomRotationMap[15][15] = 0;
     }
 
-    public long getRoomID(int x, int y)
+    public int getRoomID(int x, int y)
     {
         return roomIDMap[x][y];
     }
 
-    public void setRoomID(int x, int y, long id)
+    public void setRoomID(int x, int y, int id)
     {
         roomIDMap[x][y] = id;
     }
@@ -58,7 +58,7 @@ public class Map
         roomRotationMap[x][y] = rot;
     }
 
-    public Pair<Integer, Integer> getPosition(long id)
+    public Pair<Integer, Integer> getPosition(int id)
     {
         Pair<Integer, Integer> res = new Pair<>(-1, -1);
 
@@ -76,7 +76,7 @@ public class Map
         return res;
     }
 
-    public void insert(long idA, short sideOfA, long idB, short sideOfB)
+    public void insert(int idA, short sideOfA, int idB, short sideOfB)
     {
         if (idA < 0 || idB < 0)
         {
@@ -162,7 +162,7 @@ public class Map
         }
     }
 
-    public Pair<Integer, Integer> getProposedPositon(long idA, short sideOfA)
+    public Pair<Integer, Integer> getProposedPositon(Integer idA, short sideOfA)
     {
         Pair<Integer, Integer> res = new Pair<>(-1, -1);
 
@@ -223,7 +223,7 @@ public class Map
         return res;
     }
 
-    public short getProposedRotation(long idA, short sideOfA, short sideOfB)
+    public short getProposedRotation(int idA, short sideOfA, short sideOfB)
     {
         if (idA < 0)
         {
@@ -276,9 +276,9 @@ public class Map
         return rotB;
     }
 
-    public long getRoomFromPositionInDirection(int x, int y, short dir)
+    public int getRoomFromPositionInDirection(int x, int y, short dir)
     {
-        long res = -1;
+        int res = -1;
 
         switch (dir)
         {
@@ -301,7 +301,7 @@ public class Map
         return res;
     }
 
-    public short checkAdjacent(long a, long b)
+    public short checkAdjacent(int a, int b)
     {
         if (a < 0 || b < 0)
         {
@@ -358,15 +358,15 @@ public class Map
         return -1;
     }
 
-    public Hashtable<Long, Pair<Short, Short>> getAdjacentRoomsAndWalls(long idA)
+    public Hashtable<Integer, Pair<Short, Short>> getAdjacentRoomsAndWalls(Integer idA)
     {
-        Hashtable<Long, Pair<Short, Short>> res = new Hashtable<>();
-        Pair<Integer, Integer>              pos = getPosition(idA);
-        short                               rot = getRoomRotation(pos.first, pos.second);
+        Hashtable<Integer, Pair<Short, Short>> res = new Hashtable<>();
+        Pair<Integer, Integer>                 pos = getPosition(idA);
+        short                                  rot = getRoomRotation(pos.first, pos.second);
 
         for (int i = 0; i < 4; ++i)
         {
-            long testRoom = getRoomFromPositionInDirection(pos.first, pos.second, (short) i);
+            int testRoom = getRoomFromPositionInDirection(pos.first, pos.second, (short) i);
             if (testRoom > -1)
             {
                 Pair<Integer, Integer> testPos = getPosition(testRoom);

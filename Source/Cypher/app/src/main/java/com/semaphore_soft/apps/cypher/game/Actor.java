@@ -11,11 +11,11 @@ import static com.semaphore_soft.apps.cypher.utils.CollectionManager.getNextID;
 
 public class Actor
 {
-    private long    id;
+    private int     id;
     private String  name;
     private int     markerID;
     private int     charID;
-    private long    roomID;
+    private int     roomID;
     private boolean isPlayer;
 
     public enum E_STATE
@@ -35,21 +35,21 @@ public class Actor
     private int     defenceRating;
     private E_STATE state;
 
-    Hashtable<Long, Special> specials;
-    Hashtable<Long, Item>    items;
-    Hashtable<Long, Status>  statuses;
+    Hashtable<Integer, Special> specials;
+    Hashtable<Integer, Item>    items;
+    Hashtable<Integer, Status>  statuses;
 
-    public Actor(long id)
+    public Actor(int id)
     {
         this(id, "error");
     }
 
-    public Actor(long id, String name)
+    public Actor(int id, String name)
     {
         this(id, name, -1);
     }
 
-    public Actor(long id, String name, int markerID)
+    public Actor(int id, String name, int markerID)
     {
         this.id = id;
         this.name = name;
@@ -63,12 +63,12 @@ public class Actor
         statuses = new Hashtable<>();
     }
 
-    public Actor(long id, long roomID)
+    public Actor(int id, int roomID)
     {
         this(id, roomID, "error");
     }
 
-    public Actor(long id, long roomID, String name)
+    public Actor(int id, int roomID, String name)
     {
         this.id = id;
         this.markerID = -1;
@@ -82,7 +82,7 @@ public class Actor
         statuses = new Hashtable<>();
     }
 
-    public long getId()
+    public int getId()
     {
         return id;
     }
@@ -107,12 +107,12 @@ public class Actor
         return markerID;
     }
 
-    public void setRoom(long roomID)
+    public void setRoom(int roomID)
     {
         this.roomID = roomID;
     }
 
-    public long getRoom()
+    public int getRoom()
     {
         return roomID;
     }
@@ -152,7 +152,7 @@ public class Actor
         return attackRating;
     }
 
-    public Hashtable<Long, Special> getSpecials()
+    public Hashtable<Integer, Special> getSpecials()
     {
         return specials;
     }
@@ -298,12 +298,12 @@ public class Actor
         }
     }
 
-    public void removeItem(long itemID)
+    public void removeItem(int itemID)
     {
         if (items.containsKey(itemID))
         {
             items.remove(itemID);
-            for (Long statusID : statuses.keySet())
+            for (int statusID : statuses.keySet())
             {
                 Status status = statuses.get(statusID);
                 if (status instanceof StatusLinked && ((StatusLinked) status).getLinkID() == itemID)
@@ -319,7 +319,7 @@ public class Actor
         if (items.containsKey(item.getID()))
         {
             items.remove(item.getID());
-            for (Long statusID : statuses.keySet())
+            for (int statusID : statuses.keySet())
             {
                 Status status = statuses.get(statusID);
                 if (status instanceof StatusLinked &&
@@ -347,14 +347,14 @@ public class Actor
         statuses.put(status.getId(), status);
     }
 
-    public void addNewStatusLinked(Status.E_STATUS_TYPE type, int effectRating, long linkId)
+    public void addNewStatusLinked(Status.E_STATUS_TYPE type, int effectRating, int linkId)
     {
         StatusLinked status = new StatusLinked(getNextID(statuses), type, effectRating, linkId);
 
         statuses.put(status.getId(), status);
     }
 
-    public void removeStatus(long statusID)
+    public void removeStatus(int statusID)
     {
         if (statuses.containsKey(statusID))
         {
@@ -375,7 +375,7 @@ public class Actor
     {
         int realAttackRating = attackRating;
 
-        for (Long statusID : statuses.keySet())
+        for (int statusID : statuses.keySet())
         {
             Status status = statuses.get(statusID);
             if (status.getType() == Status.E_STATUS_TYPE.ATTACK_RATING_MODIFIER)
@@ -391,7 +391,7 @@ public class Actor
     {
         int realSpecialRating = specialRating;
 
-        for (Long statusID : statuses.keySet())
+        for (int statusID : statuses.keySet())
         {
             Status status = statuses.get(statusID);
             if (status.getType() == Status.E_STATUS_TYPE.SPECIAL_RATING_MODIFIER)
@@ -407,7 +407,7 @@ public class Actor
     {
         int realDefenceRating = defenceRating;
 
-        for (Long statusID : statuses.keySet())
+        for (int statusID : statuses.keySet())
         {
             Status status = statuses.get(statusID);
             if (status.getType() == Status.E_STATUS_TYPE.DEFENCE_RATING_MODIFIER)
@@ -420,7 +420,7 @@ public class Actor
         return realDefenceRating;
     }
 
-    public void useItem(long itemID)
+    public void useItem(int itemID)
     {
         if (items.containsKey(itemID))
         {
@@ -447,7 +447,7 @@ public class Actor
 
     public void tick()
     {
-        for (Long statusID : statuses.keySet())
+        for (int statusID : statuses.keySet())
         {
             Status status = statuses.get(statusID);
             if (status instanceof StatusTemporary && ((StatusTemporary) status).tick())

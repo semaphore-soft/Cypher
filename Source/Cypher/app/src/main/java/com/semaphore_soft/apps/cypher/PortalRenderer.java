@@ -72,7 +72,7 @@ class PortalRenderer extends ARRendererGLES20
         markers.add(ARToolKit.getInstance().addMarker("single;Data/18.patt;80"));
         markers.add(ARToolKit.getInstance().addMarker("single;Data/19.patt;80"));
 
-        for (Integer id : markers)
+        for (int id : markers)
         {
             if (id < 0)
             {
@@ -233,7 +233,7 @@ class PortalRenderer extends ARRendererGLES20
             }
         }
 
-        for (Integer i : arRooms.keySet())
+        for (int i : arRooms.keySet())
         {
             if (ARToolKit.getInstance().queryMarkerVisible(i))
             {
@@ -246,7 +246,7 @@ class PortalRenderer extends ARRendererGLES20
 
     public int getFirstMarker()
     {
-        for (Integer id : markers)
+        for (int id : markers)
         {
             if (ARToolKit.getInstance().queryMarkerVisible(id))
             {
@@ -259,7 +259,7 @@ class PortalRenderer extends ARRendererGLES20
 
     public int getFirstMarkerExcluding(ArrayList<Integer> marksX)
     {
-        for (Integer id : markers)
+        for (int id : markers)
         {
             if (!marksX.contains(id) && ARToolKit.getInstance().queryMarkerVisible(id))
             {
@@ -277,7 +277,7 @@ class PortalRenderer extends ARRendererGLES20
 
         if (ARToolKit.getInstance().queryMarkerVisible(mark0))
         {
-            for (Integer mark1 : markers)
+            for (int mark1 : markers)
             {
                 if (mark0 != mark1 && ARToolKit.getInstance().queryMarkerVisible(mark1))
                 {
@@ -321,7 +321,7 @@ class PortalRenderer extends ARRendererGLES20
 
         if (ARToolKit.getInstance().queryMarkerVisible(mark0))
         {
-            for (Integer mark1 : markers)
+            for (int mark1 : markers)
             {
                 if (!marksX.contains(mark1) && mark0 != mark1 &&
                     ARToolKit.getInstance().queryMarkerVisible(mark1))
@@ -438,7 +438,7 @@ class PortalRenderer extends ARRendererGLES20
         return ((Float.isNaN(resAngle)) ? 0 : resAngle);
     }
 
-    public void setPlayerMarker(long playerID, int markerID)
+    public void setPlayerMarker(int playerID, int markerID)
     {
         playerMarkerIDs[(int) playerID] = markerID;
     }
@@ -491,11 +491,11 @@ class PortalRenderer extends ARRendererGLES20
         }
     }
 
-    public void updateRoomResidents(Room room, Hashtable<Long, Actor> actors)
+    public void updateRoomResidents(Room room, Hashtable<Integer, Actor> actors)
     {
         ARRoom arRoom = arRooms.get(room.getMarker());
         arRoom.removeActors();
-        for (Long id : room.getResidentActors())
+        for (int id : room.getResidentActors())
         {
             if (actors.keySet().contains(id))
             {

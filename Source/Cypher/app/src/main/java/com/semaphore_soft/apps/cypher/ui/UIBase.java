@@ -38,6 +38,7 @@ public abstract class UIBase extends FrameLayout
 
     protected View makeView(int resource)
     {
+        removeAllViews();
         LayoutInflater inflater = LayoutInflater.from(getContext());
         view = inflater.inflate(resource, this, true);
         return view;

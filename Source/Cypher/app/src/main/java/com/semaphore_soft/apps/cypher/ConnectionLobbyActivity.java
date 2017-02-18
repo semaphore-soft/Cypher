@@ -34,7 +34,7 @@ public class ConnectionLobbyActivity extends AppCompatActivity implements Respon
 {
     String              name;
     boolean             host;
-    long                playerID;
+    int                 playerID;
     ArrayList<PlayerID> playersList;
 
     private Intent           mServiceIntent;
@@ -78,10 +78,12 @@ public class ConnectionLobbyActivity extends AppCompatActivity implements Respon
                 // Use a label to break out of a nested for loop
                 // Note: probably better to use a method for the inner loop, but this works
                 outerloop:
-                for (Enumeration<NetworkInterface> en = NetworkInterface.getNetworkInterfaces(); en.hasMoreElements();)
+                for (Enumeration<NetworkInterface> en = NetworkInterface.getNetworkInterfaces();
+                     en.hasMoreElements(); )
                 {
                     NetworkInterface ni = en.nextElement();
-                    for (Enumeration<InetAddress> addresses = ni.getInetAddresses(); addresses.hasMoreElements();)
+                    for (Enumeration<InetAddress> addresses = ni.getInetAddresses();
+                         addresses.hasMoreElements(); )
                     {
                         InetAddress inetAddress = addresses.nextElement();
                         // Limit IP addresses shown to IPv4
@@ -131,7 +133,8 @@ public class ConnectionLobbyActivity extends AppCompatActivity implements Respon
 
     public void onCommand(String cmd)
     {
-        switch (cmd) {
+        switch (cmd)
+        {
             case "cmd_btnStart":
                 Server.setAccepting(false);
                 mServiceIntent.setData(Uri.parse(NetworkConstants.WRITE_ALL));
@@ -145,8 +148,8 @@ public class ConnectionLobbyActivity extends AppCompatActivity implements Respon
                                Toast.LENGTH_SHORT).show();
                 Intent intent = new Intent(getBaseContext(), CharacterSelectActivity.class);
                 intent.putExtra("host", host);
-                intent.putExtra("player", (long) 0);
-                intent.putExtra("numPlayers", (int) playerID);
+                intent.putExtra("player", 0);
+                intent.putExtra("numPlayers", playerID);
                 startActivity(intent);
                 break;
             default:

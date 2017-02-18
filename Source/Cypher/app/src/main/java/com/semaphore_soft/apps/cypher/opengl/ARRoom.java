@@ -14,11 +14,11 @@ public class ARRoom implements ARDrawableGLES20
 {
     ARDrawableGLES20 roomModel;
     ARDrawableGLES20 walls[]       = {null, null, null, null};
-    long             forwardPlayer = -1;
-    long             forwardEnemy  = -1;
-    Hashtable<Long, ARDrawableGLES20> playerLine;
-    Hashtable<Long, ARDrawableGLES20> enemyLine;
-    Hashtable<Long, ARDrawableGLES20> entityPile;
+    int              forwardPlayer = -1;
+    int              forwardEnemy  = -1;
+    Hashtable<Integer, ARDrawableGLES20> playerLine;
+    Hashtable<Integer, ARDrawableGLES20> enemyLine;
+    Hashtable<Integer, ARDrawableGLES20> entityPile;
 
     public ARRoom()
     {
@@ -37,7 +37,7 @@ public class ARRoom implements ARDrawableGLES20
         walls[index] = door;
     }
 
-    public void addPlayer(long id, ARDrawableGLES20 playerModel)
+    public void addPlayer(int id, ARDrawableGLES20 playerModel)
     {
         if (!playerLine.keySet().contains(id))
         {
@@ -45,7 +45,7 @@ public class ARRoom implements ARDrawableGLES20
         }
     }
 
-    public void removePlayer(long id)
+    public void removePlayer(int id)
     {
         if (playerLine.keySet().contains(id))
         {
@@ -53,7 +53,7 @@ public class ARRoom implements ARDrawableGLES20
         }
     }
 
-    public void addEnemy(long id, ARDrawableGLES20 enemyModel)
+    public void addEnemy(int id, ARDrawableGLES20 enemyModel)
     {
         if (!enemyLine.keySet().contains(id))
         {
@@ -61,7 +61,7 @@ public class ARRoom implements ARDrawableGLES20
         }
     }
 
-    public void removeEnemy(long id)
+    public void removeEnemy(int id)
     {
         if (enemyLine.keySet().contains(id))
         {
@@ -71,17 +71,11 @@ public class ARRoom implements ARDrawableGLES20
 
     public void removeActors()
     {
-        for (Long id : playerLine.keySet())
-        {
-            playerLine.remove(id);
-        }
-        for (Long id : enemyLine.keySet())
-        {
-            enemyLine.remove(id);
-        }
+        playerLine.clear();
+        enemyLine.clear();
     }
 
-    public void addEntity(long id, ARDrawableGLES20 entityModel)
+    public void addEntity(int id, ARDrawableGLES20 entityModel)
     {
         if (!entityPile.keySet().contains(id))
         {
@@ -89,7 +83,7 @@ public class ARRoom implements ARDrawableGLES20
         }
     }
 
-    public void removeEntity(long id)
+    public void removeEntity(int id)
     {
         if (entityPile.keySet().contains(id))
         {
@@ -97,7 +91,7 @@ public class ARRoom implements ARDrawableGLES20
         }
     }
 
-    public void setForwardPlayer(long id)
+    public void setForwardPlayer(int id)
     {
         forwardPlayer = id;
     }
@@ -107,7 +101,7 @@ public class ARRoom implements ARDrawableGLES20
         setForwardPlayer(-1);
     }
 
-    public void setForwardEnemy(long id)
+    public void setForwardEnemy(int id)
     {
         forwardEnemy = id;
     }
@@ -125,9 +119,9 @@ public class ARRoom implements ARDrawableGLES20
         }
     }
 
-    public void setResidentPose(long id, String pose)
+    public void setResidentPose(int id, String pose)
     {
-        for (Long playerId : playerLine.keySet())
+        for (int playerId : playerLine.keySet())
         {
             if (playerId == id)
             {
@@ -138,7 +132,7 @@ public class ARRoom implements ARDrawableGLES20
                 return;
             }
         }
-        for (Long enemyId : enemyLine.keySet())
+        for (int enemyId : enemyLine.keySet())
         {
             if (enemyId == id)
             {
@@ -151,9 +145,9 @@ public class ARRoom implements ARDrawableGLES20
         }
     }
 
-    public void setEntityPose(long id, String pose)
+    public void setEntityPose(int id, String pose)
     {
-        for (Long entityId : entityPile.keySet())
+        for (int entityId : entityPile.keySet())
         {
             if (entityId == id)
             {
@@ -205,7 +199,7 @@ public class ARRoom implements ARDrawableGLES20
         int   i          = 0;
         float spread     = (playerLine.size() - 1) * 60.0f;
         float lineOffset = -(spread / 2.0f);
-        for (Long id : playerLine.keySet())
+        for (int id : playerLine.keySet())
         {
             float[] transformationMatrix = new float[16];
             System.arraycopy(modelViewMatrix, 0, transformationMatrix, 0, 16);
@@ -226,7 +220,7 @@ public class ARRoom implements ARDrawableGLES20
         i = 0;
         spread = (enemyLine.size() - 1) * 60.0f;
         lineOffset = -(spread / 2.0f);
-        for (Long id : enemyLine.keySet())
+        for (int id : enemyLine.keySet())
         {
             float[] transformationMatrix = new float[16];
             System.arraycopy(modelViewMatrix, 0, transformationMatrix, 0, 16);
@@ -243,7 +237,7 @@ public class ARRoom implements ARDrawableGLES20
             ++i;
         }
 
-        for (Long id : entityPile.keySet())
+        for (int id : entityPile.keySet())
         {
             float[] transformationMatrix = new float[16];
             System.arraycopy(modelViewMatrix, 0, transformationMatrix, 0, 16);

@@ -141,7 +141,7 @@ public abstract class Effect
     public static void applyLinkedEffect(E_EFFECT effect,
                                          int effectRating,
                                          Actor actor,
-                                         Long linkId)
+                                         int linkId)
     {
         switch (effect)
         {

@@ -8,7 +8,7 @@ import java.util.ArrayList;
 
 public class Special
 {
-    private long   id;
+    private int    id;
     private String name;
     private int    cost;
     private int    duration;
@@ -24,7 +24,7 @@ public class Special
     private E_TARGETING_TYPE           targetingType;
     private ArrayList<Effect.E_EFFECT> effects;
 
-    public Special(long id, String name, int cost, int duration, E_TARGETING_TYPE targetingType)
+    public Special(int id, String name, int cost, int duration, E_TARGETING_TYPE targetingType)
     {
         this.id = id;
         this.name = name;
@@ -34,7 +34,7 @@ public class Special
         effects = new ArrayList<>();
     }
 
-    public long getId()
+    public int getId()
     {
         return id;
     }
