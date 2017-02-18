@@ -93,7 +93,7 @@ public class Room
     {
         if (residentActorIDs.contains(actorID))
         {
-            residentActorIDs.remove(actorID);
+            residentActorIDs.remove((Integer) actorID);
         }
     }
 
@@ -114,7 +114,7 @@ public class Room
     {
         if (residentEntityIDs.contains(entityID))
         {
-            residentEntityIDs.remove(entityID);
+            residentEntityIDs.remove((Integer) entityID);
         }
     }
 
