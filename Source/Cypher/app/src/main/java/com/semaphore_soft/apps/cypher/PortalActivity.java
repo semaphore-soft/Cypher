@@ -10,6 +10,7 @@ import com.semaphore_soft.apps.cypher.game.Actor;
 import com.semaphore_soft.apps.cypher.game.Entity;
 import com.semaphore_soft.apps.cypher.game.Item;
 import com.semaphore_soft.apps.cypher.game.Map;
+import com.semaphore_soft.apps.cypher.game.Model;
 import com.semaphore_soft.apps.cypher.game.Room;
 import com.semaphore_soft.apps.cypher.game.Special;
 import com.semaphore_soft.apps.cypher.networking.NetworkConstants;
@@ -42,22 +43,24 @@ public class PortalActivity extends ARActivity implements PortalRenderer.NewMark
     private UIPortalActivity uiPortalActivity;
     private UIPortalOverlay  uiPortalOverlay;
 
-    boolean host;
+    private PortalRenderer renderer;
 
-    int    playerID;
-    String characterName;
+    private ResponseReceiver responseReceiver;
 
-    PortalRenderer renderer;
+    private boolean host;
+
+    private int    playerID;
+    private String characterName;
+
+    private Model model;
 
     private Hashtable<Integer, Room>    rooms;
     private Hashtable<Integer, Actor>   actors;
     private Hashtable<Integer, Special> specials;
     private Hashtable<Integer, Entity>  entities;
     private Hashtable<Integer, Item>    items;
-    private Map                         map;
-    private ResponseReceiver            responseReceiver;
 
-    //GameMaster gameMaster;
+    private Map map;
 
     @Override
     public void onCreate(Bundle savedInstanceState)
@@ -65,6 +68,7 @@ public class PortalActivity extends ARActivity implements PortalRenderer.NewMark
         super.onCreate(savedInstanceState); //Calls ARActivity's actor, abstract class of ARBaseLib
         setContentView(R.layout.empty);
 
+        //setup ui
         uiPortalActivity = new UIPortalActivity(this);
         ((FrameLayout) this.findViewById(R.id.empty)).addView(uiPortalActivity);
         uiPortalActivity.setUIListener(this);
@@ -73,17 +77,23 @@ public class PortalActivity extends ARActivity implements PortalRenderer.NewMark
         ((FrameLayout) this.findViewById(R.id.overlay_frame)).addView(uiPortalOverlay);
         uiPortalOverlay.setUIListener(this);
 
-        //overlay_layout = (FrameLayout) findViewById(R.id.overlay_frame);
-
-        host = getIntent().getBooleanExtra("host", false);
-
-        playerID = getIntent().getIntExtra("player", 0);
-        characterName = getIntent().getExtras().getString("character", "knight");
-
+        //setup ar 3d graphics
         renderer = new PortalRenderer();
         renderer.setContext(this);
 
-        actors = new Hashtable<>();
+        //setup broadcast networking service broadcast receiver
+        responseReceiver = new ResponseReceiver();
+        responseReceiver.setListener(this);
+        LocalBroadcastManager.getInstance(this)
+                             .registerReceiver(responseReceiver, NetworkConstants.getFilter());
+
+        //get this user's game roles passed down from the previous activity
+        host = getIntent().getBooleanExtra("host", false);
+        playerID = getIntent().getIntExtra("player", 0);
+        characterName = getIntent().getExtras().getString("character", "knight");
+
+        model = new Model();
+
         rooms = new Hashtable<>();
         actors = new Hashtable<>();
         specials = new Hashtable<>();
@@ -91,477 +101,24 @@ public class PortalActivity extends ARActivity implements PortalRenderer.NewMark
         items = new Hashtable<>();
 
         map = new Map();
-
-        responseReceiver = new ResponseReceiver();
-        responseReceiver.setListener(this);
-        LocalBroadcastManager.getInstance(this)
-                             .registerReceiver(responseReceiver, NetworkConstants.getFilter());
-
-        //gameMaster = new GameMaster();
-        //gameMaster.start();
     }
 
+    //pass our rendering program to the ar framework
     @Override
     protected ARRenderer supplyRenderer()
     {
         return renderer;
     }
 
+    //pass the the frame to draw the camera feed and
+    //the ar graphics within to the ar framework
     @Override
     protected FrameLayout supplyFrameLayout()
     {
         return (FrameLayout) this.findViewById(R.id.portal_frame);
     }
 
-    private int getFirstUnreservedMarker()
-    {
-        ArrayList<Integer> marksX = new ArrayList<>();
-        for (Actor actor : actors.values())
-        {
-            marksX.add(actor.getMarker());
-        }
-        for (Room room : rooms.values())
-        {
-            marksX.add(room.getMarker());
-        }
-
-        int foundMarker = renderer.getFirstMarkerExcluding(marksX);
-
-        if (foundMarker > -1)
-        {
-            return foundMarker;
-        }
-
-        return -1;
-    }
-
-    private int getNearestNonPlayerMarker(int mark0)
-    {
-        ArrayList<Integer> actorMarkers = new ArrayList<>();
-        for (int id : actors.keySet())
-        {
-            actorMarkers.add(actors.get(id).getMarker());
-        }
-
-        int foundMarker = renderer.getNearestMarkerExcluding(mark0, actorMarkers);
-
-        if (foundMarker > -1)
-        {
-            return foundMarker;
-        }
-
-        return -1;
-    }
-
-    private int getNearestNonPlayerMarkerExcluding(int mark0, ArrayList<Integer> marksX)
-    {
-        for (Actor actor : actors.values())
-        {
-            marksX.add(actor.getMarker());
-        }
-
-        int foundMarker = renderer.getNearestMarkerExcluding(mark0, marksX);
-
-        if (foundMarker > -1)
-        {
-            return foundMarker;
-        }
-
-        return -1;
-    }
-
-    short getWall(int room0, int room1)
-    {
-        return getWall(rooms.get(room0), rooms.get(room1));
-    }
-
-    short getWall(Room room0, Room room1)
-    {
-        int mark0 = room0.getMarker();
-        int mark1 = room1.getMarker();
-
-        float angle0 = renderer.getAngleBetweenMarkers(mark0, mark1);
-
-        short wall0 = getWallFromAngle(angle0);
-
-        return wall0;
-    }
-
-    public boolean getValidPath(int room0, int room1)
-    {
-        return getValidPath(rooms.get(room0), rooms.get(room1));
-    }
-
-    public boolean getValidPath(Room room0, Room room1)
-    {
-        Pair<Integer, Integer> room0Pos = map.getPosition(room0.getId());
-        short                  room0Rot = map.getRoomRotation(room0Pos.first, room0Pos.second);
-        Pair<Integer, Integer> room1Pos = map.getPosition(room1.getId());
-        short                  room1Rot = map.getRoomRotation(room1Pos.first, room1Pos.second);
-
-        if (map.checkAdjacent(room0.getId(), room1.getId()) < 0)
-        {
-            return false;
-        }
-
-        Room.E_WALL_TYPE wallType0;
-        Room.E_WALL_TYPE wallType1;
-
-        if (room0Pos.second > room1Pos.second)
-        {
-            //room1 is north of room0
-            wallType0 = room0.getWallType(room0Rot);
-            wallType1 = room1.getWallType((short) ((room1Rot + 2) % 4));
-        }
-        else if (room0Pos.first < room1Pos.first)
-        {
-            //room1 is east of room0
-            wallType0 = room0.getWallType((short) ((room0Rot + 1) % 4));
-            wallType1 = room1.getWallType((short) ((room1Rot + 3) % 4));
-        }
-        else if (room0Pos.second < room1Pos.second)
-        {
-            //room1 is south of room0
-            wallType0 = room0.getWallType((short) ((room0Rot + 2) % 4));
-            wallType1 = room1.getWallType(room1Rot);
-        }
-        else
-        {
-            //room1 is west of room0
-            wallType0 = room0.getWallType((short) ((room0Rot + 3) % 4));
-            wallType1 = room1.getWallType((short) ((room1Rot + 1) % 4));
-        }
-
-        if ((wallType0 == DOOR_UNLOCKED || wallType0 == DOOR_OPEN) &&
-            (wallType1 == DOOR_UNLOCKED || wallType1 == DOOR_OPEN))
-        {
-            return true;
-        }
-
-        return false;
-    }
-
-    public boolean getValidAdjacency(int room0, int room1)
-    {
-        return getValidAdjacency(rooms.get(room0), rooms.get(room1));
-    }
-
-    public boolean getValidAdjacency(Room room0, Room room1)
-    {
-        int mark0 = room0.getMarker();
-        int mark1 = room1.getMarker();
-
-        float angle0 = renderer.getAngleBetweenMarkers(mark0, mark1);
-        float angle1 = renderer.getAngleBetweenMarkers(mark1, mark0);
-
-        short wall0 = getWallFromAngle(angle0);
-        short wall1 = getWallFromAngle(angle1);
-
-        Room.E_WALL_TYPE wallType0 = room0.getWallType(wall0);
-        Room.E_WALL_TYPE wallType1 = room1.getWallType(wall1);
-
-        if (wallType0 != wallType1)
-        {
-            return false;
-        }
-
-        Pair<Integer, Integer> proposedPositon = map.getProposedPositon(room0.getId(), wall0);
-        short proposedRotation =
-            map.getProposedRotation(room0.getId(), wall0, wall1);
-
-        System.out.println(
-            "Proposed new room position and rotation: " + proposedPositon.first + ", " +
-            proposedPositon.second + ", " + proposedRotation);
-
-        for (int i = 0; i < 4; ++i)
-        {
-            int testRoom =
-                map.getRoomFromPositionInDirection(proposedPositon.first, proposedPositon.second,
-                                                   (short) i);
-            if (testRoom > -1 && testRoom != room0.getId())
-            {
-                System.out.println("Testing against room: " + testRoom);
-
-                if (!getValidAdjacencyProposedRoom(proposedPositon.first,
-                                                   proposedPositon.second,
-                                                   proposedRotation,
-                                                   rooms.get(testRoom),
-                                                   room1))
-                {
-                    return false;
-                }
-            }
-        }
-
-        return true;
-    }
-
-    public boolean getValidAdjacencyExistingRooms(int room0, int room1)
-    {
-        return getValidAdjacencyExistingRooms(rooms.get(room0), rooms.get(room1));
-    }
-
-    public boolean getValidAdjacencyProposedRoom(int x,
-                                                 int y,
-                                                 short rot,
-                                                 int room0,
-                                                 int room1)
-    {
-        return getValidAdjacencyProposedRoom(x, y, rot, rooms.get(room0), rooms.get(room1));
-    }
-
-    public boolean getValidAdjacencyProposedRoom(int x, int y, short rot, Room room0, Room room1)
-    {
-        Pair<Integer, Integer> room0Pos = map.getPosition(room0.getId());
-        short                  room0Rot = map.getRoomRotation(room0Pos.first, room0Pos.second);
-        Pair<Integer, Integer> room1Pos = new Pair<>(x, y);
-        short                  room1Rot = rot;
-
-        Room.E_WALL_TYPE wallType0;
-        Room.E_WALL_TYPE wallType1;
-
-        if (room0Pos.second > room1Pos.second)
-        {
-            //room1 is north of room0
-            wallType0 = room0.getWallType(room0Rot);
-            wallType1 = room1.getWallType((short) ((room1Rot + 2) % 4));
-        }
-        else if (room0Pos.first < room1Pos.first)
-        {
-            //room1 is east of room0
-            wallType0 = room0.getWallType((short) ((room0Rot + 1) % 4));
-            wallType1 = room1.getWallType((short) ((room1Rot + 3) % 4));
-        }
-        else if (room0Pos.second < room1Pos.second)
-        {
-            //room1 is south of room0
-            wallType0 = room0.getWallType((short) ((room0Rot + 2) % 4));
-            wallType1 = room1.getWallType(room1Rot);
-        }
-        else
-        {
-            //room1 is west of room0
-            wallType0 = room0.getWallType((short) ((room0Rot + 3) % 4));
-            wallType1 = room1.getWallType((short) ((room1Rot + 1) % 4));
-        }
-
-        if (wallType0 == wallType1)
-        {
-            return true;
-        }
-
-        return false;
-    }
-
-    public boolean getValidAdjacencyExistingRooms(Room room0, Room room1)
-    {
-        Pair<Integer, Integer> room0Pos = map.getPosition(room0.getId());
-        short                  room0Rot = map.getRoomRotation(room0Pos.first, room0Pos.second);
-        Pair<Integer, Integer> room1Pos = map.getPosition(room1.getId());
-        short                  room1Rot = map.getRoomRotation(room1Pos.first, room1Pos.second);
-
-        if (map.checkAdjacent(room0.getId(), room1.getId()) < 0)
-        {
-            return false;
-        }
-
-        Room.E_WALL_TYPE wallType0;
-        Room.E_WALL_TYPE wallType1;
-
-        if (room0Pos.second > room1Pos.second)
-        {
-            //room1 is north of room0
-            wallType0 = room0.getWallType(room0Rot);
-            wallType1 = room1.getWallType((short) ((room1Rot + 2) % 4));
-        }
-        else if (room0Pos.first < room1Pos.first)
-        {
-            //room1 is east of room0
-            wallType0 = room0.getWallType((short) ((room0Rot + 1) % 4));
-            wallType1 = room1.getWallType((short) ((room1Rot + 3) % 4));
-        }
-        else if (room0Pos.second < room1Pos.second)
-        {
-            //room1 is south of room0
-            wallType0 = room0.getWallType((short) ((room0Rot + 2) % 4));
-            wallType1 = room1.getWallType(room1Rot);
-        }
-        else
-        {
-            //room1 is west of room0
-            wallType0 = room0.getWallType((short) ((room0Rot + 3) % 4));
-            wallType1 = room1.getWallType((short) ((room1Rot + 1) % 4));
-        }
-
-        if (wallType0 == wallType1)
-        {
-            return true;
-        }
-
-        return false;
-    }
-
-    public short getWallFromAngle(float angle)
-    {
-        if (angle > 315 || angle <= 45)
-        {
-            return Room.WALL_TOP;
-        }
-        else if (angle > 45 && angle <= 135)
-        {
-            return Room.WALL_RIGHT;
-        }
-        else if (angle > 135 && angle <= 225)
-        {
-            return Room.WALL_BOTTOM;
-        }
-        else
-        {
-            return Room.WALL_LEFT;
-        }
-    }
-
     @Override
-    public void newMarker(int marker)
-    {
-
-    }
-
-    private void performPlayerSpecial(Actor actor, Special special)
-    {
-        Room             room    = rooms.get(actor.getRoom());
-        ArrayList<Actor> targets = new ArrayList<>();
-
-        switch (special.getTargetingType())
-        {
-            case SINGLE_PLAYER:
-            {
-                targets = getActorsInRoom(room, true);
-                if (targets.size() < 1)
-                {
-                    Toast.makeText(getApplicationContext(),
-                                   "Nothing to use special on here",
-                                   Toast.LENGTH_SHORT).show();
-                }
-                else if (targets.size() == 1)
-                {
-                    actor.performSpecial(special, targets.get(0));
-                }
-                else
-                {
-                    //TODO display target selection
-                    Toast.makeText(getApplicationContext(),
-                                   "Multiple possible targets, not yet implemented",
-                                   Toast.LENGTH_SHORT).show();
-                }
-                break;
-            }
-            case SINGLE_NON_PLAYER:
-            {
-                targets = getActorsInRoom(room, false);
-                if (targets.size() < 1)
-                {
-                    Toast.makeText(getApplicationContext(),
-                                   "Nothing to use special on here",
-                                   Toast.LENGTH_SHORT).show();
-                }
-                else if (targets.size() == 1)
-                {
-                    if (!actor.performSpecial(special, targets.get(0)))
-                    {
-                        Toast.makeText(getApplicationContext(),
-                                       "Not enough SP",
-                                       Toast.LENGTH_SHORT).show();
-                    }
-                }
-                else
-                {
-                    //TODO display target selection
-                    Toast.makeText(getApplicationContext(),
-                                   "Multiple possible targets, not yet implemented",
-                                   Toast.LENGTH_SHORT).show();
-                }
-                break;
-            }
-            case AOE_PLAYER:
-            {
-                targets = getActorsInRoom(room, true);
-                if (targets.size() < 1)
-                {
-                    Toast.makeText(getApplicationContext(),
-                                   "Nothing to use special on here",
-                                   Toast.LENGTH_SHORT).show();
-                }
-                else
-                {
-                    if (!actor.performSpecial(special, targets))
-                    {
-                        Toast.makeText(getApplicationContext(),
-                                       "Not enough SP",
-                                       Toast.LENGTH_SHORT).show();
-                    }
-                }
-                break;
-            }
-            case AOE_NON_PLAYER:
-            {
-                targets = getActorsInRoom(room, false);
-                if (targets.size() < 1)
-                {
-                    Toast.makeText(getApplicationContext(),
-                                   "Nothing to use special on here",
-                                   Toast.LENGTH_SHORT).show();
-                }
-                else
-                {
-                    if (!actor.performSpecial(special, targets))
-                    {
-                        Toast.makeText(getApplicationContext(),
-                                       "Not enough SP",
-                                       Toast.LENGTH_SHORT).show();
-                    }
-                }
-                break;
-            }
-            default:
-                break;
-        }
-    }
-
-    private ArrayList<Actor> getActorsInRoom(Room room, boolean getPlayers)
-    {
-        ArrayList<Actor> res = new ArrayList<>();
-
-        for (int actorId : room.getResidentActors())
-        {
-            Actor actor = actors.get(actorId);
-            if ((getPlayers && actor.isPlayer()) || (!getPlayers && !actor.isPlayer()))
-            {
-                res.add(actor);
-            }
-        }
-
-        return res;
-    }
-
-    @Override
-    public void handleRead(String msg)
-    {
-        Toast.makeText(this, "Read: " + msg, Toast.LENGTH_SHORT).show();
-    }
-
-    @Override
-    public void handleStatus(String msg)
-    {
-        Toast.makeText(this, "Status: " + msg, Toast.LENGTH_SHORT).show();
-    }
-
-    @Override
-    public void handleError(String msg)
-    {
-        Toast.makeText(this, "Error: " + msg, Toast.LENGTH_SHORT).show();
-    }
-
     public void onCommand(String cmd)
     {
         System.out.println("portal activity received commend: " + cmd);
@@ -676,6 +233,354 @@ public class PortalActivity extends ARActivity implements PortalRenderer.NewMark
                 }
             }
         }
+    }
+
+    @Override
+    public void handleRead(String msg)
+    {
+        Toast.makeText(this, "Read: " + msg, Toast.LENGTH_SHORT).show();
+    }
+
+    @Override
+    public void handleStatus(String msg)
+    {
+        Toast.makeText(this, "Status: " + msg, Toast.LENGTH_SHORT).show();
+    }
+
+    @Override
+    public void handleError(String msg)
+    {
+        Toast.makeText(this, "Error: " + msg, Toast.LENGTH_SHORT).show();
+    }
+
+    @Override
+    public void newMarker(int marker)
+    {
+
+    }
+
+    private int getFirstUnreservedMarker()
+    {
+        ArrayList<Integer> marksX = new ArrayList<>();
+        for (Actor actor : actors.values())
+        {
+            marksX.add(actor.getMarker());
+        }
+        for (Room room : rooms.values())
+        {
+            marksX.add(room.getMarker());
+        }
+
+        int foundMarker = renderer.getFirstMarkerExcluding(marksX);
+
+        if (foundMarker > -1)
+        {
+            return foundMarker;
+        }
+
+        return -1;
+    }
+
+    private int getNearestNonPlayerMarker(int mark0)
+    {
+        ArrayList<Integer> actorMarkers = new ArrayList<>();
+        for (int id : actors.keySet())
+        {
+            actorMarkers.add(actors.get(id).getMarker());
+        }
+
+        int foundMarker = renderer.getNearestMarkerExcluding(mark0, actorMarkers);
+
+        if (foundMarker > -1)
+        {
+            return foundMarker;
+        }
+
+        return -1;
+    }
+
+    private int getNearestNonPlayerMarkerExcluding(int mark0, ArrayList<Integer> marksX)
+    {
+        for (Actor actor : actors.values())
+        {
+            marksX.add(actor.getMarker());
+        }
+
+        int foundMarker = renderer.getNearestMarkerExcluding(mark0, marksX);
+
+        if (foundMarker > -1)
+        {
+            return foundMarker;
+        }
+
+        return -1;
+    }
+
+    private short getWall(int room0, int room1)
+    {
+        return getWall(rooms.get(room0), rooms.get(room1));
+    }
+
+    private short getWall(Room room0, Room room1)
+    {
+        int mark0 = room0.getMarker();
+        int mark1 = room1.getMarker();
+
+        float angle0 = renderer.getAngleBetweenMarkers(mark0, mark1);
+
+        short wall0 = getWallFromAngle(angle0);
+
+        return wall0;
+    }
+
+    private boolean getValidPath(int room0, int room1)
+    {
+        return getValidPath(rooms.get(room0), rooms.get(room1));
+    }
+
+    private boolean getValidPath(Room room0, Room room1)
+    {
+        Pair<Integer, Integer> room0Pos = map.getPosition(room0.getId());
+        short                  room0Rot = map.getRoomRotation(room0Pos.first, room0Pos.second);
+        Pair<Integer, Integer> room1Pos = map.getPosition(room1.getId());
+        short                  room1Rot = map.getRoomRotation(room1Pos.first, room1Pos.second);
+
+        if (map.checkAdjacent(room0.getId(), room1.getId()) < 0)
+        {
+            return false;
+        }
+
+        Room.E_WALL_TYPE wallType0;
+        Room.E_WALL_TYPE wallType1;
+
+        if (room0Pos.second > room1Pos.second)
+        {
+            //room1 is north of room0
+            wallType0 = room0.getWallType(room0Rot);
+            wallType1 = room1.getWallType((short) ((room1Rot + 2) % 4));
+        }
+        else if (room0Pos.first < room1Pos.first)
+        {
+            //room1 is east of room0
+            wallType0 = room0.getWallType((short) ((room0Rot + 1) % 4));
+            wallType1 = room1.getWallType((short) ((room1Rot + 3) % 4));
+        }
+        else if (room0Pos.second < room1Pos.second)
+        {
+            //room1 is south of room0
+            wallType0 = room0.getWallType((short) ((room0Rot + 2) % 4));
+            wallType1 = room1.getWallType(room1Rot);
+        }
+        else
+        {
+            //room1 is west of room0
+            wallType0 = room0.getWallType((short) ((room0Rot + 3) % 4));
+            wallType1 = room1.getWallType((short) ((room1Rot + 1) % 4));
+        }
+
+        if ((wallType0 == DOOR_UNLOCKED || wallType0 == DOOR_OPEN) &&
+            (wallType1 == DOOR_UNLOCKED || wallType1 == DOOR_OPEN))
+        {
+            return true;
+        }
+
+        return false;
+    }
+
+    private boolean getValidAdjacency(int room0, int room1)
+    {
+        return getValidAdjacency(rooms.get(room0), rooms.get(room1));
+    }
+
+    private boolean getValidAdjacency(Room room0, Room room1)
+    {
+        int mark0 = room0.getMarker();
+        int mark1 = room1.getMarker();
+
+        float angle0 = renderer.getAngleBetweenMarkers(mark0, mark1);
+        float angle1 = renderer.getAngleBetweenMarkers(mark1, mark0);
+
+        short wall0 = getWallFromAngle(angle0);
+        short wall1 = getWallFromAngle(angle1);
+
+        Room.E_WALL_TYPE wallType0 = room0.getWallType(wall0);
+        Room.E_WALL_TYPE wallType1 = room1.getWallType(wall1);
+
+        if (wallType0 != wallType1)
+        {
+            return false;
+        }
+
+        Pair<Integer, Integer> proposedPositon = map.getProposedPositon(room0.getId(), wall0);
+        short proposedRotation =
+            map.getProposedRotation(room0.getId(), wall0, wall1);
+
+        System.out.println(
+            "Proposed new room position and rotation: " + proposedPositon.first + ", " +
+            proposedPositon.second + ", " + proposedRotation);
+
+        for (int i = 0; i < 4; ++i)
+        {
+            int testRoom =
+                map.getRoomFromPositionInDirection(proposedPositon.first, proposedPositon.second,
+                                                   (short) i);
+            if (testRoom > -1 && testRoom != room0.getId())
+            {
+                System.out.println("Testing against room: " + testRoom);
+
+                if (!getValidAdjacencyProposedRoom(proposedPositon.first,
+                                                   proposedPositon.second,
+                                                   proposedRotation,
+                                                   rooms.get(testRoom),
+                                                   room1))
+                {
+                    return false;
+                }
+            }
+        }
+
+        return true;
+    }
+
+    private boolean getValidAdjacencyExistingRooms(int room0, int room1)
+    {
+        return getValidAdjacencyExistingRooms(rooms.get(room0), rooms.get(room1));
+    }
+
+    private boolean getValidAdjacencyProposedRoom(int x,
+                                                  int y,
+                                                  short rot,
+                                                  int room0,
+                                                  int room1)
+    {
+        return getValidAdjacencyProposedRoom(x, y, rot, rooms.get(room0), rooms.get(room1));
+    }
+
+    private boolean getValidAdjacencyProposedRoom(int x, int y, short rot, Room room0, Room room1)
+    {
+        Pair<Integer, Integer> room0Pos = map.getPosition(room0.getId());
+        short                  room0Rot = map.getRoomRotation(room0Pos.first, room0Pos.second);
+        Pair<Integer, Integer> room1Pos = new Pair<>(x, y);
+        short                  room1Rot = rot;
+
+        Room.E_WALL_TYPE wallType0;
+        Room.E_WALL_TYPE wallType1;
+
+        if (room0Pos.second > room1Pos.second)
+        {
+            //room1 is north of room0
+            wallType0 = room0.getWallType(room0Rot);
+            wallType1 = room1.getWallType((short) ((room1Rot + 2) % 4));
+        }
+        else if (room0Pos.first < room1Pos.first)
+        {
+            //room1 is east of room0
+            wallType0 = room0.getWallType((short) ((room0Rot + 1) % 4));
+            wallType1 = room1.getWallType((short) ((room1Rot + 3) % 4));
+        }
+        else if (room0Pos.second < room1Pos.second)
+        {
+            //room1 is south of room0
+            wallType0 = room0.getWallType((short) ((room0Rot + 2) % 4));
+            wallType1 = room1.getWallType(room1Rot);
+        }
+        else
+        {
+            //room1 is west of room0
+            wallType0 = room0.getWallType((short) ((room0Rot + 3) % 4));
+            wallType1 = room1.getWallType((short) ((room1Rot + 1) % 4));
+        }
+
+        if (wallType0 == wallType1)
+        {
+            return true;
+        }
+
+        return false;
+    }
+
+    private boolean getValidAdjacencyExistingRooms(Room room0, Room room1)
+    {
+        Pair<Integer, Integer> room0Pos = map.getPosition(room0.getId());
+        short                  room0Rot = map.getRoomRotation(room0Pos.first, room0Pos.second);
+        Pair<Integer, Integer> room1Pos = map.getPosition(room1.getId());
+        short                  room1Rot = map.getRoomRotation(room1Pos.first, room1Pos.second);
+
+        if (map.checkAdjacent(room0.getId(), room1.getId()) < 0)
+        {
+            return false;
+        }
+
+        Room.E_WALL_TYPE wallType0;
+        Room.E_WALL_TYPE wallType1;
+
+        if (room0Pos.second > room1Pos.second)
+        {
+            //room1 is north of room0
+            wallType0 = room0.getWallType(room0Rot);
+            wallType1 = room1.getWallType((short) ((room1Rot + 2) % 4));
+        }
+        else if (room0Pos.first < room1Pos.first)
+        {
+            //room1 is east of room0
+            wallType0 = room0.getWallType((short) ((room0Rot + 1) % 4));
+            wallType1 = room1.getWallType((short) ((room1Rot + 3) % 4));
+        }
+        else if (room0Pos.second < room1Pos.second)
+        {
+            //room1 is south of room0
+            wallType0 = room0.getWallType((short) ((room0Rot + 2) % 4));
+            wallType1 = room1.getWallType(room1Rot);
+        }
+        else
+        {
+            //room1 is west of room0
+            wallType0 = room0.getWallType((short) ((room0Rot + 3) % 4));
+            wallType1 = room1.getWallType((short) ((room1Rot + 1) % 4));
+        }
+
+        if (wallType0 == wallType1)
+        {
+            return true;
+        }
+
+        return false;
+    }
+
+    private short getWallFromAngle(float angle)
+    {
+        if (angle > 315 || angle <= 45)
+        {
+            return Room.WALL_TOP;
+        }
+        else if (angle > 45 && angle <= 135)
+        {
+            return Room.WALL_RIGHT;
+        }
+        else if (angle > 135 && angle <= 225)
+        {
+            return Room.WALL_BOTTOM;
+        }
+        else
+        {
+            return Room.WALL_LEFT;
+        }
+    }
+
+    private ArrayList<Actor> getActorsInRoom(Room room, boolean getPlayers)
+    {
+        ArrayList<Actor> res = new ArrayList<>();
+
+        for (int actorId : room.getResidentActors())
+        {
+            Actor actor = actors.get(actorId);
+            if ((getPlayers && actor.isPlayer()) || (!getPlayers && !actor.isPlayer()))
+            {
+                res.add(actor);
+            }
+        }
+
+        return res;
     }
 
     private boolean selectPlayerMarker()
@@ -1122,23 +1027,104 @@ public class PortalActivity extends ARActivity implements PortalRenderer.NewMark
         actor.performSpecial(special, targets);
     }
 
-    /*private class GameMaster extends Thread {
-        boolean running = false;
-        int state = 0;
+    private void performPlayerSpecial(Actor actor, Special special)
+    {
+        Room             room    = rooms.get(actor.getRoom());
+        ArrayList<Actor> targets = new ArrayList<>();
 
-        GameMaster() {
-            running = true;
-        }
-
-        public void run() {
-            while (running) {
-                switch (state) {
-                    case 0:
-                        break;
-                    default:
-                        break;
+        switch (special.getTargetingType())
+        {
+            case SINGLE_PLAYER:
+            {
+                targets = getActorsInRoom(room, true);
+                if (targets.size() < 1)
+                {
+                    Toast.makeText(getApplicationContext(),
+                                   "Nothing to use special on here",
+                                   Toast.LENGTH_SHORT).show();
                 }
+                else if (targets.size() == 1)
+                {
+                    actor.performSpecial(special, targets.get(0));
+                }
+                else
+                {
+                    //TODO display target selection
+                    Toast.makeText(getApplicationContext(),
+                                   "Multiple possible targets, not yet implemented",
+                                   Toast.LENGTH_SHORT).show();
+                }
+                break;
             }
+            case SINGLE_NON_PLAYER:
+            {
+                targets = getActorsInRoom(room, false);
+                if (targets.size() < 1)
+                {
+                    Toast.makeText(getApplicationContext(),
+                                   "Nothing to use special on here",
+                                   Toast.LENGTH_SHORT).show();
+                }
+                else if (targets.size() == 1)
+                {
+                    if (!actor.performSpecial(special, targets.get(0)))
+                    {
+                        Toast.makeText(getApplicationContext(),
+                                       "Not enough SP",
+                                       Toast.LENGTH_SHORT).show();
+                    }
+                }
+                else
+                {
+                    //TODO display target selection
+                    Toast.makeText(getApplicationContext(),
+                                   "Multiple possible targets, not yet implemented",
+                                   Toast.LENGTH_SHORT).show();
+                }
+                break;
+            }
+            case AOE_PLAYER:
+            {
+                targets = getActorsInRoom(room, true);
+                if (targets.size() < 1)
+                {
+                    Toast.makeText(getApplicationContext(),
+                                   "Nothing to use special on here",
+                                   Toast.LENGTH_SHORT).show();
+                }
+                else
+                {
+                    if (!actor.performSpecial(special, targets))
+                    {
+                        Toast.makeText(getApplicationContext(),
+                                       "Not enough SP",
+                                       Toast.LENGTH_SHORT).show();
+                    }
+                }
+                break;
+            }
+            case AOE_NON_PLAYER:
+            {
+                targets = getActorsInRoom(room, false);
+                if (targets.size() < 1)
+                {
+                    Toast.makeText(getApplicationContext(),
+                                   "Nothing to use special on here",
+                                   Toast.LENGTH_SHORT).show();
+                }
+                else
+                {
+                    if (!actor.performSpecial(special, targets))
+                    {
+                        Toast.makeText(getApplicationContext(),
+                                       "Not enough SP",
+                                       Toast.LENGTH_SHORT).show();
+                    }
+                }
+                break;
+            }
+            default:
+                break;
         }
-    }*/
+    }
 }
