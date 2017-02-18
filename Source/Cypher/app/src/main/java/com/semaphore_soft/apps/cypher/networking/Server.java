@@ -18,10 +18,11 @@ import java.util.ArrayList;
 
 public class Server
 {
-    private static ArrayList<ClientHandler> clients        = new ArrayList<>();
-    private static Boolean                  accepting      = false;
-    private static ServerSocket             serverSocket   = null;
-    private        int                      maxPlayers     = 4;
+    private static ArrayList<ClientHandler> clients      = new ArrayList<>();
+    private static ArrayList<String>        messageLog   = new ArrayList<>();
+    private static Boolean                  accepting    = false;
+    private static ServerSocket             serverSocket = null;
+    private        int                      maxPlayers   = 4;
     private ServerService serverService;
 
 
@@ -47,6 +48,10 @@ public class Server
         for (ClientHandler server : clients)
         {
             server.write(str);
+        }
+        if (!messageLog.contains(str))
+        {
+            messageLog.add(str);
         }
     }
 
@@ -75,7 +80,7 @@ public class Server
                 serverService.threadUpdate(NetworkConstants.STATUS_SERVER_WAIT);
 
                 Socket        mySocket     = serverSocket.accept();
-                ClientHandler serverThread = new ClientHandler(mySocket);
+                ClientHandler serverThread = new ClientHandler(mySocket, true);
                 clients.add(serverThread);
                 serverThread.start();
             }
@@ -144,15 +149,31 @@ public class Server
         Socket mySocket;
 
         private boolean running = true;
+        private boolean reconnect;
 
         public ClientHandler(Socket socket)
         {
             mySocket = socket;
+            reconnect = false;
+            serverService.threadUpdate(NetworkConstants.STATUS_SERVER_START);
+        }
+
+        public ClientHandler(Socket socket, boolean reconnecting)
+        {
+            mySocket = socket;
+            reconnect = reconnecting;
             serverService.threadUpdate(NetworkConstants.STATUS_SERVER_START);
         }
 
         public void run()
         {
+            if (reconnect)
+            {
+                for (String msg : messageLog)
+                {
+                    write(msg);
+                }
+            }
             while (running)
             {
                 String msg = read();
@@ -200,6 +221,7 @@ public class Server
                 clients.remove(this);
                 if (e instanceof SocketException)
                 {
+                    serverService.threadError(NetworkConstants.ERROR_DISCONNECT_SERVER);
                     Log.d("ClientHandler", "SocketException");
                 }
                 e.printStackTrace();

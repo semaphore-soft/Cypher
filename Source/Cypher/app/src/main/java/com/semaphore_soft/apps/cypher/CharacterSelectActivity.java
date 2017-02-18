@@ -2,11 +2,13 @@ package com.semaphore_soft.apps.cypher;
 
 import android.content.ComponentName;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.ServiceConnection;
 import android.os.Bundle;
 import android.os.IBinder;
 import android.support.v4.content.LocalBroadcastManager;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.view.View;
@@ -190,6 +192,35 @@ public class CharacterSelectActivity extends AppCompatActivity implements Respon
     public void handleError(String msg)
     {
         Toast.makeText(this, "Error: " + msg, Toast.LENGTH_SHORT).show();
+        if (msg.equals(NetworkConstants.ERROR_DISCONNECT_CLIENT))
+        {
+            AlertDialog.Builder builder = new AlertDialog.Builder(this);
+            builder.setTitle("Error");
+            builder.setMessage("Connection lost. Retry?");
+            builder.setPositiveButton("YES", new DialogInterface.OnClickListener()
+            {
+                @Override
+                public void onClick(DialogInterface dialogInterface, int i)
+                {
+                    clientService.reconnect();
+                    dialogInterface.dismiss();
+                }
+            });
+            builder.setNegativeButton("NO", new DialogInterface.OnClickListener()
+            {
+                @Override
+                public void onClick(DialogInterface dialogInterface, int i)
+                {
+                    dialogInterface.dismiss();
+                }
+            });
+            AlertDialog alert = builder.create();
+            alert.show();
+        }
+        else if (msg.equals(NetworkConstants.ERROR_DISCONNECT_SERVER))
+        {
+            serverService.reconnect();
+        }
     }
 
     // Defines callbacks for service binding, passed to bindService()

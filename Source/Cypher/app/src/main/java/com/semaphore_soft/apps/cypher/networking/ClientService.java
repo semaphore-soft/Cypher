@@ -55,7 +55,7 @@ public class ClientService extends Service
         Log.d(TAG, "Staring client thread");
         try
         {
-            client.startClient(InetAddress.getByName(addr), this);
+            client.startClient(InetAddress.getByName(addr), this, false);
         }
         catch (UnknownHostException e)
         {

@@ -24,10 +24,10 @@ public class Client
     {
     }
 
-    public ClientThread startClient(InetAddress addr, ClientService client)
+    public ClientThread startClient(InetAddress addr, ClientService client, boolean reconnect)
     {
         clientService = client;
-        clientThread = new ClientThread(addr);
+        clientThread = new ClientThread(addr, reconnect);
         clientThread.start();
         return clientThread;
     }
@@ -43,7 +43,7 @@ public class Client
         private boolean     running     = true;
         private InetAddress inetAddress = null;
 
-        public ClientThread(InetAddress address)
+        public ClientThread(InetAddress address, boolean reconnect)
         {
             try
             {
@@ -56,6 +56,10 @@ public class Client
                 e.printStackTrace();
                 Log.e("ClientThread", "Failed to start socket");
                 clientService.threadError(NetworkConstants.ERROR_CLIENT_SOCKET);
+                if (reconnect)
+                {
+                    startClient(address, clientService, true);
+                }
             }
         }
 
@@ -128,7 +132,7 @@ public class Client
 
         public void reconnectSocket()
         {
-            startClient(inetAddress, clientService);
+            startClient(inetAddress, clientService, true);
         }
     }
 }
