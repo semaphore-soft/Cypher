@@ -116,12 +116,18 @@ public class PortalActivity extends ARActivity implements PortalRenderer.NewMark
     protected void onStart()
     {
         super.onStart();
-        // Bind to ServerService
-        Intent intent = new Intent(this, ServerService.class);
-        bindService(intent, mServerConnection, Context.BIND_AUTO_CREATE);
-        // Bind to ClientService
-        intent = new Intent(this, ClientService.class);
-        bindService(intent, mClientConnection, Context.BIND_AUTO_CREATE);
+        if (host)
+        {
+            // Bind to ServerService
+            Intent intent = new Intent(this, ServerService.class);
+            bindService(intent, mServerConnection, Context.BIND_AUTO_CREATE);
+        }
+        else
+        {
+            // Bind to ClientService
+            Intent intent = new Intent(this, ClientService.class);
+            bindService(intent, mClientConnection, Context.BIND_AUTO_CREATE);
+        }
     }
 
     @Override
