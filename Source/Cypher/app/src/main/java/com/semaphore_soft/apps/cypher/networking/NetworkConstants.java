@@ -22,13 +22,14 @@ public class NetworkConstants
 
     // Constants for read codes
     // Constants for game status updates
-    public static final String GAME_START    = "GAME_START";
-    public static final String GAME_READY    = "GAME_READY";
-    public static final String GAME_AR_START = "GAME_AR_START";
-    public static final String GAME_UPDATE   = "GAME_UPDATE";
+    public static final String GAME_START     = "GAME_START";
+    public static final String GAME_READY     = "GAME_READY";
+    public static final String GAME_AR_START  = "GAME_AR_START";
+    public static final String GAME_UPDATE    = "GAME_UPDATE";
+    public static final String GAME_HEARTBEAT = "GAME_HEARTBEAT";
     // Constants to use as prefixes to exchange information with other devices
-    public static final String PF_NAME       = "NAME:";
-    public static final String PF_PLAYER     = "PLAYER:";
+    public static final String PF_NAME        = "NAME:";
+    public static final String PF_PLAYER      = "PLAYER:";
 
     // Constants for status codes
     public static final String STATUS_SERVER_START   = "Server thread started";
@@ -43,7 +44,8 @@ public class NetworkConstants
     public static final String ERROR_DISCONNECT_SERVER = "Client had been disconnected";
 
     // Port should be between 49152-65535
-    public final static int SERVER_PORT = 58008;
+    public static final int  SERVER_PORT     = 58008;
+    public static final long HEARTBEAT_DELAY = 5000;
 
 
     public static IntentFilter getFilter()

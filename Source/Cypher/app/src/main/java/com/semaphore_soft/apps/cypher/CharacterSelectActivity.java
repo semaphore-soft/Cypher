@@ -2,13 +2,12 @@ package com.semaphore_soft.apps.cypher;
 
 import android.content.ComponentName;
 import android.content.Context;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.ServiceConnection;
 import android.os.Bundle;
+import android.os.Handler;
 import android.os.IBinder;
 import android.support.v4.content.LocalBroadcastManager;
-import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.view.View;
@@ -41,8 +40,10 @@ public class CharacterSelectActivity extends AppCompatActivity implements Respon
     private RadioButton   char3;
     private ServerService serverService;
     private ClientService clientService;
-    private boolean mServerBound = false;
-    private boolean mClientBound = false;
+    private boolean mServerBound  = false;
+    private boolean mClientBound  = false;
+    private Handler handler       = new Handler();
+    private boolean sendHeartbeat = true;
 
     @Override
     public void onCreate(Bundle savedInstanceState)
@@ -107,12 +108,20 @@ public class CharacterSelectActivity extends AppCompatActivity implements Respon
     protected void onStart()
     {
         super.onStart();
-        // Bind to ServerService
-        Intent intent = new Intent(this, ServerService.class);
-        bindService(intent, mServerConnection, Context.BIND_AUTO_CREATE);
-        // Bind to ClientService
-        intent = new Intent(this, ClientService.class);
-        bindService(intent, mClientConnection, Context.BIND_AUTO_CREATE);
+        if (host)
+        {
+            // Bind to ServerService
+            Intent intent = new Intent(this, ServerService.class);
+            bindService(intent, mServerConnection, Context.BIND_AUTO_CREATE);
+            handler.postDelayed(heartbeat, NetworkConstants.HEARTBEAT_DELAY);
+        }
+        else
+        {
+            // Bind to ClientService
+            Intent intent = new Intent(this, ClientService.class);
+            bindService(intent, mClientConnection, Context.BIND_AUTO_CREATE);
+        }
+
     }
 
     @Override
@@ -130,6 +139,7 @@ public class CharacterSelectActivity extends AppCompatActivity implements Respon
             unbindService(mClientConnection);
             mClientBound = false;
         }
+        sendHeartbeat = false;
     }
 
     private void startAR()
@@ -159,6 +169,19 @@ public class CharacterSelectActivity extends AppCompatActivity implements Respon
         }
         startActivity(intent);
     }
+
+    Runnable heartbeat = new Runnable()
+    {
+        @Override
+        public void run()
+        {
+            if (sendHeartbeat)
+            {
+                serverService.writeAll(NetworkConstants.GAME_HEARTBEAT);
+                handler.postDelayed(heartbeat, NetworkConstants.HEARTBEAT_DELAY);
+            }
+        }
+    };
 
     @Override
     public void handleRead(String msg)
@@ -194,28 +217,7 @@ public class CharacterSelectActivity extends AppCompatActivity implements Respon
         Toast.makeText(this, "Error: " + msg, Toast.LENGTH_SHORT).show();
         if (msg.equals(NetworkConstants.ERROR_DISCONNECT_CLIENT))
         {
-            AlertDialog.Builder builder = new AlertDialog.Builder(this);
-            builder.setTitle("Error");
-            builder.setMessage("Connection lost. Retry?");
-            builder.setPositiveButton("YES", new DialogInterface.OnClickListener()
-            {
-                @Override
-                public void onClick(DialogInterface dialogInterface, int i)
-                {
-                    clientService.reconnect();
-                    dialogInterface.dismiss();
-                }
-            });
-            builder.setNegativeButton("NO", new DialogInterface.OnClickListener()
-            {
-                @Override
-                public void onClick(DialogInterface dialogInterface, int i)
-                {
-                    dialogInterface.dismiss();
-                }
-            });
-            AlertDialog alert = builder.create();
-            alert.show();
+            clientService.reconnect();
         }
         else if (msg.equals(NetworkConstants.ERROR_DISCONNECT_SERVER))
         {
