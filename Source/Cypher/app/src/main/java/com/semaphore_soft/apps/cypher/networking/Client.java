@@ -47,9 +47,9 @@ public class Client
         {
             try
             {
+                inetAddress = address;
                 // Creates and connects to address at specified port
                 mySocket = new Socket(address, NetworkConstants.SERVER_PORT);
-                inetAddress = address;
             }
             catch (IOException e)
             {
@@ -58,7 +58,7 @@ public class Client
                 clientService.threadError(NetworkConstants.ERROR_CLIENT_SOCKET);
                 if (reconnect)
                 {
-                    startClient(address, clientService, true);
+                    reconnectSocket();
                 }
             }
         }
@@ -132,7 +132,16 @@ public class Client
 
         public void reconnectSocket()
         {
-            startClient(inetAddress, clientService, true);
+            try
+            {
+                // Wait for server to detect that client has disconnected
+                Thread.sleep(NetworkConstants.HEARTBEAT_DELAY * 2);
+                startClient(inetAddress, clientService, true);
+            }
+            catch (InterruptedException e)
+            {
+                e.printStackTrace();
+            }
         }
     }
 }
