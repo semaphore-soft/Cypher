@@ -83,6 +83,9 @@ public class MainActivity extends AppCompatActivity implements GetNameDialogFrag
             public void onClick(View view)
             {
                 host = true;
+                // Bind to ServerService
+                Intent intent = new Intent(MainActivity.this, ServerService.class);
+                bindService(intent, mServerConnection, Context.BIND_AUTO_CREATE);
                 showGetNameDialog();
             }
         });
@@ -94,21 +97,12 @@ public class MainActivity extends AppCompatActivity implements GetNameDialogFrag
             public void onClick(View view)
             {
                 host = false;
+                // Bind to ClientService
+                Intent intent = new Intent(MainActivity.this, ClientService.class);
+                bindService(intent, mClientConnection, Context.BIND_AUTO_CREATE);
                 showConnectDialog();
             }
         });
-    }
-
-    @Override
-    protected void onStart()
-    {
-        super.onStart();
-        // Bind to ServerService
-        Intent intent = new Intent(this, ServerService.class);
-        bindService(intent, mServerConnection, Context.BIND_AUTO_CREATE);
-        // Bind to ClientService
-        intent = new Intent(this, ClientService.class);
-        bindService(intent, mClientConnection, Context.BIND_AUTO_CREATE);
     }
 
     @Override
