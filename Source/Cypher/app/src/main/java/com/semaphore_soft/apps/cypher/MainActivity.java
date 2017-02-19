@@ -1,10 +1,13 @@
 package com.semaphore_soft.apps.cypher;
 
 
+import android.content.ComponentName;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
-import android.net.Uri;
+import android.content.ServiceConnection;
 import android.os.Bundle;
+import android.os.IBinder;
 import android.os.StrictMode;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v4.app.FragmentManager;
@@ -32,6 +35,10 @@ public class MainActivity extends AppCompatActivity implements GetNameDialogFrag
     boolean host = false;
     private String name = "";
     private ResponseReceiver responseReceiver;
+    private ServerService    serverService;
+    private ClientService    clientService;
+    private boolean mServerBound = false;
+    private boolean mClientBound = false;
 
     @Override
     public void onCreate(Bundle savedInstanceState)
@@ -76,6 +83,9 @@ public class MainActivity extends AppCompatActivity implements GetNameDialogFrag
             public void onClick(View view)
             {
                 host = true;
+                // Bind to ServerService
+                Intent intent = new Intent(MainActivity.this, ServerService.class);
+                bindService(intent, mServerConnection, Context.BIND_AUTO_CREATE);
                 showGetNameDialog();
             }
         });
@@ -87,9 +97,29 @@ public class MainActivity extends AppCompatActivity implements GetNameDialogFrag
             public void onClick(View view)
             {
                 host = false;
+                // Bind to ClientService
+                Intent intent = new Intent(MainActivity.this, ClientService.class);
+                bindService(intent, mClientConnection, Context.BIND_AUTO_CREATE);
                 showConnectDialog();
             }
         });
+    }
+
+    @Override
+    protected void onStop()
+    {
+        super.onStop();
+        // Unbind from the service
+        if (mServerBound)
+        {
+            unbindService(mServerConnection);
+            mServerBound = false;
+        }
+        else if (mClientBound)
+        {
+            unbindService(mClientConnection);
+            mClientBound = false;
+        }
     }
 
     public void showGetNameDialog()
@@ -137,21 +167,16 @@ public class MainActivity extends AppCompatActivity implements GetNameDialogFrag
     {
         this.name = name;
         // Try to connect to the socket before moving to connection lobby
-        Intent mServiceIntent = new Intent(this, ClientService.class);
-        mServiceIntent.setData(Uri.parse(NetworkConstants.SETUP_CLIENT));
-        mServiceIntent.putExtra(NetworkConstants.ADDR_EXTRA, addr);
-        startService(mServiceIntent);
+        clientService.startClient(addr);
     }
 
     @Override
     public void onFinishGetName(String name)
     {
         this.name = name;
-        // Start the server service, which will start
+        // Start the server thread, which will start
         // the connection lobby when it starts accepting connections
-        Intent mServiceIntent = new Intent(this, ServerService.class);
-        mServiceIntent.setData(Uri.parse(NetworkConstants.SETUP_SERVER));
-        startService(mServiceIntent);
+        serverService.startServer();
     }
 
     @Override
@@ -200,4 +225,41 @@ public class MainActivity extends AppCompatActivity implements GetNameDialogFrag
             alert.show();
         }
     }
+
+    // Defines callbacks for service binding, passed to bindService()
+    private ServiceConnection mServerConnection = new ServiceConnection()
+    {
+        @Override
+        public void onServiceConnected(ComponentName componentName, IBinder iBinder)
+        {
+            // We've bound to ServerService, cast the IBinder and get ServerService instance
+            ServerService.LocalBinder binder = (ServerService.LocalBinder) iBinder;
+            serverService = binder.getService();
+            mServerBound = true;
+        }
+
+        @Override
+        public void onServiceDisconnected(ComponentName componentName)
+        {
+            mServerBound = false;
+        }
+    };
+
+    private ServiceConnection mClientConnection = new ServiceConnection()
+    {
+        @Override
+        public void onServiceConnected(ComponentName componentName, IBinder iBinder)
+        {
+            // We've bound to ServerService, cast the IBinder and get ServerService instance
+            ClientService.LocalBinder binder = (ClientService.LocalBinder) iBinder;
+            clientService = binder.getService();
+            mClientBound = true;
+        }
+
+        @Override
+        public void onServiceDisconnected(ComponentName componentName)
+        {
+            mClientBound = false;
+        }
+    };
 }

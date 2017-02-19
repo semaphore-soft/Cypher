@@ -20,29 +20,17 @@ public class NetworkConstants
     // Constant for message extra used by broadcast receiver
     public static final String MESSAGE = "com.semaphore_soft.apps.cypher.MESSAGE";
 
-    // Constants for client and server services - used like methods by activities
-    public static final String SETUP_SERVER    = "SERVER_SETUP";
-    public static final String SETUP_CLIENT    = "CLIENT_SETUP";
-    public static final String WRITE_TO_CLIENT = "SINGLE_WRITE";
-    public static final String WRITE_ALL       = "WRITE_ALL";
-    public static final String CLIENT_WRITE    = "CLIENT_WRITE";
-    public static final String THREAD_READ     = "THREAD_READ";
-    public static final String THREAD_UPDATE   = "THREAD_UPDATE";
-    public static final String THREAD_ERROR    = "THREAD_ERROR";
-
-    // Constants for intent extras - used like parameters by activities
-    public static final String MSG_EXTRA   = "message";
-    public static final String INDEX_EXTRA = "index";
-    public static final String ADDR_EXTRA  = "address";
-
     // Constants for read codes
     // Constants for game status updates
-    public static final String GAME_START    = "GAME_START";
-    public static final String GAME_READY    = "GAME_READY";
-    public static final String GAME_AR_START = "GAME_AR_START";
+    public static final String GAME_START     = "GAME_START";
+    public static final String GAME_READY     = "GAME_READY";
+    public static final String GAME_UNREADY   = "GAME_UNREADY";
+    public static final String GAME_AR_START  = "GAME_AR_START";
+    public static final String GAME_UPDATE    = "GAME_UPDATE";
+    public static final String GAME_HEARTBEAT = "GAME_HEARTBEAT";
     // Constants to use as prefixes to exchange information with other devices
-    public static final String PF_NAME       = "NAME:";
-    public static final String PF_PLAYER     = "PLAYER:";
+    public static final String PF_NAME        = "NAME:";
+    public static final String PF_PLAYER      = "PLAYER:";
 
     // Constants for status codes
     public static final String STATUS_SERVER_START   = "Server thread started";
@@ -50,10 +38,15 @@ public class NetworkConstants
     public static final String STATUS_SERVER_WAIT    = "Waiting on accept";
 
     // Constants for error codes
-    public static final String ERROR_CLIENT_SOCKET = "Failed to start socket";
+    public static final String ERROR_CLIENT_SOCKET     = "Failed to start socket";
+    public static final String ERROR_SERVER_START      = "Failed to start server";
+    public static final String ERROR_WRITE             = "Error writing to socket";
+    public static final String ERROR_DISCONNECT_CLIENT = "Socket has been disconnected";
+    public static final String ERROR_DISCONNECT_SERVER = "Client had been disconnected";
 
     // Port should be between 49152-65535
-    public final static int SERVER_PORT = 58008;
+    public static final int  SERVER_PORT     = 58008;
+    public static final long HEARTBEAT_DELAY = 5000;
 
 
     public static IntentFilter getFilter()

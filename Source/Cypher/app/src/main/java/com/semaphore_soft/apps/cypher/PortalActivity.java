@@ -1,6 +1,11 @@
 package com.semaphore_soft.apps.cypher;
 
+import android.content.ComponentName;
+import android.content.Context;
+import android.content.Intent;
+import android.content.ServiceConnection;
 import android.os.Bundle;
+import android.os.IBinder;
 import android.support.v4.content.LocalBroadcastManager;
 import android.util.Pair;
 import android.view.LayoutInflater;
@@ -16,8 +21,10 @@ import com.semaphore_soft.apps.cypher.game.Item;
 import com.semaphore_soft.apps.cypher.game.Map;
 import com.semaphore_soft.apps.cypher.game.Room;
 import com.semaphore_soft.apps.cypher.game.Special;
+import com.semaphore_soft.apps.cypher.networking.ClientService;
 import com.semaphore_soft.apps.cypher.networking.NetworkConstants;
 import com.semaphore_soft.apps.cypher.networking.ResponseReceiver;
+import com.semaphore_soft.apps.cypher.networking.ServerService;
 import com.semaphore_soft.apps.cypher.utils.GameStatLoader;
 
 import org.artoolkit.ar.base.ARActivity;
@@ -62,6 +69,10 @@ public class PortalActivity extends ARActivity implements PortalRenderer.NewMark
     private Hashtable<Long, Item>    items;
     private Map                      map;
     private ResponseReceiver         responseReceiver;
+    private ServerService            serverService;
+    private ClientService            clientService;
+    private boolean mServerBound = false;
+    private boolean mClientBound = false;
 
     //GameMaster gameMaster;
 
@@ -99,6 +110,41 @@ public class PortalActivity extends ARActivity implements PortalRenderer.NewMark
 
         //gameMaster = new GameMaster();
         //gameMaster.start();
+    }
+
+    @Override
+    protected void onStart()
+    {
+        super.onStart();
+        if (host)
+        {
+            // Bind to ServerService
+            Intent intent = new Intent(this, ServerService.class);
+            bindService(intent, mServerConnection, Context.BIND_AUTO_CREATE);
+        }
+        else
+        {
+            // Bind to ClientService
+            Intent intent = new Intent(this, ClientService.class);
+            bindService(intent, mClientConnection, Context.BIND_AUTO_CREATE);
+        }
+    }
+
+    @Override
+    public void onStop()
+    {
+        super.onStop();
+        // Unbind from the services
+        if (mServerBound)
+        {
+            unbindService(mServerConnection);
+            mServerBound = false;
+        }
+        else if (mClientBound)
+        {
+            unbindService(mClientConnection);
+            mClientBound = false;
+        }
     }
 
     private void setOverlay(int id)
@@ -1065,6 +1111,43 @@ public class PortalActivity extends ARActivity implements PortalRenderer.NewMark
     {
         Toast.makeText(this, "Error: " + msg, Toast.LENGTH_SHORT).show();
     }
+
+    // Defines callbacks for service binding, passed to bindService()
+    private ServiceConnection mServerConnection = new ServiceConnection()
+    {
+        @Override
+        public void onServiceConnected(ComponentName componentName, IBinder iBinder)
+        {
+            // We've bound to ServerService, cast the IBinder and get ServerService instance
+            ServerService.LocalBinder binder = (ServerService.LocalBinder) iBinder;
+            serverService = binder.getService();
+            mServerBound = true;
+        }
+
+        @Override
+        public void onServiceDisconnected(ComponentName componentName)
+        {
+            mServerBound = false;
+        }
+    };
+
+    private ServiceConnection mClientConnection = new ServiceConnection()
+    {
+        @Override
+        public void onServiceConnected(ComponentName componentName, IBinder iBinder)
+        {
+            // We've bound to ServerService, cast the IBinder and get ServerService instance
+            ClientService.LocalBinder binder = (ClientService.LocalBinder) iBinder;
+            clientService = binder.getService();
+            mClientBound = true;
+        }
+
+        @Override
+        public void onServiceDisconnected(ComponentName componentName)
+        {
+            mClientBound = false;
+        }
+    };
 
     /*private class GameMaster extends Thread {
         boolean running = false;
