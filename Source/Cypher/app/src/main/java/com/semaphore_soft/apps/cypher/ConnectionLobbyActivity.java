@@ -196,6 +196,8 @@ public class ConnectionLobbyActivity extends AppCompatActivity implements Respon
         Toast.makeText(this, "Read: " + msg, Toast.LENGTH_SHORT).show();
         if (msg.equals(NetworkConstants.GAME_START))
         {
+            LocalBroadcastManager.getInstance(ConnectionLobbyActivity.this)
+                                 .unregisterReceiver(responseReceiver);
             // Start character select activity after host has started game
             Intent intent = new Intent(getBaseContext(), CharacterSelectActivity.class);
             intent.putExtra("host", host);
