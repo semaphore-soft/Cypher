@@ -18,7 +18,7 @@ public class ItemConsumable extends Item
 
     private E_TARGETING_TYPE targetingType;
 
-    public ItemConsumable(long id,
+    public ItemConsumable(int id,
                           String name,
                           int effectRating,
                           int duration,

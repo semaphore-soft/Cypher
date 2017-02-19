@@ -92,7 +92,7 @@ public class GameStatLoader
 
     public static void loadActorStats(Actor actor,
                                       int characterID,
-                                      Hashtable<Long, Special> specials,
+                                      Hashtable<Integer, Special> specials,
                                       Context context)
     {
         String actorName;
@@ -120,7 +120,7 @@ public class GameStatLoader
 
     public static void loadActorStats(Actor actor,
                                       String actorName,
-                                      Hashtable<Long, Special> specials,
+                                      Hashtable<Integer, Special> specials,
                                       Context context)
     {
         try
@@ -255,13 +255,13 @@ public class GameStatLoader
     }
 
     public static Special loadSpecialStats(String specialName,
-                                           Hashtable<Long, Special> specials,
+                                           Hashtable<Integer, Special> specials,
                                            Context context)
     {
         System.out.println("loading special");
         System.out.println("special name is: " + specialName);
 
-        for (Long specialId : specials.keySet())
+        for (int specialId : specials.keySet())
         {
             Special special = specials.get(specialId);
             if (specialName.equals(special.getName()))
@@ -471,14 +471,14 @@ public class GameStatLoader
     }
 
     public static Item loadItemStats(String itemName,
-                                     Hashtable<Long, Item> items,
-                                     Hashtable<Long, Special> specials,
+                                     Hashtable<Integer, Item> items,
+                                     Hashtable<Integer, Special> specials,
                                      Context context)
     {
         System.out.println("loading item");
         System.out.println("item name is: " + itemName);
 
-        for (Long itemId : items.keySet())
+        for (Integer itemId : items.keySet())
         {
             Item item = items.get(itemId);
             if (itemName.equals(item.getName()))

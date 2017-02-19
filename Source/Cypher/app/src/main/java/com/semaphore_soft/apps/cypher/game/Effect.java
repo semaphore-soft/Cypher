@@ -47,6 +47,7 @@ public abstract class Effect
                     case ATTACK:
                         damage = effectRating * 2;
                         break;
+                    case NEUTRAL:
                     case SPECIAL:
                         damage = effectRating;
                         break;
@@ -140,7 +141,7 @@ public abstract class Effect
     public static void applyLinkedEffect(E_EFFECT effect,
                                          int effectRating,
                                          Actor actor,
-                                         Long linkId)
+                                         int linkId)
     {
         switch (effect)
         {
@@ -162,6 +163,7 @@ public abstract class Effect
                     case ATTACK:
                         damage = effectRating * 2;
                         break;
+                    case NEUTRAL:
                     case SPECIAL:
                         damage = effectRating;
                         break;

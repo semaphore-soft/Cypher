@@ -8,25 +8,25 @@ import java.util.ArrayList;
 
 public abstract class Item
 {
-    protected long                       id;
+    protected int                        id;
     protected String                     name;
     private   int                        effectRating;
     private   ArrayList<Effect.E_EFFECT> effects;
 
-    private Item(long id, String name)
+    private Item(int id, String name)
     {
         this.id = id;
         this.name = name;
         effects = new ArrayList<>();
     }
 
-    Item(long id, String name, int effectRating)
+    Item(int id, String name, int effectRating)
     {
         this(id, name);
         this.effectRating = effectRating;
     }
 
-    public long getID()
+    public int getID()
     {
         return id;
     }

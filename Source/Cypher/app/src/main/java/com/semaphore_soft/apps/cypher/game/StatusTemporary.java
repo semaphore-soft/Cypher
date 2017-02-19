@@ -8,7 +8,7 @@ public class StatusTemporary extends Status
 {
     int duration;
 
-    public StatusTemporary(long id, E_STATUS_TYPE type, int effectRating, int duration)
+    public StatusTemporary(int id, E_STATUS_TYPE type, int effectRating, int duration)
     {
         super(id, type, effectRating);
         this.duration = duration;

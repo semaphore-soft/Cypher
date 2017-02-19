@@ -27,8 +27,8 @@ import com.semaphore_soft.apps.cypher.networking.ServerService;
 
 public class CharacterSelectActivity extends AppCompatActivity implements ResponseReceiver.Receiver
 {
-    boolean host;
-    long    playerID;
+    private boolean          host;
+    private int              playerID;
     private ResponseReceiver responseReceiver;
     private int              numClients;
     private int playersReady = 0;
@@ -61,7 +61,7 @@ public class CharacterSelectActivity extends AppCompatActivity implements Respon
 
         host = getIntent().getBooleanExtra("host", false);
 
-        playerID = getIntent().getLongExtra("player", 0);
+        playerID = getIntent().getIntExtra("player", 0);
 
         status = (TextView) findViewById(R.id.groupStatus);
 

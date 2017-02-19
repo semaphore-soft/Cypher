@@ -7,34 +7,33 @@ import android.content.ServiceConnection;
 import android.os.Bundle;
 import android.os.IBinder;
 import android.support.v4.content.LocalBroadcastManager;
-import android.util.Pair;
-import android.view.LayoutInflater;
-import android.view.View;
-import android.view.ViewGroup;
-import android.widget.Button;
+import android.util.Log;
 import android.widget.FrameLayout;
 import android.widget.Toast;
 
 import com.semaphore_soft.apps.cypher.game.Actor;
-import com.semaphore_soft.apps.cypher.game.Entity;
+import com.semaphore_soft.apps.cypher.game.ActorController;
+import com.semaphore_soft.apps.cypher.game.GameController;
+import com.semaphore_soft.apps.cypher.game.GameMaster;
 import com.semaphore_soft.apps.cypher.game.Item;
-import com.semaphore_soft.apps.cypher.game.Map;
+import com.semaphore_soft.apps.cypher.game.Model;
 import com.semaphore_soft.apps.cypher.game.Room;
 import com.semaphore_soft.apps.cypher.game.Special;
 import com.semaphore_soft.apps.cypher.networking.ClientService;
 import com.semaphore_soft.apps.cypher.networking.NetworkConstants;
 import com.semaphore_soft.apps.cypher.networking.ResponseReceiver;
 import com.semaphore_soft.apps.cypher.networking.ServerService;
+import com.semaphore_soft.apps.cypher.ui.UIListener;
+import com.semaphore_soft.apps.cypher.ui.UIPortalActivity;
+import com.semaphore_soft.apps.cypher.ui.UIPortalOverlay;
+import com.semaphore_soft.apps.cypher.utils.CollectionManager;
 import com.semaphore_soft.apps.cypher.utils.GameStatLoader;
 
 import org.artoolkit.ar.base.ARActivity;
 import org.artoolkit.ar.base.rendering.ARRenderer;
 
 import java.util.ArrayList;
-import java.util.Hashtable;
 
-import static com.semaphore_soft.apps.cypher.game.Room.E_WALL_TYPE.DOOR_OPEN;
-import static com.semaphore_soft.apps.cypher.game.Room.E_WALL_TYPE.DOOR_UNLOCKED;
 import static com.semaphore_soft.apps.cypher.utils.CollectionManager.getNextID;
 
 /**
@@ -42,74 +41,68 @@ import static com.semaphore_soft.apps.cypher.utils.CollectionManager.getNextID;
  */
 
 public class PortalActivity extends ARActivity implements PortalRenderer.NewMarkerListener,
-                                                          ResponseReceiver.Receiver
+                                                          ResponseReceiver.Receiver,
+                                                          UIListener,
+                                                          GameController
 {
-    //TODO this class is too large, some methods should be exported
+    private UIPortalActivity uiPortalActivity;
+    private UIPortalOverlay  uiPortalOverlay;
 
-    public static final short OVERLAY_PLAYER_MARKER_SELECT = 0;
-    public static final short OVERLAY_START_MARKER_SELECT  = 1;
-    public static final short OVERLAY_ACTION               = 2;
-    public static final short OVERLAY_OPEN_DOOR            = 3;
-    public static final short OVERLAY_WAITING_FOR_HOST     = 4;
-    public static final short OVERLAY_WAITING_FOR_PLAYERS  = 5;
+    private PortalRenderer renderer;
 
-    boolean host;
+    private static ResponseReceiver responseReceiver;
+    private static ServerService    serverService;
+    private static ClientService    clientService;
+    private static boolean mServerBound = false;
+    private static boolean mClientBound = false;
 
-    Long   playerID;
-    String characterName;
+    private static boolean host;
 
-    PortalRenderer renderer;
-    int            overlayID;
-    FrameLayout    overlay_layout;
+    private static int    playerId;
+    private static String characterName;
 
-    private Hashtable<Long, Room>    rooms;
-    private Hashtable<Long, Actor>   actors;
-    private Hashtable<Long, Special> specials;
-    private Hashtable<Long, Entity>  entities;
-    private Hashtable<Long, Item>    items;
-    private Map                      map;
-    private ResponseReceiver         responseReceiver;
-    private ServerService            serverService;
-    private ClientService            clientService;
-    private boolean mServerBound = false;
-    private boolean mClientBound = false;
+    private static Model model;
 
-    //GameMaster gameMaster;
+    private static boolean turn;
+    private static int     turnId;
 
     @Override
     public void onCreate(Bundle savedInstanceState)
     {
         super.onCreate(savedInstanceState); //Calls ARActivity's actor, abstract class of ARBaseLib
-        setContentView(R.layout.main_portal);
+        setContentView(R.layout.empty);
 
-        overlay_layout = (FrameLayout) findViewById(R.id.overlay_frame);
+        //setup ui
+        uiPortalActivity = new UIPortalActivity(this);
+        ((FrameLayout) this.findViewById(R.id.empty)).addView(uiPortalActivity);
+        uiPortalActivity.setUIListener(this);
 
-        host = getIntent().getBooleanExtra("host", false);
+        uiPortalOverlay = new UIPortalOverlay(this);
+        ((FrameLayout) this.findViewById(R.id.overlay_frame)).addView(uiPortalOverlay);
+        uiPortalOverlay.setUIListener(this);
 
-        playerID = getIntent().getLongExtra("player", 0);
-        characterName = getIntent().getExtras().getString("character", "knight");
-
+        //setup ar 3d graphics
         renderer = new PortalRenderer();
         renderer.setContext(this);
 
-        actors = new Hashtable<>();
-        rooms = new Hashtable<>();
-        actors = new Hashtable<>();
-        specials = new Hashtable<>();
-        entities = new Hashtable<>();
-        items = new Hashtable<>();
-
-        map = new Map();
-
+        //setup broadcast networking service broadcast receiver
         responseReceiver = new ResponseReceiver();
         responseReceiver.setListener(this);
         LocalBroadcastManager.getInstance(this)
                              .registerReceiver(responseReceiver, NetworkConstants.getFilter());
 
-        setOverlay(OVERLAY_PLAYER_MARKER_SELECT);
+        //get this user's game roles passed down from the previous activity
+        host = getIntent().getBooleanExtra("host", false);
+        playerId = getIntent().getIntExtra("player", 0);
+        characterName = getIntent().getExtras().getString("character", "knight");
 
-        //gameMaster = new GameMaster();
-        //gameMaster.start();
+        model = new Model();
+        GameMaster.setModel(model);
+
+        ActorController.setGameController(this);
+
+        turn = host;
+        turnId = 0;
     }
 
     @Override
@@ -147,524 +140,152 @@ public class PortalActivity extends ARActivity implements PortalRenderer.NewMark
         }
     }
 
-    private void setOverlay(int id)
-    {
-        overlay_layout.removeAllViews();
-
-        LayoutInflater inflater = LayoutInflater.from(getApplicationContext());
-
-        View overlay;
-
-        switch (id)
-        {
-            case OVERLAY_PLAYER_MARKER_SELECT:
-            {
-                overlay = inflater.inflate(R.layout.overlay_player_marker_select,
-                                           (ViewGroup) findViewById(R.id.portal_base),
-                                           false);
-                overlay_layout.addView(overlay);
-                Button btnSelect = (Button) findViewById(R.id.btnSelect);
-                btnSelect.setOnClickListener(new View.OnClickListener()
-                {
-                    @Override
-                    public void onClick(View v)
-                    {
-                        int mark = getFirstUnreservedMarker();
-                        if (mark > -1)
-                        {
-                            Actor actor = new Actor(playerID, characterName, mark);
-                            GameStatLoader.loadActorStats(actor,
-                                                          characterName,
-                                                          specials,
-                                                          getApplicationContext());
-                            actors.put(playerID, actor);
-                            renderer.setPlayerMarker(playerID, mark);
-
-                            Item item = GameStatLoader.loadItemStats("delightful_bread",
-                                                                     items,
-                                                                     specials,
-                                                                     getApplicationContext());
-
-                            Toast.makeText(getApplicationContext(),
-                                           "Player Marker Set",
-                                           Toast.LENGTH_SHORT)
-                                 .show();
-
-                            if (host)
-                            {
-                                setOverlay(OVERLAY_START_MARKER_SELECT);
-                            }
-                            else
-                            {
-                                setOverlay(OVERLAY_ACTION);
-                            }
-                        }
-                        else
-                        {
-                            Toast.makeText(getApplicationContext(),
-                                           "Failed to Find Marker",
-                                           Toast.LENGTH_SHORT)
-                                 .show();
-                        }
-                    }
-                });
-                break;
-            }
-            //TODO waiting for players/host case(s)
-            case OVERLAY_START_MARKER_SELECT:
-            {
-                overlay = inflater.inflate(R.layout.overlay_start_marker_select,
-                                           (ViewGroup) findViewById(R.id.portal_base), false);
-                overlay_layout.addView(overlay);
-                Button btnSelect = (Button) findViewById(R.id.btnSelect);
-                btnSelect.setOnClickListener(new View.OnClickListener()
-                {
-                    @Override
-                    public void onClick(View v)
-                    {
-                        int mark = getFirstUnreservedMarker();
-                        if (mark > -1)
-                        {
-                            //generate a new, placed room
-                            long roomID = getNextID(rooms);
-                            Room room   = new Room(roomID, mark, true);
-                            rooms.put(roomID, room);
-                            renderer.createRoom(room);
-
-                            //place every player actor in that room
-                            for (Actor actor : actors.values())
-                            {
-                                if (actor.isPlayer())
-                                {
-                                    actor.setRoom(roomID);
-                                    room.addActor(actor.getId());
-                                }
-                            }
-
-                            renderer.updateRoomResidents(room, actors);
-
-                            map.init(roomID);
-
-                            Toast.makeText(getApplicationContext(),
-                                           "Starting Room Established",
-                                           Toast.LENGTH_SHORT)
-                                 .show();
-
-                            setOverlay(OVERLAY_ACTION);
-                        }
-                        else
-                        {
-                            Toast.makeText(getApplicationContext(),
-                                           "Failed to Find Valid Marker",
-                                           Toast.LENGTH_SHORT)
-                                 .show();
-                        }
-                    }
-                });
-                break;
-            }
-            case OVERLAY_ACTION:
-            {
-                overlay = inflater.inflate(R.layout.overlay_action,
-                                           (ViewGroup) findViewById(R.id.portal_base),
-                                           false);
-                overlay_layout.addView(overlay);
-                Button btnEndTurn = (Button) findViewById(R.id.btnEndTurn);
-                btnEndTurn.setOnClickListener(new View.OnClickListener()
-                {
-                    @Override
-                    public void onClick(View v)
-                    {
-                        int nearestMarkerID =
-                            getNearestNonPlayerMarker(actors.get(playerID).getMarker());
-                        if (nearestMarkerID > -1)
-                        {
-                            boolean foundRoom     = false;
-                            long    nearestRoomID = -1;
-                            //check to see if there is already a room associated with the nearest marker
-                            for (Long roomID : rooms.keySet())
-                            {
-                                if (rooms.get(roomID).getMarker() == nearestMarkerID)
-                                {
-                                    //if there is, use its id
-                                    foundRoom = true;
-                                    nearestRoomID = roomID;
-                                    break;
-                                }
-                            }
-                            if (foundRoom)
-                            {
-                                if (nearestRoomID == actors.get(playerID).getRoom())
-                                {
-                                    //player room hasn't changed, do nothing
-                                    Toast.makeText(getApplicationContext(),
-                                                   "Player Remains in Room",
-                                                   Toast.LENGTH_SHORT)
-                                         .show();
-                                }
-                                else
-                                {
-                                    if (!rooms.get(nearestRoomID).getPlaced())
-                                    {
-                                        Toast.makeText(getApplicationContext(),
-                                                       "Cannot move to room, room has not been placed",
-                                                       Toast.LENGTH_SHORT)
-                                             .show();
-                                    }
-                                    //check for valid move
-                                    else if (getValidPath(actors.get(playerID).getRoom(),
-                                                          nearestRoomID))
-                                    {
-                                        //if the actor was previously in a room, remove it from that room
-                                        if (actors.get(playerID).getRoom() > -1)
-                                        {
-                                            rooms.get(actors.get(playerID).getRoom())
-                                                 .removeActor(playerID);
-                                            renderer.updateRoomResidents(rooms.get(actors.get(
-                                                playerID).getRoom()), actors);
-                                        }
-
-                                        //update the actor's room and the new room's actor list
-                                        actors.get(playerID).setRoom(nearestRoomID);
-                                        rooms.get(nearestRoomID).addActor(playerID);
-
-                                        renderer.updateRoomResidents(rooms.get(nearestRoomID),
-                                                                     actors);
-
-                                        Toast.makeText(getApplicationContext(),
-                                                       "Updated Player Room",
-                                                       Toast.LENGTH_SHORT)
-                                             .show();
-                                    }
-                                    else
-                                    {
-                                        Toast.makeText(getApplicationContext(),
-                                                       "Bad Move\nNo Valid Path Between Rooms",
-                                                       Toast.LENGTH_SHORT)
-                                             .show();
-                                    }
-                                }
-                            }
-                            else
-                            {
-                                Toast.makeText(getApplicationContext(),
-                                               "Error: Tried to Move to a Room Which does not Exist\nPlease Generate the Room First",
-                                               Toast.LENGTH_LONG)
-                                     .show();
-                            }
-                        }
-                        else
-                        {
-                            Toast.makeText(getApplicationContext(),
-                                           "Couldn't Find Valid Room",
-                                           Toast.LENGTH_SHORT)
-                                 .show();
-                        }
-                    }
-                });
-                Button btnGenerateRoom = (Button) findViewById(R.id.btnGenerateRoom);
-                btnGenerateRoom.setOnClickListener(new View.OnClickListener()
-                {
-                    @Override
-                    public void onClick(View v)
-                    {
-                        int mark = getFirstUnreservedMarker();
-                        if (mark > -1)
-                        {
-                            //generate a new, placed room
-                            long roomID = getNextID(rooms);
-                            Room room   = new Room(roomID, mark, false);
-                            rooms.put(roomID, room);
-
-                            //attach three random entities with type 0 or 1 to the new room
-                            for (int i = 0; i < 3; ++i)
-                            {
-                                long entityID =
-                                    getNextID(entities);
-                                int newType = ((Math.random() > 0.3) ? 0 : 1);
-
-                                Entity newEntity = new Entity(entityID, newType);
-                                entities.put(entityID, newEntity);
-                                room.addEntity(entityID);
-                            }
-
-                            Actor actor = new Actor(getNextID(actors), room.getId(), "lil_ghost");
-                            GameStatLoader.loadActorStats(actor,
-                                                          "lil_ghost",
-                                                          specials,
-                                                          getApplicationContext());
-                            actors.put(actor.getId(), actor);
-                            room.addActor(actor.getId());
-
-                            System.out.println("put lil_ghost in room: " + roomID);
-
-                            renderer.createRoom(room);
-
-                            Toast.makeText(getApplicationContext(),
-                                           "New Room Generated",
-                                           Toast.LENGTH_SHORT)
-                                 .show();
-                        }
-                        else
-                        {
-                            Toast.makeText(getApplicationContext(),
-                                           "Couldn't Find Valid Marker",
-                                           Toast.LENGTH_SHORT)
-                                 .show();
-                        }
-                    }
-                });
-                Button btnOpenDoor = (Button) findViewById(R.id.btnOpenDoor);
-                btnOpenDoor.setOnClickListener(new View.OnClickListener()
-                {
-                    @Override
-                    public void onClick(View v)
-                    {
-                        setOverlay(OVERLAY_OPEN_DOOR);
-                    }
-                });
-                Button btnAttack = (Button) findViewById(R.id.btnAttack);
-                btnAttack.setOnClickListener(new View.OnClickListener()
-                {
-                    @Override
-                    public void onClick(View v)
-                    {
-                        Actor            actor   = actors.get(playerID);
-                        Room             room    = rooms.get(actor.getRoom());
-                        ArrayList<Actor> targets = new ArrayList<>();
-
-                        System.out.println("looking for targets in room: " + actor.getRoom());
-
-                        for (Long targetId : room.getResidentActors())
-                        {
-                            Actor target = actors.get(targetId);
-                            if (!target.isPlayer())
-                            {
-                                System.out.println("found valid target: " + target.getId());
-                                targets.add(target);
-                            }
-                        }
-                        if (targets.size() < 1)
-                        {
-                            Toast.makeText(getApplicationContext(),
-                                           "Nothing to attack here",
-                                           Toast.LENGTH_SHORT).show();
-                        }
-                        else if (targets.size() == 1)
-                        {
-                            System.out.println("Attacking target: " + targets.get(0).getId());
-                            System.out.println(
-                                "Actor Attack Rating: " + actor.getRealAttackRating());
-                            System.out.println(
-                                "Target HP before attack: " + targets.get(0).getHealthCurrent());
-                            actor.attack(targets.get(0));
-                            System.out.println(
-                                "Target HP after attack: " + targets.get(0).getHealthCurrent());
-                        }
-                        else
-                        {
-                            //TODO display target selection
-                            Toast.makeText(getApplicationContext(),
-                                           "Multiple possible targets, not yet implemented",
-                                           Toast.LENGTH_SHORT).show();
-                        }
-                    }
-                });
-                Button btnDefend = (Button) findViewById(R.id.btnDefend);
-                btnDefend.setOnClickListener(new View.OnClickListener()
-                {
-                    @Override
-                    public void onClick(View v)
-                    {
-                        actors.get(playerID).setState(Actor.E_STATE.DEFEND);
-                        Toast.makeText(getApplicationContext(),
-                                       "Happy defending bucko",
-                                       Toast.LENGTH_SHORT).show();
-                    }
-                });
-                Button btnSpecial = (Button) findViewById(R.id.btnSpecial);
-                btnSpecial.setOnClickListener(new View.OnClickListener()
-                {
-                    @Override
-                    public void onClick(View v)
-                    {
-                        Actor                    actor         = actors.get(playerID);
-                        Hashtable<Long, Special> actorSpecials = actor.getSpecials();
-
-
-                        if (actorSpecials.size() < 1)
-                        {
-                            Toast.makeText(getApplicationContext(),
-                                           "You have no specials",
-                                           Toast.LENGTH_SHORT).show();
-                        }
-                        else if (actorSpecials.size() == 1)
-                        {
-                            Special special = actorSpecials.get(0);
-
-                            performPlayerSpecial(actor, special);
-                        }
-                        else
-                        {
-                            //TODO display special select
-                            Toast.makeText(getApplicationContext(),
-                                           "Multiple possible specials, not yet implemented",
-                                           Toast.LENGTH_SHORT).show();
-                        }
-                    }
-                });
-                break;
-            }
-            case OVERLAY_OPEN_DOOR:
-            {
-                overlay = inflater.inflate(R.layout.overlay_open_door,
-                                           (ViewGroup) findViewById(R.id.portal_base),
-                                           false);
-                overlay_layout.addView(overlay);
-                Button btnConfirm = (Button) findViewById(R.id.btnConfirm);
-                btnConfirm.setOnClickListener(new View.OnClickListener()
-                {
-                    @Override
-                    public void onClick(View v)
-                    {
-                        Room room0 = rooms.get(actors.get(playerID).getRoom());
-                        Room room1;
-
-                        ArrayList<Integer> placedRoomMarkers = new ArrayList<>();
-                        for (Room room : rooms.values())
-                        {
-                            if (room.getPlaced())
-                            {
-                                placedRoomMarkers.add(room.getMarker());
-                            }
-                        }
-
-                        int nearestMarkerID = getNearestNonPlayerMarkerExcluding(room0.getMarker(),
-                                                                                 placedRoomMarkers);
-                        if (nearestMarkerID > -1)
-                        {
-                            boolean foundRoom     = false;
-                            long    nearestRoomID = -1;
-                            //check to see if there is already a room associated with the nearest marker
-                            for (Long roomID : rooms.keySet())
-                            {
-                                if (rooms.get(roomID).getMarker() == nearestMarkerID)
-                                {
-                                    //if there is, use its id
-                                    foundRoom = true;
-                                    nearestRoomID = roomID;
-                                    break;
-                                }
-                            }
-                            if (foundRoom)
-                            {
-                                room1 = rooms.get(nearestRoomID);
-                                if (getValidAdjacency(room0, room1))
-                                {
-                                    room1.setPlaced(true);
-
-                                    short wall0 = getWall(room0, room1);
-                                    short wall1 = getWall(room1, room0);
-
-                                    room0.setWallType(wall0, DOOR_OPEN);
-                                    room1.setWallType(wall1, DOOR_OPEN);
-
-                                    map.insert(room0.getId(), wall0, room1.getId(), wall1);
-                                    Pair<Integer, Integer> room1MapPos =
-                                        map.getPosition(room1.getId());
-                                    System.out.println(
-                                        "New Room Map Position: " + room1MapPos.first + ", " +
-                                        room1MapPos.second);
-                                    map.print();
-
-                                    renderer.updateRoomWalls(room0);
-                                    renderer.updateRoomWalls(room1);
-
-                                    Hashtable<Long, Pair<Short, Short>> adjacentRoomsAndWalls =
-                                        map.getAdjacentRoomsAndWalls(nearestRoomID);
-                                    for (Long id : adjacentRoomsAndWalls.keySet())
-                                    {
-                                        if (id != room0.getId())
-                                        {
-                                            room1.setWallType(adjacentRoomsAndWalls.get(id).first,
-                                                              DOOR_OPEN);
-                                            rooms.get(id)
-                                                 .setWallType(adjacentRoomsAndWalls.get(id).second,
-                                                              DOOR_OPEN);
-
-                                            renderer.updateRoomWalls(room1);
-                                            renderer.updateRoomWalls(rooms.get(id));
-                                        }
-                                    }
-
-                                    Toast.makeText(getApplicationContext(),
-                                                   "Door Opened",
-                                                   Toast.LENGTH_SHORT)
-                                         .show();
-
-                                    setOverlay(OVERLAY_ACTION);
-                                }
-                                else
-                                {
-                                    Toast.makeText(getApplicationContext(),
-                                                   "Connection is Not Valid",
-                                                   Toast.LENGTH_SHORT)
-                                         .show();
-                                }
-                            }
-                            else
-                            {
-                                Toast.makeText(getApplicationContext(),
-                                               "Error: Tried to Open Door to a Room Which does not Exist\nPlease Generate the Room First",
-                                               Toast.LENGTH_SHORT)
-                                     .show();
-                            }
-                        }
-                        else
-                        {
-                            Toast.makeText(getApplicationContext(),
-                                           "Couldn't Find Valid Marker",
-                                           Toast.LENGTH_SHORT)
-                                 .show();
-                        }
-                    }
-                });
-                Button btnCancel = (Button) findViewById(R.id.btnCancel);
-                btnCancel.setOnClickListener(new View.OnClickListener()
-                {
-                    @Override
-                    public void onClick(View v)
-                    {
-                        setOverlay(OVERLAY_ACTION);
-                    }
-                });
-                break;
-            }
-            default:
-                break;
-        }
-    }
-
+    //pass our rendering program to the ar framework
     @Override
     protected ARRenderer supplyRenderer()
     {
         return renderer;
     }
 
+    //pass the the frame to draw the camera feed and
+    //the ar graphics within to the ar framework
     @Override
     protected FrameLayout supplyFrameLayout()
     {
         return (FrameLayout) this.findViewById(R.id.portal_frame);
     }
 
+    @Override
+    public void onCommand(String cmd)
+    {
+        System.out.println("portal activity received commend: " + cmd);
+
+        if (cmd.startsWith("cmd_btn"))
+        {
+            switch (cmd)
+            {
+                case "cmd_btnPlayerMarkerSelect":
+                    if (selectPlayerMarker())
+                    {
+                        if (host)
+                        {
+                            uiPortalOverlay.overlayStartMarkerSelect();
+                        }
+                        else
+                        {
+                            //wait for host
+                        }
+                    }
+                    break;
+                case "cmd_btnStartMarkerSelect":
+                    if (selectStartMarker())
+                    {
+                        uiPortalOverlay.overlayAction();
+                    }
+                    break;
+                case "cmd_btnEndTurn":
+                    moveActor(playerId);
+                    break;
+                case "cmd_btnGenerateRoom":
+                    generateRoom();
+                    break;
+                case "cmd_btnOpenDoor":
+                    if (openDoor())
+                    {
+                        uiPortalOverlay.overlayAction();
+                    }
+                    break;
+                case "cmd_btnAttack":
+                    uiPortalOverlay.setEnemyTargets(GameMaster.getEnemyTargets(playerId));
+                    uiPortalOverlay.setSelectMode(UIPortalOverlay.E_SELECT_MODE.ATTACK_TARGET);
+                    uiPortalOverlay.overlayEnemyTargetSelect();
+                    break;
+                case "cmd_btnDefend":
+                    GameMaster.setActorState(playerId, Actor.E_STATE.DEFEND);
+                    renderer.updateRoomResidents(GameMaster.getActorRoom(playerId),
+                                                 model.getActors());
+                    Toast.makeText(getApplicationContext(),
+                                   "Success",
+                                   Toast.LENGTH_SHORT).show();
+
+                    endTurn();
+                    break;
+                case "cmd_btnSpecial":
+                    uiPortalOverlay.setEnemyTargets(GameMaster.getEnemyTargets(playerId));
+                    uiPortalOverlay.setPlayerTargets(GameMaster.getPlayerTargets(playerId));
+                    uiPortalOverlay.setSpecials(GameMaster.getSpecials(playerId));
+                    uiPortalOverlay.setSelectMode(UIPortalOverlay.E_SELECT_MODE.SPECIAL);
+                    uiPortalOverlay.overlaySpecialSelect();
+                default:
+                    break;
+            }
+        }
+        else
+        {
+            String[] splitCmd    = cmd.split("_");
+            String[] splitAction = splitCmd[1].split(";");
+
+            String[] action1 = splitAction[0].split(":");
+
+            if (action1[0].equals("attack"))
+            {
+                int targetId = Integer.parseInt(action1[1]);
+                attack(playerId, targetId);
+            }
+            else if (action1[0].equals("special"))
+            {
+                int specialId = Integer.parseInt(action1[1]);
+
+                if (splitAction.length > 1)
+                {
+                    performSpecial(playerId, specialId);
+                }
+                else
+                {
+                    String[] action2 = splitAction[1].split(":");
+
+                    if (action2[0].equals("target"))
+                    {
+                        int targetId = Integer.parseInt(action2[1]);
+                        performSpecial(playerId, targetId, specialId);
+                    }
+                }
+            }
+        }
+    }
+
+    @Override
+    public void handleRead(String msg, int readFrom)
+    {
+        Toast.makeText(this, "Read: " + msg, Toast.LENGTH_SHORT).show();
+    }
+
+    @Override
+    public void handleStatus(String msg)
+    {
+        Toast.makeText(this, "Status: " + msg, Toast.LENGTH_SHORT).show();
+    }
+
+    @Override
+    public void handleError(String msg)
+    {
+        Toast.makeText(this, "Error: " + msg, Toast.LENGTH_SHORT).show();
+    }
+
+    @Override
+    public void newMarker(int marker)
+    {
+
+    }
+
     private int getFirstUnreservedMarker()
     {
         ArrayList<Integer> marksX = new ArrayList<>();
-        for (Actor actor : actors.values())
+        for (Actor actor : model.getActors().values())
         {
             marksX.add(actor.getMarker());
         }
-        for (Room room : rooms.values())
+        for (Room room : model.getRooms().values())
         {
             marksX.add(room.getMarker());
         }
@@ -682,9 +303,9 @@ public class PortalActivity extends ARActivity implements PortalRenderer.NewMark
     private int getNearestNonPlayerMarker(int mark0)
     {
         ArrayList<Integer> actorMarkers = new ArrayList<>();
-        for (Long id : actors.keySet())
+        for (int id : model.getActors().keySet())
         {
-            actorMarkers.add(actors.get(id).getMarker());
+            actorMarkers.add(model.getActors().get(id).getMarker());
         }
 
         int foundMarker = renderer.getNearestMarkerExcluding(mark0, actorMarkers);
@@ -699,7 +320,7 @@ public class PortalActivity extends ARActivity implements PortalRenderer.NewMark
 
     private int getNearestNonPlayerMarkerExcluding(int mark0, ArrayList<Integer> marksX)
     {
-        for (Actor actor : actors.values())
+        for (Actor actor : model.getActors().values())
         {
             marksX.add(actor.getMarker());
         }
@@ -714,234 +335,183 @@ public class PortalActivity extends ARActivity implements PortalRenderer.NewMark
         return -1;
     }
 
-    short getWall(long room0, long room1)
+    private boolean selectPlayerMarker()
     {
-        return getWall(rooms.get(room0), rooms.get(room1));
-    }
-
-    short getWall(Room room0, Room room1)
-    {
-        int mark0 = room0.getMarker();
-        int mark1 = room1.getMarker();
-
-        float angle0 = renderer.getAngleBetweenMarkers(mark0, mark1);
-
-        short wall0 = getWallFromAngle(angle0);
-
-        return wall0;
-    }
-
-    public boolean getValidPath(long room0, long room1)
-    {
-        return getValidPath(rooms.get(room0), rooms.get(room1));
-    }
-
-    public boolean getValidPath(Room room0, Room room1)
-    {
-        Pair<Integer, Integer> room0Pos = map.getPosition(room0.getId());
-        short                  room0Rot = map.getRoomRotation(room0Pos.first, room0Pos.second);
-        Pair<Integer, Integer> room1Pos = map.getPosition(room1.getId());
-        short                  room1Rot = map.getRoomRotation(room1Pos.first, room1Pos.second);
-
-        if (map.checkAdjacent(room0.getId(), room1.getId()) < 0)
+        int mark = getFirstUnreservedMarker();
+        if (mark > -1)
         {
-            return false;
-        }
+            Actor actor = new Actor(playerId, characterName, mark);
+            GameStatLoader.loadActorStats(actor,
+                                          characterName,
+                                          model.getSpecials(),
+                                          getApplicationContext());
+            model.getActors().put(playerId, actor);
+            renderer.setPlayerMarker(playerId, mark);
 
-        Room.E_WALL_TYPE wallType0;
-        Room.E_WALL_TYPE wallType1;
+            Item item = GameStatLoader.loadItemStats("delightful_bread",
+                                                     model.getItems(),
+                                                     model.getSpecials(),
+                                                     getApplicationContext());
 
-        if (room0Pos.second > room1Pos.second)
-        {
-            //room1 is north of room0
-            wallType0 = room0.getWallType(room0Rot);
-            wallType1 = room1.getWallType((short) ((room1Rot + 2) % 4));
-        }
-        else if (room0Pos.first < room1Pos.first)
-        {
-            //room1 is east of room0
-            wallType0 = room0.getWallType((short) ((room0Rot + 1) % 4));
-            wallType1 = room1.getWallType((short) ((room1Rot + 3) % 4));
-        }
-        else if (room0Pos.second < room1Pos.second)
-        {
-            //room1 is south of room0
-            wallType0 = room0.getWallType((short) ((room0Rot + 2) % 4));
-            wallType1 = room1.getWallType(room1Rot);
+            Toast.makeText(getApplicationContext(),
+                           "Player Marker Set",
+                           Toast.LENGTH_SHORT)
+                 .show();
+
+            return true;
         }
         else
         {
-            //room1 is west of room0
-            wallType0 = room0.getWallType((short) ((room0Rot + 3) % 4));
-            wallType1 = room1.getWallType((short) ((room1Rot + 1) % 4));
-        }
+            Toast.makeText(getApplicationContext(),
+                           "Failed to Find Marker",
+                           Toast.LENGTH_SHORT)
+                 .show();
 
-        if ((wallType0 == DOOR_UNLOCKED || wallType0 == DOOR_OPEN) &&
-            (wallType1 == DOOR_UNLOCKED || wallType1 == DOOR_OPEN))
-        {
-            return true;
-        }
-
-        return false;
-    }
-
-    public boolean getValidAdjacency(long room0, long room1)
-    {
-        return getValidAdjacency(rooms.get(room0), rooms.get(room1));
-    }
-
-    public boolean getValidAdjacency(Room room0, Room room1)
-    {
-        int mark0 = room0.getMarker();
-        int mark1 = room1.getMarker();
-
-        float angle0 = renderer.getAngleBetweenMarkers(mark0, mark1);
-        float angle1 = renderer.getAngleBetweenMarkers(mark1, mark0);
-
-        short wall0 = getWallFromAngle(angle0);
-        short wall1 = getWallFromAngle(angle1);
-
-        Room.E_WALL_TYPE wallType0 = room0.getWallType(wall0);
-        Room.E_WALL_TYPE wallType1 = room1.getWallType(wall1);
-
-        if (wallType0 != wallType1)
-        {
             return false;
         }
+    }
 
-        Pair<Integer, Integer> proposedPositon = map.getProposedPositon(room0.getId(), wall0);
-        short proposedRotation =
-            map.getProposedRotation(room0.getId(), wall0, wall1);
-
-        System.out.println(
-            "Proposed new room position and rotation: " + proposedPositon.first + ", " +
-            proposedPositon.second + ", " + proposedRotation);
-
-        for (int i = 0; i < 4; ++i)
+    private boolean selectStartMarker()
+    {
+        int mark = getFirstUnreservedMarker();
+        if (mark > -1)
         {
-            long testRoom =
-                map.getRoomFromPositionInDirection(proposedPositon.first, proposedPositon.second,
-                                                   (short) i);
-            if (testRoom > -1 && testRoom != room0.getId())
-            {
-                System.out.println("Testing against room: " + testRoom);
+            //generate a new, placed room
+            int  roomID = getNextID(model.getRooms());
+            Room room   = new Room(roomID, mark, true);
+            model.getRooms().put(roomID, room);
+            renderer.createRoom(room);
 
-                if (!getValidAdjacencyProposedRoom(proposedPositon.first,
-                                                   proposedPositon.second,
-                                                   proposedRotation,
-                                                   rooms.get(testRoom),
-                                                   room1))
+            //place every player actor in that room
+            for (Actor actor : model.getActors().values())
+            {
+                if (actor.isPlayer())
                 {
-                    return false;
+                    actor.setRoom(roomID);
+                    room.addActor(actor.getId());
                 }
+            }
+
+            renderer.updateRoomResidents(room, model.getActors());
+
+            model.getMap().init(roomID);
+
+            Toast.makeText(getApplicationContext(),
+                           "Starting Room Established",
+                           Toast.LENGTH_SHORT)
+                 .show();
+
+            return true;
+        }
+        else
+        {
+            Toast.makeText(getApplicationContext(),
+                           "Failed to Find Valid Marker",
+                           Toast.LENGTH_SHORT)
+                 .show();
+
+            return false;
+        }
+    }
+
+    private void moveActor(int actorId)
+    {
+        int nearestMarkerId =
+            getNearestNonPlayerMarker(GameMaster.getActorMakerId(actorId));
+        if (nearestMarkerId > -1)
+        {
+            if (GameMaster.getMarkerAttachment(nearestMarkerId) == 1)
+            {
+                int startRoomId = GameMaster.getActorRoomId(actorId);
+                int endRoomId   = GameMaster.getIdByMarker(nearestMarkerId);
+
+                int res = GameMaster.moveActor(actorId, endRoomId);
+
+                postMoveResult(actorId, startRoomId, endRoomId, res);
+            }
+        }
+        else
+        {
+            Toast.makeText(getApplicationContext(),
+                           "Couldn't Find Valid Room",
+                           Toast.LENGTH_SHORT)
+                 .show();
+        }
+    }
+
+    private void postMoveResult(int actorId, int startRoomId, int endRoomId, int res)
+    {
+        if (actorId == playerId)
+        {
+            switch (res)
+            {
+                case 2:
+                    Toast.makeText(this, "Moved to starting room", Toast.LENGTH_SHORT).show();
+                    break;
+                case 1:
+                    Toast.makeText(this, "Remaining in room", Toast.LENGTH_SHORT).show();
+                    break;
+                case 0:
+                    Toast.makeText(this, "Moved to new room", Toast.LENGTH_SHORT).show();
+                    break;
+                case -1:
+                    Toast.makeText(this, "Can't move, no door to room", Toast.LENGTH_SHORT).show();
+                    break;
+                case -2:
+                    Toast.makeText(this, "Can't move, room not adjacent", Toast.LENGTH_SHORT)
+                         .show();
+                    break;
+                case -3:
+                    Toast.makeText(this, "Can't move, room not placed", Toast.LENGTH_SHORT).show();
+                    break;
+                case -4:
+                    Toast.makeText(this, "Error", Toast.LENGTH_SHORT).show();
+                    break;
             }
         }
 
-        return true;
-    }
-
-    public boolean getValidAdjacencyExistingRooms(long room0, long room1)
-    {
-        return getValidAdjacencyExistingRooms(rooms.get(room0), rooms.get(room1));
-    }
-
-    public boolean getValidAdjacencyProposedRoom(int x, int y, short rot, long room0, long room1)
-    {
-        return getValidAdjacencyProposedRoom(x, y, rot, rooms.get(room0), rooms.get(room1));
-    }
-
-    public boolean getValidAdjacencyProposedRoom(int x, int y, short rot, Room room0, Room room1)
-    {
-        Pair<Integer, Integer> room0Pos = map.getPosition(room0.getId());
-        short                  room0Rot = map.getRoomRotation(room0Pos.first, room0Pos.second);
-        Pair<Integer, Integer> room1Pos = new Pair<>(x, y);
-        short                  room1Rot = rot;
-
-        Room.E_WALL_TYPE wallType0;
-        Room.E_WALL_TYPE wallType1;
-
-        if (room0Pos.second > room1Pos.second)
+        if (res >= 0)
         {
-            //room1 is north of room0
-            wallType0 = room0.getWallType(room0Rot);
-            wallType1 = room1.getWallType((short) ((room1Rot + 2) % 4));
+            if (startRoomId > -1)
+            {
+                renderer.updateRoomResidents(GameMaster.getRoom(startRoomId), model.getActors());
+            }
+            if (endRoomId > -1)
+            {
+                renderer.updateRoomResidents(GameMaster.getRoom(endRoomId), model.getActors());
+            }
         }
-        else if (room0Pos.first < room1Pos.first)
+    }
+
+    private boolean generateRoom()
+    {
+        int mark = getFirstUnreservedMarker();
+        if (mark > -1)
         {
-            //room1 is east of room0
-            wallType0 = room0.getWallType((short) ((room0Rot + 1) % 4));
-            wallType1 = room1.getWallType((short) ((room1Rot + 3) % 4));
-        }
-        else if (room0Pos.second < room1Pos.second)
-        {
-            //room1 is south of room0
-            wallType0 = room0.getWallType((short) ((room0Rot + 2) % 4));
-            wallType1 = room1.getWallType(room1Rot);
+            Room room =
+                GameMaster.generateRoom(this, CollectionManager.getNextID(model.getRooms()), mark);
+
+            renderer.createRoom(room);
+
+            Toast.makeText(getApplicationContext(),
+                           "New Room Generated",
+                           Toast.LENGTH_SHORT)
+                 .show();
+
+            return true;
         }
         else
         {
-            //room1 is west of room0
-            wallType0 = room0.getWallType((short) ((room0Rot + 3) % 4));
-            wallType1 = room1.getWallType((short) ((room1Rot + 1) % 4));
-        }
+            Toast.makeText(getApplicationContext(),
+                           "Couldn't Find Valid Marker",
+                           Toast.LENGTH_SHORT)
+                 .show();
 
-        if (wallType0 == wallType1)
-        {
-            return true;
-        }
-
-        return false;
-    }
-
-    public boolean getValidAdjacencyExistingRooms(Room room0, Room room1)
-    {
-        Pair<Integer, Integer> room0Pos = map.getPosition(room0.getId());
-        short                  room0Rot = map.getRoomRotation(room0Pos.first, room0Pos.second);
-        Pair<Integer, Integer> room1Pos = map.getPosition(room1.getId());
-        short                  room1Rot = map.getRoomRotation(room1Pos.first, room1Pos.second);
-
-        if (map.checkAdjacent(room0.getId(), room1.getId()) < 0)
-        {
             return false;
         }
-
-        Room.E_WALL_TYPE wallType0;
-        Room.E_WALL_TYPE wallType1;
-
-        if (room0Pos.second > room1Pos.second)
-        {
-            //room1 is north of room0
-            wallType0 = room0.getWallType(room0Rot);
-            wallType1 = room1.getWallType((short) ((room1Rot + 2) % 4));
-        }
-        else if (room0Pos.first < room1Pos.first)
-        {
-            //room1 is east of room0
-            wallType0 = room0.getWallType((short) ((room0Rot + 1) % 4));
-            wallType1 = room1.getWallType((short) ((room1Rot + 3) % 4));
-        }
-        else if (room0Pos.second < room1Pos.second)
-        {
-            //room1 is south of room0
-            wallType0 = room0.getWallType((short) ((room0Rot + 2) % 4));
-            wallType1 = room1.getWallType(room1Rot);
-        }
-        else
-        {
-            //room1 is west of room0
-            wallType0 = room0.getWallType((short) ((room0Rot + 3) % 4));
-            wallType1 = room1.getWallType((short) ((room1Rot + 1) % 4));
-        }
-
-        if (wallType0 == wallType1)
-        {
-            return true;
-        }
-
-        return false;
     }
 
-    public short getWallFromAngle(float angle)
+    private short getWallFromAngle(float angle)
     {
         if (angle > 315 || angle <= 45)
         {
@@ -961,15 +531,188 @@ public class PortalActivity extends ARActivity implements PortalRenderer.NewMark
         }
     }
 
-    @Override
-    public void newMarker(int marker)
+    private boolean openDoor()
     {
+        int startRoomId = GameMaster.getActorRoomId(playerId);
 
+        ArrayList<Integer> placedRoomMarkers = GameMaster.getPlacedRoomMarkerIds();
+
+        int nearestMarkerID =
+            getNearestNonPlayerMarkerExcluding(GameMaster.getRoomMarkerId(startRoomId),
+                                               placedRoomMarkers);
+        if (nearestMarkerID > -1)
+        {
+            if (GameMaster.getMarkerAttachment(nearestMarkerID) == 1)
+            {
+                int endRoomId = GameMaster.getIdByMarker(nearestMarkerID);
+
+                float angle0 =
+                    renderer.getAngleBetweenMarkers(GameMaster.getRoomMarkerId(startRoomId),
+                                                    nearestMarkerID);
+                float angle1 = renderer.getAngleBetweenMarkers(nearestMarkerID,
+                                                               GameMaster.getRoomMarkerId(
+                                                                   startRoomId));
+
+                short sideOfStartRoom = getWallFromAngle(angle0);
+                short sideOfEndRoom   = getWallFromAngle(angle1);
+
+                int res =
+                    GameMaster.openDoor(startRoomId, endRoomId, sideOfStartRoom, sideOfEndRoom);
+
+                if (res >= 0)
+                {
+                    postOpenDoorResult(endRoomId, res);
+
+                    return true;
+                }
+
+                return false;
+            }
+            else
+            {
+                Toast.makeText(getApplicationContext(),
+                               "Error: Tried to Open Door to a Room Which does not Exist\nPlease Generate the Room First",
+                               Toast.LENGTH_SHORT)
+                     .show();
+
+                return false;
+            }
+        }
+        else
+        {
+            Toast.makeText(getApplicationContext(),
+                           "Couldn't Find Valid Marker",
+                           Toast.LENGTH_SHORT)
+                 .show();
+
+            return false;
+        }
+    }
+
+    private void postOpenDoorResult(int endRoomId, int res)
+    {
+        switch (res)
+        {
+            case 0:
+                break;
+            case -1:
+                break;
+        }
+
+        if (res >= 0)
+        {
+            Room room = GameMaster.getRoom(endRoomId);
+            renderer.updateRoomWalls(room);
+
+            ArrayList<Integer> adjacentRoomIds = GameMaster.getAdjacentRoomIds(endRoomId);
+            for (int id : adjacentRoomIds)
+            {
+                Room adjacentRoom = GameMaster.getRoom(id);
+                renderer.updateRoomWalls(adjacentRoom);
+            }
+        }
+    }
+
+    private void attack(int attackerId, int defenderId)
+    {
+        int res = GameMaster.attack(attackerId, defenderId);
+
+        postAttackResults(attackerId, res);
+
+        endTurn();
+    }
+
+    private void postAttackResults(int attackerId, int res)
+    {
+        if (attackerId == playerId)
+        {
+            switch (res)
+            {
+                case 1:
+                    Toast.makeText(this, "Killed target", Toast.LENGTH_SHORT).show();
+                    break;
+                case 0:
+                    Toast.makeText(this, "Success", Toast.LENGTH_SHORT).show();
+                    break;
+                default:
+                    break;
+            }
+        }
+
+        if (res >= 0)
+        {
+            Room room = GameMaster.getActorRoom(attackerId);
+            renderer.updateRoomResidents(room, model.getActors());
+        }
+    }
+
+    private void performSpecial(int sourceId, int specialId)
+    {
+        int res = GameMaster.special(sourceId, specialId);
+
+        postSpecialResult(sourceId, res);
+
+        endTurn();
+    }
+
+    private void performSpecial(int sourceId, int targetId, int specialId)
+    {
+        int res = GameMaster.special(sourceId, targetId, specialId);
+
+        postSpecialResult(sourceId, res);
+
+        endTurn();
+    }
+
+    private void postSpecialResult(int sourceId, int res)
+    {
+        if (sourceId == playerId)
+        {
+            switch (res)
+            {
+                case 1:
+                    Toast.makeText(this, "Killed target", Toast.LENGTH_SHORT).show();
+                    break;
+                case 0:
+                    Toast.makeText(this, "Success", Toast.LENGTH_SHORT).show();
+                    break;
+                case -1:
+                    Toast.makeText(this, "You don't have enough energy", Toast.LENGTH_SHORT).show();
+                    break;
+                case -2:
+                    Toast.makeText(this, "No valid targets", Toast.LENGTH_SHORT).show();
+                    break;
+                default:
+                    break;
+            }
+        }
+
+        if (res >= 0)
+        {
+            Room room = GameMaster.getActorRoom(sourceId);
+            renderer.updateRoomResidents(room, model.getActors());
+        }
+    }
+
+    private ArrayList<Actor> getActorsInRoom(Room room, boolean getPlayers)
+    {
+        ArrayList<Actor> res = new ArrayList<>();
+
+        for (int actorId : room.getResidentActors())
+        {
+            Actor actor = model.getActors().get(actorId);
+            if ((getPlayers && actor.isPlayer()) || (!getPlayers && !actor.isPlayer()))
+            {
+                res.add(actor);
+            }
+        }
+
+        return res;
     }
 
     private void performPlayerSpecial(Actor actor, Special special)
     {
-        Room             room    = rooms.get(actor.getRoom());
+        Room             room    = model.getRooms().get(actor.getRoom());
         ArrayList<Actor> targets = new ArrayList<>();
 
         switch (special.getTargetingType())
@@ -1068,38 +811,54 @@ public class PortalActivity extends ARActivity implements PortalRenderer.NewMark
         }
     }
 
-    private ArrayList<Actor> getActorsInRoom(Room room, boolean getPlayers)
+    public void endTurn()
     {
-        ArrayList<Actor> res = new ArrayList<>();
+        Log.d("PortalActivity", "ended player turn " + turnId);
 
-        for (Long actorId : room.getResidentActors())
+        turn = false;
+        turnId = CollectionManager.getNextIdFromId(turnId, model.getActors());
+
+        Log.d("PortalActivity", "next turn is " + turnId);
+
+        if (turnId == playerId)
         {
-            Actor actor = actors.get(actorId);
-            if ((getPlayers && actor.isPlayer()) || (!getPlayers && !actor.isPlayer()))
-            {
-                res.add(actor);
-            }
+            turn = true;
         }
-
-        return res;
+        else if (!GameMaster.getActorIsPlayer(turnId))
+        {
+            ActorController.takeTurn(turnId);
+        }
     }
 
     @Override
-    public void handleRead(String msg, int readFrom)
+    public void feedback(String message)
     {
-        Toast.makeText(this, "Read: " + msg, Toast.LENGTH_SHORT).show();
+        Toast.makeText(this, message, Toast.LENGTH_SHORT).show();
     }
 
     @Override
-    public void handleStatus(String msg)
+    public void updateRoom(int roomId)
     {
-        Toast.makeText(this, "Status: " + msg, Toast.LENGTH_SHORT).show();
+        renderer.updateRoomResidents(GameMaster.getRoom(roomId), model.getActors());
     }
 
     @Override
-    public void handleError(String msg)
+    public void turnPassed(int turnId)
     {
-        Toast.makeText(this, "Error: " + msg, Toast.LENGTH_SHORT).show();
+        Log.d("PortalActivity", "ended non-player turn " + turnId);
+
+        PortalActivity.turnId = CollectionManager.getNextIdFromId(turnId, model.getActors());
+
+        Log.d("PortalActivity", "next turn is " + PortalActivity.turnId);
+
+        if (PortalActivity.turnId == playerId)
+        {
+            turn = true;
+        }
+        else if (!GameMaster.getActorIsPlayer(PortalActivity.turnId))
+        {
+            ActorController.takeTurn(PortalActivity.turnId);
+        }
     }
 
     // Defines callbacks for service binding, passed to bindService()
@@ -1138,24 +897,4 @@ public class PortalActivity extends ARActivity implements PortalRenderer.NewMark
             mClientBound = false;
         }
     };
-
-    /*private class GameMaster extends Thread {
-        boolean running = false;
-        int state = 0;
-
-        GameMaster() {
-            running = true;
-        }
-
-        public void run() {
-            while (running) {
-                switch (state) {
-                    case 0:
-                        break;
-                    default:
-                        break;
-                }
-            }
-        }
-    }*/
 }

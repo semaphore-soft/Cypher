@@ -10,13 +10,8 @@ import android.os.IBinder;
 import android.support.v4.content.LocalBroadcastManager;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
-import android.support.v7.widget.LinearLayoutManager;
-import android.support.v7.widget.RecyclerView;
-import android.support.v7.widget.Toolbar;
 import android.util.Log;
-import android.view.View;
-import android.widget.Button;
-import android.widget.TextView;
+import android.widget.FrameLayout;
 import android.widget.Toast;
 
 import com.semaphore_soft.apps.cypher.networking.ClientService;
@@ -25,7 +20,8 @@ import com.semaphore_soft.apps.cypher.networking.ResponseReceiver;
 import com.semaphore_soft.apps.cypher.networking.Server;
 import com.semaphore_soft.apps.cypher.networking.ServerService;
 import com.semaphore_soft.apps.cypher.ui.PlayerID;
-import com.semaphore_soft.apps.cypher.ui.PlayerIDAdapter;
+import com.semaphore_soft.apps.cypher.ui.UIConnectionLobby;
+import com.semaphore_soft.apps.cypher.ui.UIListener;
 
 import java.net.Inet4Address;
 import java.net.InetAddress;
@@ -38,58 +34,46 @@ import java.util.Enumeration;
  * Created by Scorple on 1/9/2017.
  */
 
-public class ConnectionLobbyActivity extends AppCompatActivity implements ResponseReceiver.Receiver
+public class ConnectionLobbyActivity extends AppCompatActivity implements ResponseReceiver.Receiver,
+                                                                          UIListener
 {
-    String              name;
-    boolean             host;
-    long                playerID;
-    ArrayList<PlayerID> playersList;
+    private static ResponseReceiver responseReceiver;
+    private static ServerService    serverService;
+    private static ClientService    clientService;
+    private static boolean mServerBound = false;
+    private static boolean mClientBound = false;
 
-    private PlayerIDAdapter playerIDAdapter;
+    private static String              name;
+    private static boolean             host;
+    private static int                 playerID;
+    private static ArrayList<PlayerID> playersList;
 
-    RecyclerView recyclerView;
-    private ResponseReceiver responseReceiver;
-    private ServerService    serverService;
-    private ClientService    clientService;
-    private boolean mServerBound = false;
-    private boolean mClientBound = false;
+    private UIConnectionLobby uiConnectionLobby;
 
     @Override
     public void onCreate(Bundle savedInstanceState)
     {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.connection_lobby);
-        Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
-        setSupportActionBar(toolbar);
+        setContentView(R.layout.empty);
+
+        uiConnectionLobby = new UIConnectionLobby(this);
+        ((FrameLayout) findViewById(R.id.empty)).addView(uiConnectionLobby);
+        uiConnectionLobby.setUIListener(this);
 
         responseReceiver = new ResponseReceiver();
         responseReceiver.setListener(this);
         LocalBroadcastManager.getInstance(this)
                              .registerReceiver(responseReceiver, NetworkConstants.getFilter());
 
-
         host = getIntent().getBooleanExtra("host", false);
-
-        TextView txtDisplayName = (TextView) findViewById(R.id.txtDisplayName);
-
         name = getIntent().getStringExtra("name");
 
         String welcomeText = "Welcome " + name;
-        txtDisplayName.setText(welcomeText);
-
-        recyclerView = (RecyclerView) findViewById(R.id.recPlayerCardList);
-        recyclerView.setHasFixedSize(true);
-        LinearLayoutManager llm = new LinearLayoutManager(this);
-        llm.setOrientation(LinearLayoutManager.VERTICAL);
-        recyclerView.setLayoutManager(llm);
+        uiConnectionLobby.setTxtDisplayName(welcomeText);
 
         playersList = new ArrayList<>();
-
-        playerIDAdapter = new PlayerIDAdapter(this, playersList);
-
-        recyclerView.setAdapter(playerIDAdapter);
-
-        Button btnStart = (Button) findViewById(R.id.btnStart);
+        uiConnectionLobby.setPlayersList(playersList);
+        uiConnectionLobby.setHost(host);
 
         if (host)
         {
@@ -101,10 +85,12 @@ public class ConnectionLobbyActivity extends AppCompatActivity implements Respon
                 // Use a label to break out of a nested for loop
                 // Note: probably better to use a method for the inner loop, but this works
                 outerloop:
-                for (Enumeration<NetworkInterface> en = NetworkInterface.getNetworkInterfaces(); en.hasMoreElements();)
+                for (Enumeration<NetworkInterface> en = NetworkInterface.getNetworkInterfaces();
+                     en.hasMoreElements(); )
                 {
                     NetworkInterface ni = en.nextElement();
-                    for (Enumeration<InetAddress> addresses = ni.getInetAddresses(); addresses.hasMoreElements();)
+                    for (Enumeration<InetAddress> addresses = ni.getInetAddresses();
+                         addresses.hasMoreElements(); )
                     {
                         InetAddress inetAddress = addresses.nextElement();
                         // Limit IP addresses shown to IPv4
@@ -122,36 +108,7 @@ public class ConnectionLobbyActivity extends AppCompatActivity implements Respon
                 Log.e("Lobby", ex.toString());
             }
 
-            TextView ipAddress = (TextView) findViewById(R.id.ip_address);
-            ipAddress.setText("Your IP Address is: " + ip);
-
-            btnStart.setEnabled(true);
-
-            btnStart.setOnClickListener(new View.OnClickListener()
-            {
-                @Override
-                public void onClick(View view)
-                {
-                    Server.setAccepting(false);
-                    serverService.writeAll(NetworkConstants.GAME_START);
-                    LocalBroadcastManager.getInstance(ConnectionLobbyActivity.this).unregisterReceiver(responseReceiver);
-                    Toast.makeText(ConnectionLobbyActivity.this,
-                                   "Moving to Character Select",
-                                   Toast.LENGTH_SHORT).show();
-                    Intent intent = new Intent(getBaseContext(), CharacterSelectActivity.class);
-                    intent.putExtra("host", host);
-                    intent.putExtra("player", (long) 0);
-                    intent.putExtra("numClients", (int) playerID);
-                    startActivity(intent);
-                }
-            });
-        }
-        else
-        {
-            btnStart.setEnabled(false);
-
-            TextView ipAddress = (TextView) findViewById(R.id.ip_address);
-            ipAddress.setVisibility(View.GONE);
+            uiConnectionLobby.setTextIP("Your IP Address is: " + ip);
         }
     }
 
@@ -196,7 +153,7 @@ public class ConnectionLobbyActivity extends AppCompatActivity implements Respon
         playerID.setID(id);
         playerID.setPlayerName(player);
         playersList.add(playerID);
-        playerIDAdapter.notifyDataSetChanged();
+        uiConnectionLobby.setPlayersList(playersList);
         if (host)
         {
             // Update clients with all connected players
@@ -206,6 +163,30 @@ public class ConnectionLobbyActivity extends AppCompatActivity implements Respon
                 serverService.writeAll(
                     NetworkConstants.PF_PLAYER + pid.getPlayerName() + ":" + pid.getID());
             }
+        }
+    }
+
+    public void onCommand(String cmd)
+    {
+        switch (cmd)
+        {
+            case "cmd_btnStart":
+                Server.setAccepting(false);
+                serverService.writeAll(NetworkConstants.GAME_START);
+                LocalBroadcastManager.getInstance(ConnectionLobbyActivity.this)
+                                     .unregisterReceiver(responseReceiver);
+                Toast.makeText(ConnectionLobbyActivity.this,
+                               "Moving to Character Select",
+                               Toast.LENGTH_SHORT).show();
+                Intent intent = new Intent(getBaseContext(), CharacterSelectActivity.class);
+                intent.putExtra("host", host);
+                intent.putExtra("player", (long) 0);
+                intent.putExtra("numClients", playerID);
+                startActivity(intent);
+                break;
+            default:
+                Toast.makeText(this, "UI interaction not handled", Toast.LENGTH_SHORT).show();
+                break;
         }
     }
 
@@ -224,7 +205,7 @@ public class ConnectionLobbyActivity extends AppCompatActivity implements Respon
         else if (msg.startsWith(NetworkConstants.PF_NAME))
         {
             // add players on server
-            addPlayer(msg.substring(5), (int) ++playerID);
+            addPlayer(msg.substring(5), ++playerID);
         }
         else if (msg.startsWith(NetworkConstants.PF_PLAYER))
         {
