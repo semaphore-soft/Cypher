@@ -1085,7 +1085,7 @@ public class PortalActivity extends ARActivity implements PortalRenderer.NewMark
     }
 
     @Override
-    public void handleRead(String msg)
+    public void handleRead(String msg, int readFrom)
     {
         Toast.makeText(this, "Read: " + msg, Toast.LENGTH_SHORT).show();
     }

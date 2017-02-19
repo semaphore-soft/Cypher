@@ -212,7 +212,7 @@ public class ConnectionLobbyActivity extends AppCompatActivity implements Respon
     }
 
     @Override
-    public void handleRead(String msg)
+    public void handleRead(String msg, int readFrom)
     {
         Toast.makeText(this, "Read: " + msg, Toast.LENGTH_SHORT).show();
         if (msg.equals(NetworkConstants.GAME_START))
@@ -311,7 +311,7 @@ public class ConnectionLobbyActivity extends AppCompatActivity implements Respon
             ClientService.LocalBinder binder = (ClientService.LocalBinder) iBinder;
             clientService = binder.getService();
             mClientBound = true;
-            clientService.clientWrite(NetworkConstants.PF_NAME + name);
+            clientService.write(NetworkConstants.PF_NAME + name);
         }
 
         @Override

@@ -233,7 +233,8 @@ public class Server
         private void processMessage(String msg)
         {
             Log.i("ClientHandler", msg);
-            serverService.threadRead(msg);
+            Log.d("ClientHandler", String.valueOf(clients.indexOf(this)));
+            serverService.threadRead(msg, clients.indexOf(this));
         }
     }
 }

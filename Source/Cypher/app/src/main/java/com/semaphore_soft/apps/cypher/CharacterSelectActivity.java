@@ -100,14 +100,14 @@ public class CharacterSelectActivity extends AppCompatActivity implements Respon
                 {
                     if (!ready)
                     {
-                        clientService.clientWrite(NetworkConstants.GAME_READY);
+                        clientService.write(NetworkConstants.GAME_READY);
                         status.setText("Waiting for host...");
                         btnGo.setText("Cancel");
                         ready = true;
                     }
                     else
                     {
-                        clientService.clientWrite(NetworkConstants.GAME_UNREADY);
+                        clientService.write(NetworkConstants.GAME_UNREADY);
                         status.setText("");
                         btnGo.setText("GO!");
                         ready = false;
@@ -197,7 +197,7 @@ public class CharacterSelectActivity extends AppCompatActivity implements Respon
     };
 
     @Override
-    public void handleRead(String msg)
+    public void handleRead(String msg, int readFrom)
     {
         Toast.makeText(this, "Read: " + msg, Toast.LENGTH_SHORT).show();
         if (msg.equals(NetworkConstants.GAME_READY))

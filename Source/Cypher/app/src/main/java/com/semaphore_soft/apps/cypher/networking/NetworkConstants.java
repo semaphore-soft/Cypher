@@ -18,7 +18,8 @@ public class NetworkConstants
         "com.semaphore_soft.apps.cypher.networking.ERROR";
 
     // Constant for message extra used by broadcast receiver
-    public static final String MESSAGE = "com.semaphore_soft.apps.cypher.MESSAGE";
+    public static final String MESSAGE = "com.semaphore_soft.apps.cypher.networking.MESSAGE";
+    public static final String INDEX   = "com.semaphore_soft.apps.cypher.networking.INDEX";
 
     // Constants for read codes
     // Constants for game status updates
