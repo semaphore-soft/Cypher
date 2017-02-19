@@ -69,7 +69,7 @@ public class PortalActivity extends ARActivity implements PortalRenderer.NewMark
     private static boolean turn;
     private static int     turnId;
 
-    private static Runnable heartbeat = new Runnable()
+    private Runnable heartbeat = new Runnable()
     {
         @Override
         public void run()
