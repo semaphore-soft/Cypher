@@ -24,6 +24,7 @@ public class NetworkConstants
     // Constants for game status updates
     public static final String GAME_START     = "GAME_START";
     public static final String GAME_READY     = "GAME_READY";
+    public static final String GAME_UNREADY   = "GAME_UNREADY";
     public static final String GAME_AR_START  = "GAME_AR_START";
     public static final String GAME_UPDATE    = "GAME_UPDATE";
     public static final String GAME_HEARTBEAT = "GAME_HEARTBEAT";

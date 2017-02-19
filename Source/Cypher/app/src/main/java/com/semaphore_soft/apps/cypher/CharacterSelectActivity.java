@@ -42,6 +42,7 @@ public class CharacterSelectActivity extends AppCompatActivity implements Respon
     private ClientService clientService;
     private boolean mServerBound  = false;
     private boolean mClientBound  = false;
+    private boolean ready         = false;
     private Handler handler       = new Handler();
     private boolean sendHeartbeat = true;
 
@@ -97,8 +98,20 @@ public class CharacterSelectActivity extends AppCompatActivity implements Respon
                 }
                 else
                 {
-                    clientService.clientWrite(NetworkConstants.GAME_READY);
-                    status.setText("Waiting for host...");
+                    if (!ready)
+                    {
+                        clientService.clientWrite(NetworkConstants.GAME_READY);
+                        status.setText("Waiting for host...");
+                        btnGo.setText("Cancel");
+                        ready = true;
+                    }
+                    else
+                    {
+                        clientService.clientWrite(NetworkConstants.GAME_UNREADY);
+                        status.setText("");
+                        btnGo.setText("GO!");
+                        ready = false;
+                    }
                 }
             }
         });
@@ -195,6 +208,16 @@ public class CharacterSelectActivity extends AppCompatActivity implements Respon
             if (playersReady >= numClients)
             {
                 btnGo.setEnabled(true);
+            }
+            // Include host when displaying connected players
+            status.setText((playersReady + 1) + "/" + (numClients + 1) + " connected");
+        }
+        else if (msg.equals(NetworkConstants.GAME_UNREADY))
+        {
+            playersReady--;
+            if (playersReady < numClients)
+            {
+                btnGo.setEnabled(false);
             }
             // Include host when displaying connected players
             status.setText((playersReady + 1) + "/" + (numClients + 1) + " connected");

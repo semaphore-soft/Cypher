@@ -292,10 +292,7 @@ public class ConnectionLobbyActivity extends AppCompatActivity implements Respon
             ServerService.LocalBinder binder = (ServerService.LocalBinder) iBinder;
             serverService = binder.getService();
             mServerBound = true;
-            if (host)
-            {
-                addPlayer(name, 0);
-            }
+            addPlayer(name, 0);
         }
 
         @Override
