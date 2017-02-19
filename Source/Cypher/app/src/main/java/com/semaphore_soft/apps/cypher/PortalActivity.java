@@ -51,8 +51,8 @@ public class PortalActivity extends ARActivity implements PortalRenderer.NewMark
     private PortalRenderer renderer;
 
     private static ResponseReceiver responseReceiver;
-    private static ServerService            serverService;
-    private static ClientService            clientService;
+    private static ServerService    serverService;
+    private static ClientService    clientService;
     private static boolean mServerBound = false;
     private static boolean mClientBound = false;
 

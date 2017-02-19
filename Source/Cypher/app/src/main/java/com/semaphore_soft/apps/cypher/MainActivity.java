@@ -34,13 +34,14 @@ public class MainActivity extends AppCompatActivity implements GetNameDialogFrag
                                                                ResponseReceiver.Receiver,
                                                                UIListener
 {
-    boolean host = false;
-    private String name = "";
-    private ResponseReceiver responseReceiver;
-    private ServerService    serverService;
-    private ClientService    clientService;
-    private boolean mServerBound = false;
-    private boolean mClientBound = false;
+    private static ResponseReceiver responseReceiver;
+    private static ServerService    serverService;
+    private static ClientService    clientService;
+    private static boolean mServerBound = false;
+    private static boolean mClientBound = false;
+
+    private static boolean host = false;
+    private static String  name = "";
 
     @Override
     public void onCreate(Bundle savedInstanceState)
@@ -82,7 +83,7 @@ public class MainActivity extends AppCompatActivity implements GetNameDialogFrag
         }
     }
 
-    public void showGetNameDialog()
+    private void showGetNameDialog()
     {
         FragmentManager       fm                    = getSupportFragmentManager();
         GetNameDialogFragment getNameDialogFragment = new GetNameDialogFragment();
@@ -90,7 +91,7 @@ public class MainActivity extends AppCompatActivity implements GetNameDialogFrag
         getNameDialogFragment.show(fm, "get_name_dialog");
     }
 
-    public void showConnectDialog()
+    private void showConnectDialog()
     {
         FragmentManager fm              = getSupportFragmentManager();
         ConnectFragment connectFragment = new ConnectFragment();
@@ -126,7 +127,7 @@ public class MainActivity extends AppCompatActivity implements GetNameDialogFrag
     @Override
     public void startClient(String addr, String name)
     {
-        this.name = name;
+        MainActivity.name = name;
         // Try to connect to the socket before moving to connection lobby
         clientService.startClient(addr);
     }
@@ -134,7 +135,7 @@ public class MainActivity extends AppCompatActivity implements GetNameDialogFrag
     @Override
     public void onFinishGetName(String name)
     {
-        this.name = name;
+        MainActivity.name = name;
         // Start the server thread, which will start
         // the connection lobby when it starts accepting connections
         serverService.startServer();

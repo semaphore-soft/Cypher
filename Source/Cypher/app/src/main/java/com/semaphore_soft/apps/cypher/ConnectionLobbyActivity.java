@@ -37,16 +37,16 @@ import java.util.Enumeration;
 public class ConnectionLobbyActivity extends AppCompatActivity implements ResponseReceiver.Receiver,
                                                                           UIListener
 {
-    String              name;
-    boolean             host;
-    int                 playerID;
-    ArrayList<PlayerID> playersList;
+    private static ResponseReceiver responseReceiver;
+    private static ServerService    serverService;
+    private static ClientService    clientService;
+    private static boolean mServerBound = false;
+    private static boolean mClientBound = false;
 
-    private ResponseReceiver responseReceiver;
-    private ServerService    serverService;
-    private ClientService    clientService;
-    private boolean mServerBound = false;
-    private boolean mClientBound = false;
+    private static String              name;
+    private static boolean             host;
+    private static int                 playerID;
+    private static ArrayList<PlayerID> playersList;
 
     private UIConnectionLobby uiConnectionLobby;
 
@@ -175,14 +175,15 @@ public class ConnectionLobbyActivity extends AppCompatActivity implements Respon
             case "cmd_btnStart":
                 Server.setAccepting(false);
                 serverService.writeAll(NetworkConstants.GAME_START);
-                LocalBroadcastManager.getInstance(ConnectionLobbyActivity.this).unregisterReceiver(responseReceiver);
+                LocalBroadcastManager.getInstance(ConnectionLobbyActivity.this)
+                                     .unregisterReceiver(responseReceiver);
                 Toast.makeText(ConnectionLobbyActivity.this,
                                "Moving to Character Select",
                                Toast.LENGTH_SHORT).show();
                 Intent intent = new Intent(getBaseContext(), CharacterSelectActivity.class);
                 intent.putExtra("host", host);
                 intent.putExtra("player", (long) 0);
-                intent.putExtra("numClients", (int) playerID);
+                intent.putExtra("numClients", playerID);
                 startActivity(intent);
                 break;
             default:
@@ -206,7 +207,7 @@ public class ConnectionLobbyActivity extends AppCompatActivity implements Respon
         else if (msg.startsWith(NetworkConstants.PF_NAME))
         {
             // add players on server
-            addPlayer(msg.substring(5), (int) ++playerID);
+            addPlayer(msg.substring(5), ++playerID);
         }
         else if (msg.startsWith(NetworkConstants.PF_PLAYER))
         {
