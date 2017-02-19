@@ -1,9 +1,14 @@
 package com.semaphore_soft.apps.cypher;
 
+import android.content.ComponentName;
+import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
-import android.net.Uri;
+import android.content.ServiceConnection;
 import android.os.Bundle;
+import android.os.IBinder;
 import android.support.v4.content.LocalBroadcastManager;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.widget.FrameLayout;
@@ -39,6 +44,10 @@ public class ConnectionLobbyActivity extends AppCompatActivity implements Respon
 
     private Intent           mServiceIntent;
     private ResponseReceiver responseReceiver;
+    private ServerService    serverService;
+    private ClientService    clientService;
+    private boolean mServerBound = false;
+    private boolean mClientBound = false;
 
     private UIConnectionLobby uiConnectionLobby;
 
@@ -52,7 +61,6 @@ public class ConnectionLobbyActivity extends AppCompatActivity implements Respon
         ((FrameLayout) findViewById(R.id.empty)).addView(uiConnectionLobby);
         uiConnectionLobby.setUIListener(this);
 
-        // TODO register and unregister in OnResume and OnPause
         responseReceiver = new ResponseReceiver();
         responseReceiver.setListener(this);
         LocalBroadcastManager.getInstance(this)
@@ -105,12 +113,40 @@ public class ConnectionLobbyActivity extends AppCompatActivity implements Respon
 
             addPlayer(name, 0);
         }
+    }
+
+    @Override
+    protected void onStart()
+    {
+        super.onStart();
+        if (host)
+        {
+            // Bind to ServerService
+            Intent intent = new Intent(this, ServerService.class);
+            bindService(intent, mServerConnection, Context.BIND_AUTO_CREATE);
+        }
         else
         {
-            mServiceIntent = new Intent(this, ClientService.class);
-            mServiceIntent.setData(Uri.parse(NetworkConstants.CLIENT_WRITE));
-            mServiceIntent.putExtra(NetworkConstants.MSG_EXTRA, NetworkConstants.PF_NAME + name);
-            startService(mServiceIntent);
+            // Bind to ClientService
+            Intent intent = new Intent(this, ClientService.class);
+            bindService(intent, mClientConnection, Context.BIND_AUTO_CREATE);
+        }
+    }
+
+    @Override
+    protected void onStop()
+    {
+        super.onStop();
+        // Unbind from the service
+        if (mServerBound)
+        {
+            unbindService(mServerConnection);
+            mServerBound = false;
+        }
+        else if (mClientBound)
+        {
+            unbindService(mClientConnection);
+            mClientBound = false;
         }
     }
 
@@ -123,11 +159,13 @@ public class ConnectionLobbyActivity extends AppCompatActivity implements Respon
         uiConnectionLobby.setPlayersList(playersList);
         if (host)
         {
-            mServiceIntent = new Intent(this, ServerService.class);
-            mServiceIntent.setData(Uri.parse(NetworkConstants.WRITE_ALL));
-            mServiceIntent.putExtra(NetworkConstants.MSG_EXTRA,
-                                    NetworkConstants.PF_PLAYER + player + ":" + id);
-            startService(mServiceIntent);
+            // Update clients with all connected players
+            serverService.writeAll(NetworkConstants.GAME_UPDATE);
+            for (PlayerID pid : playersList)
+            {
+                serverService.writeAll(
+                    NetworkConstants.PF_PLAYER + pid.getPlayerName() + ":" + pid.getID());
+            }
         }
     }
 
@@ -137,19 +175,15 @@ public class ConnectionLobbyActivity extends AppCompatActivity implements Respon
         {
             case "cmd_btnStart":
                 Server.setAccepting(false);
-                mServiceIntent.setData(Uri.parse(NetworkConstants.WRITE_ALL));
-                mServiceIntent.putExtra(NetworkConstants.MSG_EXTRA,
-                                        NetworkConstants.GAME_START);
-                startService(mServiceIntent);
-                LocalBroadcastManager.getInstance(ConnectionLobbyActivity.this)
-                                     .unregisterReceiver(responseReceiver);
+                serverService.writeAll(NetworkConstants.GAME_START);
+                LocalBroadcastManager.getInstance(ConnectionLobbyActivity.this).unregisterReceiver(responseReceiver);
                 Toast.makeText(ConnectionLobbyActivity.this,
                                "Moving to Character Select",
                                Toast.LENGTH_SHORT).show();
                 Intent intent = new Intent(getBaseContext(), CharacterSelectActivity.class);
                 intent.putExtra("host", host);
-                intent.putExtra("player", 0);
-                intent.putExtra("numPlayers", playerID);
+                intent.putExtra("player", (long) 0);
+                intent.putExtra("numClients", (int) playerID);
                 startActivity(intent);
                 break;
             default:
@@ -181,32 +215,118 @@ public class ConnectionLobbyActivity extends AppCompatActivity implements Respon
             String args[] = msg.split(":");
             addPlayer(args[1], Integer.valueOf(args[2]));
         }
+        else if (msg.equals(NetworkConstants.GAME_UPDATE))
+        {
+            playersList.clear();
+        }
     }
 
     @Override
     public void handleStatus(String msg)
     {
         Toast.makeText(this, "Status: " + msg, Toast.LENGTH_SHORT).show();
-        if (msg.equals(NetworkConstants.STATUS_SERVER_START))
-        {
-            // Update client with all connected players
-            mServiceIntent = new Intent(this, ServerService.class);
-            mServiceIntent.setData(Uri.parse(NetworkConstants.WRITE_TO_CLIENT));
-            // this is probably a terrible way to get the client, but it works
-            mServiceIntent.putExtra(NetworkConstants.INDEX_EXTRA, (int) playerID);
-            for (PlayerID pid : playersList)
-            {
-                mServiceIntent.putExtra(NetworkConstants.MSG_EXTRA,
-                                        NetworkConstants.PF_PLAYER + pid.getPlayerName() + ":" +
-                                        pid.getID());
-                startService(mServiceIntent);
-            }
-        }
     }
 
     @Override
     public void handleError(String msg)
     {
         Toast.makeText(this, "Error: " + msg, Toast.LENGTH_SHORT).show();
+        if (msg.equals(NetworkConstants.ERROR_DISCONNECT_CLIENT))
+        {
+            AlertDialog.Builder builder = new AlertDialog.Builder(this);
+            builder.setTitle("Error");
+            builder.setMessage("Connection lost. Retry?");
+            builder.setPositiveButton("YES", new DialogInterface.OnClickListener()
+            {
+                @Override
+                public void onClick(DialogInterface dialogInterface, int i)
+                {
+                    clientService.reconnect();
+                    playersList.clear();
+                    dialogInterface.dismiss();
+                }
+            });
+            builder.setNegativeButton("NO", new DialogInterface.OnClickListener()
+            {
+                @Override
+                public void onClick(DialogInterface dialogInterface, int i)
+                {
+                    dialogInterface.dismiss();
+                }
+            });
+            AlertDialog alert = builder.create();
+            alert.show();
+        }
+        else if (msg.equals(NetworkConstants.ERROR_DISCONNECT_SERVER))
+        {
+            serverService.reconnect();
+        }
+    }
+
+    // Defines callbacks for service binding, passed to bindService()
+    private ServiceConnection mServerConnection = new ServiceConnection()
+    {
+        @Override
+        public void onServiceConnected(ComponentName componentName, IBinder iBinder)
+        {
+            // We've bound to ServerService, cast the IBinder and get ServerService instance
+            ServerService.LocalBinder binder = (ServerService.LocalBinder) iBinder;
+            serverService = binder.getService();
+            mServerBound = true;
+            addPlayer(name, 0);
+        }
+
+        @Override
+        public void onServiceDisconnected(ComponentName componentName)
+        {
+            mServerBound = false;
+        }
+    };
+
+    private ServiceConnection mClientConnection = new ServiceConnection()
+    {
+        @Override
+        public void onServiceConnected(ComponentName componentName, IBinder iBinder)
+        {
+            // We've bound to ServerService, cast the IBinder and get ServerService instance
+            ClientService.LocalBinder binder = (ClientService.LocalBinder) iBinder;
+            clientService = binder.getService();
+            mClientBound = true;
+            clientService.clientWrite(NetworkConstants.PF_NAME + name);
+        }
+
+        @Override
+        public void onServiceDisconnected(ComponentName componentName)
+        {
+            mClientBound = false;
+        }
+    };
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu)
+    {
+        // Inflate the menu; this adds items to the action bar if it is present.
+        getMenuInflater().inflate(R.menu.menu_reconnect, menu);
+        return true;
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item)
+    {
+        // Handle action bar item clicks here. The action bar will
+        // automatically handle clicks on the Home/Up button, so long
+        // as you specify a parent activity in AndroidManifest.xml.
+        int id = item.getItemId();
+
+        if (id == R.id.action_reconnect)
+        {
+            if (host)
+            {
+                serverService.reconnect();
+            }
+            return true;
+        }
+
+        return super.onOptionsItemSelected(item);
     }
 }
