@@ -42,7 +42,6 @@ public class ConnectionLobbyActivity extends AppCompatActivity implements Respon
     int                 playerID;
     ArrayList<PlayerID> playersList;
 
-    private Intent           mServiceIntent;
     private ResponseReceiver responseReceiver;
     private ServerService    serverService;
     private ClientService    clientService;
