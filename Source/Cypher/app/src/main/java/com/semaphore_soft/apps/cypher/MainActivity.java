@@ -193,20 +193,25 @@ public class MainActivity extends AppCompatActivity implements GetNameDialogFrag
         switch (cmd)
         {
             case "cmd_btnHost":
+            {
                 host = true;
                 // Bind to ServerService
                 Intent intent = new Intent(MainActivity.this, ServerService.class);
                 bindService(intent, mServerConnection, Context.BIND_AUTO_CREATE);
                 showGetNameDialog();
                 break;
+            }
             case "cmd_btnJoin":
+            {
                 host = false;
                 // Bind to ClientService
                 Intent intent = new Intent(MainActivity.this, ClientService.class);
                 bindService(intent, mClientConnection, Context.BIND_AUTO_CREATE);
                 showConnectDialog();
                 break;
+            }
             case "cmd_btnLaunch":
+            {
                 Toast.makeText(getApplicationContext(), "Launching AR Activity", Toast.LENGTH_SHORT)
                      .show();
 
@@ -216,6 +221,7 @@ public class MainActivity extends AppCompatActivity implements GetNameDialogFrag
                 intent.putExtra("character", 0);
                 startActivity(intent);
                 break;
+            }
             default:
                 Toast.makeText(this, "UI interaction not handled", Toast.LENGTH_SHORT).show();
                 break;
