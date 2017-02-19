@@ -8,20 +8,20 @@ import java.util.Hashtable;
 
 public class StatusLinked extends Status
 {
-    private long linkID;
+    private int linkID;
 
-    public StatusLinked(long id, E_STATUS_TYPE type, int effectRating, long linkID)
+    public StatusLinked(int id, E_STATUS_TYPE type, int effectRating, int linkID)
     {
         super(id, type, effectRating);
         this.linkID = linkID;
     }
 
-    public long getLinkID()
+    public int getLinkID()
     {
         return linkID;
     }
 
-    public boolean checkLink(Hashtable<Long, ?> links)
+    public boolean checkLink(Hashtable<Integer, ?> links)
     {
         return links.keySet().contains(linkID);
     }

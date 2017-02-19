@@ -6,7 +6,7 @@ package com.semaphore_soft.apps.cypher.game;
 
 public abstract class Status
 {
-    protected long id;
+    protected int id;
 
     public enum E_STATUS_TYPE
     {
@@ -21,24 +21,24 @@ public abstract class Status
     protected E_STATUS_TYPE type;
     protected int           effectRating;
 
-    public Status(long id, E_STATUS_TYPE type)
+    public Status(int id, E_STATUS_TYPE type)
     {
         this.id = id;
         this.type = type;
     }
 
-    public Status(long id, E_STATUS_TYPE type, int effectRating)
+    public Status(int id, E_STATUS_TYPE type, int effectRating)
     {
         this(id, type);
         this.effectRating = effectRating;
     }
 
-    public long getId()
+    public int getId()
     {
         return id;
     }
 
-    public void setId(long id)
+    public void setId(int id)
     {
         this.id = id;
     }

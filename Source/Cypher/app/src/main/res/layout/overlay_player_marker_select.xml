@@ -9,7 +9,7 @@
             android:layout_height="wrap_content"
             android:layout_alignParentBottom="true"
             android:layout_alignParentStart="true"
-            android:id="@+id/btnSelect"/>
+            android:id="@+id/btnPlayerMarkerSelect"/>
 
     <TextView
             android:text="Select Your Character Marker"
@@ -17,5 +17,6 @@
             android:layout_height="wrap_content"
             android:layout_alignParentTop="true"
             android:layout_alignParentStart="true"
-            android:id="@+id/txtInfo"/>
+            android:id="@+id/txtInfo"
+            android:textAppearance="@android:style/TextAppearance.Material.Large"/>
 </RelativeLayout>

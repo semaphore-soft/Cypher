@@ -2,19 +2,24 @@ package com.semaphore_soft.apps.cypher.opengl;
 
 import android.opengl.Matrix;
 
+import com.semaphore_soft.apps.cypher.opengl.shader.DynamicShaderProgram;
+
+import java.util.ConcurrentModificationException;
 import java.util.Hashtable;
 
 /**
  * Created by rickm on 2/10/2017.
  */
 
-public class ARRoom
+public class ARRoom implements ARDrawableGLES20
 {
-    ARModelGLES20 roomModel;
-    ARModelGLES20 walls[] = {null, null, null, null};
-    Hashtable<Long, ARModelGLES20> playerLine;
-    Hashtable<Long, ARModelGLES20> enemyLine;
-    Hashtable<Long, ARModelGLES20> entityPile;
+    ARDrawableGLES20 roomModel;
+    ARDrawableGLES20 walls[]       = {null, null, null, null};
+    int              forwardPlayer = -1;
+    int              forwardEnemy  = -1;
+    Hashtable<Integer, ARDrawableGLES20> playerLine;
+    Hashtable<Integer, ARDrawableGLES20> enemyLine;
+    Hashtable<Integer, ARDrawableGLES20> entityPile;
 
     public ARRoom()
     {
@@ -23,17 +28,17 @@ public class ARRoom
         entityPile = new Hashtable<>();
     }
 
-    public void setRoomModel(ARModelGLES20 roomModel)
+    public void setRoomModel(ARDrawableGLES20 roomModel)
     {
         this.roomModel = roomModel;
     }
 
-    public void setWall(int index, ARModelGLES20 door)
+    public void setWall(int index, ARDrawableGLES20 door)
     {
         walls[index] = door;
     }
 
-    public void addPlayer(long id, ARModelGLES20 playerModel)
+    public void addPlayer(int id, ARDrawableGLES20 playerModel)
     {
         if (!playerLine.keySet().contains(id))
         {
@@ -41,7 +46,7 @@ public class ARRoom
         }
     }
 
-    public void removePlayer(long id)
+    public void removePlayer(int id)
     {
         if (playerLine.keySet().contains(id))
         {
@@ -49,7 +54,7 @@ public class ARRoom
         }
     }
 
-    public void addEnemy(long id, ARModelGLES20 enemyModel)
+    public void addEnemy(int id, ARDrawableGLES20 enemyModel)
     {
         if (!enemyLine.keySet().contains(id))
         {
@@ -57,7 +62,7 @@ public class ARRoom
         }
     }
 
-    public void removeEnemy(long id)
+    public void removeEnemy(int id)
     {
         if (enemyLine.keySet().contains(id))
         {
@@ -67,17 +72,11 @@ public class ARRoom
 
     public void removeActors()
     {
-        for (Long id : playerLine.keySet())
-        {
-            playerLine.remove(id);
-        }
-        for (Long id : enemyLine.keySet())
-        {
-            enemyLine.remove(id);
-        }
+        playerLine.clear();
+        enemyLine.clear();
     }
 
-    public void addEntity(long id, ARModelGLES20 entityModel)
+    public void addEntity(int id, ARDrawableGLES20 entityModel)
     {
         if (!entityPile.keySet().contains(id))
         {
@@ -85,7 +84,7 @@ public class ARRoom
         }
     }
 
-    public void removeEntity(long id)
+    public void removeEntity(int id)
     {
         if (entityPile.keySet().contains(id))
         {
@@ -93,77 +92,175 @@ public class ARRoom
         }
     }
 
-    public void draw(float[] projectionMatrix, float[] modelViewMatrix)
+    public void setForwardPlayer(int id)
     {
-        float[] lightPos = new float[3];
+        forwardPlayer = id;
+    }
 
+    public void clearForwardPlayer()
+    {
+        setForwardPlayer(-1);
+    }
+
+    public void setForwardEnemy(int id)
+    {
+        forwardEnemy = id;
+    }
+
+    public void clearForwardEnemy()
+    {
+        setForwardEnemy(-1);
+    }
+
+    public void setRoomPose(String pose)
+    {
+        if (roomModel instanceof ARPoseModel)
         {
-            float[] transformationMatrix = new float[16];
-            System.arraycopy(modelViewMatrix, 0, transformationMatrix, 0, 16);
-            Matrix.translateM(transformationMatrix, 0, 0.0f, 0.0f, 80.0f);
-            for (int i = 0; i < 3; ++i)
+            ((ARPoseModel) roomModel).setPose(pose);
+        }
+    }
+
+    public void setResidentPose(int id, String pose)
+    {
+        for (int playerId : playerLine.keySet())
+        {
+            if (playerId == id)
             {
-                lightPos[i] = transformationMatrix[i + 12];
+                if (playerLine.get(id) instanceof ARPoseModel)
+                {
+                    ((ARPoseModel) playerLine.get(id)).setPose(pose);
+                }
+                return;
             }
         }
-
-        if (roomModel != null)
+        for (int enemyId : enemyLine.keySet())
         {
-            roomModel.draw(projectionMatrix, modelViewMatrix, lightPos);
+            if (enemyId == id)
+            {
+                if (enemyLine.get(id) instanceof ARPoseModel)
+                {
+                    ((ARPoseModel) enemyLine.get(id)).setPose(pose);
+                }
+                return;
+            }
         }
+    }
 
-        for (int i = 0; i < 4; ++i)
+    public void setEntityPose(int id, String pose)
+    {
+        for (int entityId : entityPile.keySet())
         {
-            if (walls[i] != null)
+            if (entityId == id)
+            {
+                if (entityPile.get(id) instanceof ARPoseModel)
+                {
+                    ((ARPoseModel) entityPile.get(id)).setPose(pose);
+                }
+                return;
+            }
+        }
+    }
+
+    public void draw(float[] projectionMatrix, float[] modelViewMatrix)
+    {
+        float[] lightPos             = new float[3];
+        float[] transformationMatrix = new float[16];
+        System.arraycopy(modelViewMatrix, 0, transformationMatrix, 0, 16);
+        Matrix.translateM(transformationMatrix, 0, 0.0f, 0.0f, 80.0f);
+        for (int i = 0; i < 3; ++i)
+        {
+            lightPos[i] = transformationMatrix[i + 12];
+        }
+        draw(projectionMatrix, modelViewMatrix, lightPos);
+    }
+
+    public void draw(float[] projectionMatrix, float[] modelViewMatrix, float[] lightPos)
+    {
+        try
+        {
+            if (roomModel != null)
+            {
+                roomModel.draw(projectionMatrix, modelViewMatrix, lightPos);
+            }
+
+            for (int i = 0; i < 4; ++i)
+            {
+                if (walls[i] != null)
+                {
+                    float[] transformationMatrix = new float[16];
+                    System.arraycopy(modelViewMatrix, 0, transformationMatrix, 0, 16);
+                    Matrix.rotateM(transformationMatrix,
+                                   0,
+                                   i * -90.0f,
+                                   0.0f,
+                                   0.0f,
+                                   1.0f);
+                    walls[i].draw(projectionMatrix, transformationMatrix, lightPos);
+                }
+            }
+
+            int   i          = 0;
+            float spread     = (playerLine.size() - 1) * 60.0f;
+            float lineOffset = -(spread / 2.0f);
+            for (int id : playerLine.keySet())
             {
                 float[] transformationMatrix = new float[16];
                 System.arraycopy(modelViewMatrix, 0, transformationMatrix, 0, 16);
-                Matrix.rotateM(transformationMatrix,
-                               0,
-                               i * -90.0f,
-                               0.0f,
-                               0.0f,
-                               1.0f);
-                walls[i].draw(projectionMatrix, transformationMatrix, lightPos);
+                if (forwardPlayer == id)
+                {
+                    Matrix.translateM(transformationMatrix, 0, 0.0f, -40.0f, 0.0f);
+                }
+                else
+                {
+                    float actorOffset = lineOffset + (60.0f * i);
+                    Matrix.translateM(transformationMatrix, 0, actorOffset, -80.0f, 0.0f);
+                    Matrix.rotateM(transformationMatrix, 0, 180.0f, 0.0f, 0.0f, 1.0f);
+                }
+                playerLine.get(id).draw(projectionMatrix, transformationMatrix, lightPos);
+                ++i;
+            }
+
+            i = 0;
+            spread = (enemyLine.size() - 1) * 60.0f;
+            lineOffset = -(spread / 2.0f);
+            for (int id : enemyLine.keySet())
+            {
+                float[] transformationMatrix = new float[16];
+                System.arraycopy(modelViewMatrix, 0, transformationMatrix, 0, 16);
+                if (forwardEnemy == id)
+                {
+                    Matrix.translateM(transformationMatrix, 0, 0.0f, 40.0f, 0.0f);
+                }
+                else
+                {
+                    float actorOffset = lineOffset + (60.0f * i);
+                    Matrix.translateM(transformationMatrix, 0, actorOffset, 80.0f, 0.0f);
+                }
+                enemyLine.get(id).draw(projectionMatrix, transformationMatrix, lightPos);
+                ++i;
+            }
+
+            for (int id : entityPile.keySet())
+            {
+                float[] transformationMatrix = new float[16];
+                System.arraycopy(modelViewMatrix, 0, transformationMatrix, 0, 16);
+                Matrix.translateM(transformationMatrix, 0, 0.0f, 0.0f, 0.0f);
+                entityPile.get(id).draw(projectionMatrix, transformationMatrix, lightPos);
             }
         }
-
-        int   i          = 0;
-        float spread     = (playerLine.size() - 1) * 60.0f;
-        float lineOffset = -(spread / 2.0f);
-        for (Long id : playerLine.keySet())
+        catch (ConcurrentModificationException x)
         {
-            float   actorOffset          = lineOffset + (60.0f * i);
-            float[] transformationMatrix = new float[16];
-            System.arraycopy(modelViewMatrix, 0, transformationMatrix, 0, 16);
-            ARModelGLES20 playerModel = playerLine.get(id);
-            Matrix.translateM(transformationMatrix, 0, actorOffset, -80.0f, 0.0f);
-            Matrix.rotateM(transformationMatrix, 0, 180.0f, 0.0f, 0.0f, 1.0f);
-            playerModel.draw(projectionMatrix, transformationMatrix, lightPos);
-            ++i;
-        }
 
-        i = 0;
-        spread = (enemyLine.size() - 1) * 60.0f;
-        lineOffset = -(spread / 2.0f);
-        for (Long id : enemyLine.keySet())
-        {
-            float   actorOffset          = lineOffset + (60.0f * i);
-            float[] transformationMatrix = new float[16];
-            System.arraycopy(modelViewMatrix, 0, transformationMatrix, 0, 16);
-            ARModelGLES20 enemyModel = enemyLine.get(id);
-            Matrix.translateM(transformationMatrix, 0, actorOffset, 80.0f, 0.0f);
-            enemyModel.draw(projectionMatrix, transformationMatrix, lightPos);
-            ++i;
         }
+    }
 
-        for (Long id : entityPile.keySet())
-        {
-            float[] transformationMatrix = new float[16];
-            System.arraycopy(modelViewMatrix, 0, transformationMatrix, 0, 16);
-            ARModelGLES20 entityModel = entityPile.get(id);
-            Matrix.translateM(transformationMatrix, 0, 0.0f, 0.0f, 0.0f);
-            entityModel.draw(projectionMatrix, transformationMatrix, lightPos);
-        }
+    public void setShaderProgram(DynamicShaderProgram shaderProgram)
+    {
+
+    }
+
+    public void setColor(float r, float g, float b, float a)
+    {
+
     }
 }

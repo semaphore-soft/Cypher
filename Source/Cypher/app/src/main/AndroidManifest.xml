@@ -1,76 +1,78 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="com.semaphore_soft.apps.cypher">
+          package="com.semaphore_soft.apps.cypher">
 
-    <uses-permission android:name="android.permission.ACCESS_WIFI_STATE" />
-    <uses-permission android:name="android.permission.INTERNET" />
-    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
-    <uses-permission android:name="android.permission.CAMERA" />
+    <uses-permission android:name="android.permission.ACCESS_WIFI_STATE"/>
+    <uses-permission android:name="android.permission.INTERNET"/>
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE"/>
+    <uses-permission android:name="android.permission.CAMERA"/>
 
-    <uses-feature android:name="android.hardware.camera.any" />
+    <uses-feature android:name="android.hardware.camera.any"/>
     <uses-feature
-        android:name="android.hardware.camera"
-        android:required="false" />
+            android:name="android.hardware.camera"
+            android:required="false"/>
     <uses-feature
-        android:name="android.hardware.camera.autofocus"
-        android:required="false" />
-    <uses-feature android:glEsVersion="0x00010100" />
+            android:name="android.hardware.camera.autofocus"
+            android:required="false"/>
+    <uses-feature android:glEsVersion="0x00010100"/>
 
     <supports-screens
-        android:anyDensity="true"
-        android:largeScreens="true"
-        android:normalScreens="true"
-        android:smallScreens="true"
-        android:xlargeScreens="true" />
+            android:anyDensity="true"
+            android:largeScreens="true"
+            android:normalScreens="true"
+            android:smallScreens="true"
+            android:xlargeScreens="true"/>
 
     <application
-        android:name="com.semaphore_soft.apps.cypher.MainApplication"
-        android:allowBackup="true"
-        android:icon="@mipmap/ic_launcher"
-        android:label="@string/app_name"
-        android:supportsRtl="true"
-        android:theme="@style/AppTheme">
-        <activity
-            android:name=".MainActivity"
+            android:name="com.semaphore_soft.apps.cypher.MainApplication"
+            android:allowBackup="true"
+            android:icon="@mipmap/ic_launcher"
             android:label="@string/app_name"
-            android:theme="@style/AppTheme.NoActionBar">
+            android:supportsRtl="true"
+            android:theme="@style/AppTheme">
+        <activity
+                android:name=".MainActivity"
+                android:label="@string/app_name"
+                android:theme="@style/AppTheme.NoActionBar">
             <intent-filter>
-                <action android:name="android.intent.action.MAIN" />
-                <category android:name="android.intent.category.LAUNCHER" />
+                <action android:name="android.intent.action.MAIN"/>
+                <category android:name="android.intent.category.LAUNCHER"/>
             </intent-filter>
         </activity>
         <activity
-            android:name=".ConnectionLobbyActivity"
-            android:label="Cypher"
-            android:theme="@style/AppTheme.NoActionBar">
+                android:name=".ConnectionLobbyActivity"
+                android:label="Cypher"
+                android:theme="@style/AppTheme.NoActionBar">
             <intent-filter>
-                <action android:name="android.intent.action.MAIN" />
+                <action android:name="android.intent.action.MAIN"/>
             </intent-filter>
         </activity>
         <activity
-            android:name=".CharacterSelectActivity"
-            android:label="Cypher"
-            android:theme="@style/AppTheme.NoActionBar">
+                android:name=".CharacterSelectActivity"
+                android:label="Cypher"
+                android:theme="@style/AppTheme.NoActionBar">
             <intent-filter>
-                <action android:name="android.intent.action.MAIN" />
+                <action android:name="android.intent.action.MAIN"/>
             </intent-filter>
         </activity>
         <activity
-            android:name=".PortalActivity"
-            android:configChanges="keyboardHidden|orientation|screenSize"
-            android:label="Cypher">
+                android:name=".PortalActivity"
+                android:configChanges="keyboardHidden|orientation|screenSize"
+                android:label="Cypher"
+                android:theme="@android:style/Theme.Material.NoActionBar.Fullscreen">
             <intent-filter>
-                <action android:name="android.intent.action.MAIN" />
+                <action android:name="android.intent.action.MAIN"/>
             </intent-filter>
         </activity>
 
         <service
-            android:name=".networking.ServerService"
-            android:exported="false"/>
+                android:name=".networking.ServerService"
+                android:exported="false"/>
         <service
-            android:name=".networking.ClientService"
-            android:exported="false"/>
-        <activity android:name="org.artoolkit.ar.base.camera.CameraPreferencesActivity" />
+                android:name=".networking.ClientService"
+                android:exported="false"/>
+
+        <activity android:name="org.artoolkit.ar.base.camera.CameraPreferencesActivity"/>
     </application>
 
 </manifest>

@@ -8,7 +8,7 @@ import com.semaphore_soft.apps.cypher.opengl.shader.DynamicShaderProgram;
  * Created by ceroj on 2/1/2017.
  */
 
-public class ARModelGLES20 extends ARModel
+public class ARModelGLES20 extends ARModel implements ARDrawableGLES20
 {
     private DynamicShaderProgram shaderProgram;
 

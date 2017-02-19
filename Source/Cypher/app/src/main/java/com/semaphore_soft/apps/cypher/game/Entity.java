@@ -6,25 +6,25 @@ package com.semaphore_soft.apps.cypher.game;
 
 public class Entity
 {
-    private long id;
-    private int  type;
-    private long roomID;
+    private int id;
+    private int type;
+    private int roomID;
 
-    public Entity(long id)
+    public Entity(int id)
     {
         this.id = id;
         type = -1;
         roomID = -1;
     }
 
-    public Entity(long id, int type)
+    public Entity(int id, int type)
     {
         this.id = id;
         this.type = type;
         roomID = -1;
     }
 
-    public long getID()
+    public int getID()
     {
         return id;
     }
@@ -44,7 +44,7 @@ public class Entity
         this.roomID = roomID;
     }
 
-    public long getRoomID()
+    public int getRoomID()
     {
         return roomID;
     }

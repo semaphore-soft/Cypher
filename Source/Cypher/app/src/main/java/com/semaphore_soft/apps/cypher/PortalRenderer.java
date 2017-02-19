@@ -5,7 +5,9 @@ import android.opengl.GLES20;
 import android.opengl.Matrix;
 
 import com.semaphore_soft.apps.cypher.game.Actor;
+import com.semaphore_soft.apps.cypher.game.GameController;
 import com.semaphore_soft.apps.cypher.game.Room;
+import com.semaphore_soft.apps.cypher.opengl.ARDrawableGLES20;
 import com.semaphore_soft.apps.cypher.opengl.ARModelGLES20;
 import com.semaphore_soft.apps.cypher.opengl.ARRoom;
 import com.semaphore_soft.apps.cypher.opengl.ModelLoader;
@@ -30,15 +32,14 @@ class PortalRenderer extends ARRendererGLES20
 {
     private Context context;
 
-    private ArrayList<Integer> markers;
+    private static GameController gameController;
 
-    private int[] playerMarkerIDs;
+    private static ArrayList<Integer> markers;
+    private static int[]              playerMarkerIDs;
 
-    private ArrayList<ARModelGLES20> characterModels;
-
-    private Hashtable<String, ARModelGLES20> models;
-
-    private Hashtable<Integer, ARRoom> arRooms;
+    private static ArrayList<ARModelGLES20>            characterModels;
+    private static Hashtable<String, ARDrawableGLES20> models;
+    private static Hashtable<Integer, ARRoom>          arRooms;
 
     public void setContext(Context context)
     {
@@ -71,7 +72,7 @@ class PortalRenderer extends ARRendererGLES20
         markers.add(ARToolKit.getInstance().addMarker("single;Data/18.patt;80"));
         markers.add(ARToolKit.getInstance().addMarker("single;Data/19.patt;80"));
 
-        for (Integer id : markers)
+        for (int id : markers)
         {
             if (id < 0)
             {
@@ -96,7 +97,7 @@ class PortalRenderer extends ARRendererGLES20
         for (int i = 0; i < 4; ++i)
         {
             ARModelGLES20 playerMarkerModel =
-                ModelLoader.loadModel(context, "models/waypoint.obj", 40.0f);
+                (ARModelGLES20) ModelLoader.load(context, "waypoint", 40.0f);
             playerMarkerModel.setCharacter(i);
             DynamicShaderProgram characterShaderProgram =
                 new DynamicShaderProgram(ShaderLoader.createShader(context,
@@ -114,8 +115,8 @@ class PortalRenderer extends ARRendererGLES20
 
         models = new Hashtable<>();
 
-        ARModelGLES20 waypoint =
-            ModelLoader.loadModel(context, "models/waypoint.obj", 40.0f);
+        ARDrawableGLES20 waypoint =
+            ModelLoader.load(context, "waypoint", 40.0f);
         DynamicShaderProgram waypointShaderProgram =
             new DynamicShaderProgram(ShaderLoader.createShader(context,
                                                                "shaders/vertexShaderTextured.glsl",
@@ -132,8 +133,8 @@ class PortalRenderer extends ARRendererGLES20
         {
             for (String name : actorNames)
             {
-                ARModelGLES20 actorModel =
-                    ModelLoader.loadModel(context, "models/actors/" + name + ".obj");
+                ARDrawableGLES20 actorModel =
+                    ModelLoader.load(context, name, "actors");
                 if (actorModel != null)
                 {
                     DynamicShaderProgram actorShaderProgram =
@@ -150,8 +151,8 @@ class PortalRenderer extends ARRendererGLES20
             }
         }
 
-        ARModelGLES20 roomBase =
-            ModelLoader.loadModel(context, "models/room_base.obj", 120.0f);
+        ARDrawableGLES20 roomBase =
+            ModelLoader.load(context, "room_base", 120.0f);
         DynamicShaderProgram roomBaseShaderProgram =
             new DynamicShaderProgram(ShaderLoader.createShader(context,
                                                                "shaders/vertexShaderUntextured.glsl",
@@ -164,8 +165,8 @@ class PortalRenderer extends ARRendererGLES20
         roomBase.setColor(0.5f, 0.5f, 0.5f, 1.0f);
         models.put("room_base", roomBase);
 
-        ARModelGLES20 roomWall =
-            ModelLoader.loadModel(context, "models/room_door_north.obj", 120.0f);
+        ARDrawableGLES20 roomWall =
+            ModelLoader.load(context, "room_door_north", 120.0f);
         DynamicShaderProgram roomWallShaderProgram =
             new DynamicShaderProgram(ShaderLoader.createShader(context,
                                                                "shaders/vertexShaderUntextured.glsl",
@@ -178,8 +179,8 @@ class PortalRenderer extends ARRendererGLES20
         roomWall.setColor(0.5f, 0.5f, 0.5f, 1.0f);
         models.put("room_wall", roomWall);
 
-        ARModelGLES20 roomDoor =
-            ModelLoader.loadModel(context, "models/room_door_north.obj", 120.0f);
+        ARDrawableGLES20 roomDoor =
+            ModelLoader.load(context, "room_door_north", 120.0f);
         DynamicShaderProgram roomDoorShaderProgram =
             new DynamicShaderProgram(ShaderLoader.createShader(context,
                                                                "shaders/vertexShaderUntextured.glsl",
@@ -192,8 +193,8 @@ class PortalRenderer extends ARRendererGLES20
         roomDoor.setColor(0.5f, 0.25f, 0.125f, 1.0f);
         models.put("room_door_unlocked", roomDoor);
 
-        ARModelGLES20 roomDoorOpen =
-            ModelLoader.loadModel(context, "models/room_door_north_open.obj", 120.0f);
+        ARDrawableGLES20 roomDoorOpen =
+            ModelLoader.load(context, "room_door_north_open", 120.0f);
         DynamicShaderProgram roomDoorOpenShaderProgram =
             new DynamicShaderProgram(ShaderLoader.createShader(context,
                                                                "shaders/vertexShaderUntextured.glsl",
@@ -205,6 +206,21 @@ class PortalRenderer extends ARRendererGLES20
         roomDoorOpen.setShaderProgram(roomDoorOpenShaderProgram);
         roomDoorOpen.setColor(0.75f, 0.75f, 0.75f, 1.0f);
         models.put("room_door_open", roomDoorOpen);
+
+        ARDrawableGLES20 error = ModelLoader.load(context, "error", 120.0f);
+        DynamicShaderProgram errorShaderProgram =
+            new DynamicShaderProgram(ShaderLoader.createShader(context,
+                                                               "shaders/vertexShaderUntextured.glsl",
+                                                               GLES20.GL_VERTEX_SHADER),
+                                     ShaderLoader.createShader(context,
+                                                               "shaders/fragmentShaderUntextured.glsl",
+                                                               GLES20.GL_FRAGMENT_SHADER),
+                                     new String[]{"a_Position", "a_Color", "a_Normal"});
+        error.setShaderProgram(errorShaderProgram);
+        error.setColor(0.7f, 0.0f, 0.0f, 1.0f);
+        models.put("error", error);
+
+        gameController.onFinishedLoading();
     }
 
     /**
@@ -232,7 +248,7 @@ class PortalRenderer extends ARRendererGLES20
             }
         }
 
-        for (Integer i : arRooms.keySet())
+        for (int i : arRooms.keySet())
         {
             if (ARToolKit.getInstance().queryMarkerVisible(i))
             {
@@ -243,9 +259,14 @@ class PortalRenderer extends ARRendererGLES20
         }
     }
 
+    public void setGameController(GameController gameController)
+    {
+        PortalRenderer.gameController = gameController;
+    }
+
     public int getFirstMarker()
     {
-        for (Integer id : markers)
+        for (int id : markers)
         {
             if (ARToolKit.getInstance().queryMarkerVisible(id))
             {
@@ -258,7 +279,7 @@ class PortalRenderer extends ARRendererGLES20
 
     public int getFirstMarkerExcluding(ArrayList<Integer> marksX)
     {
-        for (Integer id : markers)
+        for (int id : markers)
         {
             if (!marksX.contains(id) && ARToolKit.getInstance().queryMarkerVisible(id))
             {
@@ -276,7 +297,7 @@ class PortalRenderer extends ARRendererGLES20
 
         if (ARToolKit.getInstance().queryMarkerVisible(mark0))
         {
-            for (Integer mark1 : markers)
+            for (int mark1 : markers)
             {
                 if (mark0 != mark1 && ARToolKit.getInstance().queryMarkerVisible(mark1))
                 {
@@ -320,7 +341,7 @@ class PortalRenderer extends ARRendererGLES20
 
         if (ARToolKit.getInstance().queryMarkerVisible(mark0))
         {
-            for (Integer mark1 : markers)
+            for (int mark1 : markers)
             {
                 if (!marksX.contains(mark1) && mark0 != mark1 &&
                     ARToolKit.getInstance().queryMarkerVisible(mark1))
@@ -437,7 +458,7 @@ class PortalRenderer extends ARRendererGLES20
         return ((Float.isNaN(resAngle)) ? 0 : resAngle);
     }
 
-    public void setPlayerMarker(long playerID, int markerID)
+    public void setPlayerMarker(int playerID, int markerID)
     {
         playerMarkerIDs[(int) playerID] = markerID;
     }
@@ -490,11 +511,11 @@ class PortalRenderer extends ARRendererGLES20
         }
     }
 
-    public void updateRoomResidents(Room room, Hashtable<Long, Actor> actors)
+    public void updateRoomResidents(Room room, Hashtable<Integer, Actor> actors)
     {
         ARRoom arRoom = arRooms.get(room.getMarker());
         arRoom.removeActors();
-        for (Long id : room.getResidentActors())
+        for (int id : room.getResidentActors())
         {
             if (actors.keySet().contains(id))
             {
@@ -512,8 +533,23 @@ class PortalRenderer extends ARRendererGLES20
                     {
                         arRoom.addEnemy(id, models.get(name));
                     }
+                    switch (actor.getState())
+                    {
+                        case NEUTRAL:
+                            arRoom.setResidentPose(id, "default");
+                            break;
+                        case ATTACK:
+                            arRoom.setResidentPose(id, "attack");
+                            break;
+                        case SPECIAL:
+                            arRoom.setResidentPose(id, "special");
+                            break;
+                        case DEFEND:
+                            arRoom.setResidentPose(id, "defend");
+                            break;
+                    }
                 }
-                /*else
+                else
                 {
                     if (actor.isPlayer())
                     {
@@ -523,7 +559,7 @@ class PortalRenderer extends ARRendererGLES20
                     {
                         arRoom.addEnemy(id, models.get("error"));
                     }
-                }*/
+                }
             }
         }
     }
