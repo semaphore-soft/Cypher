@@ -1,8 +1,3 @@
-_cleanup of messy room/move validity code
-
-_turn system for players
- gives turns to existing enemies after last actor turn - handled by host
-
 _report invalid moves in real time
 
 _generate new room when unassigned marker comes into view
@@ -16,3 +11,5 @@ _dynamically assign room side for player/enemy lines
 _comment model loader
 
 _specials need a scalar
+
+_timed renderer effects and waiting for 'animations'
