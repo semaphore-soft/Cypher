@@ -46,6 +46,19 @@ public class CharacterSelectActivity extends AppCompatActivity implements Respon
     private Handler handler       = new Handler();
     private boolean sendHeartbeat = true;
 
+    private Runnable heartbeat = new Runnable()
+    {
+        @Override
+        public void run()
+        {
+            if (sendHeartbeat)
+            {
+                serverService.writeAll(NetworkConstants.GAME_HEARTBEAT);
+                handler.postDelayed(heartbeat, NetworkConstants.HEARTBEAT_DELAY);
+            }
+        }
+    };
+
     @Override
     public void onCreate(Bundle savedInstanceState)
     {
@@ -182,19 +195,6 @@ public class CharacterSelectActivity extends AppCompatActivity implements Respon
         }
         startActivity(intent);
     }
-
-    Runnable heartbeat = new Runnable()
-    {
-        @Override
-        public void run()
-        {
-            if (sendHeartbeat)
-            {
-                serverService.writeAll(NetworkConstants.GAME_HEARTBEAT);
-                handler.postDelayed(heartbeat, NetworkConstants.HEARTBEAT_DELAY);
-            }
-        }
-    };
 
     @Override
     public void handleRead(String msg, int readFrom)
