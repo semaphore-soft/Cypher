@@ -71,7 +71,7 @@ public class Room
         return markerID;
     }
 
-    public boolean getPlaced()
+    public boolean isPlaced()
     {
         return placed;
     }

@@ -206,6 +206,19 @@ class PortalRenderer extends ARRendererGLES20
         roomDoorOpen.setShaderProgram(roomDoorOpenShaderProgram);
         roomDoorOpen.setColor(0.75f, 0.75f, 0.75f, 1.0f);
         models.put("room_door_open", roomDoorOpen);
+
+        ARDrawableGLES20 error = ModelLoader.load(context, "error", 120.0f);
+        DynamicShaderProgram errorShaderProgram =
+            new DynamicShaderProgram(ShaderLoader.createShader(context,
+                                                               "shaders/vertexShaderUntextured.glsl",
+                                                               GLES20.GL_VERTEX_SHADER),
+                                     ShaderLoader.createShader(context,
+                                                               "shaders/fragmentShaderUntextured.glsl",
+                                                               GLES20.GL_FRAGMENT_SHADER),
+                                     new String[]{"a_Position", "a_Color", "a_Normal"});
+        error.setShaderProgram(errorShaderProgram);
+        error.setColor(0.7f, 0.0f, 0.0f, 1.0f);
+        models.put("error", error);
     }
 
     /**
@@ -529,7 +542,7 @@ class PortalRenderer extends ARRendererGLES20
                             break;
                     }
                 }
-                /*else
+                else
                 {
                     if (actor.isPlayer())
                     {
@@ -539,7 +552,7 @@ class PortalRenderer extends ARRendererGLES20
                     {
                         arRoom.addEnemy(id, models.get("error"));
                     }
-                }*/
+                }
             }
         }
     }

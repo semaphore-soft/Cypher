@@ -2,14 +2,12 @@ package com.semaphore_soft.apps.cypher;
 
 import android.os.Bundle;
 import android.support.v4.content.LocalBroadcastManager;
-import android.util.Pair;
 import android.widget.FrameLayout;
 import android.widget.Toast;
 
 import com.semaphore_soft.apps.cypher.game.Actor;
-import com.semaphore_soft.apps.cypher.game.Entity;
+import com.semaphore_soft.apps.cypher.game.GameMaster;
 import com.semaphore_soft.apps.cypher.game.Item;
-import com.semaphore_soft.apps.cypher.game.Map;
 import com.semaphore_soft.apps.cypher.game.Model;
 import com.semaphore_soft.apps.cypher.game.Room;
 import com.semaphore_soft.apps.cypher.game.Special;
@@ -18,6 +16,7 @@ import com.semaphore_soft.apps.cypher.networking.ResponseReceiver;
 import com.semaphore_soft.apps.cypher.ui.UIListener;
 import com.semaphore_soft.apps.cypher.ui.UIPortalActivity;
 import com.semaphore_soft.apps.cypher.ui.UIPortalOverlay;
+import com.semaphore_soft.apps.cypher.utils.CollectionManager;
 import com.semaphore_soft.apps.cypher.utils.GameStatLoader;
 
 import org.artoolkit.ar.base.ARActivity;
@@ -26,8 +25,6 @@ import org.artoolkit.ar.base.rendering.ARRenderer;
 import java.util.ArrayList;
 import java.util.Hashtable;
 
-import static com.semaphore_soft.apps.cypher.game.Room.E_WALL_TYPE.DOOR_OPEN;
-import static com.semaphore_soft.apps.cypher.game.Room.E_WALL_TYPE.DOOR_UNLOCKED;
 import static com.semaphore_soft.apps.cypher.utils.CollectionManager.getNextID;
 
 /**
@@ -45,22 +42,14 @@ public class PortalActivity extends ARActivity implements PortalRenderer.NewMark
 
     private PortalRenderer renderer;
 
-    private ResponseReceiver responseReceiver;
+    private static ResponseReceiver responseReceiver;
 
-    private boolean host;
+    private static boolean host;
 
-    private int    playerID;
-    private String characterName;
+    private static int    playerId;
+    private static String characterName;
 
-    private Model model;
-
-    private Hashtable<Integer, Room>    rooms;
-    private Hashtable<Integer, Actor>   actors;
-    private Hashtable<Integer, Special> specials;
-    private Hashtable<Integer, Entity>  entities;
-    private Hashtable<Integer, Item>    items;
-
-    private Map map;
+    private static Model model;
 
     @Override
     public void onCreate(Bundle savedInstanceState)
@@ -89,18 +78,11 @@ public class PortalActivity extends ARActivity implements PortalRenderer.NewMark
 
         //get this user's game roles passed down from the previous activity
         host = getIntent().getBooleanExtra("host", false);
-        playerID = getIntent().getIntExtra("player", 0);
+        playerId = getIntent().getIntExtra("player", 0);
         characterName = getIntent().getExtras().getString("character", "knight");
 
         model = new Model();
-
-        rooms = new Hashtable<>();
-        actors = new Hashtable<>();
-        specials = new Hashtable<>();
-        entities = new Hashtable<>();
-        items = new Hashtable<>();
-
-        map = new Map();
+        GameMaster.setModel(model);
     }
 
     //pass our rendering program to the ar framework
@@ -130,13 +112,13 @@ public class PortalActivity extends ARActivity implements PortalRenderer.NewMark
                 case "cmd_btnPlayerMarkerSelect":
                     if (selectPlayerMarker())
                     {
-                        if (host)
+                        //if (host)
                         {
                             uiPortalOverlay.overlayStartMarkerSelect();
                         }
-                        else
+                        //else
                         {
-
+                            //wait for host
                         }
                     }
                     break;
@@ -164,9 +146,9 @@ public class PortalActivity extends ARActivity implements PortalRenderer.NewMark
                     uiPortalOverlay.overlayEnemyTargetSelect();
                     break;
                 case "cmd_btnDefend":
-                    actors.get(playerID).setState(Actor.E_STATE.DEFEND);
-                    renderer.updateRoomResidents(rooms.get(actors.get(playerID).getRoom()),
-                                                 actors);
+                    GameMaster.setActorState(playerId, Actor.E_STATE.DEFEND);
+                    renderer.updateRoomResidents(GameMaster.getActorRoom(playerId),
+                                                 model.getActors());
                     Toast.makeText(getApplicationContext(),
                                    "COWARD",
                                    Toast.LENGTH_SHORT).show();
@@ -190,36 +172,16 @@ public class PortalActivity extends ARActivity implements PortalRenderer.NewMark
 
             if (action1[0].equals("attack"))
             {
-                Actor target = actors.get(Integer.parseInt(action1[1]));
-                attack(target);
+                int targetId = Integer.parseInt(action1[1]);
+                attack(playerId, targetId);
             }
             else if (action1[0].equals("special"))
             {
-                Special special = specials.get(Integer.parseInt(action1[1]));
+                int specialId = Integer.parseInt(action1[1]);
 
-                if (special.getTargetingType() == Special.E_TARGETING_TYPE.AOE_NON_PLAYER)
+                if (splitAction.length > 1)
                 {
-                    ArrayList<Actor>          targets     = new ArrayList<>();
-                    Hashtable<Integer, Actor> targetTable = getEnemyTargets();
-
-                    for (int id : targetTable.keySet())
-                    {
-                        targets.add(targetTable.get(id));
-                    }
-
-                    performSpecial(special, targets);
-                }
-                else if (special.getTargetingType() == Special.E_TARGETING_TYPE.AOE_PLAYER)
-                {
-                    ArrayList<Actor>          targets     = new ArrayList<>();
-                    Hashtable<Integer, Actor> targetTable = getPlayerTargets();
-
-                    for (int id : targetTable.keySet())
-                    {
-                        targets.add(targetTable.get(id));
-                    }
-
-                    performSpecial(special, targets);
+                    performSpecial(playerId, specialId);
                 }
                 else
                 {
@@ -227,8 +189,8 @@ public class PortalActivity extends ARActivity implements PortalRenderer.NewMark
 
                     if (action2[0].equals("target"))
                     {
-                        Actor target = actors.get(Integer.parseInt(action2[1]));
-                        performSpecial(special, target);
+                        int targetId = Integer.parseInt(action2[1]);
+                        performSpecial(playerId, targetId, specialId);
                     }
                 }
             }
@@ -262,11 +224,11 @@ public class PortalActivity extends ARActivity implements PortalRenderer.NewMark
     private int getFirstUnreservedMarker()
     {
         ArrayList<Integer> marksX = new ArrayList<>();
-        for (Actor actor : actors.values())
+        for (Actor actor : model.getActors().values())
         {
             marksX.add(actor.getMarker());
         }
-        for (Room room : rooms.values())
+        for (Room room : model.getRooms().values())
         {
             marksX.add(room.getMarker());
         }
@@ -284,9 +246,9 @@ public class PortalActivity extends ARActivity implements PortalRenderer.NewMark
     private int getNearestNonPlayerMarker(int mark0)
     {
         ArrayList<Integer> actorMarkers = new ArrayList<>();
-        for (int id : actors.keySet())
+        for (int id : model.getActors().keySet())
         {
-            actorMarkers.add(actors.get(id).getMarker());
+            actorMarkers.add(model.getActors().get(id).getMarker());
         }
 
         int foundMarker = renderer.getNearestMarkerExcluding(mark0, actorMarkers);
@@ -301,7 +263,7 @@ public class PortalActivity extends ARActivity implements PortalRenderer.NewMark
 
     private int getNearestNonPlayerMarkerExcluding(int mark0, ArrayList<Integer> marksX)
     {
-        for (Actor actor : actors.values())
+        for (Actor actor : model.getActors().values())
         {
             marksX.add(actor.getMarker());
         }
@@ -316,289 +278,22 @@ public class PortalActivity extends ARActivity implements PortalRenderer.NewMark
         return -1;
     }
 
-    private short getWall(int room0, int room1)
-    {
-        return getWall(rooms.get(room0), rooms.get(room1));
-    }
-
-    private short getWall(Room room0, Room room1)
-    {
-        int mark0 = room0.getMarker();
-        int mark1 = room1.getMarker();
-
-        float angle0 = renderer.getAngleBetweenMarkers(mark0, mark1);
-
-        short wall0 = getWallFromAngle(angle0);
-
-        return wall0;
-    }
-
-    private boolean getValidPath(int room0, int room1)
-    {
-        return getValidPath(rooms.get(room0), rooms.get(room1));
-    }
-
-    private boolean getValidPath(Room room0, Room room1)
-    {
-        Pair<Integer, Integer> room0Pos = map.getPosition(room0.getId());
-        short                  room0Rot = map.getRoomRotation(room0Pos.first, room0Pos.second);
-        Pair<Integer, Integer> room1Pos = map.getPosition(room1.getId());
-        short                  room1Rot = map.getRoomRotation(room1Pos.first, room1Pos.second);
-
-        if (map.checkAdjacent(room0.getId(), room1.getId()) < 0)
-        {
-            return false;
-        }
-
-        Room.E_WALL_TYPE wallType0;
-        Room.E_WALL_TYPE wallType1;
-
-        if (room0Pos.second > room1Pos.second)
-        {
-            //room1 is north of room0
-            wallType0 = room0.getWallType(room0Rot);
-            wallType1 = room1.getWallType((short) ((room1Rot + 2) % 4));
-        }
-        else if (room0Pos.first < room1Pos.first)
-        {
-            //room1 is east of room0
-            wallType0 = room0.getWallType((short) ((room0Rot + 1) % 4));
-            wallType1 = room1.getWallType((short) ((room1Rot + 3) % 4));
-        }
-        else if (room0Pos.second < room1Pos.second)
-        {
-            //room1 is south of room0
-            wallType0 = room0.getWallType((short) ((room0Rot + 2) % 4));
-            wallType1 = room1.getWallType(room1Rot);
-        }
-        else
-        {
-            //room1 is west of room0
-            wallType0 = room0.getWallType((short) ((room0Rot + 3) % 4));
-            wallType1 = room1.getWallType((short) ((room1Rot + 1) % 4));
-        }
-
-        if ((wallType0 == DOOR_UNLOCKED || wallType0 == DOOR_OPEN) &&
-            (wallType1 == DOOR_UNLOCKED || wallType1 == DOOR_OPEN))
-        {
-            return true;
-        }
-
-        return false;
-    }
-
-    private boolean getValidAdjacency(int room0, int room1)
-    {
-        return getValidAdjacency(rooms.get(room0), rooms.get(room1));
-    }
-
-    private boolean getValidAdjacency(Room room0, Room room1)
-    {
-        int mark0 = room0.getMarker();
-        int mark1 = room1.getMarker();
-
-        float angle0 = renderer.getAngleBetweenMarkers(mark0, mark1);
-        float angle1 = renderer.getAngleBetweenMarkers(mark1, mark0);
-
-        short wall0 = getWallFromAngle(angle0);
-        short wall1 = getWallFromAngle(angle1);
-
-        Room.E_WALL_TYPE wallType0 = room0.getWallType(wall0);
-        Room.E_WALL_TYPE wallType1 = room1.getWallType(wall1);
-
-        if (wallType0 != wallType1)
-        {
-            return false;
-        }
-
-        Pair<Integer, Integer> proposedPositon = map.getProposedPositon(room0.getId(), wall0);
-        short proposedRotation =
-            map.getProposedRotation(room0.getId(), wall0, wall1);
-
-        System.out.println(
-            "Proposed new room position and rotation: " + proposedPositon.first + ", " +
-            proposedPositon.second + ", " + proposedRotation);
-
-        for (int i = 0; i < 4; ++i)
-        {
-            int testRoom =
-                map.getRoomFromPositionInDirection(proposedPositon.first, proposedPositon.second,
-                                                   (short) i);
-            if (testRoom > -1 && testRoom != room0.getId())
-            {
-                System.out.println("Testing against room: " + testRoom);
-
-                if (!getValidAdjacencyProposedRoom(proposedPositon.first,
-                                                   proposedPositon.second,
-                                                   proposedRotation,
-                                                   rooms.get(testRoom),
-                                                   room1))
-                {
-                    return false;
-                }
-            }
-        }
-
-        return true;
-    }
-
-    private boolean getValidAdjacencyExistingRooms(int room0, int room1)
-    {
-        return getValidAdjacencyExistingRooms(rooms.get(room0), rooms.get(room1));
-    }
-
-    private boolean getValidAdjacencyProposedRoom(int x,
-                                                  int y,
-                                                  short rot,
-                                                  int room0,
-                                                  int room1)
-    {
-        return getValidAdjacencyProposedRoom(x, y, rot, rooms.get(room0), rooms.get(room1));
-    }
-
-    private boolean getValidAdjacencyProposedRoom(int x, int y, short rot, Room room0, Room room1)
-    {
-        Pair<Integer, Integer> room0Pos = map.getPosition(room0.getId());
-        short                  room0Rot = map.getRoomRotation(room0Pos.first, room0Pos.second);
-        Pair<Integer, Integer> room1Pos = new Pair<>(x, y);
-        short                  room1Rot = rot;
-
-        Room.E_WALL_TYPE wallType0;
-        Room.E_WALL_TYPE wallType1;
-
-        if (room0Pos.second > room1Pos.second)
-        {
-            //room1 is north of room0
-            wallType0 = room0.getWallType(room0Rot);
-            wallType1 = room1.getWallType((short) ((room1Rot + 2) % 4));
-        }
-        else if (room0Pos.first < room1Pos.first)
-        {
-            //room1 is east of room0
-            wallType0 = room0.getWallType((short) ((room0Rot + 1) % 4));
-            wallType1 = room1.getWallType((short) ((room1Rot + 3) % 4));
-        }
-        else if (room0Pos.second < room1Pos.second)
-        {
-            //room1 is south of room0
-            wallType0 = room0.getWallType((short) ((room0Rot + 2) % 4));
-            wallType1 = room1.getWallType(room1Rot);
-        }
-        else
-        {
-            //room1 is west of room0
-            wallType0 = room0.getWallType((short) ((room0Rot + 3) % 4));
-            wallType1 = room1.getWallType((short) ((room1Rot + 1) % 4));
-        }
-
-        if (wallType0 == wallType1)
-        {
-            return true;
-        }
-
-        return false;
-    }
-
-    private boolean getValidAdjacencyExistingRooms(Room room0, Room room1)
-    {
-        Pair<Integer, Integer> room0Pos = map.getPosition(room0.getId());
-        short                  room0Rot = map.getRoomRotation(room0Pos.first, room0Pos.second);
-        Pair<Integer, Integer> room1Pos = map.getPosition(room1.getId());
-        short                  room1Rot = map.getRoomRotation(room1Pos.first, room1Pos.second);
-
-        if (map.checkAdjacent(room0.getId(), room1.getId()) < 0)
-        {
-            return false;
-        }
-
-        Room.E_WALL_TYPE wallType0;
-        Room.E_WALL_TYPE wallType1;
-
-        if (room0Pos.second > room1Pos.second)
-        {
-            //room1 is north of room0
-            wallType0 = room0.getWallType(room0Rot);
-            wallType1 = room1.getWallType((short) ((room1Rot + 2) % 4));
-        }
-        else if (room0Pos.first < room1Pos.first)
-        {
-            //room1 is east of room0
-            wallType0 = room0.getWallType((short) ((room0Rot + 1) % 4));
-            wallType1 = room1.getWallType((short) ((room1Rot + 3) % 4));
-        }
-        else if (room0Pos.second < room1Pos.second)
-        {
-            //room1 is south of room0
-            wallType0 = room0.getWallType((short) ((room0Rot + 2) % 4));
-            wallType1 = room1.getWallType(room1Rot);
-        }
-        else
-        {
-            //room1 is west of room0
-            wallType0 = room0.getWallType((short) ((room0Rot + 3) % 4));
-            wallType1 = room1.getWallType((short) ((room1Rot + 1) % 4));
-        }
-
-        if (wallType0 == wallType1)
-        {
-            return true;
-        }
-
-        return false;
-    }
-
-    private short getWallFromAngle(float angle)
-    {
-        if (angle > 315 || angle <= 45)
-        {
-            return Room.WALL_TOP;
-        }
-        else if (angle > 45 && angle <= 135)
-        {
-            return Room.WALL_RIGHT;
-        }
-        else if (angle > 135 && angle <= 225)
-        {
-            return Room.WALL_BOTTOM;
-        }
-        else
-        {
-            return Room.WALL_LEFT;
-        }
-    }
-
-    private ArrayList<Actor> getActorsInRoom(Room room, boolean getPlayers)
-    {
-        ArrayList<Actor> res = new ArrayList<>();
-
-        for (int actorId : room.getResidentActors())
-        {
-            Actor actor = actors.get(actorId);
-            if ((getPlayers && actor.isPlayer()) || (!getPlayers && !actor.isPlayer()))
-            {
-                res.add(actor);
-            }
-        }
-
-        return res;
-    }
-
     private boolean selectPlayerMarker()
     {
         int mark = getFirstUnreservedMarker();
         if (mark > -1)
         {
-            Actor actor = new Actor(playerID, characterName, mark);
+            Actor actor = new Actor(playerId, characterName, mark);
             GameStatLoader.loadActorStats(actor,
                                           characterName,
-                                          specials,
+                                          model.getSpecials(),
                                           getApplicationContext());
-            actors.put(playerID, actor);
-            renderer.setPlayerMarker(playerID, mark);
+            model.getActors().put(playerId, actor);
+            renderer.setPlayerMarker(playerId, mark);
 
             Item item = GameStatLoader.loadItemStats("delightful_bread",
-                                                     items,
-                                                     specials,
+                                                     model.getItems(),
+                                                     model.getSpecials(),
                                                      getApplicationContext());
 
             Toast.makeText(getApplicationContext(),
@@ -625,13 +320,13 @@ public class PortalActivity extends ARActivity implements PortalRenderer.NewMark
         if (mark > -1)
         {
             //generate a new, placed room
-            int  roomID = getNextID(rooms);
+            int  roomID = getNextID(model.getRooms());
             Room room   = new Room(roomID, mark, true);
-            rooms.put(roomID, room);
+            model.getRooms().put(roomID, room);
             renderer.createRoom(room);
 
             //place every player actor in that room
-            for (Actor actor : actors.values())
+            for (Actor actor : model.getActors().values())
             {
                 if (actor.isPlayer())
                 {
@@ -640,9 +335,9 @@ public class PortalActivity extends ARActivity implements PortalRenderer.NewMark
                 }
             }
 
-            renderer.updateRoomResidents(room, actors);
+            renderer.updateRoomResidents(room, model.getActors());
 
-            map.init(roomID);
+            model.getMap().init(roomID);
 
             Toast.makeText(getApplicationContext(),
                            "Starting Room Established",
@@ -662,94 +357,20 @@ public class PortalActivity extends ARActivity implements PortalRenderer.NewMark
         }
     }
 
-    private boolean movePlayer()
+    private void movePlayer()
     {
-        int nearestMarkerID =
-            getNearestNonPlayerMarker(actors.get(playerID).getMarker());
-        if (nearestMarkerID > -1)
+        int nearestMarkerId =
+            getNearestNonPlayerMarker(GameMaster.getActorMakerId(playerId));
+        if (nearestMarkerId > -1)
         {
-            boolean foundRoom     = false;
-            int     nearestRoomID = -1;
-            //check to see if there is already a room associated with the nearest marker
-            for (int roomID : rooms.keySet())
+            if (GameMaster.getMarkerAttachment(nearestMarkerId) == 1)
             {
-                if (rooms.get(roomID).getMarker() == nearestMarkerID)
-                {
-                    //if there is, use its id
-                    foundRoom = true;
-                    nearestRoomID = roomID;
-                    break;
-                }
-            }
-            if (foundRoom)
-            {
-                if (nearestRoomID == actors.get(playerID).getRoom())
-                {
-                    //player room hasn't changed, do nothing
-                    Toast.makeText(getApplicationContext(),
-                                   "Player Remains in Room",
-                                   Toast.LENGTH_SHORT)
-                         .show();
+                int startRoomId = GameMaster.getActorRoomId(playerId);
+                int endRoomId   = GameMaster.getIdByMarker(nearestMarkerId);
 
-                    return true;
-                }
-                else
-                {
-                    if (!rooms.get(nearestRoomID).getPlaced())
-                    {
-                        Toast.makeText(getApplicationContext(),
-                                       "Cannot move to room, room has not been placed",
-                                       Toast.LENGTH_SHORT)
-                             .show();
+                int res = GameMaster.moveActor(playerId, endRoomId);
 
-                        return false;
-                    }
-                    //check for valid move
-                    else if (getValidPath(actors.get(playerID).getRoom(),
-                                          nearestRoomID))
-                    {
-                        //if the actor was previously in a room, remove it from that room
-                        if (actors.get(playerID).getRoom() > -1)
-                        {
-                            rooms.get(actors.get(playerID).getRoom())
-                                 .removeActor(playerID);
-                            renderer.updateRoomResidents(rooms.get(actors.get(
-                                playerID).getRoom()), actors);
-                        }
-
-                        //update the actor's room and the new room's actor list
-                        actors.get(playerID).setRoom(nearestRoomID);
-                        rooms.get(nearestRoomID).addActor(playerID);
-
-                        renderer.updateRoomResidents(rooms.get(nearestRoomID),
-                                                     actors);
-
-                        Toast.makeText(getApplicationContext(),
-                                       "Updated Player Room",
-                                       Toast.LENGTH_SHORT)
-                             .show();
-
-                        return true;
-                    }
-                    else
-                    {
-                        Toast.makeText(getApplicationContext(),
-                                       "Bad Move\nNo Valid Path Between Rooms",
-                                       Toast.LENGTH_SHORT)
-                             .show();
-
-                        return false;
-                    }
-                }
-            }
-            else
-            {
-                Toast.makeText(getApplicationContext(),
-                               "Error: Tried to Move to a Room Which does not Exist\nPlease Generate the Room First",
-                               Toast.LENGTH_LONG)
-                     .show();
-
-                return false;
+                postMoveResult(playerId, startRoomId, endRoomId, res);
             }
         }
         else
@@ -758,8 +379,50 @@ public class PortalActivity extends ARActivity implements PortalRenderer.NewMark
                            "Couldn't Find Valid Room",
                            Toast.LENGTH_SHORT)
                  .show();
+        }
+    }
 
-            return false;
+    private void postMoveResult(int actorId, int startRoomId, int endRoomId, int res)
+    {
+        if (actorId == playerId)
+        {
+            switch (res)
+            {
+                case 2:
+                    Toast.makeText(this, "Moved to starting room", Toast.LENGTH_SHORT).show();
+                    break;
+                case 1:
+                    Toast.makeText(this, "Remaining in room", Toast.LENGTH_SHORT).show();
+                    break;
+                case 0:
+                    Toast.makeText(this, "Moved to new room", Toast.LENGTH_SHORT).show();
+                    break;
+                case -1:
+                    Toast.makeText(this, "Can't move, no door to room", Toast.LENGTH_SHORT).show();
+                    break;
+                case -2:
+                    Toast.makeText(this, "Can't move, room not adjacent", Toast.LENGTH_SHORT)
+                         .show();
+                    break;
+                case -3:
+                    Toast.makeText(this, "Can't move, room not placed", Toast.LENGTH_SHORT).show();
+                    break;
+                case -4:
+                    Toast.makeText(this, "Error", Toast.LENGTH_SHORT).show();
+                    break;
+            }
+        }
+
+        if (res >= 0)
+        {
+            if (startRoomId > -1)
+            {
+                renderer.updateRoomResidents(GameMaster.getRoom(startRoomId), model.getActors());
+            }
+            if (endRoomId > -1)
+            {
+                renderer.updateRoomResidents(GameMaster.getRoom(endRoomId), model.getActors());
+            }
         }
     }
 
@@ -768,42 +431,8 @@ public class PortalActivity extends ARActivity implements PortalRenderer.NewMark
         int mark = getFirstUnreservedMarker();
         if (mark > -1)
         {
-            //generate a new, placed room
-            int  roomID = getNextID(rooms);
-            Room room   = new Room(roomID, mark, false);
-            rooms.put(roomID, room);
-
-            //attach three random entities with type 0 or 1 to the new room
-            for (int i = 0; i < 3; ++i)
-            {
-                int entityID =
-                    getNextID(entities);
-                int newType = ((Math.random() > 0.3) ? 0 : 1);
-
-                Entity newEntity = new Entity(entityID, newType);
-                entities.put(entityID, newEntity);
-                room.addEntity(entityID);
-            }
-
-            Actor actor = new Actor(getNextID(actors), room.getId(), "lil_ghost");
-            GameStatLoader.loadActorStats(actor,
-                                          "lil_ghost",
-                                          specials,
-                                          getApplicationContext());
-            actors.put(actor.getId(), actor);
-            room.addActor(actor.getId());
-
-            System.out.println("put lil_ghost in room: " + roomID);
-
-            Actor actor2 = new Actor(getNextID(actors), room.getId(), "lil_ghost");
-            GameStatLoader.loadActorStats(actor2,
-                                          "lil_ghost",
-                                          specials,
-                                          getApplicationContext());
-            actors.put(actor2.getId(), actor2);
-            room.addActor(actor2.getId());
-
-            System.out.println("put lil_ghost in room: " + roomID);
+            Room room =
+                GameMaster.generateRoom(this, CollectionManager.getNextID(model.getRooms()), mark);
 
             renderer.createRoom(room);
 
@@ -825,94 +454,62 @@ public class PortalActivity extends ARActivity implements PortalRenderer.NewMark
         }
     }
 
+    private short getWallFromAngle(float angle)
+    {
+        if (angle > 315 || angle <= 45)
+        {
+            return Room.WALL_TOP;
+        }
+        else if (angle > 45 && angle <= 135)
+        {
+            return Room.WALL_RIGHT;
+        }
+        else if (angle > 135 && angle <= 225)
+        {
+            return Room.WALL_BOTTOM;
+        }
+        else
+        {
+            return Room.WALL_LEFT;
+        }
+    }
+
     private boolean openDoor()
     {
-        Room room0 = rooms.get(actors.get(playerID).getRoom());
-        Room room1;
+        int startRoomId = GameMaster.getActorRoomId(playerId);
 
-        ArrayList<Integer> placedRoomMarkers = new ArrayList<>();
-        for (Room room : rooms.values())
-        {
-            if (room.getPlaced())
-            {
-                placedRoomMarkers.add(room.getMarker());
-            }
-        }
+        ArrayList<Integer> placedRoomMarkers = GameMaster.getPlacedRoomMarkerIds();
 
-        int nearestMarkerID = getNearestNonPlayerMarkerExcluding(room0.getMarker(),
-                                                                 placedRoomMarkers);
+        int nearestMarkerID =
+            getNearestNonPlayerMarkerExcluding(GameMaster.getRoomMarkerId(startRoomId),
+                                               placedRoomMarkers);
         if (nearestMarkerID > -1)
         {
-            boolean foundRoom     = false;
-            Integer nearestRoomID = -1;
-            //check to see if there is already a room associated with the nearest marker
-            for (int roomID : rooms.keySet())
+            if (GameMaster.getMarkerAttachment(nearestMarkerID) == 1)
             {
-                if (rooms.get(roomID).getMarker() == nearestMarkerID)
+                int endRoomId = GameMaster.getIdByMarker(nearestMarkerID);
+
+                float angle0 =
+                    renderer.getAngleBetweenMarkers(GameMaster.getRoomMarkerId(startRoomId),
+                                                    nearestMarkerID);
+                float angle1 = renderer.getAngleBetweenMarkers(nearestMarkerID,
+                                                               GameMaster.getRoomMarkerId(
+                                                                   startRoomId));
+
+                short sideOfStartRoom = getWallFromAngle(angle0);
+                short sideOfEndRoom   = getWallFromAngle(angle1);
+
+                int res =
+                    GameMaster.openDoor(startRoomId, endRoomId, sideOfStartRoom, sideOfEndRoom);
+
+                if (res >= 0)
                 {
-                    //if there is, use its id
-                    foundRoom = true;
-                    nearestRoomID = roomID;
-                    break;
-                }
-            }
-            if (foundRoom)
-            {
-                room1 = rooms.get(nearestRoomID);
-                if (getValidAdjacency(room0, room1))
-                {
-                    room1.setPlaced(true);
-
-                    short wall0 = getWall(room0, room1);
-                    short wall1 = getWall(room1, room0);
-
-                    room0.setWallType(wall0, DOOR_OPEN);
-                    room1.setWallType(wall1, DOOR_OPEN);
-
-                    map.insert(room0.getId(), wall0, room1.getId(), wall1);
-                    Pair<Integer, Integer> room1MapPos =
-                        map.getPosition(room1.getId());
-                    System.out.println(
-                        "New Room Map Position: " + room1MapPos.first + ", " +
-                        room1MapPos.second);
-                    map.print();
-
-                    renderer.updateRoomWalls(room0);
-                    renderer.updateRoomWalls(room1);
-
-                    Hashtable<Integer, Pair<Short, Short>> adjacentRoomsAndWalls =
-                        map.getAdjacentRoomsAndWalls(nearestRoomID);
-                    for (int id : adjacentRoomsAndWalls.keySet())
-                    {
-                        if (id != room0.getId())
-                        {
-                            room1.setWallType(adjacentRoomsAndWalls.get(id).first,
-                                              DOOR_OPEN);
-                            rooms.get(id)
-                                 .setWallType(adjacentRoomsAndWalls.get(id).second,
-                                              DOOR_OPEN);
-
-                            renderer.updateRoomWalls(room1);
-                            renderer.updateRoomWalls(rooms.get(id));
-                        }
-                    }
-
-                    Toast.makeText(getApplicationContext(),
-                                   "Door Opened",
-                                   Toast.LENGTH_SHORT)
-                         .show();
+                    postOpenDoorResult(endRoomId, res);
 
                     return true;
                 }
-                else
-                {
-                    Toast.makeText(getApplicationContext(),
-                                   "Connection is Not Valid",
-                                   Toast.LENGTH_SHORT)
-                         .show();
 
-                    return false;
-                }
+                return false;
             }
             else
             {
@@ -935,17 +532,41 @@ public class PortalActivity extends ARActivity implements PortalRenderer.NewMark
         }
     }
 
+    private void postOpenDoorResult(int endRoomId, int res)
+    {
+        switch (res)
+        {
+            case 0:
+                break;
+            case -1:
+                break;
+        }
+
+        if (res >= 0)
+        {
+            Room room = GameMaster.getRoom(endRoomId);
+            renderer.updateRoomWalls(room);
+
+            ArrayList<Integer> adjacentRoomIds = GameMaster.getAdjacentRoomIds(endRoomId);
+            for (int id : adjacentRoomIds)
+            {
+                Room adjacentRoom = GameMaster.getRoom(id);
+                renderer.updateRoomWalls(adjacentRoom);
+            }
+        }
+    }
+
     private Hashtable<Integer, Actor> getEnemyTargets()
     {
-        Actor                     actor   = actors.get(playerID);
-        Room                      room    = rooms.get(actor.getRoom());
+        Actor                     actor   = model.getActors().get(playerId);
+        Room                      room    = model.getRooms().get(actor.getRoom());
         Hashtable<Integer, Actor> targets = new Hashtable<>();
 
         System.out.println("looking for enemy targets in room: " + actor.getRoom());
 
         for (int targetId : room.getResidentActors())
         {
-            Actor target = actors.get(targetId);
+            Actor target = model.getActors().get(targetId);
             if (!target.isPlayer())
             {
                 System.out.println("found valid target: " + target.getId());
@@ -958,15 +579,15 @@ public class PortalActivity extends ARActivity implements PortalRenderer.NewMark
 
     private Hashtable<Integer, Actor> getPlayerTargets()
     {
-        Actor                     actor   = actors.get(playerID);
-        Room                      room    = rooms.get(actor.getRoom());
+        Actor                     actor   = model.getActors().get(playerId);
+        Room                      room    = model.getRooms().get(actor.getRoom());
         Hashtable<Integer, Actor> targets = new Hashtable<>();
 
         System.out.println("looking for player targets in room: " + actor.getRoom());
 
         for (int targetId : room.getResidentActors())
         {
-            Actor target = actors.get(targetId);
+            Actor target = model.getActors().get(targetId);
             if (target.isPlayer())
             {
                 System.out.println("found valid target: " + target.getId());
@@ -979,8 +600,8 @@ public class PortalActivity extends ARActivity implements PortalRenderer.NewMark
 
     private Hashtable<Integer, Special> getSpecials()
     {
-        System.out.println("looking for specials for actor: " + playerID);
-        Actor actor = actors.get(playerID);
+        System.out.println("looking for specials for actor: " + playerId);
+        Actor actor = model.getActors().get(playerId);
         for (int id : actor.getSpecials().keySet())
         {
             System.out.println("found special: " + actor.getSpecials().get(id).getName());
@@ -988,48 +609,100 @@ public class PortalActivity extends ARActivity implements PortalRenderer.NewMark
         return actor.getSpecials();
     }
 
-    private void attack(Actor target)
+    private void attack(int attackerId, int defenderId)
     {
-        Actor actor = actors.get(playerID);
-        Room  room  = rooms.get(actor.getRoom());
+        int res = GameMaster.attack(attackerId, defenderId);
 
-        System.out.println("Attacking target: " + target.getId());
-        System.out.println(
-            "Actor Attack Rating: " + actor.getRealAttackRating());
-        System.out.println(
-            "Target HP before attack: " + target.getHealthCurrent());
-        actor.setState(Actor.E_STATE.ATTACK);
-        actor.attack(target);
-        System.out.println(
-            "Target HP after attack: " + target.getHealthCurrent());
+        postAttackResults(attackerId, res);
+    }
 
-        System.out.println("checking target still alive");
-        if (target.getHealthCurrent() <= 0)
+    private void postAttackResults(int attackerId, int res)
+    {
+        if (attackerId == playerId)
         {
-            System.out.println("target dead, removing from room");
-            room.removeActor(target.getId());
+            switch (res)
+            {
+                case 1:
+                    Toast.makeText(this, "Killed target", Toast.LENGTH_SHORT).show();
+                    break;
+                case 0:
+                    Toast.makeText(this, "Success", Toast.LENGTH_SHORT).show();
+                    break;
+                default:
+                    break;
+            }
         }
 
-        renderer.updateRoomResidents(room, actors);
+        if (res >= 0)
+        {
+            Room room = GameMaster.getActorRoom(attackerId);
+            renderer.updateRoomResidents(room, model.getActors());
+        }
     }
 
-    private void performSpecial(Special special, Actor target)
+    private void performSpecial(int sourceId, int specialId)
     {
-        ArrayList<Actor> targets = new ArrayList<>();
-        targets.add(target);
+        int res = GameMaster.special(sourceId, specialId);
 
-        performSpecial(special, targets);
+        postSpecialResult(sourceId, res);
     }
 
-    private void performSpecial(Special special, ArrayList<Actor> targets)
+    private void performSpecial(int sourceId, int targetId, int specialId)
     {
-        Actor actor = actors.get(playerID);
-        actor.performSpecial(special, targets);
+        int res = GameMaster.special(sourceId, targetId, specialId);
+
+        postSpecialResult(sourceId, res);
+    }
+
+    private void postSpecialResult(int sourceId, int res)
+    {
+        if (sourceId == playerId)
+        {
+            switch (res)
+            {
+                case 1:
+                    Toast.makeText(this, "Killed target", Toast.LENGTH_SHORT).show();
+                    break;
+                case 0:
+                    Toast.makeText(this, "Success", Toast.LENGTH_SHORT).show();
+                    break;
+                case -1:
+                    Toast.makeText(this, "You don't have enough energy", Toast.LENGTH_SHORT).show();
+                    break;
+                case -2:
+                    Toast.makeText(this, "No valid targets", Toast.LENGTH_SHORT).show();
+                    break;
+                default:
+                    break;
+            }
+        }
+
+        if (res >= 0)
+        {
+            Room room = GameMaster.getActorRoom(sourceId);
+            renderer.updateRoomResidents(room, model.getActors());
+        }
+    }
+
+    private ArrayList<Actor> getActorsInRoom(Room room, boolean getPlayers)
+    {
+        ArrayList<Actor> res = new ArrayList<>();
+
+        for (int actorId : room.getResidentActors())
+        {
+            Actor actor = model.getActors().get(actorId);
+            if ((getPlayers && actor.isPlayer()) || (!getPlayers && !actor.isPlayer()))
+            {
+                res.add(actor);
+            }
+        }
+
+        return res;
     }
 
     private void performPlayerSpecial(Actor actor, Special special)
     {
-        Room             room    = rooms.get(actor.getRoom());
+        Room             room    = model.getRooms().get(actor.getRoom());
         ArrayList<Actor> targets = new ArrayList<>();
 
         switch (special.getTargetingType())

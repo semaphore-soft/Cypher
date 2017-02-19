@@ -2,6 +2,7 @@ package com.semaphore_soft.apps.cypher.game;
 
 import android.util.Pair;
 
+import java.util.ArrayList;
 import java.util.Hashtable;
 
 /**
@@ -48,7 +49,14 @@ public class Map
         roomIDMap[x][y] = id;
     }
 
-    public short getRoomRotation(int x, int y)
+    public short getRotation(int id)
+    {
+        Pair<Integer, Integer> pos = getPosition(id);
+
+        return getRotation(pos.first, pos.second);
+    }
+
+    public short getRotation(int x, int y)
     {
         return roomRotationMap[x][y];
     }
@@ -162,7 +170,7 @@ public class Map
         }
     }
 
-    public Pair<Integer, Integer> getProposedPositon(Integer idA, short sideOfA)
+    public Pair<Integer, Integer> getProposedPosition(int idA, short sideOfA)
     {
         Pair<Integer, Integer> res = new Pair<>(-1, -1);
 
@@ -358,11 +366,29 @@ public class Map
         return -1;
     }
 
-    public Hashtable<Integer, Pair<Short, Short>> getAdjacentRoomsAndWalls(Integer idA)
+    public ArrayList<Integer> getAdjacentRooms(int idA)
+
+    {
+        ArrayList<Integer>     res = new ArrayList<>();
+        Pair<Integer, Integer> pos = getPosition(idA);
+
+        for (int i = 0; i < 4; ++i)
+        {
+            int testRoom = getRoomFromPositionInDirection(pos.first, pos.second, (short) i);
+            if (testRoom > -1)
+            {
+                res.add(testRoom);
+            }
+        }
+
+        return res;
+    }
+
+    public Hashtable<Integer, Pair<Short, Short>> getAdjacentRoomsAndWalls(int idA)
     {
         Hashtable<Integer, Pair<Short, Short>> res = new Hashtable<>();
         Pair<Integer, Integer>                 pos = getPosition(idA);
-        short                                  rot = getRoomRotation(pos.first, pos.second);
+        short                                  rot = getRotation(pos.first, pos.second);
 
         for (int i = 0; i < 4; ++i)
         {
@@ -371,14 +397,53 @@ public class Map
             {
                 Pair<Integer, Integer> testPos = getPosition(testRoom);
                 Pair<Short, Short> walls = new Pair<>((short) ((rot + i) % 4),
-                                                      (short) ((getRoomRotation(testPos.first,
-                                                                                testPos.second) +
+                                                      (short) ((getRotation(testPos.first,
+                                                                            testPos.second) +
                                                                 i + 2) % 4));
                 res.put(testRoom, walls);
             }
         }
 
         return res;
+    }
+
+    public short getDirectionOfAdjacentRoom(int idA, int idB)
+    {
+        Pair<Integer, Integer> roomAPos = getPosition(idA);
+        Pair<Integer, Integer> roomBPos = getPosition(idB);
+
+        if (roomAPos.second > roomBPos.second)
+        {
+            //room B is north of room A
+            return 0;
+        }
+        else if (roomAPos.first < roomBPos.first)
+        {
+            //room B is east of room A
+            return 1;
+        }
+        else if (roomAPos.second < roomBPos.second)
+        {
+            //room B is south of room A
+            return 2;
+        }
+        else if (roomAPos.first > roomBPos.first)
+        {
+            //room B is west of room A
+            return 3;
+        }
+
+        return -1;
+    }
+
+    public Pair<Short, Short> getWallsBetweenAdjacentRooms(int idA, int idB)
+    {
+        short roomARot = getRotation(idA);
+        short roomBRot = getRotation(idB);
+
+        short dir = getDirectionOfAdjacentRoom(idA, idB);
+
+        return new Pair<>((short) ((roomARot + dir) % 4), (short) ((roomBRot + dir + 2) % 4));
     }
 
     public void print()

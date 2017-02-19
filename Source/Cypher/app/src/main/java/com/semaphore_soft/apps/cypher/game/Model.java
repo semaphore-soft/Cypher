@@ -27,28 +27,58 @@ public class Model
         map = new Map();
     }
 
+    public Hashtable<Integer, Room> getRooms()
+    {
+        return rooms;
+    }
+
+    public Hashtable<Integer, Actor> getActors()
+    {
+        return actors;
+    }
+
+    public Hashtable<Integer, Special> getSpecials()
+    {
+        return specials;
+    }
+
+    public Hashtable<Integer, Entity> getEntities()
+    {
+        return entities;
+    }
+
+    public Hashtable<Integer, Item> getItems()
+    {
+        return items;
+    }
+
+    public Map getMap()
+    {
+        return map;
+    }
+
     public void addRoom(int id, Room room)
     {
-
+        rooms.put(id, room);
     }
 
     public void addActor(int id, Actor actor)
     {
-
+        actors.put(id, actor);
     }
 
     public void addSpecial(int id, Special special)
     {
-
+        specials.put(id, special);
     }
 
     public void addEntity(int id, Entity entity)
     {
-
+        entities.put(id, entity);
     }
 
     public void addItem(int id, Item item)
     {
-
+        items.put(id, item);
     }
 }

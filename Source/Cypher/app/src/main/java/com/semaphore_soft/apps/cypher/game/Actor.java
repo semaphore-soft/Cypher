@@ -14,7 +14,6 @@ public class Actor
     private int     id;
     private String  name;
     private int     markerID;
-    private int     charID;
     private int     roomID;
     private boolean isPlayer;
 
@@ -35,9 +34,9 @@ public class Actor
     private int     defenceRating;
     private E_STATE state;
 
-    Hashtable<Integer, Special> specials;
-    Hashtable<Integer, Item>    items;
-    Hashtable<Integer, Status>  statuses;
+    private Hashtable<Integer, Special> specials;
+    private Hashtable<Integer, Item>    items;
+    private Hashtable<Integer, Status>  statuses;
 
     public Actor(int id)
     {
