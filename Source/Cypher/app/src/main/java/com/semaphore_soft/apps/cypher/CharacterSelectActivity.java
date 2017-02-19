@@ -9,50 +9,51 @@ import android.os.Handler;
 import android.os.IBinder;
 import android.support.v4.content.LocalBroadcastManager;
 import android.support.v7.app.AppCompatActivity;
-import android.support.v7.widget.Toolbar;
-import android.view.View;
-import android.widget.Button;
-import android.widget.RadioButton;
-import android.widget.TextView;
+import android.widget.FrameLayout;
 import android.widget.Toast;
 
 import com.semaphore_soft.apps.cypher.networking.ClientService;
 import com.semaphore_soft.apps.cypher.networking.NetworkConstants;
 import com.semaphore_soft.apps.cypher.networking.ResponseReceiver;
 import com.semaphore_soft.apps.cypher.networking.ServerService;
+import com.semaphore_soft.apps.cypher.ui.UICharacterSelect;
+import com.semaphore_soft.apps.cypher.ui.UIListener;
 
 /**
  * Created by Scorple on 1/9/2017.
  */
 
-public class CharacterSelectActivity extends AppCompatActivity implements ResponseReceiver.Receiver
+public class CharacterSelectActivity extends AppCompatActivity implements ResponseReceiver.Receiver,
+                                                                          UIListener
 {
-    private boolean          host;
-    private int              playerID;
+    private UICharacterSelect uiCharacterSelect;
+
     private ResponseReceiver responseReceiver;
-    private int              numClients;
-    private int playersReady = 0;
-    private Button        btnGo;
-    private TextView      status;
-    private RadioButton   char0;
-    private RadioButton   char1;
-    private RadioButton   char2;
-    private RadioButton   char3;
-    private ServerService serverService;
-    private ClientService clientService;
+    private ServerService    serverService;
+    private ClientService    clientService;
+    private Handler handler       = new Handler();
     private boolean mServerBound  = false;
     private boolean mClientBound  = false;
-    private boolean ready         = false;
-    private Handler handler       = new Handler();
     private boolean sendHeartbeat = true;
+
+    private boolean host;
+    private int     playerID;
+    private int     numClients;
+
+    private int     playersReady = 0;
+    private boolean ready        = false;
+
+    private static String selection = "";
 
     @Override
     public void onCreate(Bundle savedInstanceState)
     {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.character_select);
-        Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
-        setSupportActionBar(toolbar);
+        setContentView(R.layout.empty);
+
+        uiCharacterSelect = new UICharacterSelect(this);
+        ((FrameLayout) findViewById(R.id.empty)).addView(uiCharacterSelect);
+        uiCharacterSelect.setUIListener(this);
 
         responseReceiver = new ResponseReceiver();
         responseReceiver.setListener(this);
@@ -63,59 +64,29 @@ public class CharacterSelectActivity extends AppCompatActivity implements Respon
 
         playerID = getIntent().getIntExtra("player", 0);
 
-        status = (TextView) findViewById(R.id.groupStatus);
-
-        btnGo = (Button) findViewById(R.id.btnGo);
         if (host)
         {
             numClients = getIntent().getIntExtra("numClients", 0);
             // Include host when displaying connected players
-            status.setText(1 + "/" + (numClients + 1) + " connected");
-            // Make sure host can't start game until everyone has picked a character,
-            // unless no clients are connected
-            if (numClients != 0)
-            {
-                btnGo.setEnabled(false);
-            }
+            uiCharacterSelect.setStatus(0 + "/" + (numClients + 1) + " ready");
         }
 
-
-        char0 = (RadioButton) findViewById(R.id.char0);
-        char0.setChecked(true);
-        char1 = (RadioButton) findViewById(R.id.char1);
-        char2 = (RadioButton) findViewById(R.id.char2);
-        char3 = (RadioButton) findViewById(R.id.char3);
-
-        btnGo.setOnClickListener(new View.OnClickListener()
-        {
-            @Override
-            public void onClick(View view)
-            {
-                if (host)
-                {
-                    serverService.writeAll(NetworkConstants.GAME_AR_START);
-                    startAR();
-                }
-                else
-                {
-                    if (!ready)
-                    {
-                        clientService.clientWrite(NetworkConstants.GAME_READY);
-                        status.setText("Waiting for host...");
-                        btnGo.setText("Cancel");
-                        ready = true;
-                    }
-                    else
-                    {
-                        clientService.clientWrite(NetworkConstants.GAME_UNREADY);
-                        status.setText("");
-                        btnGo.setText("GO!");
-                        ready = false;
-                    }
-                }
-            }
-        });
+        // Make sure host can't start game until everyone has picked a character
+        uiCharacterSelect.setStartEnabled(false);
     }
+
+    private Runnable heartbeat = new Runnable()
+    {
+        @Override
+        public void run()
+        {
+            if (sendHeartbeat)
+            {
+                serverService.writeAll(NetworkConstants.GAME_HEARTBEAT);
+                handler.postDelayed(heartbeat, NetworkConstants.HEARTBEAT_DELAY);
+            }
+        }
+    };
 
     @Override
     protected void onStart()
@@ -155,46 +126,29 @@ public class CharacterSelectActivity extends AppCompatActivity implements Respon
         sendHeartbeat = false;
     }
 
-    private void startAR()
+    @Override
+    public void onCommand(String cmd)
     {
-        Toast.makeText(CharacterSelectActivity.this, "Starting AR Activity", Toast.LENGTH_SHORT)
-             .show();
-        LocalBroadcastManager.getInstance(CharacterSelectActivity.this)
-                             .unregisterReceiver(responseReceiver);
-        Intent intent = new Intent(getBaseContext(), PortalActivity.class);
-        intent.putExtra("host", host);
-        intent.putExtra("player", playerID);
-        if (char0.isChecked())
+        switch (cmd)
         {
-            intent.putExtra("character", "knight");
+            case "knight":
+            case "soldier":
+            case "ranger":
+            case "wizard":
+                postSelection(cmd);
+                break;
+            case "clear":
+                clearSelection();
+                break;
+            case "cmd_btnStart":
+                if (host)
+                {
+                    serverService.writeAll(NetworkConstants.GAME_AR_START);
+                    startAR();
+                }
+                break;
         }
-        else if (char1.isChecked())
-        {
-            intent.putExtra("character", "soldier");
-        }
-        else if (char2.isChecked())
-        {
-            intent.putExtra("character", "ranger");
-        }
-        else if (char3.isChecked())
-        {
-            intent.putExtra("character", "wizard");
-        }
-        startActivity(intent);
     }
-
-    Runnable heartbeat = new Runnable()
-    {
-        @Override
-        public void run()
-        {
-            if (sendHeartbeat)
-            {
-                serverService.writeAll(NetworkConstants.GAME_HEARTBEAT);
-                handler.postDelayed(heartbeat, NetworkConstants.HEARTBEAT_DELAY);
-            }
-        }
-    };
 
     @Override
     public void handleRead(String msg)
@@ -207,20 +161,20 @@ public class CharacterSelectActivity extends AppCompatActivity implements Respon
             // even if numClients == 0 and clients are connected
             if (playersReady >= numClients)
             {
-                btnGo.setEnabled(true);
+                uiCharacterSelect.setStartEnabled(true);
             }
             // Include host when displaying connected players
-            status.setText((playersReady + 1) + "/" + (numClients + 1) + " connected");
+            uiCharacterSelect.setStatus(playersReady + "/" + (numClients + 1) + " ready");
         }
         else if (msg.equals(NetworkConstants.GAME_UNREADY))
         {
             playersReady--;
             if (playersReady < numClients)
             {
-                btnGo.setEnabled(false);
+                uiCharacterSelect.setStartEnabled(false);
             }
             // Include host when displaying connected players
-            status.setText((playersReady + 1) + "/" + (numClients + 1) + " connected");
+            uiCharacterSelect.setStatus(playersReady + "/" + (numClients + 1) + " ready");
         }
         else if (msg.equals(NetworkConstants.GAME_AR_START))
         {
@@ -246,6 +200,62 @@ public class CharacterSelectActivity extends AppCompatActivity implements Respon
         {
             serverService.reconnect();
         }
+    }
+
+    private void postSelection(String selection)
+    {
+        CharacterSelectActivity.selection = selection;
+        if (host)
+        {
+            if (!ready)
+            {
+                ++playersReady;
+            }
+            if (playersReady >= numClients || numClients == 0)
+            {
+                uiCharacterSelect.setStartEnabled(true);
+                uiCharacterSelect.setStatus(playersReady + "/" + (numClients + 1) + " ready");
+            }
+        }
+        else
+        {
+            clientService.clientWrite(NetworkConstants.GAME_READY);
+            uiCharacterSelect.setStatus("Waiting for Host...");
+        }
+        ready = true;
+    }
+
+    private void clearSelection()
+    {
+        selection = "";
+        ready = false;
+        if (host)
+        {
+            uiCharacterSelect.setStartEnabled(false);
+            --playersReady;
+            uiCharacterSelect.setStatus(
+                playersReady + "/" + (numClients + 1) + " ready");
+        }
+        else
+        {
+            clientService.clientWrite(NetworkConstants.GAME_UNREADY);
+            uiCharacterSelect.setStatus("Select a Character");
+        }
+    }
+
+    private void startAR()
+    {
+        Toast.makeText(CharacterSelectActivity.this, "Starting AR Activity", Toast.LENGTH_SHORT)
+             .show();
+        LocalBroadcastManager.getInstance(CharacterSelectActivity.this)
+                             .unregisterReceiver(responseReceiver);
+
+        Intent intent = new Intent(getBaseContext(), PortalActivity.class);
+        intent.putExtra("host", host);
+        intent.putExtra("player", playerID);
+        intent.putExtra("character", selection);
+
+        startActivity(intent);
     }
 
     // Defines callbacks for service binding, passed to bindService()
