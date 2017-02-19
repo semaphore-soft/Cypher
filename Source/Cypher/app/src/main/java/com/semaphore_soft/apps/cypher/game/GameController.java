@@ -6,9 +6,11 @@ package com.semaphore_soft.apps.cypher.game;
 
 public interface GameController
 {
+    void onFinishedLoading();
+
+    void onFinishedAction();
+
     void feedback(String message);
-
     void updateRoom(int roomId);
-
     void turnPassed(int turnId);
 }

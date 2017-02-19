@@ -5,6 +5,7 @@ import android.opengl.GLES20;
 import android.opengl.Matrix;
 
 import com.semaphore_soft.apps.cypher.game.Actor;
+import com.semaphore_soft.apps.cypher.game.GameController;
 import com.semaphore_soft.apps.cypher.game.Room;
 import com.semaphore_soft.apps.cypher.opengl.ARDrawableGLES20;
 import com.semaphore_soft.apps.cypher.opengl.ARModelGLES20;
@@ -31,15 +32,14 @@ class PortalRenderer extends ARRendererGLES20
 {
     private Context context;
 
-    private ArrayList<Integer> markers;
+    private static GameController gameController;
 
-    private int[] playerMarkerIDs;
+    private static ArrayList<Integer> markers;
+    private static int[]              playerMarkerIDs;
 
-    private ArrayList<ARModelGLES20> characterModels;
-
-    private Hashtable<String, ARDrawableGLES20> models;
-
-    private Hashtable<Integer, ARRoom> arRooms;
+    private static ArrayList<ARModelGLES20>            characterModels;
+    private static Hashtable<String, ARDrawableGLES20> models;
+    private static Hashtable<Integer, ARRoom>          arRooms;
 
     public void setContext(Context context)
     {
@@ -219,6 +219,8 @@ class PortalRenderer extends ARRendererGLES20
         error.setShaderProgram(errorShaderProgram);
         error.setColor(0.7f, 0.0f, 0.0f, 1.0f);
         models.put("error", error);
+
+        gameController.onFinishedLoading();
     }
 
     /**
@@ -255,6 +257,11 @@ class PortalRenderer extends ARRendererGLES20
                              ARToolKit.getInstance().queryMarkerTransformation(i));
             }
         }
+    }
+
+    public void setGameController(GameController gameController)
+    {
+        PortalRenderer.gameController = gameController;
     }
 
     public int getFirstMarker()

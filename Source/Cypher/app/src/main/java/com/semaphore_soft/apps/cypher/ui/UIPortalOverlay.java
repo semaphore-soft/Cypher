@@ -56,6 +56,11 @@ public class UIPortalOverlay extends UIBase
     @Override
     protected void createUI()
     {
+        makeView(R.layout.overlay_loading);
+    }
+
+    public void overlayPlayerMarkerSelect()
+    {
         makeView(R.layout.overlay_player_marker_select);
 
         Button btnPlayerMarkerSelect = (Button) findViewById(R.id.btnPlayerMarkerSelect);
