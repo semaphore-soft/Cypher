@@ -109,8 +109,6 @@ public class ConnectionLobbyActivity extends AppCompatActivity implements Respon
             }
 
             uiConnectionLobby.setTextIP("Your IP Address is: " + ip);
-
-            addPlayer(name, 0);
         }
     }
 
