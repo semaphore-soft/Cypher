@@ -2,10 +2,13 @@ package com.semaphore_soft.apps.cypher;
 
 import android.os.Bundle;
 import android.support.v4.content.LocalBroadcastManager;
+import android.util.Log;
 import android.widget.FrameLayout;
 import android.widget.Toast;
 
 import com.semaphore_soft.apps.cypher.game.Actor;
+import com.semaphore_soft.apps.cypher.game.ActorController;
+import com.semaphore_soft.apps.cypher.game.GameController;
 import com.semaphore_soft.apps.cypher.game.GameMaster;
 import com.semaphore_soft.apps.cypher.game.Item;
 import com.semaphore_soft.apps.cypher.game.Model;
@@ -23,7 +26,6 @@ import org.artoolkit.ar.base.ARActivity;
 import org.artoolkit.ar.base.rendering.ARRenderer;
 
 import java.util.ArrayList;
-import java.util.Hashtable;
 
 import static com.semaphore_soft.apps.cypher.utils.CollectionManager.getNextID;
 
@@ -33,10 +35,9 @@ import static com.semaphore_soft.apps.cypher.utils.CollectionManager.getNextID;
 
 public class PortalActivity extends ARActivity implements PortalRenderer.NewMarkerListener,
                                                           ResponseReceiver.Receiver,
-                                                          UIListener
+                                                          UIListener,
+                                                          GameController
 {
-    //TODO this class is too large, some methods should be exported
-
     private UIPortalActivity uiPortalActivity;
     private UIPortalOverlay  uiPortalOverlay;
 
@@ -50,6 +51,9 @@ public class PortalActivity extends ARActivity implements PortalRenderer.NewMark
     private static String characterName;
 
     private static Model model;
+
+    private static boolean turn;
+    private static int     turnId;
 
     @Override
     public void onCreate(Bundle savedInstanceState)
@@ -83,6 +87,11 @@ public class PortalActivity extends ARActivity implements PortalRenderer.NewMark
 
         model = new Model();
         GameMaster.setModel(model);
+
+        ActorController.setGameController(this);
+
+        turn = host;
+        turnId = 0;
     }
 
     //pass our rendering program to the ar framework
@@ -112,11 +121,11 @@ public class PortalActivity extends ARActivity implements PortalRenderer.NewMark
                 case "cmd_btnPlayerMarkerSelect":
                     if (selectPlayerMarker())
                     {
-                        //if (host)
+                        if (host)
                         {
                             uiPortalOverlay.overlayStartMarkerSelect();
                         }
-                        //else
+                        else
                         {
                             //wait for host
                         }
@@ -129,7 +138,7 @@ public class PortalActivity extends ARActivity implements PortalRenderer.NewMark
                     }
                     break;
                 case "cmd_btnEndTurn":
-                    movePlayer();
+                    moveActor(playerId);
                     break;
                 case "cmd_btnGenerateRoom":
                     generateRoom();
@@ -141,7 +150,7 @@ public class PortalActivity extends ARActivity implements PortalRenderer.NewMark
                     }
                     break;
                 case "cmd_btnAttack":
-                    uiPortalOverlay.setEnemyTargets(getEnemyTargets());
+                    uiPortalOverlay.setEnemyTargets(GameMaster.getEnemyTargets(playerId));
                     uiPortalOverlay.setSelectMode(UIPortalOverlay.E_SELECT_MODE.ATTACK_TARGET);
                     uiPortalOverlay.overlayEnemyTargetSelect();
                     break;
@@ -150,13 +159,15 @@ public class PortalActivity extends ARActivity implements PortalRenderer.NewMark
                     renderer.updateRoomResidents(GameMaster.getActorRoom(playerId),
                                                  model.getActors());
                     Toast.makeText(getApplicationContext(),
-                                   "COWARD",
+                                   "Success",
                                    Toast.LENGTH_SHORT).show();
+
+                    endTurn();
                     break;
                 case "cmd_btnSpecial":
-                    uiPortalOverlay.setEnemyTargets(getEnemyTargets());
-                    uiPortalOverlay.setPlayerTargets(getPlayerTargets());
-                    uiPortalOverlay.setSpecials(getSpecials());
+                    uiPortalOverlay.setEnemyTargets(GameMaster.getEnemyTargets(playerId));
+                    uiPortalOverlay.setPlayerTargets(GameMaster.getPlayerTargets(playerId));
+                    uiPortalOverlay.setSpecials(GameMaster.getSpecials(playerId));
                     uiPortalOverlay.setSelectMode(UIPortalOverlay.E_SELECT_MODE.SPECIAL);
                     uiPortalOverlay.overlaySpecialSelect();
                 default:
@@ -357,20 +368,20 @@ public class PortalActivity extends ARActivity implements PortalRenderer.NewMark
         }
     }
 
-    private void movePlayer()
+    private void moveActor(int actorId)
     {
         int nearestMarkerId =
-            getNearestNonPlayerMarker(GameMaster.getActorMakerId(playerId));
+            getNearestNonPlayerMarker(GameMaster.getActorMakerId(actorId));
         if (nearestMarkerId > -1)
         {
             if (GameMaster.getMarkerAttachment(nearestMarkerId) == 1)
             {
-                int startRoomId = GameMaster.getActorRoomId(playerId);
+                int startRoomId = GameMaster.getActorRoomId(actorId);
                 int endRoomId   = GameMaster.getIdByMarker(nearestMarkerId);
 
-                int res = GameMaster.moveActor(playerId, endRoomId);
+                int res = GameMaster.moveActor(actorId, endRoomId);
 
-                postMoveResult(playerId, startRoomId, endRoomId, res);
+                postMoveResult(actorId, startRoomId, endRoomId, res);
             }
         }
         else
@@ -556,64 +567,13 @@ public class PortalActivity extends ARActivity implements PortalRenderer.NewMark
         }
     }
 
-    private Hashtable<Integer, Actor> getEnemyTargets()
-    {
-        Actor                     actor   = model.getActors().get(playerId);
-        Room                      room    = model.getRooms().get(actor.getRoom());
-        Hashtable<Integer, Actor> targets = new Hashtable<>();
-
-        System.out.println("looking for enemy targets in room: " + actor.getRoom());
-
-        for (int targetId : room.getResidentActors())
-        {
-            Actor target = model.getActors().get(targetId);
-            if (!target.isPlayer())
-            {
-                System.out.println("found valid target: " + target.getId());
-                targets.put(targetId, target);
-            }
-        }
-
-        return targets;
-    }
-
-    private Hashtable<Integer, Actor> getPlayerTargets()
-    {
-        Actor                     actor   = model.getActors().get(playerId);
-        Room                      room    = model.getRooms().get(actor.getRoom());
-        Hashtable<Integer, Actor> targets = new Hashtable<>();
-
-        System.out.println("looking for player targets in room: " + actor.getRoom());
-
-        for (int targetId : room.getResidentActors())
-        {
-            Actor target = model.getActors().get(targetId);
-            if (target.isPlayer())
-            {
-                System.out.println("found valid target: " + target.getId());
-                targets.put(targetId, target);
-            }
-        }
-
-        return targets;
-    }
-
-    private Hashtable<Integer, Special> getSpecials()
-    {
-        System.out.println("looking for specials for actor: " + playerId);
-        Actor actor = model.getActors().get(playerId);
-        for (int id : actor.getSpecials().keySet())
-        {
-            System.out.println("found special: " + actor.getSpecials().get(id).getName());
-        }
-        return actor.getSpecials();
-    }
-
     private void attack(int attackerId, int defenderId)
     {
         int res = GameMaster.attack(attackerId, defenderId);
 
         postAttackResults(attackerId, res);
+
+        endTurn();
     }
 
     private void postAttackResults(int attackerId, int res)
@@ -645,6 +605,8 @@ public class PortalActivity extends ARActivity implements PortalRenderer.NewMark
         int res = GameMaster.special(sourceId, specialId);
 
         postSpecialResult(sourceId, res);
+
+        endTurn();
     }
 
     private void performSpecial(int sourceId, int targetId, int specialId)
@@ -652,6 +614,8 @@ public class PortalActivity extends ARActivity implements PortalRenderer.NewMark
         int res = GameMaster.special(sourceId, targetId, specialId);
 
         postSpecialResult(sourceId, res);
+
+        endTurn();
     }
 
     private void postSpecialResult(int sourceId, int res)
@@ -798,6 +762,56 @@ public class PortalActivity extends ARActivity implements PortalRenderer.NewMark
             }
             default:
                 break;
+        }
+    }
+
+    public void endTurn()
+    {
+        Log.d("PortalActivity", "ended player turn " + turnId);
+
+        turn = false;
+        turnId = CollectionManager.getNextIdFromId(turnId, model.getActors());
+
+        Log.d("PortalActivity", "next turn is " + turnId);
+
+        if (turnId == playerId)
+        {
+            turn = true;
+        }
+        else if (!GameMaster.getActorIsPlayer(turnId))
+        {
+            ActorController.takeTurn(turnId);
+        }
+    }
+
+    @Override
+    public void feedback(String message)
+    {
+        Toast.makeText(this, message, Toast.LENGTH_SHORT).show();
+    }
+
+    @Override
+    public void updateRoom(int roomId)
+    {
+        renderer.updateRoomResidents(GameMaster.getRoom(roomId), model.getActors());
+    }
+
+    @Override
+    public void turnPassed(int turnId)
+    {
+        Log.d("PortalActivity", "ended non-player turn " + turnId);
+
+        PortalActivity.turnId = CollectionManager.getNextIdFromId(turnId, model.getActors());
+
+        Log.d("PortalActivity", "next turn is " + PortalActivity.turnId);
+
+        if (PortalActivity.turnId == playerId)
+        {
+            turn = true;
+        }
+        else if (!GameMaster.getActorIsPlayer(PortalActivity.turnId))
+        {
+            ActorController.takeTurn(PortalActivity.turnId);
         }
     }
 }

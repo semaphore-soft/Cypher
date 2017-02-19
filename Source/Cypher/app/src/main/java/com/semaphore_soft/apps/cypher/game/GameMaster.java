@@ -91,6 +91,11 @@ public class GameMaster
         return model.getMap().getAdjacentRooms(startRoomId);
     }
 
+    public static Actor getActor(int id)
+    {
+        return model.getActors().get(id);
+    }
+
     public static int getActorMakerId(int id)
     {
         return model.getActors().get(id).getMarker();
@@ -104,6 +109,11 @@ public class GameMaster
     public static Room getActorRoom(int id)
     {
         return model.getRooms().get(model.getActors().get(id).getRoom());
+    }
+
+    public static boolean getActorIsPlayer(int id)
+    {
+        return model.getActors().get(id).isPlayer();
     }
 
     //returns
@@ -387,6 +397,81 @@ public class GameMaster
         return -1;
     }
 
+    public static Hashtable<Integer, Actor> getEnemyTargets(int actorId)
+    {
+        Actor                     actor   = model.getActors().get(actorId);
+        Room                      room    = model.getRooms().get(actor.getRoom());
+        Hashtable<Integer, Actor> targets = new Hashtable<>();
+
+        System.out.println("looking for enemy targets in room: " + actor.getRoom());
+
+        for (int targetId : room.getResidentActors())
+        {
+            Actor target = model.getActors().get(targetId);
+            if (!target.isPlayer())
+            {
+                System.out.println("found valid target: " + target.getId());
+                targets.put(targetId, target);
+            }
+        }
+
+        return targets;
+    }
+
+    public static Hashtable<Integer, Actor> getPlayerTargets(int actorId)
+    {
+        Actor                     actor   = model.getActors().get(actorId);
+        Room                      room    = model.getRooms().get(actor.getRoom());
+        Hashtable<Integer, Actor> targets = new Hashtable<>();
+
+        System.out.println("looking for player targets in room: " + actor.getRoom());
+
+        for (int targetId : room.getResidentActors())
+        {
+            Actor target = model.getActors().get(targetId);
+            if (target.isPlayer())
+            {
+                System.out.println("found valid target: " + target.getId());
+                targets.put(targetId, target);
+            }
+        }
+
+        return targets;
+    }
+
+    public static ArrayList<Integer> getPlayerTargetIds(int actorId)
+    {
+        Actor              actor   = model.getActors().get(actorId);
+        Room               room    = model.getRooms().get(actor.getRoom());
+        ArrayList<Integer> targets = new ArrayList<>();
+
+        System.out.println("looking for player targets for : " + actorId);
+        System.out.println("looking for player targets in room: " + actor.getRoom());
+
+        for (int targetId : room.getResidentActors())
+        {
+            Actor target = model.getActors().get(targetId);
+            if (target.isPlayer())
+            {
+                System.out.println("found valid target: " + target.getId());
+                targets.add(targetId);
+            }
+        }
+
+        return targets;
+    }
+
+    public static Hashtable<Integer, Special> getSpecials(int actorId)
+    {
+        System.out.println("looking for specials for actor: " + actorId);
+        Actor actor = model.getActors().get(actorId);
+        for (int id : actor.getSpecials().keySet())
+        {
+            System.out.println("found special: " + actor.getSpecials().get(id).getName());
+        }
+        return actor.getSpecials();
+    }
+
     public static void setActorState(int id, Actor.E_STATE state)
     {
         model.getActors().get(id).setState(state);
@@ -407,6 +492,7 @@ public class GameMaster
         if (defender.getHealthCurrent() <= 0)
         {
             getActorRoom(defenderId).removeActor(defenderId);
+            model.getActors().remove(defenderId);
 
             return 1;
         }
