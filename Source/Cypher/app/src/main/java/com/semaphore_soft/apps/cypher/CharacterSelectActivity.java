@@ -219,7 +219,7 @@ public class CharacterSelectActivity extends AppCompatActivity implements Respon
         }
         else
         {
-            clientService.clientWrite(NetworkConstants.GAME_READY);
+            clientService.write(NetworkConstants.GAME_READY);
             uiCharacterSelect.setStatus("Waiting for Host...");
         }
         ready = true;
@@ -238,7 +238,7 @@ public class CharacterSelectActivity extends AppCompatActivity implements Respon
         }
         else
         {
-            clientService.clientWrite(NetworkConstants.GAME_UNREADY);
+            clientService.write(NetworkConstants.GAME_UNREADY);
             uiCharacterSelect.setStatus("Select a Character");
         }
     }
