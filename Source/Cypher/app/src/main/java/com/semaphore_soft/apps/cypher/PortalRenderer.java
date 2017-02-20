@@ -162,7 +162,7 @@ class PortalRenderer extends ARRendererGLES20
                                                                GLES20.GL_FRAGMENT_SHADER),
                                      new String[]{"a_Position", "a_Color", "a_Normal"});
         roomBase.setShaderProgram(roomBaseShaderProgram);
-        roomBase.setColor(0.5f, 0.5f, 0.5f, 1.0f);
+        //roomBase.setColor(0.5f, 0.5f, 0.5f, 1.0f);
         models.put("room_base", roomBase);
 
         ARDrawableGLES20 roomWall =
@@ -176,7 +176,7 @@ class PortalRenderer extends ARRendererGLES20
                                                                GLES20.GL_FRAGMENT_SHADER),
                                      new String[]{"a_Position", "a_Color", "a_Normal"});
         roomWall.setShaderProgram(roomWallShaderProgram);
-        roomWall.setColor(0.5f, 0.5f, 0.5f, 1.0f);
+        //roomWall.setColor(0.5f, 0.5f, 0.5f, 1.0f);
         models.put("room_wall", roomWall);
 
         ARDrawableGLES20 roomDoor =
@@ -204,7 +204,7 @@ class PortalRenderer extends ARRendererGLES20
                                                                GLES20.GL_FRAGMENT_SHADER),
                                      new String[]{"a_Position", "a_Color", "a_Normal"});
         roomDoorOpen.setShaderProgram(roomDoorOpenShaderProgram);
-        roomDoorOpen.setColor(0.75f, 0.75f, 0.75f, 1.0f);
+        //roomDoorOpen.setColor(0.75f, 0.75f, 0.75f, 1.0f);
         models.put("room_door_open", roomDoorOpen);
 
         ARDrawableGLES20 error = ModelLoader.load(context, "error", 120.0f);
