@@ -161,7 +161,7 @@ public class UICharacterSelect extends UIBase
         }
     }
 
-    private void clearSelection()
+    public void clearSelection()
     {
         selected = "";
         imgKnight.setVisibility(GONE);

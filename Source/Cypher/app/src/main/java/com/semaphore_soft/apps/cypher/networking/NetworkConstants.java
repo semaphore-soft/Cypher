@@ -29,6 +29,11 @@ public class NetworkConstants
     public static final String GAME_AR_START  = "GAME_AR_START";
     public static final String GAME_UPDATE    = "GAME_UPDATE";
     public static final String GAME_HEARTBEAT = "GAME_HEARTBEAT";
+    public static final String GAME_KNIGHT    = "knight";
+    public static final String GAME_SOLDIER   = "soldier";
+    public static final String GAME_RANGER    = "ranger";
+    public static final String GAME_WIZARD    = "wizard";
+    public static final String GAME_TAKEN     = "GAME_TAKEN";
     // Constants to use as prefixes to exchange information with other devices
     public static final String PF_NAME        = "NAME:";
     public static final String PF_PLAYER      = "PLAYER:";

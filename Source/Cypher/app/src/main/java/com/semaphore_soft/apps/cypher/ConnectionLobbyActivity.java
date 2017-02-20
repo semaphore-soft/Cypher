@@ -180,7 +180,7 @@ public class ConnectionLobbyActivity extends AppCompatActivity implements Respon
                                Toast.LENGTH_SHORT).show();
                 Intent intent = new Intent(getBaseContext(), CharacterSelectActivity.class);
                 intent.putExtra("host", host);
-                intent.putExtra("player", (long) 0);
+                intent.putExtra("player", 0);
                 intent.putExtra("numClients", playerID);
                 startActivity(intent);
                 break;
