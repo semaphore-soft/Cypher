@@ -25,18 +25,24 @@ public class ModelLoader
 
     public static ARDrawableGLES20 load(Context context, String name, float size)
     {
-        return load(context, name, null, size);
+        return load(context, name, null, size, null);
     }
 
     public static ARDrawableGLES20 load(Context context, String name, String subFolder)
     {
-        return load(context, name, subFolder, 40.0f);
+        return load(context, name, subFolder, 40.0f, null);
+    }
+
+    public static ARDrawableGLES20 load(Context context, String name, float size, String texture)
+    {
+        return load(context, name, null, size, texture);
     }
 
     public static ARDrawableGLES20 load(Context context,
                                         String name,
                                         String subFolder,
-                                        float size)
+                                        float size,
+                                        String texture)
     {
         if (name != null)
         {
@@ -85,7 +91,7 @@ public class ModelLoader
 
                             System.out.println("found pose: " + poseName);
 
-                            poseLib.put(poseName, loadModel(context, filename, size));
+                            poseLib.put(poseName, loadModel(context, filename, size, texture));
                         }
                     }
 
@@ -98,7 +104,7 @@ public class ModelLoader
                         filename += ".obj";
                     }
 
-                    return loadModel(context, filename, size);
+                    return loadModel(context, filename, size, texture);
                 }
             }
             catch (IOException e)
@@ -110,7 +116,10 @@ public class ModelLoader
         return null;
     }
 
-    private static ARModelGLES20 loadModel(Context context, String filename, float size)
+    private static ARModelGLES20 loadModel(Context context,
+                                           String filename,
+                                           float size,
+                                           String texture)
     {
         try
         {
@@ -260,7 +269,7 @@ public class ModelLoader
             }
             arModel.makeVertexIndexBuffer(vertexIndices);
             arModel.setTextureHandle(TextureLoader.loadTexture(context,
-                                                               "textures/error.png"));
+                                                               "textures/" + texture + ".png"));
             System.out.println("finished opengl object");
             System.out.println("finished loading model");
 

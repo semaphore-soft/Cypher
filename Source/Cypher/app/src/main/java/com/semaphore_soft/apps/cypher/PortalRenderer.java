@@ -152,13 +152,13 @@ class PortalRenderer extends ARRendererGLES20
         }
 
         ARDrawableGLES20 roomBase =
-            ModelLoader.load(context, "room_base", 120.0f);
+            ModelLoader.load(context, "room_base", 120.0f, "room_base");
         DynamicShaderProgram roomBaseShaderProgram =
             new DynamicShaderProgram(ShaderLoader.createShader(context,
-                                                               "shaders/vertexShaderUntextured.glsl",
+                                                               "shaders/vertexShaderTextured.glsl",
                                                                GLES20.GL_VERTEX_SHADER),
                                      ShaderLoader.createShader(context,
-                                                               "shaders/fragmentShaderUntextured.glsl",
+                                                               "shaders/fragmentShaderTextured.glsl",
                                                                GLES20.GL_FRAGMENT_SHADER),
                                      new String[]{"a_Position", "a_Color", "a_Normal"});
         roomBase.setShaderProgram(roomBaseShaderProgram);
@@ -166,13 +166,13 @@ class PortalRenderer extends ARRendererGLES20
         models.put("room_base", roomBase);
 
         ARDrawableGLES20 roomWall =
-            ModelLoader.load(context, "room_door_north", 120.0f);
+            ModelLoader.load(context, "room_door_north", 120.0f, "room_base");
         DynamicShaderProgram roomWallShaderProgram =
             new DynamicShaderProgram(ShaderLoader.createShader(context,
-                                                               "shaders/vertexShaderUntextured.glsl",
+                                                               "shaders/vertexShaderTextured.glsl",
                                                                GLES20.GL_VERTEX_SHADER),
                                      ShaderLoader.createShader(context,
-                                                               "shaders/fragmentShaderUntextured.glsl",
+                                                               "shaders/fragmentShaderTextured.glsl",
                                                                GLES20.GL_FRAGMENT_SHADER),
                                      new String[]{"a_Position", "a_Color", "a_Normal"});
         roomWall.setShaderProgram(roomWallShaderProgram);
@@ -194,13 +194,13 @@ class PortalRenderer extends ARRendererGLES20
         models.put("room_door_unlocked", roomDoor);
 
         ARDrawableGLES20 roomDoorOpen =
-            ModelLoader.load(context, "room_door_north_open", 120.0f);
+            ModelLoader.load(context, "room_door_north_open", 120.0f, "room_base");
         DynamicShaderProgram roomDoorOpenShaderProgram =
             new DynamicShaderProgram(ShaderLoader.createShader(context,
-                                                               "shaders/vertexShaderUntextured.glsl",
+                                                               "shaders/vertexShaderTextured.glsl",
                                                                GLES20.GL_VERTEX_SHADER),
                                      ShaderLoader.createShader(context,
-                                                               "shaders/fragmentShaderUntextured.glsl",
+                                                               "shaders/fragmentShaderTextured.glsl",
                                                                GLES20.GL_FRAGMENT_SHADER),
                                      new String[]{"a_Position", "a_Color", "a_Normal"});
         roomDoorOpen.setShaderProgram(roomDoorOpenShaderProgram);
