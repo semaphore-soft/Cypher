@@ -13,13 +13,14 @@ import java.util.Hashtable;
 
 public class ARRoom implements ARDrawableGLES20
 {
-    ARDrawableGLES20 roomModel;
-    ARDrawableGLES20 walls[]       = {null, null, null, null};
-    int              forwardPlayer = -1;
-    int              forwardEnemy  = -1;
-    Hashtable<Integer, ARDrawableGLES20> playerLine;
-    Hashtable<Integer, ARDrawableGLES20> enemyLine;
-    Hashtable<Integer, ARDrawableGLES20> entityPile;
+    private ARDrawableGLES20 roomModel;
+    private ARDrawableGLES20 walls[]       = {null, null, null, null};
+    private int              forwardPlayer = -1;
+    private int              forwardEnemy  = -1;
+    private Hashtable<Integer, ARDrawableGLES20> playerLine;
+    private Hashtable<Integer, ARDrawableGLES20> enemyLine;
+    private Hashtable<Integer, ARDrawableGLES20> entityPile;
+    private short alignment = 2;
 
     public ARRoom()
     {
@@ -161,6 +162,11 @@ public class ARRoom implements ARDrawableGLES20
         }
     }
 
+    public void setAlignment(short side)
+    {
+        alignment = side;
+    }
+
     public void draw(float[] projectionMatrix, float[] modelViewMatrix)
     {
         float[] lightPos             = new float[3];
@@ -206,16 +212,59 @@ public class ARRoom implements ARDrawableGLES20
             {
                 float[] transformationMatrix = new float[16];
                 System.arraycopy(modelViewMatrix, 0, transformationMatrix, 0, 16);
-                if (forwardPlayer == id)
+
+                switch (alignment)
                 {
-                    Matrix.translateM(transformationMatrix, 0, 0.0f, -40.0f, 0.0f);
+                    case 0:
+                        if (forwardPlayer == id)
+                        {
+                            Matrix.translateM(transformationMatrix, 0, 0.0f, 40.0f, 0.0f);
+                        }
+                        else
+                        {
+                            float actorOffset = lineOffset + (60.0f * i);
+                            Matrix.translateM(transformationMatrix, 0, actorOffset, 80.0f, 0.0f);
+                        }
+                        //Matrix.rotateM(transformationMatrix, 0, 0.0f, 0.0f, 0.0f, 1.0f);
+                        break;
+                    case 1:
+                        if (forwardPlayer == id)
+                        {
+                            Matrix.translateM(transformationMatrix, 0, 40.0f, 0.0f, 0.0f);
+                        }
+                        else
+                        {
+                            float actorOffset = lineOffset + (60.0f * i);
+                            Matrix.translateM(transformationMatrix, 0, 80.0f, actorOffset, 0.0f);
+                        }
+                        Matrix.rotateM(transformationMatrix, 0, 270.0f, 0.0f, 0.0f, 1.0f);
+                        break;
+                    case 2:
+                        if (forwardPlayer == id)
+                        {
+                            Matrix.translateM(transformationMatrix, 0, 0.0f, -40.0f, 0.0f);
+                        }
+                        else
+                        {
+                            float actorOffset = lineOffset + (60.0f * i);
+                            Matrix.translateM(transformationMatrix, 0, actorOffset, -80.0f, 0.0f);
+                        }
+                        Matrix.rotateM(transformationMatrix, 0, 180.0f, 0.0f, 0.0f, 1.0f);
+                        break;
+                    case 3:
+                        if (forwardPlayer == id)
+                        {
+                            Matrix.translateM(transformationMatrix, 0, -40.0f, 0.0f, 0.0f);
+                        }
+                        else
+                        {
+                            float actorOffset = lineOffset + (60.0f * i);
+                            Matrix.translateM(transformationMatrix, 0, -80.0f, actorOffset, 0.0f);
+                        }
+                        Matrix.rotateM(transformationMatrix, 0, 90.0f, 0.0f, 0.0f, 1.0f);
+                        break;
                 }
-                else
-                {
-                    float actorOffset = lineOffset + (60.0f * i);
-                    Matrix.translateM(transformationMatrix, 0, actorOffset, -80.0f, 0.0f);
-                    Matrix.rotateM(transformationMatrix, 0, 180.0f, 0.0f, 0.0f, 1.0f);
-                }
+
                 playerLine.get(id).draw(projectionMatrix, transformationMatrix, lightPos);
                 ++i;
             }
@@ -227,15 +276,59 @@ public class ARRoom implements ARDrawableGLES20
             {
                 float[] transformationMatrix = new float[16];
                 System.arraycopy(modelViewMatrix, 0, transformationMatrix, 0, 16);
-                if (forwardEnemy == id)
+
+                switch (alignment)
                 {
-                    Matrix.translateM(transformationMatrix, 0, 0.0f, 40.0f, 0.0f);
+                    case 0:
+                        if (forwardEnemy == id)
+                        {
+                            Matrix.translateM(transformationMatrix, 0, 0.0f, -40.0f, 0.0f);
+                        }
+                        else
+                        {
+                            float actorOffset = lineOffset + (60.0f * i);
+                            Matrix.translateM(transformationMatrix, 0, actorOffset, -80.0f, 0.0f);
+                        }
+                        Matrix.rotateM(transformationMatrix, 0, 180.0f, 0.0f, 0.0f, 1.0f);
+                        break;
+                    case 1:
+                        if (forwardEnemy == id)
+                        {
+                            Matrix.translateM(transformationMatrix, 0, -40.0f, 0.0f, 0.0f);
+                        }
+                        else
+                        {
+                            float actorOffset = lineOffset + (60.0f * i);
+                            Matrix.translateM(transformationMatrix, 0, -80.0f, actorOffset, 0.0f);
+                        }
+                        Matrix.rotateM(transformationMatrix, 0, 90.0f, 0.0f, 0.0f, 1.0f);
+                        break;
+                    case 2:
+                        if (forwardEnemy == id)
+                        {
+                            Matrix.translateM(transformationMatrix, 0, 0.0f, 40.0f, 0.0f);
+                        }
+                        else
+                        {
+                            float actorOffset = lineOffset + (60.0f * i);
+                            Matrix.translateM(transformationMatrix, 0, actorOffset, 80.0f, 0.0f);
+                        }
+                        //Matrix.rotateM(transformationMatrix, 0, 0.0f, 0.0f, 0.0f, 1.0f);
+                        break;
+                    case 3:
+                        if (forwardEnemy == id)
+                        {
+                            Matrix.translateM(transformationMatrix, 0, 40.0f, 0.0f, 0.0f);
+                        }
+                        else
+                        {
+                            float actorOffset = lineOffset + (60.0f * i);
+                            Matrix.translateM(transformationMatrix, 0, 80.0f, actorOffset, 0.0f);
+                        }
+                        Matrix.rotateM(transformationMatrix, 0, 270.0f, 0.0f, 0.0f, 1.0f);
+                        break;
                 }
-                else
-                {
-                    float actorOffset = lineOffset + (60.0f * i);
-                    Matrix.translateM(transformationMatrix, 0, actorOffset, 80.0f, 0.0f);
-                }
+
                 enemyLine.get(id).draw(projectionMatrix, transformationMatrix, lightPos);
                 ++i;
             }

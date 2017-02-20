@@ -91,6 +91,27 @@ public class GameMaster
         return model.getMap().getAdjacentRooms(startRoomId);
     }
 
+    public static short getSideOfRoomFrom(int startRoomId, int endRoomId)
+    {
+        return model.getMap().getWallsBetweenAdjacentRooms(startRoomId, endRoomId).second;
+    }
+
+    public static int getPlayersInRoom(int roomId)
+    {
+        int  res  = 0;
+        Room room = model.getRooms().get(roomId);
+
+        for (int id : room.getResidentActors())
+        {
+            if (model.getActors().get(id).isPlayer())
+            {
+                ++res;
+            }
+        }
+
+        return res;
+    }
+
     public static Actor getActor(int id)
     {
         return model.getActors().get(id);

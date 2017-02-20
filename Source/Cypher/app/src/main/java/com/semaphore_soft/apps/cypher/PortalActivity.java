@@ -479,6 +479,12 @@ public class PortalActivity extends ARActivity implements PortalRenderer.NewMark
             }
             if (endRoomId > -1)
             {
+                if (GameMaster.getPlayersInRoom(endRoomId) == 1)
+                {
+                    renderer.updateRoomAlignment(GameMaster.getRoom(endRoomId),
+                                                 GameMaster.getSideOfRoomFrom(startRoomId,
+                                                                              endRoomId));
+                }
                 renderer.updateRoomResidents(GameMaster.getRoom(endRoomId), model.getActors());
             }
         }

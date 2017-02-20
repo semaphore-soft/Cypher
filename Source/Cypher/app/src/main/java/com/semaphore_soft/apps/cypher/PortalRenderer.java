@@ -511,6 +511,12 @@ class PortalRenderer extends ARRendererGLES20
         }
     }
 
+    public void updateRoomAlignment(Room room, short side)
+    {
+        ARRoom arRoom = arRooms.get(room.getMarker());
+        arRoom.setAlignment(side);
+    }
+
     public void updateRoomResidents(Room room, Hashtable<Integer, Actor> actors)
     {
         ARRoom arRoom = arRooms.get(room.getMarker());
