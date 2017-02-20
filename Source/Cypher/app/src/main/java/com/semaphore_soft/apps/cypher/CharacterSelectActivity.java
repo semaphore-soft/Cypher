@@ -176,10 +176,14 @@ public class CharacterSelectActivity extends AppCompatActivity implements Respon
             }
             if (playerReady(readFrom))
             {
-                // update?
-                return;
+                // Update player's character
+                removePlayer(readFrom);
+                // Reset player count so it doesn't get messed up below
+                playersReady--;
             }
             characterSelections.add(new Pair<>(readFrom, msg));
+            serverService.writeAll(NetworkConstants.PF_LOCK + msg);
+            uiCharacterSelect.setButtonEnabled(msg, false);
             playersReady++;
             // Since default value is 0, allow host to start game
             // even if numClients == 0 and clients are connected
@@ -200,6 +204,14 @@ public class CharacterSelectActivity extends AppCompatActivity implements Respon
             }
             // Include host when displaying connected players
             uiCharacterSelect.setStatus(playersReady + "/" + (numClients + 1) + " ready");
+        }
+        else if (msg.startsWith(NetworkConstants.PF_LOCK))
+        {
+            uiCharacterSelect.setButtonEnabled(msg.substring(5), false);
+        }
+        else if (msg.startsWith(NetworkConstants.PF_FREE))
+        {
+            uiCharacterSelect.setButtonEnabled(msg.substring(5), true);
         }
         else if (msg.equals(NetworkConstants.GAME_TAKEN))
         {
@@ -250,8 +262,8 @@ public class CharacterSelectActivity extends AppCompatActivity implements Respon
         CharacterSelectActivity.selection = selection;
         if (host)
         {
-            if (!ready)
-            {
+            //            if (!ready)
+            //            {
                 if (selectionTaken(selection))
                 {
                     Log.i("CharSelect", "Character taken");
@@ -259,13 +271,16 @@ public class CharacterSelectActivity extends AppCompatActivity implements Respon
                 }
                 if (playerReady(-1))
                 {
-                    // update?
-                    return;
+                    // Update host's character
+                    removePlayer(-1);
+                    // Reset player count so it doesn't get messed up below
+                    playersReady--;
                 }
                 // Use -1 since clients start at 0
+            serverService.writeAll(NetworkConstants.PF_LOCK + selection);
                 characterSelections.add(new Pair<>(-1, selection));
                 ++playersReady;
-            }
+            //            }
             if (playersReady >= numClients || numClients == 0)
             {
                 uiCharacterSelect.setStartEnabled(true);
@@ -332,7 +347,10 @@ public class CharacterSelectActivity extends AppCompatActivity implements Respon
         {
             if (player == pair.first)
             {
+                serverService.writeAll(NetworkConstants.PF_FREE + pair.second);
+                uiCharacterSelect.setButtonEnabled(pair.second, true);
                 characterSelections.remove(pair);
+                return;
             }
         }
     }

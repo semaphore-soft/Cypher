@@ -170,4 +170,51 @@ public class UICharacterSelect extends UIBase
         imgWizard.setVisibility(GONE);
         notifyListener("clear");
     }
+
+    public void setButtonEnabled(String selection, boolean enabled)
+    {
+        switch (selection)
+        {
+            case "knight":
+                if (enabled)
+                {
+                    imgBtnKnight.setImageAlpha(255);
+                }
+                else
+                {
+                    imgBtnKnight.setImageAlpha(80);
+                }
+                break;
+            case "soldier":
+                if (enabled)
+                {
+                    imgBtnSoldier.setImageAlpha(255);
+                }
+                else
+                {
+                    imgBtnSoldier.setImageAlpha(80);
+                }
+                break;
+            case "ranger":
+                if (enabled)
+                {
+                    imgBtnRanger.setImageAlpha(255);
+                }
+                else
+                {
+                    imgBtnRanger.setImageAlpha(80);
+                }
+                break;
+            case "wizard":
+                if (enabled)
+                {
+                    imgBtnWizard.setImageAlpha(255);
+                }
+                else
+                {
+                    imgBtnWizard.setImageAlpha(80);
+                }
+                break;
+        }
+    }
 }
