@@ -100,6 +100,7 @@ public class PortalActivity extends ARActivity implements PortalRenderer.NewMark
         //setup ar 3d graphics
         renderer = new PortalRenderer();
         renderer.setContext(this);
+        renderer.setGameController(this);
 
         //setup broadcast networking service broadcast receiver
         responseReceiver = new ResponseReceiver();
@@ -885,6 +886,27 @@ public class PortalActivity extends ARActivity implements PortalRenderer.NewMark
         {
             ActorController.takeTurn(PortalActivity.turnId);
         }
+    }
+
+    @Override
+    public void onFinishedLoading()
+    {
+        Runnable uiUpdate = new Runnable()
+        {
+            @Override
+            public void run()
+            {
+                uiPortalOverlay.overlayPlayerMarkerSelect();
+            }
+        };
+
+        runOnUiThread(uiUpdate);
+    }
+
+    @Override
+    public void onFinishedAction()
+    {
+
     }
 
     // Defines callbacks for service binding, passed to bindService()
