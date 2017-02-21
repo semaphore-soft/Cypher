@@ -44,7 +44,7 @@ public class Logger
 
     public static void logV(String log, int level)
     {
-        if (LOG_LEVEL <= level)
+        if (LOG_LEVEL >= level)
         {
             Log.v(getClassName(), getLineNumber() + ":" + getMethodName() + ": " + log);
         }
@@ -57,7 +57,7 @@ public class Logger
 
     public static void logD(String log, int level)
     {
-        if (LOG_LEVEL <= level)
+        if (LOG_LEVEL >= level)
         {
             Log.d(getClassName(), getLineNumber() + ":" + getMethodName() + ": " + log);
         }
@@ -70,7 +70,7 @@ public class Logger
 
     public static void logI(String log, int level)
     {
-        if (LOG_LEVEL <= level)
+        if (LOG_LEVEL >= level)
         {
             Log.i(getClassName(), getLineNumber() + ":" + getMethodName() + ": " + log);
         }
@@ -83,7 +83,7 @@ public class Logger
 
     public static void logW(String log, int level)
     {
-        if (LOG_LEVEL <= level)
+        if (LOG_LEVEL >= level)
         {
             Log.w(getClassName(), getLineNumber() + ":" + getMethodName() + ": " + log);
         }
@@ -96,7 +96,7 @@ public class Logger
 
     public static void logE(String log, int level)
     {
-        if (LOG_LEVEL <= level)
+        if (LOG_LEVEL >= level)
         {
             Log.e(getClassName(), getLineNumber() + ":" + getMethodName() + ": " + log);
         }
