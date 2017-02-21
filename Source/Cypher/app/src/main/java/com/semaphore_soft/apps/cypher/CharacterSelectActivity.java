@@ -361,6 +361,8 @@ public class CharacterSelectActivity extends AppCompatActivity implements Respon
              .show();
         LocalBroadcastManager.getInstance(CharacterSelectActivity.this)
                              .unregisterReceiver(responseReceiver);
+        // Prevent heartbeat runnable from continuing into new activity
+        handler.removeCallbacks(heartbeat);
 
         Intent intent = new Intent(getBaseContext(), PortalActivity.class);
         intent.putExtra("host", host);
