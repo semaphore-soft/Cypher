@@ -167,31 +167,7 @@ public class CharacterSelectActivity extends AppCompatActivity implements Respon
         if (msg.equals(NetworkConstants.GAME_KNIGHT) || msg.equals(NetworkConstants.GAME_SOLDIER) ||
             msg.equals(NetworkConstants.GAME_RANGER) || msg.equals(NetworkConstants.GAME_WIZARD))
         {
-            if (characterSelections.containsValue(msg))
-            {
-                Log.i("CharSelect", "Character taken");
-                serverService.writeToClient(NetworkConstants.GAME_TAKEN, readFrom);
-                return;
-            }
-            if (characterSelections.containsKey(readFrom))
-            {
-                // Update player's character
-                removePlayer(readFrom);
-                // Reset player count so it doesn't get messed up below
-                playersReady--;
-            }
-            characterSelections.put(readFrom, msg);
-            serverService.writeAll(NetworkConstants.PF_LOCK + msg);
-            uiCharacterSelect.setButtonEnabled(msg, false);
-            playersReady++;
-            // Since default value is 0, allow host to start game
-            // even if numClients == 0 and clients are connected
-            if (playersReady >= numClients)
-            {
-                uiCharacterSelect.setStartEnabled(true);
-            }
-            // Include host when displaying connected players
-            uiCharacterSelect.setStatus(playersReady + "/" + (numClients + 1) + " ready");
+            updateSelection(msg, readFrom);
         }
         else if (msg.equals(NetworkConstants.GAME_UNREADY))
         {
@@ -261,27 +237,7 @@ public class CharacterSelectActivity extends AppCompatActivity implements Respon
         CharacterSelectActivity.selection = selection;
         if (host)
         {
-            if (characterSelections.containsValue(selection))
-            {
-                Log.i("CharSelect", "Character taken");
-                return;
-            }
-            if (characterSelections.containsKey(-1))
-            {
-                // Update host's character
-                removePlayer(-1);
-                // Reset player count so it doesn't get messed up below
-                playersReady--;
-            }
-            // Use -1 since clients start at 0
-            serverService.writeAll(NetworkConstants.PF_LOCK + selection);
-            characterSelections.put(-1, selection);
-            ++playersReady;
-            if (playersReady >= numClients || numClients == 0)
-            {
-                uiCharacterSelect.setStartEnabled(true);
-                uiCharacterSelect.setStatus(playersReady + "/" + (numClients + 1) + " ready");
-            }
+            updateSelection(selection, -1);
         }
         else
         {
@@ -311,6 +267,36 @@ public class CharacterSelectActivity extends AppCompatActivity implements Respon
         }
         selection = "";
         ready = false;
+    }
+
+    private void updateSelection(String selection, int player)
+    {
+        if (characterSelections.containsValue(selection))
+        {
+            Log.i("CharSelect", "Character taken");
+            serverService.writeToClient(NetworkConstants.GAME_TAKEN, player);
+            return;
+        }
+        if (characterSelections.containsKey(player))
+        {
+            // Update player's character
+            removePlayer(player);
+        }
+        else
+        {
+            playersReady++;
+        }
+        characterSelections.put(player, selection);
+        serverService.writeAll(NetworkConstants.PF_LOCK + selection);
+        uiCharacterSelect.setButtonEnabled(selection, false);
+        // Since default value is 0, allow host to start game
+        // even if numClients == 0 and clients are connected
+        if (playersReady >= numClients)
+        {
+            uiCharacterSelect.setStartEnabled(true);
+        }
+        // Include host when displaying connected players
+        uiCharacterSelect.setStatus(playersReady + "/" + (numClients + 1) + " ready");
     }
 
     private void removePlayer(int player)
