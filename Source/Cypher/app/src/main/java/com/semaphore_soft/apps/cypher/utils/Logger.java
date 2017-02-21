@@ -8,50 +8,102 @@ import android.util.Log;
 
 public class Logger
 {
-    public static String getClassName()
+    private static int LOG_LEVEL = 0;
+
+    public static void setLogLevel(int LOG_LEVEL)
+    {
+        Logger.LOG_LEVEL = LOG_LEVEL;
+    }
+
+    public static int getLogLevel()
+    {
+        return LOG_LEVEL;
+    }
+
+    private static String getClassName()
     {
         String[] splitClassName =
             Thread.currentThread().getStackTrace()[4].getClassName().split("\\.");
         return splitClassName[splitClassName.length - 1];
     }
 
-    public static String getMethodName()
+    private static String getMethodName()
     {
         return Thread.currentThread().getStackTrace()[4].getMethodName() + "()";
     }
 
-    public static int getLingNumber()
+    private static int getLineNumber()
     {
         return Thread.currentThread().getStackTrace()[4].getLineNumber();
     }
 
     public static void logV(String log)
     {
-        Log.v(getClassName(), getLingNumber() + ":" + getMethodName() + ": " + log);
+        Log.v(getClassName(), getLineNumber() + ":" + getMethodName() + ": " + log);
+    }
+
+    public static void logV(String log, int level)
+    {
+        if (LOG_LEVEL <= level)
+        {
+            Log.v(getClassName(), getLineNumber() + ":" + getMethodName() + ": " + log);
+        }
     }
 
     public static void logD(String log)
     {
-        Log.d(getClassName(), getLingNumber() + ":" + getMethodName() + ": " + log);
+        Log.d(getClassName(), getLineNumber() + ":" + getMethodName() + ": " + log);
+    }
+
+    public static void logD(String log, int level)
+    {
+        if (LOG_LEVEL <= level)
+        {
+            Log.d(getClassName(), getLineNumber() + ":" + getMethodName() + ": " + log);
+        }
     }
 
     public static void logI(String log)
     {
-        Log.i(getClassName(), getLingNumber() + ":" + getMethodName() + ": " + log);
+        Log.i(getClassName(), getLineNumber() + ":" + getMethodName() + ": " + log);
+    }
+
+    public static void logI(String log, int level)
+    {
+        if (LOG_LEVEL <= level)
+        {
+            Log.i(getClassName(), getLineNumber() + ":" + getMethodName() + ": " + log);
+        }
     }
 
     public static void logW(String log)
     {
-        Log.w(getClassName(), getLingNumber() + ":" + getMethodName() + ": " + log);
+        Log.w(getClassName(), getLineNumber() + ":" + getMethodName() + ": " + log);
+    }
+
+    public static void logW(String log, int level)
+    {
+        if (LOG_LEVEL <= level)
+        {
+            Log.w(getClassName(), getLineNumber() + ":" + getMethodName() + ": " + log);
+        }
     }
 
     public static void logE(String log)
     {
-        Log.e(getClassName(), getLingNumber() + ":" + getMethodName() + ": " + log);
+        Log.e(getClassName(), getLineNumber() + ":" + getMethodName() + ": " + log);
+    }
+
+    public static void logE(String log, int level)
+    {
+        if (LOG_LEVEL <= level)
+        {
+            Log.e(getClassName(), getLineNumber() + ":" + getMethodName() + ": " + log);
+        }
     }
 
     public static void logWTF(String log)
     {
-        Log.wtf(getClassName(), getLingNumber() + ":" + getMethodName() + ": " + log);
+        Log.wtf(getClassName(), getLineNumber() + ":" + getMethodName() + ": " + log);
     }
 }
