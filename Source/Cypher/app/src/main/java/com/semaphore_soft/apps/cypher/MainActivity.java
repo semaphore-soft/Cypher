@@ -142,7 +142,7 @@ public class MainActivity extends AppCompatActivity implements GetNameDialogFrag
     }
 
     @Override
-    public void handleRead(String msg)
+    public void handleRead(String msg, int readFrom)
     {
         Toast.makeText(this, msg, Toast.LENGTH_SHORT).show();
     }

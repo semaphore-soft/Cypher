@@ -68,7 +68,7 @@ public class ClientService extends Service
         }
     }
 
-    public void clientWrite(String msg)
+    public void write(String msg)
     {
         Client.ClientThread clientThread = client.getClientThread();
         if (clientThread != null)

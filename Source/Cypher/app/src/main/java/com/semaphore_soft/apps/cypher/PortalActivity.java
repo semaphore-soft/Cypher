@@ -54,8 +54,10 @@ public class PortalActivity extends ARActivity implements PortalRenderer.NewMark
     private static ResponseReceiver responseReceiver;
     private static ServerService    serverService;
     private static ClientService    clientService;
-    private static boolean mServerBound = false;
-    private static boolean mClientBound = false;
+    private static boolean mServerBound  = false;
+    private static boolean mClientBound  = false;
+    private static boolean sendHeartbeat = true;
+    private static Handler handler       = new Handler();
 
     private static boolean host;
 
@@ -67,7 +69,18 @@ public class PortalActivity extends ARActivity implements PortalRenderer.NewMark
     private static boolean turn;
     private static int     turnId;
 
-    private static Handler handler;
+    private Runnable heartbeat = new Runnable()
+    {
+        @Override
+        public void run()
+        {
+            if (sendHeartbeat)
+            {
+                serverService.writeAll(NetworkConstants.GAME_HEARTBEAT);
+                handler.postDelayed(heartbeat, NetworkConstants.HEARTBEAT_DELAY);
+            }
+        }
+    };
 
     @Override
     public void onCreate(Bundle savedInstanceState)
@@ -104,7 +117,6 @@ public class PortalActivity extends ARActivity implements PortalRenderer.NewMark
 
         ActorController.setGameController(this);
 
-        handler = new Handler();
         PortalRenderer.setHandler(handler);
 
         turn = host;
@@ -120,6 +132,7 @@ public class PortalActivity extends ARActivity implements PortalRenderer.NewMark
             // Bind to ServerService
             Intent intent = new Intent(this, ServerService.class);
             bindService(intent, mServerConnection, Context.BIND_AUTO_CREATE);
+            handler.postDelayed(heartbeat, NetworkConstants.HEARTBEAT_DELAY);
         }
         else
         {
@@ -144,6 +157,7 @@ public class PortalActivity extends ARActivity implements PortalRenderer.NewMark
             unbindService(mClientConnection);
             mClientBound = false;
         }
+        sendHeartbeat = false;
     }
 
     //pass our rendering program to the ar framework
@@ -267,7 +281,7 @@ public class PortalActivity extends ARActivity implements PortalRenderer.NewMark
     }
 
     @Override
-    public void handleRead(final String msg)
+    public void handleRead(final String msg, final int readFrom)
     {
         Toast.makeText(this, "Read: " + msg, Toast.LENGTH_SHORT).show();
     }
@@ -282,6 +296,14 @@ public class PortalActivity extends ARActivity implements PortalRenderer.NewMark
     public void handleError(final String msg)
     {
         Toast.makeText(this, "Error: " + msg, Toast.LENGTH_SHORT).show();
+        if (msg.equals(NetworkConstants.ERROR_DISCONNECT_CLIENT))
+        {
+            clientService.reconnect();
+        }
+        else if (msg.equals(NetworkConstants.ERROR_DISCONNECT_SERVER))
+        {
+            serverService.reconnect();
+        }
     }
 
     @Override

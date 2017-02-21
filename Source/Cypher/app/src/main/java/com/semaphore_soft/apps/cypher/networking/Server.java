@@ -9,6 +9,7 @@ import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.net.SocketException;
+import java.net.SocketOptions;
 import java.util.ArrayList;
 
 /**
@@ -49,7 +50,13 @@ public class Server
         {
             server.write(str);
         }
-        if (!messageLog.contains(str))
+        if (messageLog.isEmpty())
+        {
+            messageLog.add(str);
+        }
+        // Don't add repeated messages or heartbeat messages
+        else if (!messageLog.get(messageLog.size() - 1).equals(str) &&
+                 !str.equals(NetworkConstants.GAME_HEARTBEAT))
         {
             messageLog.add(str);
         }
@@ -125,6 +132,8 @@ public class Server
                     Log.i("ClientHandler", "Waiting on accept");
                     serverService.threadUpdate(NetworkConstants.STATUS_SERVER_WAIT);
 
+                    // Set a timeout for the serverSocket to block
+                    serverSocket.setSoTimeout(SocketOptions.SO_TIMEOUT);
                     mySocket = serverSocket.accept();
                     ClientHandler serverThread = new ClientHandler(mySocket);
                     clients.add(serverThread);
@@ -153,9 +162,7 @@ public class Server
 
         public ClientHandler(Socket socket)
         {
-            mySocket = socket;
-            reconnect = false;
-            serverService.threadUpdate(NetworkConstants.STATUS_SERVER_START);
+            this(socket, false);
         }
 
         public ClientHandler(Socket socket, boolean reconnecting)
@@ -233,7 +240,8 @@ public class Server
         private void processMessage(String msg)
         {
             Log.i("ClientHandler", msg);
-            serverService.threadRead(msg);
+            Log.d("ClientHandler", String.valueOf(clients.indexOf(this)));
+            serverService.threadRead(msg, clients.indexOf(this));
         }
     }
 }

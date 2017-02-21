@@ -25,9 +25,10 @@ public class ResponseReceiver extends BroadcastReceiver
         if (NetworkConstants.BROADCAST_MESSAGE.equals(action))
         {
             // Message from other devices
-            String msg = intent.getStringExtra(NetworkConstants.MESSAGE);
-            Log.i("BR", msg);
-            listener.handleRead(msg);
+            String msg  = intent.getStringExtra(NetworkConstants.MESSAGE);
+            int    from = intent.getIntExtra(NetworkConstants.INDEX, -1);
+            Log.i("BR", msg + " - " + from);
+            listener.handleRead(msg, from);
         }
         else if (NetworkConstants.BROADCAST_STATUS.equals(action))
         {
@@ -47,7 +48,7 @@ public class ResponseReceiver extends BroadcastReceiver
 
     public interface Receiver
     {
-        void handleRead(String msg);
+        void handleRead(String msg, int readFrom);
         void handleStatus(String msg);
         void handleError(String msg);
     }

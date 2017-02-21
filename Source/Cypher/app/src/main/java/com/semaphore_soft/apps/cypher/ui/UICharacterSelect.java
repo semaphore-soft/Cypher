@@ -161,7 +161,7 @@ public class UICharacterSelect extends UIBase
         }
     }
 
-    private void clearSelection()
+    public void clearSelection()
     {
         selected = "";
         imgKnight.setVisibility(GONE);
@@ -169,5 +169,56 @@ public class UICharacterSelect extends UIBase
         imgRanger.setVisibility(GONE);
         imgWizard.setVisibility(GONE);
         notifyListener("clear");
+    }
+
+    public void setButtonEnabled(String selection, boolean enabled)
+    {
+        switch (selection)
+        {
+            case "knight":
+                imgBtnKnight.setEnabled(enabled);
+                if (enabled)
+                {
+                    imgBtnKnight.setImageAlpha(255);
+                }
+                else
+                {
+                    imgBtnKnight.setImageAlpha(80);
+                }
+                break;
+            case "soldier":
+                imgBtnSoldier.setEnabled(enabled);
+                if (enabled)
+                {
+                    imgBtnSoldier.setImageAlpha(255);
+                }
+                else
+                {
+                    imgBtnSoldier.setImageAlpha(80);
+                }
+                break;
+            case "ranger":
+                imgBtnRanger.setEnabled(enabled);
+                if (enabled)
+                {
+                    imgBtnRanger.setImageAlpha(255);
+                }
+                else
+                {
+                    imgBtnRanger.setImageAlpha(80);
+                }
+                break;
+            case "wizard":
+                imgBtnWizard.setEnabled(enabled);
+                if (enabled)
+                {
+                    imgBtnWizard.setImageAlpha(255);
+                }
+                else
+                {
+                    imgBtnWizard.setImageAlpha(80);
+                }
+                break;
+        }
     }
 }

@@ -71,11 +71,12 @@ public class ServerService extends Service
         serverThread.reconnectClient();
     }
 
-    public void threadRead(String msg)
+    public void threadRead(String msg, int readFrom)
     {
         Log.d(TAG, "Sending thread read");
         Intent localIntent = new Intent(NetworkConstants.BROADCAST_MESSAGE)
-            .putExtra(NetworkConstants.MESSAGE, msg);
+            .putExtra(NetworkConstants.MESSAGE, msg)
+            .putExtra(NetworkConstants.INDEX, readFrom);
         LocalBroadcastManager.getInstance(this).sendBroadcast(localIntent);
     }
 

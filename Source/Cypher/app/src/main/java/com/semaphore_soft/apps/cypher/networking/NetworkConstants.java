@@ -18,19 +18,26 @@ public class NetworkConstants
         "com.semaphore_soft.apps.cypher.networking.ERROR";
 
     // Constant for message extra used by broadcast receiver
-    public static final String MESSAGE = "com.semaphore_soft.apps.cypher.MESSAGE";
+    public static final String MESSAGE = "com.semaphore_soft.apps.cypher.networking.MESSAGE";
+    public static final String INDEX   = "com.semaphore_soft.apps.cypher.networking.INDEX";
 
     // Constants for read codes
     // Constants for game status updates
     public static final String GAME_START     = "GAME_START";
-    public static final String GAME_READY     = "GAME_READY";
     public static final String GAME_UNREADY   = "GAME_UNREADY";
     public static final String GAME_AR_START  = "GAME_AR_START";
     public static final String GAME_UPDATE    = "GAME_UPDATE";
     public static final String GAME_HEARTBEAT = "GAME_HEARTBEAT";
+    public static final String GAME_KNIGHT    = "knight";
+    public static final String GAME_SOLDIER   = "soldier";
+    public static final String GAME_RANGER    = "ranger";
+    public static final String GAME_WIZARD    = "wizard";
+    public static final String GAME_TAKEN     = "GAME_TAKEN";
     // Constants to use as prefixes to exchange information with other devices
     public static final String PF_NAME        = "NAME:";
     public static final String PF_PLAYER      = "PLAYER:";
+    public static final String PF_LOCK        = "LOCK:";
+    public static final String PF_FREE        = "FREE:";
 
     // Constants for status codes
     public static final String STATUS_SERVER_START   = "Server thread started";
