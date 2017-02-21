@@ -1,6 +1,6 @@
 package com.semaphore_soft.apps.cypher.networking;
 
-import android.util.Log;
+import com.semaphore_soft.apps.cypher.utils.Logger;
 
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
@@ -54,7 +54,7 @@ public class Client
             catch (IOException e)
             {
                 e.printStackTrace();
-                Log.e("ClientThread", "Failed to start socket");
+                Logger.logE("Failed to start socket");
                 clientService.threadError(NetworkConstants.ERROR_CLIENT_SOCKET);
                 if (reconnect)
                 {
@@ -68,7 +68,7 @@ public class Client
             // Connection was accepted
             if (mySocket != null)
             {
-                Log.i("ClientThread", "Connection made");
+                Logger.logI("Connection made");
                 clientService.threadUpdate(NetworkConstants.STATUS_CLIENT_CONNECT);
                 while (running)
                 {
@@ -89,7 +89,7 @@ public class Client
                 out.writeUTF(str);
                 // Flush after write or inputStream will hang on read
                 out.flush();
-                Log.d("ClientThread", "sent message: " + str);
+                Logger.logD("sent message: " + str);
             }
             catch (IOException e)
             {
@@ -126,7 +126,7 @@ public class Client
 
         private void processMessage(String msg)
         {
-            Log.i("ClientThread", msg);
+            Logger.logI(msg);
             clientService.threadRead(msg);
         }
 

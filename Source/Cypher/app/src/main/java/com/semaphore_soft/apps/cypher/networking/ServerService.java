@@ -5,7 +5,8 @@ import android.content.Intent;
 import android.os.Binder;
 import android.os.IBinder;
 import android.support.v4.content.LocalBroadcastManager;
-import android.util.Log;
+
+import com.semaphore_soft.apps.cypher.utils.Logger;
 
 /**
  * Created by Evan on 2/6/2017.
@@ -15,8 +16,6 @@ import android.util.Log;
 public class ServerService extends Service
 {
     private Server serverThread;
-
-    private static final String TAG = "ServerService";
 
     public ServerService()
     {
@@ -49,31 +48,31 @@ public class ServerService extends Service
 
     public void startServer()
     {
-        Log.d(TAG, "Starting AcceptorThread");
+        Logger.logD("Starting AcceptorThread");
         serverThread.startAcceptor(this);
     }
 
     public void writeToClient(String msg, int client)
     {
-        Log.d(TAG, "Writing to single client");
+        Logger.logD("Writing to single client");
         serverThread.writeToClient(msg, client);
     }
 
     public void writeAll(String msg)
     {
-        Log.d(TAG, "Writing to all clients");
+        Logger.logD("Writing to all clients");
         serverThread.writeAll(msg);
     }
 
     public void reconnect()
     {
-        Log.d(TAG, "reconnecting...");
+        Logger.logD("reconnecting...");
         serverThread.reconnectClient();
     }
 
     public void threadRead(String msg, int readFrom)
     {
-        Log.d(TAG, "Sending thread read");
+        Logger.logD("Sending thread read");
         Intent localIntent = new Intent(NetworkConstants.BROADCAST_MESSAGE)
             .putExtra(NetworkConstants.MESSAGE, msg)
             .putExtra(NetworkConstants.INDEX, readFrom);
@@ -82,7 +81,7 @@ public class ServerService extends Service
 
     public void threadUpdate(String msg)
     {
-        Log.d(TAG, "Sending thread update");
+        Logger.logD("Sending thread update");
         Intent localIntent = new Intent(NetworkConstants.BROADCAST_STATUS)
             .putExtra(NetworkConstants.MESSAGE, msg);
         LocalBroadcastManager.getInstance(this).sendBroadcast(localIntent);
@@ -90,7 +89,7 @@ public class ServerService extends Service
 
     public void threadError(String msg)
     {
-        Log.d(TAG, "Sending thread error");
+        Logger.logD("Sending thread error");
         Intent localIntent = new Intent(NetworkConstants.BROADCAST_ERROR).putExtra(
             NetworkConstants.MESSAGE,
             msg);

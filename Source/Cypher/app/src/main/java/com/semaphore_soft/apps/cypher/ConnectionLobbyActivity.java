@@ -10,7 +10,6 @@ import android.os.IBinder;
 import android.support.v4.content.LocalBroadcastManager;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
-import android.util.Log;
 import android.widget.FrameLayout;
 import android.widget.Toast;
 
@@ -22,6 +21,7 @@ import com.semaphore_soft.apps.cypher.networking.ServerService;
 import com.semaphore_soft.apps.cypher.ui.PlayerID;
 import com.semaphore_soft.apps.cypher.ui.UIConnectionLobby;
 import com.semaphore_soft.apps.cypher.ui.UIListener;
+import com.semaphore_soft.apps.cypher.utils.Logger;
 
 import java.net.Inet4Address;
 import java.net.InetAddress;
@@ -97,7 +97,7 @@ public class ConnectionLobbyActivity extends AppCompatActivity implements Respon
                         if (!inetAddress.isLoopbackAddress() && inetAddress instanceof Inet4Address)
                         {
                             ip = inetAddress.getHostAddress();
-                            Log.i("Lobby", ip);
+                            Logger.logI(ip);
                             break outerloop;
                         }
                     }
@@ -105,7 +105,7 @@ public class ConnectionLobbyActivity extends AppCompatActivity implements Respon
             }
             catch (SocketException ex)
             {
-                Log.e("Lobby", ex.toString());
+                Logger.logE(ex.toString());
             }
 
             uiConnectionLobby.setTextIP("Your IP Address is: " + ip);

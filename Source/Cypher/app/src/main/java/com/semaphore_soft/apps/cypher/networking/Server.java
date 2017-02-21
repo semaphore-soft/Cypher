@@ -1,6 +1,6 @@
 package com.semaphore_soft.apps.cypher.networking;
 
-import android.util.Log;
+import com.semaphore_soft.apps.cypher.utils.Logger;
 
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
@@ -45,7 +45,7 @@ public class Server
 
     public void writeAll(String str)
     {
-        Log.d("Server", "Attempting to write to all clients");
+        Logger.logD("Attempting to write to all clients");
         for (ClientHandler server : clients)
         {
             server.write(str);
@@ -64,7 +64,7 @@ public class Server
 
     public void writeToClient(String str, int index)
     {
-        Log.d("Server", "Attempting to write to client " + String.valueOf(index));
+        Logger.logD("Attempting to write to client " + String.valueOf(index));
         // Service will default to -1 if no index is given
         if (!clients.isEmpty() && index >= 0 && index <= clients.size())
         {
@@ -72,7 +72,7 @@ public class Server
         }
         else
         {
-            Log.d("Server", "Could not write to client");
+            Logger.logD("Could not write to client");
         }
     }
 
@@ -83,7 +83,7 @@ public class Server
         {
             try
             {
-                Log.i("ClientHandler", "Waiting on accept");
+                Logger.logI("Waiting on accept");
                 serverService.threadUpdate(NetworkConstants.STATUS_SERVER_WAIT);
 
                 Socket        mySocket     = serverSocket.accept();
@@ -93,7 +93,7 @@ public class Server
             }
             catch (SocketException e)
             {
-                Log.i("AcceptorThread", "Socket closed");
+                Logger.logI("Socket closed");
             }
             catch (IOException e)
             {
@@ -116,7 +116,7 @@ public class Server
             catch (IOException e)
             {
                 e.printStackTrace();
-                Log.e("ClientHandler", "Failed to start server");
+                Logger.logE("Failed to start server");
                 serverService.threadError(NetworkConstants.ERROR_SERVER_START);
             }
         }
@@ -129,7 +129,7 @@ public class Server
             {
                 try
                 {
-                    Log.i("ClientHandler", "Waiting on accept");
+                    Logger.logI("Waiting on accept");
                     serverService.threadUpdate(NetworkConstants.STATUS_SERVER_WAIT);
 
                     // Set a timeout for the serverSocket to block
@@ -142,7 +142,7 @@ public class Server
                 }
                 catch (SocketException e)
                 {
-                    Log.i("AcceptorThread", "Socket closed");
+                    Logger.logI("Socket closed");
                 }
                 catch (IOException e)
                 {
@@ -199,7 +199,7 @@ public class Server
                 out.writeUTF(str);
                 // Flush after write or inputStream will hang on read
                 out.flush();
-                Log.d("ClientHandler", "sent message: " + str);
+                Logger.logD("sent message: " + str);
             }
             catch (IOException e)
             {
@@ -229,7 +229,7 @@ public class Server
                 if (e instanceof SocketException)
                 {
                     serverService.threadError(NetworkConstants.ERROR_DISCONNECT_SERVER);
-                    Log.d("ClientHandler", "SocketException");
+                    Logger.logD("SocketException");
                 }
                 e.printStackTrace();
                 running = false;
@@ -239,8 +239,8 @@ public class Server
 
         private void processMessage(String msg)
         {
-            Log.i("ClientHandler", msg);
-            Log.d("ClientHandler", String.valueOf(clients.indexOf(this)));
+            Logger.logI(msg);
+            Logger.logD(String.valueOf(clients.indexOf(this)));
             serverService.threadRead(msg, clients.indexOf(this));
         }
     }

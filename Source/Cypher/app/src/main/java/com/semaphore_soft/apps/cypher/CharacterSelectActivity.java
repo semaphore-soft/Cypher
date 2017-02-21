@@ -11,7 +11,6 @@ import android.os.IBinder;
 import android.support.v4.content.LocalBroadcastManager;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
-import android.util.Log;
 import android.widget.FrameLayout;
 import android.widget.Toast;
 
@@ -21,6 +20,7 @@ import com.semaphore_soft.apps.cypher.networking.ResponseReceiver;
 import com.semaphore_soft.apps.cypher.networking.ServerService;
 import com.semaphore_soft.apps.cypher.ui.UICharacterSelect;
 import com.semaphore_soft.apps.cypher.ui.UIListener;
+import com.semaphore_soft.apps.cypher.utils.Logger;
 
 import java.util.HashMap;
 
@@ -273,7 +273,7 @@ public class CharacterSelectActivity extends AppCompatActivity implements Respon
     {
         if (characterSelections.containsValue(selection))
         {
-            Log.i("CharSelect", "Character taken");
+            Logger.logI("Character taken");
             serverService.writeToClient(NetworkConstants.GAME_TAKEN, player);
             return;
         }

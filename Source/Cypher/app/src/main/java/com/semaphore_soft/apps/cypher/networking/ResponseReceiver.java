@@ -3,7 +3,8 @@ package com.semaphore_soft.apps.cypher.networking;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
-import android.util.Log;
+
+import com.semaphore_soft.apps.cypher.utils.Logger;
 
 /**
  * Created by Evan on 2/6/2017.
@@ -21,27 +22,27 @@ public class ResponseReceiver extends BroadcastReceiver
     public void onReceive(Context context, Intent intent)
     {
         String action = intent.getAction();
-        Log.d("BR", action);
+        Logger.logD(action);
         if (NetworkConstants.BROADCAST_MESSAGE.equals(action))
         {
             // Message from other devices
             String msg  = intent.getStringExtra(NetworkConstants.MESSAGE);
             int    from = intent.getIntExtra(NetworkConstants.INDEX, -1);
-            Log.i("BR", msg + " - " + from);
+            Logger.logI(msg + " - " + from);
             listener.handleRead(msg, from);
         }
         else if (NetworkConstants.BROADCAST_STATUS.equals(action))
         {
             // Thread status updates
             String msg = intent.getStringExtra(NetworkConstants.MESSAGE);
-            Log.i("BR", msg);
+            Logger.logI(msg);
             listener.handleStatus(msg);
         }
         else if (NetworkConstants.BROADCAST_ERROR.equals(action))
         {
             // Thread errors
             String msg = intent.getStringExtra(NetworkConstants.MESSAGE);
-            Log.i("BR", msg);
+            Logger.logI(msg);
             listener.handleError(msg);
         }
     }
