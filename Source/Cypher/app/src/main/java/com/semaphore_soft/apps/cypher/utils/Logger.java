@@ -25,8 +25,33 @@ public class Logger
         return Thread.currentThread().getStackTrace()[4].getLineNumber();
     }
 
+    public static void logV(String log)
+    {
+        Log.v(getClassName(), getLingNumber() + ":" + getMethodName() + ": " + log);
+    }
+
     public static void logD(String log)
     {
         Log.d(getClassName(), getLingNumber() + ":" + getMethodName() + ": " + log);
+    }
+
+    public static void logI(String log)
+    {
+        Log.i(getClassName(), getLingNumber() + ":" + getMethodName() + ": " + log);
+    }
+
+    public static void logW(String log)
+    {
+        Log.w(getClassName(), getLingNumber() + ":" + getMethodName() + ": " + log);
+    }
+
+    public static void logE(String log)
+    {
+        Log.e(getClassName(), getLingNumber() + ":" + getMethodName() + ": " + log);
+    }
+
+    public static void logWTF(String log)
+    {
+        Log.wtf(getClassName(), getLingNumber() + ":" + getMethodName() + ": " + log);
     }
 }
