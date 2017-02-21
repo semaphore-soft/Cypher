@@ -176,6 +176,7 @@ public class UICharacterSelect extends UIBase
         switch (selection)
         {
             case "knight":
+                imgBtnKnight.setEnabled(enabled);
                 if (enabled)
                 {
                     imgBtnKnight.setImageAlpha(255);
@@ -186,6 +187,7 @@ public class UICharacterSelect extends UIBase
                 }
                 break;
             case "soldier":
+                imgBtnSoldier.setEnabled(enabled);
                 if (enabled)
                 {
                     imgBtnSoldier.setImageAlpha(255);
@@ -196,6 +198,7 @@ public class UICharacterSelect extends UIBase
                 }
                 break;
             case "ranger":
+                imgBtnRanger.setEnabled(enabled);
                 if (enabled)
                 {
                     imgBtnRanger.setImageAlpha(255);
@@ -206,6 +209,7 @@ public class UICharacterSelect extends UIBase
                 }
                 break;
             case "wizard":
+                imgBtnWizard.setEnabled(enabled);
                 if (enabled)
                 {
                     imgBtnWizard.setImageAlpha(255);
