@@ -262,25 +262,22 @@ public class CharacterSelectActivity extends AppCompatActivity implements Respon
         CharacterSelectActivity.selection = selection;
         if (host)
         {
-            //            if (!ready)
-            //            {
-                if (selectionTaken(selection))
-                {
-                    Log.i("CharSelect", "Character taken");
-                    return;
-                }
-                if (playerReady(-1))
-                {
-                    // Update host's character
-                    removePlayer(-1);
-                    // Reset player count so it doesn't get messed up below
-                    playersReady--;
-                }
-                // Use -1 since clients start at 0
+            if (selectionTaken(selection))
+            {
+                Log.i("CharSelect", "Character taken");
+                return;
+            }
+            if (playerReady(-1))
+            {
+                // Update host's character
+                removePlayer(-1);
+                // Reset player count so it doesn't get messed up below
+                playersReady--;
+            }
+            // Use -1 since clients start at 0
             serverService.writeAll(NetworkConstants.PF_LOCK + selection);
-                characterSelections.add(new Pair<>(-1, selection));
-                ++playersReady;
-            //            }
+            characterSelections.add(new Pair<>(-1, selection));
+            ++playersReady;
             if (playersReady >= numClients || numClients == 0)
             {
                 uiCharacterSelect.setStartEnabled(true);
