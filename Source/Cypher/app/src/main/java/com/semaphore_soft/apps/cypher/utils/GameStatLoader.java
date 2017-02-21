@@ -17,7 +17,7 @@ import org.xmlpull.v1.XmlPullParserFactory;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
-import java.util.Hashtable;
+import java.util.concurrent.ConcurrentHashMap;
 
 import static com.semaphore_soft.apps.cypher.utils.CollectionManager.getNextID;
 
@@ -92,7 +92,7 @@ public class GameStatLoader
 
     public static void loadActorStats(Actor actor,
                                       int characterID,
-                                      Hashtable<Integer, Special> specials,
+                                      ConcurrentHashMap<Integer, Special> specials,
                                       Context context)
     {
         String actorName;
@@ -120,7 +120,7 @@ public class GameStatLoader
 
     public static void loadActorStats(Actor actor,
                                       String actorName,
-                                      Hashtable<Integer, Special> specials,
+                                      ConcurrentHashMap<Integer, Special> specials,
                                       Context context)
     {
         try
@@ -255,7 +255,7 @@ public class GameStatLoader
     }
 
     public static Special loadSpecialStats(String specialName,
-                                           Hashtable<Integer, Special> specials,
+                                           ConcurrentHashMap<Integer, Special> specials,
                                            Context context)
     {
         System.out.println("loading special");
@@ -471,8 +471,8 @@ public class GameStatLoader
     }
 
     public static Item loadItemStats(String itemName,
-                                     Hashtable<Integer, Item> items,
-                                     Hashtable<Integer, Special> specials,
+                                     ConcurrentHashMap<Integer, Item> items,
+                                     ConcurrentHashMap<Integer, Special> specials,
                                      Context context)
     {
         System.out.println("loading item");

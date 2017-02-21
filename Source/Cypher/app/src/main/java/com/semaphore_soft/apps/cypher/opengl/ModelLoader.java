@@ -6,7 +6,7 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
-import java.util.Hashtable;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * Created by ceroj on 2/1/2017.
@@ -67,8 +67,9 @@ public class ModelLoader
 
                     String path = filename + "/";
 
-                    Hashtable<String, ARModelGLES20> poseLib     = new Hashtable<>();
-                    String                           defaultPose = "default";
+                    ConcurrentHashMap<String, ARModelGLES20> poseLib     =
+                        new ConcurrentHashMap<>();
+                    String                                   defaultPose = "default";
 
                     for (String poseFile : poseFiles)
                     {
@@ -139,8 +140,10 @@ public class ModelLoader
             ArrayList<Float> texCoordinatesInVertexOrder = new ArrayList<>();
             ArrayList<Float> normalsInVertexOrder        = new ArrayList<>();
 
-            Hashtable<Short, Float[]> texCoordinatesByVertexIndex = new Hashtable<>();
-            Hashtable<Short, Float[]> normalsByVertexIndex        = new Hashtable<>();
+            ConcurrentHashMap<Short, Float[]> texCoordinatesByVertexIndex =
+                new ConcurrentHashMap<>();
+            ConcurrentHashMap<Short, Float[]> normalsByVertexIndex        =
+                new ConcurrentHashMap<>();
 
             String line;
 

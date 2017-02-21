@@ -1,7 +1,7 @@
 package com.semaphore_soft.apps.cypher.game;
 
 import java.util.ArrayList;
-import java.util.Hashtable;
+import java.util.concurrent.ConcurrentHashMap;
 
 import static com.semaphore_soft.apps.cypher.utils.CollectionManager.getNextID;
 
@@ -34,9 +34,9 @@ public class Actor
     private int     defenceRating;
     private E_STATE state;
 
-    private Hashtable<Integer, Special> specials;
-    private Hashtable<Integer, Item>    items;
-    private Hashtable<Integer, Status>  statuses;
+    private ConcurrentHashMap<Integer, Special> specials;
+    private ConcurrentHashMap<Integer, Item>    items;
+    private ConcurrentHashMap<Integer, Status>  statuses;
 
     public Actor(int id)
     {
@@ -57,9 +57,9 @@ public class Actor
         isPlayer = true;
         state = E_STATE.NEUTRAL;
 
-        specials = new Hashtable<>();
-        items = new Hashtable<>();
-        statuses = new Hashtable<>();
+        specials = new ConcurrentHashMap<>();
+        items = new ConcurrentHashMap<>();
+        statuses = new ConcurrentHashMap<>();
     }
 
     public Actor(int id, int roomID)
@@ -76,9 +76,9 @@ public class Actor
         isPlayer = false;
         state = E_STATE.NEUTRAL;
 
-        specials = new Hashtable<>();
-        items = new Hashtable<>();
-        statuses = new Hashtable<>();
+        specials = new ConcurrentHashMap<>();
+        items = new ConcurrentHashMap<>();
+        statuses = new ConcurrentHashMap<>();
     }
 
     public int getId()
@@ -151,7 +151,7 @@ public class Actor
         return attackRating;
     }
 
-    public Hashtable<Integer, Special> getSpecials()
+    public ConcurrentHashMap<Integer, Special> getSpecials()
     {
         return specials;
     }

@@ -6,10 +6,11 @@ import android.util.Pair;
 
 import com.semaphore_soft.apps.cypher.utils.CollectionManager;
 import com.semaphore_soft.apps.cypher.utils.GameStatLoader;
+import com.semaphore_soft.apps.cypher.utils.Logger;
 
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Hashtable;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * Created by Scorple on 2/18/2017.
@@ -298,7 +299,7 @@ public class GameMaster
                 //Pair<Integer, Integer> endRoomPosition = map.getPosition(endRoomId);
                 map.print();
 
-                Hashtable<Integer, Pair<Short, Short>>
+                ConcurrentHashMap<Integer, Pair<Short, Short>>
                     adjacentRoomsAndWalls = map.getAdjacentRoomsAndWalls(endRoomId);
 
                 for (int id : adjacentRoomsAndWalls.keySet())
@@ -418,11 +419,11 @@ public class GameMaster
         return -1;
     }
 
-    public static Hashtable<Integer, Actor> getEnemyTargets(final int actorId)
+    public static ConcurrentHashMap<Integer, Actor> getEnemyTargets(final int actorId)
     {
-        Actor                     actor   = model.getActors().get(actorId);
-        Room                      room    = model.getRooms().get(actor.getRoom());
-        Hashtable<Integer, Actor> targets = new Hashtable<>();
+        Actor                             actor   = model.getActors().get(actorId);
+        Room                              room    = model.getRooms().get(actor.getRoom());
+        ConcurrentHashMap<Integer, Actor> targets = new ConcurrentHashMap<>();
 
         System.out.println("looking for enemy targets in room: " + actor.getRoom());
 
@@ -439,11 +440,11 @@ public class GameMaster
         return targets;
     }
 
-    public static Hashtable<Integer, Actor> getPlayerTargets(final int actorId)
+    public static ConcurrentHashMap<Integer, Actor> getPlayerTargets(final int actorId)
     {
-        Actor                     actor   = model.getActors().get(actorId);
-        Room                      room    = model.getRooms().get(actor.getRoom());
-        Hashtable<Integer, Actor> targets = new Hashtable<>();
+        Actor                             actor   = model.getActors().get(actorId);
+        Room                              room    = model.getRooms().get(actor.getRoom());
+        ConcurrentHashMap<Integer, Actor> targets = new ConcurrentHashMap<>();
 
         System.out.println("looking for player targets in room: " + actor.getRoom());
 
@@ -466,15 +467,15 @@ public class GameMaster
         Room               room    = model.getRooms().get(actor.getRoom());
         ArrayList<Integer> targets = new ArrayList<>();
 
-        System.out.println("looking for player targets for : " + actorId);
-        System.out.println("looking for player targets in room: " + actor.getRoom());
+        Logger.logD("looking for player targets for: " + actorId);
+        Logger.logD("looking for player targets in room: " + actor.getRoom());
 
         for (int targetId : room.getResidentActors())
         {
             Actor target = model.getActors().get(targetId);
             if (target.isPlayer())
             {
-                System.out.println("found valid target: " + target.getId());
+                Logger.logD("found valid target: " + target.getId());
                 targets.add(targetId);
             }
         }
@@ -482,7 +483,7 @@ public class GameMaster
         return targets;
     }
 
-    public static Hashtable<Integer, Special> getSpecials(final int actorId)
+    public static ConcurrentHashMap<Integer, Special> getSpecials(final int actorId)
     {
         System.out.println("looking for specials for actor: " + actorId);
         Actor actor = model.getActors().get(actorId);
@@ -526,19 +527,28 @@ public class GameMaster
 
     public static void removeDeadActors()
     {
-        Hashtable<Integer, Actor> actors           = model.getActors();
-        ArrayList<Integer>        markedForRemoval = new ArrayList<>();
+        Logger.logD("enter trace");
+
+        ConcurrentHashMap<Integer, Actor> actors           = model.getActors();
+        ArrayList<Integer>                markedForRemoval = new ArrayList<>();
         for (int id : actors.keySet())
         {
             if (actors.get(id).getHealthCurrent() <= 0)
             {
                 markedForRemoval.add(id);
+                Logger.logD("marked " + id + " for removal");
             }
         }
         for (int id : markedForRemoval)
         {
+            Room room = model.getRooms().get(actors.get(id).getRoom());
+            room.removeActor(id);
+            Logger.logD("removed " + id + " from room " + room.getId());
             actors.remove(id);
+            Logger.logD("removed " + id + " from actors list");
         }
+
+        Logger.logD("exit trace");
     }
 
     //returns

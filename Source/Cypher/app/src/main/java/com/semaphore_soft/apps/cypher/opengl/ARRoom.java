@@ -4,8 +4,8 @@ import android.opengl.Matrix;
 
 import com.semaphore_soft.apps.cypher.opengl.shader.DynamicShaderProgram;
 
-import java.util.ConcurrentModificationException;
-import java.util.Hashtable;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.Semaphore;
 
 /**
  * Created by rickm on 2/10/2017.
@@ -17,16 +17,20 @@ public class ARRoom implements ARDrawableGLES20
     private ARDrawableGLES20 walls[]       = {null, null, null, null};
     private int              forwardPlayer = -1;
     private int              forwardEnemy  = -1;
-    private Hashtable<Integer, ARDrawableGLES20> playerLine;
-    private Hashtable<Integer, ARDrawableGLES20> enemyLine;
-    private Hashtable<Integer, ARDrawableGLES20> entityPile;
+    private ConcurrentHashMap<Integer, ARDrawableGLES20> playerLine;
+    private ConcurrentHashMap<Integer, ARDrawableGLES20> enemyLine;
+    private ConcurrentHashMap<Integer, ARDrawableGLES20> entityPile;
     private short alignment = 2;
+
+    private Semaphore assetAccess;
 
     public ARRoom()
     {
-        playerLine = new Hashtable<>();
-        enemyLine = new Hashtable<>();
-        entityPile = new Hashtable<>();
+        playerLine = new ConcurrentHashMap<>();
+        enemyLine = new ConcurrentHashMap<>();
+        entityPile = new ConcurrentHashMap<>();
+
+        assetAccess = new Semaphore(1);
     }
 
     public void setRoomModel(ARDrawableGLES20 roomModel)
@@ -73,8 +77,19 @@ public class ARRoom implements ARDrawableGLES20
 
     public void removeActors()
     {
-        playerLine.clear();
-        enemyLine.clear();
+        try
+        {
+            assetAccess.acquire();
+
+            playerLine.clear();
+            enemyLine.clear();
+
+            assetAccess.release();
+        }
+        catch (InterruptedException e)
+        {
+            e.printStackTrace();
+        }
     }
 
     public void addEntity(int id, ARDrawableGLES20 entityModel)
@@ -182,7 +197,7 @@ public class ARRoom implements ARDrawableGLES20
 
     public void draw(float[] projectionMatrix, float[] modelViewMatrix, float[] lightPos)
     {
-        try
+        if (assetAccess.tryAcquire())
         {
             if (roomModel != null)
             {
@@ -340,10 +355,8 @@ public class ARRoom implements ARDrawableGLES20
                 Matrix.translateM(transformationMatrix, 0, 0.0f, 0.0f, 0.0f);
                 entityPile.get(id).draw(projectionMatrix, transformationMatrix, lightPos);
             }
-        }
-        catch (ConcurrentModificationException x)
-        {
 
+            assetAccess.release();
         }
     }
 

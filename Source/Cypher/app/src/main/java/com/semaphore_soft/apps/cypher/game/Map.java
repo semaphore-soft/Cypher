@@ -3,7 +3,7 @@ package com.semaphore_soft.apps.cypher.game;
 import android.util.Pair;
 
 import java.util.ArrayList;
-import java.util.Hashtable;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * Created by Scorple on 1/27/2017.
@@ -384,11 +384,11 @@ public class Map
         return res;
     }
 
-    public Hashtable<Integer, Pair<Short, Short>> getAdjacentRoomsAndWalls(int idA)
+    public ConcurrentHashMap<Integer, Pair<Short, Short>> getAdjacentRoomsAndWalls(int idA)
     {
-        Hashtable<Integer, Pair<Short, Short>> res = new Hashtable<>();
-        Pair<Integer, Integer>                 pos = getPosition(idA);
-        short                                  rot = getRotation(pos.first, pos.second);
+        ConcurrentHashMap<Integer, Pair<Short, Short>> res = new ConcurrentHashMap<>();
+        Pair<Integer, Integer>                         pos = getPosition(idA);
+        short                                          rot = getRotation(pos.first, pos.second);
 
         for (int i = 0; i < 4; ++i)
         {

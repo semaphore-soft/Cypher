@@ -21,7 +21,7 @@ import org.artoolkit.ar.base.ARToolKit;
 import org.artoolkit.ar.base.rendering.gles20.ARRendererGLES20;
 
 import java.util.ArrayList;
-import java.util.Hashtable;
+import java.util.concurrent.ConcurrentHashMap;
 
 import javax.microedition.khronos.egl.EGLConfig;
 import javax.microedition.khronos.opengles.GL10;
@@ -39,9 +39,9 @@ class PortalRenderer extends ARRendererGLES20
     private static ArrayList<Integer> markers;
     private static int[]              playerMarkerIDs;
 
-    private static ArrayList<ARModelGLES20>            characterModels;
-    private static Hashtable<String, ARDrawableGLES20> models;
-    private static Hashtable<Integer, ARRoom>          arRooms;
+    private static ArrayList<ARModelGLES20>                    characterModels;
+    private static ConcurrentHashMap<String, ARDrawableGLES20> models;
+    private static ConcurrentHashMap<Integer, ARRoom>          arRooms;
 
     private static Handler handler;
 
@@ -110,9 +110,9 @@ class PortalRenderer extends ARRendererGLES20
             characterModels.add(playerMarkerModel);
         }
 
-        arRooms = new Hashtable<>();
+        arRooms = new ConcurrentHashMap<>();
 
-        models = new Hashtable<>();
+        models = new ConcurrentHashMap<>();
 
         ARDrawableGLES20 waypoint =
             ModelLoader.load(context, "waypoint", 40.0f);
@@ -526,7 +526,7 @@ class PortalRenderer extends ARRendererGLES20
         arRoom.setAlignment(side);
     }
 
-    void updateRoomResidents(final Room room, final Hashtable<Integer, Actor> actors)
+    void updateRoomResidents(final Room room, final ConcurrentHashMap<Integer, Actor> actors)
     {
         ARRoom arRoom = arRooms.get(room.getMarker());
         arRoom.removeActors();
@@ -580,7 +580,7 @@ class PortalRenderer extends ARRendererGLES20
     }
 
     void showAction(final Room room,
-                    final Hashtable<Integer, Actor> actors,
+                    final ConcurrentHashMap<Integer, Actor> actors,
                     final int sourceId,
                     final int targetId,
                     final long length,
@@ -666,7 +666,7 @@ class PortalRenderer extends ARRendererGLES20
     }
 
     private void concludeAction(final int roomId,
-                                final Hashtable<Integer, Actor> actors,
+                                final ConcurrentHashMap<Integer, Actor> actors,
                                 final int sourceId,
                                 final int targetId)
     {

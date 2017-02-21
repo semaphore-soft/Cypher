@@ -13,7 +13,7 @@ import com.semaphore_soft.apps.cypher.game.Item;
 import com.semaphore_soft.apps.cypher.game.Special;
 
 import java.util.ArrayList;
-import java.util.Hashtable;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * Created by Scorple on 2/17/2017.
@@ -21,10 +21,10 @@ import java.util.Hashtable;
 
 public class UIPortalOverlay extends UIBase
 {
-    private Hashtable<Integer, Actor>   enemyTargets;
-    private Hashtable<Integer, Actor>   playerTargets;
-    private Hashtable<Integer, Special> specials;
-    private Hashtable<Integer, Item>    items;
+    private ConcurrentHashMap<Integer, Actor>   enemyTargets;
+    private ConcurrentHashMap<Integer, Actor>   playerTargets;
+    private ConcurrentHashMap<Integer, Special> specials;
+    private ConcurrentHashMap<Integer, Item>    items;
 
     public enum E_SELECT_MODE
     {
@@ -169,9 +169,9 @@ public class UIPortalOverlay extends UIBase
         this.selectMode = selectMode;
     }
 
-    public void setEnemyTargets(Hashtable<Integer, Actor> enemyTargets)
+    public void setEnemyTargets(ConcurrentHashMap<Integer, Actor> enemyTargets)
     {
-        this.enemyTargets = new Hashtable<>();
+        this.enemyTargets = new ConcurrentHashMap<>();
         this.enemyTargets = enemyTargets;
     }
 
@@ -256,9 +256,9 @@ public class UIPortalOverlay extends UIBase
         }
     }
 
-    public void setPlayerTargets(Hashtable<Integer, Actor> playerTargets)
+    public void setPlayerTargets(ConcurrentHashMap<Integer, Actor> playerTargets)
     {
-        this.playerTargets = new Hashtable<>();
+        this.playerTargets = new ConcurrentHashMap<>();
         this.playerTargets = playerTargets;
     }
 
@@ -313,9 +313,9 @@ public class UIPortalOverlay extends UIBase
         });
     }
 
-    public void setSpecials(Hashtable<Integer, Special> specials)
+    public void setSpecials(ConcurrentHashMap<Integer, Special> specials)
     {
-        this.specials = new Hashtable<>();
+        this.specials = new ConcurrentHashMap<>();
         this.specials = specials;
     }
 
@@ -381,9 +381,9 @@ public class UIPortalOverlay extends UIBase
         });
     }
 
-    public void setItems(Hashtable<Integer, Item> items)
+    public void setItems(ConcurrentHashMap<Integer, Item> items)
     {
-        items = new Hashtable<>();
+        items = new ConcurrentHashMap<>();
         this.items = items;
     }
 }

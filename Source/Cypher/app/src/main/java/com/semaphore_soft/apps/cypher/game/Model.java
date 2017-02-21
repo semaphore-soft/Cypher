@@ -1,6 +1,6 @@
 package com.semaphore_soft.apps.cypher.game;
 
-import java.util.Hashtable;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * Created by Scorple on 2/18/2017.
@@ -8,46 +8,46 @@ import java.util.Hashtable;
 
 public class Model
 {
-    private Hashtable<Integer, Room>    rooms;
-    private Hashtable<Integer, Actor>   actors;
-    private Hashtable<Integer, Special> specials;
-    private Hashtable<Integer, Entity>  entities;
-    private Hashtable<Integer, Item>    items;
+    private ConcurrentHashMap<Integer, Room>    rooms;
+    private ConcurrentHashMap<Integer, Actor>   actors;
+    private ConcurrentHashMap<Integer, Special> specials;
+    private ConcurrentHashMap<Integer, Entity>  entities;
+    private ConcurrentHashMap<Integer, Item>    items;
 
     private Map map;
 
     public Model()
     {
-        rooms = new Hashtable<>();
-        actors = new Hashtable<>();
-        specials = new Hashtable<>();
-        entities = new Hashtable<>();
-        items = new Hashtable<>();
+        rooms = new ConcurrentHashMap<>();
+        actors = new ConcurrentHashMap<>();
+        specials = new ConcurrentHashMap<>();
+        entities = new ConcurrentHashMap<>();
+        items = new ConcurrentHashMap<>();
 
         map = new Map();
     }
 
-    public Hashtable<Integer, Room> getRooms()
+    public ConcurrentHashMap<Integer, Room> getRooms()
     {
         return rooms;
     }
 
-    public Hashtable<Integer, Actor> getActors()
+    public ConcurrentHashMap<Integer, Actor> getActors()
     {
         return actors;
     }
 
-    public Hashtable<Integer, Special> getSpecials()
+    public ConcurrentHashMap<Integer, Special> getSpecials()
     {
         return specials;
     }
 
-    public Hashtable<Integer, Entity> getEntities()
+    public ConcurrentHashMap<Integer, Entity> getEntities()
     {
         return entities;
     }
 
-    public Hashtable<Integer, Item> getItems()
+    public ConcurrentHashMap<Integer, Item> getItems()
     {
         return items;
     }

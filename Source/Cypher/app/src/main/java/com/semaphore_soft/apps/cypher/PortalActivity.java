@@ -8,7 +8,6 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.os.IBinder;
 import android.support.v4.content.LocalBroadcastManager;
-import android.util.Log;
 import android.widget.FrameLayout;
 import android.widget.Toast;
 
@@ -29,6 +28,7 @@ import com.semaphore_soft.apps.cypher.ui.UIPortalActivity;
 import com.semaphore_soft.apps.cypher.ui.UIPortalOverlay;
 import com.semaphore_soft.apps.cypher.utils.CollectionManager;
 import com.semaphore_soft.apps.cypher.utils.GameStatLoader;
+import com.semaphore_soft.apps.cypher.utils.Logger;
 
 import org.artoolkit.ar.base.ARActivity;
 import org.artoolkit.ar.base.rendering.ARRenderer;
@@ -846,16 +846,6 @@ public class PortalActivity extends ARActivity implements PortalRenderer.NewMark
         }
     }
 
-    public void endTurn()
-    {
-        Log.d("PortalActivity", "ended player turn " + turnId);
-
-        turn = false;
-        turnId = CollectionManager.getNextIdFromId(turnId, model.getActors());
-
-        Log.d("PortalActivity", "next turn is " + turnId);
-    }
-
     @Override
     public void feedback(final String message)
     {
@@ -874,7 +864,13 @@ public class PortalActivity extends ARActivity implements PortalRenderer.NewMark
     @Override
     public void onActorAction(final int sourceId, final int targetId, final String action)
     {
+        Logger.logD("enter trace");
+
+        Logger.logD("received action for actor " + sourceId);
+
         Room room = GameMaster.getActorRoom(sourceId);
+
+        Logger.logD("showing action in renderer");
 
         renderer.showAction(room,
                             model.getActors(),
@@ -883,18 +879,18 @@ public class PortalActivity extends ARActivity implements PortalRenderer.NewMark
                             1000,
                             action,
                             true);
+
+        Logger.logD("exit trace");
     }
 
     @Override
     public void turnPassed(final int turnId)
     {
-        Log.d("PortalActivity", "ended non-player turn " + turnId);
+        Logger.logD("enter trace");
 
-        PortalActivity.turnId = CollectionManager.getNextIdFromId(turnId, model.getActors());
+        Logger.logD("ended non-player turn " + turnId);
 
-        Log.d("PortalActivity", "next turn is " + PortalActivity.turnId);
-
-        //onFinishedAction();
+        Logger.logD("exit trace");
     }
 
     @Override
@@ -915,15 +911,19 @@ public class PortalActivity extends ARActivity implements PortalRenderer.NewMark
     @Override
     public void onFinishedAction(final int actorId)
     {
+        Logger.logD("enter trace");
+
+        Logger.logD("finished action for " + actorId);
+
+        Logger.logD("removing dead actors");
         GameMaster.removeDeadActors();
+        Logger.logD("updating renderer room");
         renderer.updateRoomResidents(GameMaster.getActorRoom(actorId), model.getActors());
+
         if (turn)
         {
-            endTurn();
+            turn = false;
         }
-
-        //TurnDelayer turnDelayer = new TurnDelayer(1000);
-        //turnDelayer.start();
 
         Runnable turnDelayer = new Runnable()
         {
@@ -934,18 +934,31 @@ public class PortalActivity extends ARActivity implements PortalRenderer.NewMark
             }
         };
         handler.postDelayed(turnDelayer, 1000);
+        Logger.logD("postTurn posted to execute in " + 1000);
+
+        Logger.logD("exit trace");
     }
 
     private void postTurn()
     {
+        Logger.logD("enter trace");
+
+        turnId = CollectionManager.getNextIdFromId(turnId, model.getActors());
+
+        Logger.logD("next turn is " + turnId);
+
         if (turnId == playerId)
         {
             turn = true;
         }
         else if (!GameMaster.getActorIsPlayer(turnId))
         {
+            Logger.logD("turn id is not a player, taking turn for non-player actor " + turnId);
+
             ActorController.takeTurn(turnId);
         }
+
+        Logger.logD("exit trace");
     }
 
     // Defines callbacks for service binding, passed to bindService()

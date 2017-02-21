@@ -22,7 +22,7 @@ public class ActorController
     {
         Actor actor = GameMaster.getActor(actorId);
 
-        Log.d("ActorController", "taking turn for actor " + actor.getName());
+        Log.d("takeTurn", "taking turn for actor " + actor.getName());
 
         ArrayList<Integer> targets = GameMaster.getPlayerTargetIds(actorId);
 
@@ -32,7 +32,7 @@ public class ActorController
 
             GameMaster.attack(actorId, targets.get(0));
 
-            Log.d("ActorController",
+            Log.d("takeTurn",
                   "actor " + actor.getName() + " attacked " +
                   GameMaster.getActor(targets.get(0)).getName());
 

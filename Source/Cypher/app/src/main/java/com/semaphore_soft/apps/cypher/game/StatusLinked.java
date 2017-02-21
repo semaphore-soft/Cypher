@@ -1,6 +1,7 @@
 package com.semaphore_soft.apps.cypher.game;
 
-import java.util.Hashtable;
+
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * Created by rickm on 1/31/2017.
@@ -21,7 +22,7 @@ public class StatusLinked extends Status
         return linkID;
     }
 
-    public boolean checkLink(Hashtable<Integer, ?> links)
+    public boolean checkLink(ConcurrentHashMap<Integer, ?> links)
     {
         return links.keySet().contains(linkID);
     }
