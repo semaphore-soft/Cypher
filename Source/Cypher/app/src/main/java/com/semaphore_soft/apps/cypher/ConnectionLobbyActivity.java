@@ -180,7 +180,7 @@ public class ConnectionLobbyActivity extends AppCompatActivity implements Respon
                                Toast.LENGTH_SHORT).show();
                 Intent intent = new Intent(getBaseContext(), CharacterSelectActivity.class);
                 intent.putExtra("host", host);
-                intent.putExtra("player", (long) 0);
+                intent.putExtra("player", 0);
                 intent.putExtra("numClients", playerID);
                 startActivity(intent);
                 break;
@@ -191,11 +191,13 @@ public class ConnectionLobbyActivity extends AppCompatActivity implements Respon
     }
 
     @Override
-    public void handleRead(String msg)
+    public void handleRead(String msg, int readFrom)
     {
         Toast.makeText(this, "Read: " + msg, Toast.LENGTH_SHORT).show();
         if (msg.equals(NetworkConstants.GAME_START))
         {
+            LocalBroadcastManager.getInstance(ConnectionLobbyActivity.this)
+                                 .unregisterReceiver(responseReceiver);
             // Start character select activity after host has started game
             Intent intent = new Intent(getBaseContext(), CharacterSelectActivity.class);
             intent.putExtra("host", host);
@@ -290,7 +292,7 @@ public class ConnectionLobbyActivity extends AppCompatActivity implements Respon
             ClientService.LocalBinder binder = (ClientService.LocalBinder) iBinder;
             clientService = binder.getService();
             mClientBound = true;
-            clientService.clientWrite(NetworkConstants.PF_NAME + name);
+            clientService.write(NetworkConstants.PF_NAME + name);
         }
 
         @Override
