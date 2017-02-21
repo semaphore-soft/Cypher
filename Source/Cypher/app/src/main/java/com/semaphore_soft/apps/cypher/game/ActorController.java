@@ -38,7 +38,8 @@ public class ActorController
 
             gameController.feedback(GameMaster.getActor(actorId).getName() + " attacked " +
                                     GameMaster.getActor(targets.get(0)).getName());
-            gameController.updateRoom(GameMaster.getActorRoomId(actorId));
+
+            gameController.onActorAction(actorId, targets.get(0), "attack");
         }
 
         gameController.turnPassed(actorId);

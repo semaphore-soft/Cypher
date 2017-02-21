@@ -8,9 +8,11 @@ public interface GameController
 {
     void onFinishedLoading();
 
-    void onFinishedAction();
+    void onFinishedAction(int actorId);
 
     void feedback(String message);
-    void updateRoom(int roomId);
+
+    void onActorAction(int sourceId, int targetId, String action);
+
     void turnPassed(int turnId);
 }

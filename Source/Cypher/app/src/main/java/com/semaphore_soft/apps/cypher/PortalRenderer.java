@@ -3,9 +3,11 @@ package com.semaphore_soft.apps.cypher;
 import android.content.Context;
 import android.opengl.GLES20;
 import android.opengl.Matrix;
+import android.os.Handler;
 
 import com.semaphore_soft.apps.cypher.game.Actor;
 import com.semaphore_soft.apps.cypher.game.GameController;
+import com.semaphore_soft.apps.cypher.game.GameMaster;
 import com.semaphore_soft.apps.cypher.game.Room;
 import com.semaphore_soft.apps.cypher.opengl.ARDrawableGLES20;
 import com.semaphore_soft.apps.cypher.opengl.ARModelGLES20;
@@ -41,10 +43,7 @@ class PortalRenderer extends ARRendererGLES20
     private static Hashtable<String, ARDrawableGLES20> models;
     private static Hashtable<Integer, ARRoom>          arRooms;
 
-    public void setContext(Context context)
-    {
-        this.context = context;
-    }
+    private static Handler handler;
 
     @Override
     public boolean configureARScene()
@@ -259,12 +258,22 @@ class PortalRenderer extends ARRendererGLES20
         }
     }
 
-    public void setGameController(GameController gameController)
+    public void setContext(final Context context)
+    {
+        this.context = context;
+    }
+
+    static void setHandler(final Handler handler)
+    {
+        PortalRenderer.handler = handler;
+    }
+
+    static void setGameController(final GameController gameController)
     {
         PortalRenderer.gameController = gameController;
     }
 
-    public int getFirstMarker()
+    int getFirstMarker()
     {
         for (int id : markers)
         {
@@ -277,7 +286,7 @@ class PortalRenderer extends ARRendererGLES20
         return -1;
     }
 
-    public int getFirstMarkerExcluding(ArrayList<Integer> marksX)
+    int getFirstMarkerExcluding(final ArrayList<Integer> marksX)
     {
         for (int id : markers)
         {
@@ -290,7 +299,7 @@ class PortalRenderer extends ARRendererGLES20
         return -1;
     }
 
-    public int getNearestMarker(int mark0)
+    int getNearestMarker(final int mark0)
     {
         int    nearest          = -1;
         double shortestDistance = -1;
@@ -334,7 +343,7 @@ class PortalRenderer extends ARRendererGLES20
         return nearest;
     }
 
-    public int getNearestMarkerExcluding(int mark0, ArrayList<Integer> marksX)
+    int getNearestMarkerExcluding(final int mark0, final ArrayList<Integer> marksX)
     {
         int    nearest          = -1;
         double shortestDistance = -1;
@@ -379,7 +388,7 @@ class PortalRenderer extends ARRendererGLES20
         return nearest;
     }
 
-    public float getMarkerDirection(int mark0)
+    float getMarkerDirection(final int mark0)
     {
         float res;
 
@@ -406,7 +415,7 @@ class PortalRenderer extends ARRendererGLES20
         return ((Float.isNaN(res)) ? 0 : res);
     }
 
-    public float getAngleBetweenMarkers(int mark0, int mark1)
+    float getAngleBetweenMarkers(final int mark0, final int mark1)
     {
         float[] resVector;
 
@@ -430,9 +439,9 @@ class PortalRenderer extends ARRendererGLES20
             new float[]{mark1TransInfo[12], mark1TransInfo[13], mark1TransInfo[14], mark1TransInfo[15]};
 
         String output = "ResVector Before Multiply: ";
-        for (int i = 0; i < resVector.length; ++i)
+        for (float aResVector : resVector)
         {
-            output += resVector[i] + " ";
+            output += aResVector + " ";
         }
         System.out.println(output);
 
@@ -444,9 +453,9 @@ class PortalRenderer extends ARRendererGLES20
                           0);
 
         output = "ResVector After Multiply: ";
-        for (int i = 0; i < resVector.length; ++i)
+        for (float aResVector : resVector)
         {
-            output += resVector[i] + " ";
+            output += aResVector + " ";
         }
 
         float resAngle = (float) Math.atan2(resVector[0], resVector[1]);
@@ -458,12 +467,12 @@ class PortalRenderer extends ARRendererGLES20
         return ((Float.isNaN(resAngle)) ? 0 : resAngle);
     }
 
-    public void setPlayerMarker(int playerID, int markerID)
+    void setPlayerMarker(final int playerID, final int markerID)
     {
-        playerMarkerIDs[(int) playerID] = markerID;
+        playerMarkerIDs[playerID] = markerID;
     }
 
-    public void createRoom(Room room)
+    void createRoom(final Room room)
     {
         ARRoom arRoom = new ARRoom();
         arRoom.setRoomModel(models.get("room_base"));
@@ -488,7 +497,7 @@ class PortalRenderer extends ARRendererGLES20
         arRooms.put(room.getMarker(), arRoom);
     }
 
-    public void updateRoomWalls(Room room)
+    void updateRoomWalls(final Room room)
     {
         ARRoom arRoom = arRooms.get(room.getMarker());
         for (short i = 0; i < 4; ++i)
@@ -511,13 +520,13 @@ class PortalRenderer extends ARRendererGLES20
         }
     }
 
-    public void updateRoomAlignment(Room room, short side)
+    void updateRoomAlignment(final Room room, final short side)
     {
         ARRoom arRoom = arRooms.get(room.getMarker());
         arRoom.setAlignment(side);
     }
 
-    public void updateRoomResidents(Room room, Hashtable<Integer, Actor> actors)
+    void updateRoomResidents(final Room room, final Hashtable<Integer, Actor> actors)
     {
         ARRoom arRoom = arRooms.get(room.getMarker());
         arRoom.removeActors();
@@ -542,13 +551,13 @@ class PortalRenderer extends ARRendererGLES20
                     switch (actor.getState())
                     {
                         case NEUTRAL:
-                            arRoom.setResidentPose(id, "default");
-                            break;
+                            //break;
                         case ATTACK:
-                            arRoom.setResidentPose(id, "attack");
-                            break;
+                            //arRoom.setResidentPose(id, "attack");
+                            //break;
                         case SPECIAL:
-                            arRoom.setResidentPose(id, "special");
+                            //arRoom.setResidentPose(id, "special");
+                            arRoom.setResidentPose(id, "default");
                             break;
                         case DEFEND:
                             arRoom.setResidentPose(id, "defend");
@@ -570,7 +579,126 @@ class PortalRenderer extends ARRendererGLES20
         }
     }
 
-    public interface NewMarkerListener
+    void showAction(final Room room,
+                    final Hashtable<Integer, Actor> actors,
+                    final int sourceId,
+                    final int targetId,
+                    final long length,
+                    final String actionType,
+                    final boolean forward)
+    {
+        final int roomId = room.getMarker();
+        ARRoom    arRoom = arRooms.get(roomId);
+        if (forward)
+        {
+            if (GameMaster.getActorIsPlayer(sourceId))
+            {
+                arRoom.setForwardPlayer(sourceId);
+                if (targetId > -1)
+                {
+                    arRoom.setForwardEnemy(targetId);
+                }
+            }
+            else
+            {
+                arRoom.setForwardEnemy(sourceId);
+                if (targetId > -1)
+                {
+                    arRoom.setForwardPlayer(targetId);
+                }
+            }
+        }
+
+        String[] splitAction = actionType.split(":");
+
+        switch (splitAction[0])
+        {
+            case "attack":
+                arRoom.setResidentPose(sourceId, "attack");
+                if (targetId > -1)
+                {
+                    if (!(actors.get(targetId).getState() == Actor.E_STATE.DEFEND))
+                    {
+                        arRoom.setResidentPose(targetId, "hurt");
+                    }
+                    else
+                    {
+                        arRoom.setResidentPose(targetId, "defend");
+                    }
+                }
+                break;
+            case "defend":
+                arRoom.setResidentPose(sourceId, "defend");
+                break;
+            case "special":
+                arRoom.setResidentPose(sourceId, "special");
+                if (targetId != sourceId)
+                {
+                    switch (splitAction[1])
+                    {
+                        case "harm":
+                            if (!(actors.get(targetId).getState() == Actor.E_STATE.DEFEND))
+                            {
+                                arRoom.setResidentPose(targetId, "hurt");
+                            }
+                            else
+                            {
+                                arRoom.setResidentPose(targetId, "defend");
+                            }
+                            break;
+                        case "help":
+                            arRoom.setResidentPose(targetId, "defend");
+                            break;
+                    }
+                }
+                break;
+        }
+
+        Runnable actionFinisher = new Runnable()
+        {
+            @Override
+            public void run()
+            {
+                concludeAction(roomId, actors, sourceId, targetId);
+            }
+        };
+        handler.postDelayed(actionFinisher, length);
+    }
+
+    private void concludeAction(final int roomId,
+                                final Hashtable<Integer, Actor> actors,
+                                final int sourceId,
+                                final int targetId)
+    {
+        ARRoom arRoom = arRooms.get(roomId);
+        arRoom.clearForwardPlayer();
+        arRoom.clearForwardEnemy();
+
+        if (actors.get(sourceId).getState() == Actor.E_STATE.DEFEND)
+        {
+            arRoom.setResidentPose(sourceId, "defend");
+        }
+        else
+        {
+            arRoom.setResidentPose(sourceId, "default");
+        }
+
+        if (actors.contains(targetId))
+        {
+            if (actors.get(sourceId).getState() == Actor.E_STATE.DEFEND)
+            {
+                arRoom.setResidentPose(sourceId, "defend");
+            }
+            else
+            {
+                arRoom.setResidentPose(sourceId, "default");
+            }
+        }
+
+        gameController.onFinishedAction(sourceId);
+    }
+
+    interface NewMarkerListener
     {
         void newMarker(int marker);
     }

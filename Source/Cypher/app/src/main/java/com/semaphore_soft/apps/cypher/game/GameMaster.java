@@ -19,22 +19,22 @@ public class GameMaster
 {
     private static Model model;
 
-    public static void setModel(Model model)
+    public static void setModel(final Model model)
     {
         GameMaster.model = model;
     }
 
-    public static Room generateRoom(Context context)
+    public static Room generateRoom(final Context context)
     {
         return generateRoom(context, CollectionManager.getNextID(model.getRooms()));
     }
 
-    public static Room generateRoom(Context context, int id)
+    public static Room generateRoom(final Context context, final int id)
     {
         return generateRoom(context, id, -1);
     }
 
-    public static Room generateRoom(Context context, int id, int mark)
+    public static Room generateRoom(final Context context, final int id, final int mark)
     {
         Log.d("GameMaster", "Generating room with id " + id + " at mark " + mark);
 
@@ -63,12 +63,12 @@ public class GameMaster
         return room;
     }
 
-    public static Room getRoom(int id)
+    public static Room getRoom(final int id)
     {
         return model.getRooms().get(id);
     }
 
-    public static int getRoomMarkerId(int id)
+    public static int getRoomMarkerId(final int id)
     {
         return model.getRooms().get(id).getMarker();
     }
@@ -86,17 +86,17 @@ public class GameMaster
         return placedRoomMarkers;
     }
 
-    public static ArrayList<Integer> getAdjacentRoomIds(int startRoomId)
+    public static ArrayList<Integer> getAdjacentRoomIds(final int startRoomId)
     {
         return model.getMap().getAdjacentRooms(startRoomId);
     }
 
-    public static short getSideOfRoomFrom(int startRoomId, int endRoomId)
+    public static short getSideOfRoomFrom(final int startRoomId, final int endRoomId)
     {
         return model.getMap().getWallsBetweenAdjacentRooms(startRoomId, endRoomId).second;
     }
 
-    public static int getPlayersInRoom(int roomId)
+    public static int getPlayersInRoom(final int roomId)
     {
         int  res  = 0;
         Room room = model.getRooms().get(roomId);
@@ -112,27 +112,27 @@ public class GameMaster
         return res;
     }
 
-    public static Actor getActor(int id)
+    public static Actor getActor(final int id)
     {
         return model.getActors().get(id);
     }
 
-    public static int getActorMakerId(int id)
+    public static int getActorMakerId(final int id)
     {
         return model.getActors().get(id).getMarker();
     }
 
-    public static int getActorRoomId(int id)
+    public static int getActorRoomId(final int id)
     {
         return model.getActors().get(id).getRoom();
     }
 
-    public static Room getActorRoom(int id)
+    public static Room getActorRoom(final int id)
     {
         return model.getRooms().get(model.getActors().get(id).getRoom());
     }
 
-    public static boolean getActorIsPlayer(int id)
+    public static boolean getActorIsPlayer(final int id)
     {
         return model.getActors().get(id).isPlayer();
     }
@@ -141,7 +141,7 @@ public class GameMaster
     //1: marker attached to a room
     //0: marker attached to a player
     //-1: marker not attached to anything
-    public static int getMarkerAttachment(int markId)
+    public static int getMarkerAttachment(final int markId)
     {
         for (Actor actor : model.getActors().values())
         {
@@ -162,7 +162,7 @@ public class GameMaster
         return -1;
     }
 
-    public static int getIdByMarker(int markId)
+    public static int getIdByMarker(final int markId)
     {
         for (Actor actor : model.getActors().values())
         {
@@ -191,7 +191,7 @@ public class GameMaster
     //-2: failure, invalid path, rooms not adjacent
     //-3: failure, room not placed
     //-4: failure, unknown
-    public static int moveActor(int actorId, int endRoomId)
+    public static int moveActor(final int actorId, final int endRoomId)
     {
         Actor actor   = model.getActors().get(actorId);
         Room  endRoom = model.getRooms().get(endRoomId);
@@ -242,7 +242,7 @@ public class GameMaster
     //0: success, valid path
     //-1: failure, invalid path, bad connection
     //-2: failure, invalid path, rooms not adjacent
-    private static int getValidPath(int startRoomId, int endRoomId)
+    private static int getValidPath(final int startRoomId, final int endRoomId)
     {
         Map map = model.getMap();
 
@@ -269,10 +269,10 @@ public class GameMaster
         return -1;
     }
 
-    public static int openDoor(int startRoomId,
-                               int endRoomId,
-                               short sideOfStartRoom,
-                               short sideOfEndRoom)
+    public static int openDoor(final int startRoomId,
+                               final int endRoomId,
+                               final short sideOfStartRoom,
+                               final short sideOfEndRoom)
     {
         Room startRoom = model.getRooms().get(startRoomId);
         Room endRoom   = model.getRooms().get(endRoomId);
@@ -325,10 +325,10 @@ public class GameMaster
         return -1;
     }
 
-    private static int getValidAdjacency(int startRoomId,
-                                         int endRoomId,
-                                         short sideOfStartRoom,
-                                         short sideOfEndRoom)
+    private static int getValidAdjacency(final int startRoomId,
+                                         final int endRoomId,
+                                         final short sideOfStartRoom,
+                                         final short sideOfEndRoom)
     {
         Room startRoom = model.getRooms().get(startRoomId);
         Room endRoom   = model.getRooms().get(endRoomId);
@@ -367,11 +367,11 @@ public class GameMaster
         return 0;
     }
 
-    private static int getValidAdjacencyProposedRoom(int proposedRoomPositionX,
-                                                     int proposedRoomPositionY,
-                                                     short proposedRoomRotation,
-                                                     int testRoomId,
-                                                     int proposedRoomId)
+    private static int getValidAdjacencyProposedRoom(final int proposedRoomPositionX,
+                                                     final int proposedRoomPositionY,
+                                                     final short proposedRoomRotation,
+                                                     final int testRoomId,
+                                                     final int proposedRoomId)
     {
         Room testRoom     = model.getRooms().get(testRoomId);
         Room proposedRoom = model.getRooms().get(proposedRoomId);
@@ -418,7 +418,7 @@ public class GameMaster
         return -1;
     }
 
-    public static Hashtable<Integer, Actor> getEnemyTargets(int actorId)
+    public static Hashtable<Integer, Actor> getEnemyTargets(final int actorId)
     {
         Actor                     actor   = model.getActors().get(actorId);
         Room                      room    = model.getRooms().get(actor.getRoom());
@@ -439,7 +439,7 @@ public class GameMaster
         return targets;
     }
 
-    public static Hashtable<Integer, Actor> getPlayerTargets(int actorId)
+    public static Hashtable<Integer, Actor> getPlayerTargets(final int actorId)
     {
         Actor                     actor   = model.getActors().get(actorId);
         Room                      room    = model.getRooms().get(actor.getRoom());
@@ -460,7 +460,7 @@ public class GameMaster
         return targets;
     }
 
-    public static ArrayList<Integer> getPlayerTargetIds(int actorId)
+    public static ArrayList<Integer> getPlayerTargetIds(final int actorId)
     {
         Actor              actor   = model.getActors().get(actorId);
         Room               room    = model.getRooms().get(actor.getRoom());
@@ -482,7 +482,7 @@ public class GameMaster
         return targets;
     }
 
-    public static Hashtable<Integer, Special> getSpecials(int actorId)
+    public static Hashtable<Integer, Special> getSpecials(final int actorId)
     {
         System.out.println("looking for specials for actor: " + actorId);
         Actor actor = model.getActors().get(actorId);
@@ -493,7 +493,7 @@ public class GameMaster
         return actor.getSpecials();
     }
 
-    public static void setActorState(int id, Actor.E_STATE state)
+    public static void setActorState(final int id, final Actor.E_STATE state)
     {
         model.getActors().get(id).setState(state);
     }
@@ -501,7 +501,7 @@ public class GameMaster
     //returns
     //1: success, enemy dead
     //0: success, enemy still alive
-    public static int attack(int attackerId, int defenderId)
+    public static int attack(final int attackerId, final int defenderId)
     {
         Actor attacker = model.getActors().get(attackerId);
         Actor defender = model.getActors().get(defenderId);
@@ -512,13 +512,33 @@ public class GameMaster
 
         if (defender.getHealthCurrent() <= 0)
         {
-            getActorRoom(defenderId).removeActor(defenderId);
-            model.getActors().remove(defenderId);
-
             return 1;
         }
 
         return 0;
+    }
+
+    public static void removeActor(final int actorId)
+    {
+        getActorRoom(actorId).removeActor(actorId);
+        model.getActors().remove(actorId);
+    }
+
+    public static void removeDeadActors()
+    {
+        Hashtable<Integer, Actor> actors           = model.getActors();
+        ArrayList<Integer>        markedForRemoval = new ArrayList<>();
+        for (int id : actors.keySet())
+        {
+            if (actors.get(id).getHealthCurrent() <= 0)
+            {
+                markedForRemoval.add(id);
+            }
+        }
+        for (int id : markedForRemoval)
+        {
+            actors.remove(id);
+        }
     }
 
     //returns
@@ -526,7 +546,7 @@ public class GameMaster
     //0: success
     //-1: failure, not enough energy
     //-2: failure, no targets in room
-    public static int special(int sourceId, int specialId)
+    public static int special(final int sourceId, final int specialId)
     {
         Actor            source  = model.getActors().get(sourceId);
         Special          special = model.getSpecials().get(specialId);
@@ -587,7 +607,7 @@ public class GameMaster
     //0: success
     //-1: failure, not enough energy
     //-2: failure, target not valid, not in same room
-    public static int special(int sourceId, int targetId, int specialId)
+    public static int special(final int sourceId, final int targetId, final int specialId)
     {
         Actor   source  = model.getActors().get(sourceId);
         Actor   target  = model.getActors().get(targetId);
@@ -613,5 +633,21 @@ public class GameMaster
         }
 
         return -2;
+    }
+
+    public static String getSpecialType(final int id)
+    {
+        ArrayList<Effect.E_EFFECT> specialEffects = model.getSpecials().get(id).getEffects();
+
+        if (specialEffects.contains(Effect.E_EFFECT.HEAL))
+        {
+            return "help";
+        }
+        else if (specialEffects.contains(Effect.E_EFFECT.ATTACK))
+        {
+            return "harm";
+        }
+
+        return "help";
     }
 }

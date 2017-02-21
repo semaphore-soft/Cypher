@@ -9,5 +9,3 @@ _self targeting targeting type
 _comment model loader
 
 _specials need a scalar
-
-_timed renderer effects and waiting for 'animations'
