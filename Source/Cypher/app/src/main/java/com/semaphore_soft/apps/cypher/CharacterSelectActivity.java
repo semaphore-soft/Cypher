@@ -12,7 +12,6 @@ import android.support.v4.content.LocalBroadcastManager;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
-import android.util.Pair;
 import android.widget.FrameLayout;
 import android.widget.Toast;
 
@@ -23,7 +22,7 @@ import com.semaphore_soft.apps.cypher.networking.ServerService;
 import com.semaphore_soft.apps.cypher.ui.UICharacterSelect;
 import com.semaphore_soft.apps.cypher.ui.UIListener;
 
-import java.util.ArrayList;
+import java.util.HashMap;
 
 /**
  * Created by Scorple on 1/9/2017.
@@ -49,8 +48,8 @@ public class CharacterSelectActivity extends AppCompatActivity implements Respon
     private int     playersReady = 0;
     private boolean ready        = false;
 
-    private static String                           selection           = "";
-    private static ArrayList<Pair<Integer, String>> characterSelections = new ArrayList<>();
+    private static String                   selection           = "";
+    private static HashMap<Integer, String> characterSelections = new HashMap<>();
 
     @Override
     public void onCreate(Bundle savedInstanceState)
@@ -168,20 +167,20 @@ public class CharacterSelectActivity extends AppCompatActivity implements Respon
         if (msg.equals(NetworkConstants.GAME_KNIGHT) || msg.equals(NetworkConstants.GAME_SOLDIER) ||
             msg.equals(NetworkConstants.GAME_RANGER) || msg.equals(NetworkConstants.GAME_WIZARD))
         {
-            if (selectionTaken(msg))
+            if (characterSelections.containsValue(msg))
             {
                 Log.i("CharSelect", "Character taken");
                 serverService.writeToClient(NetworkConstants.GAME_TAKEN, readFrom);
                 return;
             }
-            if (playerReady(readFrom))
+            if (characterSelections.containsKey(readFrom))
             {
                 // Update player's character
                 removePlayer(readFrom);
                 // Reset player count so it doesn't get messed up below
                 playersReady--;
             }
-            characterSelections.add(new Pair<>(readFrom, msg));
+            characterSelections.put(readFrom, msg);
             serverService.writeAll(NetworkConstants.PF_LOCK + msg);
             uiCharacterSelect.setButtonEnabled(msg, false);
             playersReady++;
@@ -262,12 +261,12 @@ public class CharacterSelectActivity extends AppCompatActivity implements Respon
         CharacterSelectActivity.selection = selection;
         if (host)
         {
-            if (selectionTaken(selection))
+            if (characterSelections.containsValue(selection))
             {
                 Log.i("CharSelect", "Character taken");
                 return;
             }
-            if (playerReady(-1))
+            if (characterSelections.containsKey(-1))
             {
                 // Update host's character
                 removePlayer(-1);
@@ -276,7 +275,7 @@ public class CharacterSelectActivity extends AppCompatActivity implements Respon
             }
             // Use -1 since clients start at 0
             serverService.writeAll(NetworkConstants.PF_LOCK + selection);
-            characterSelections.add(new Pair<>(-1, selection));
+            characterSelections.put(-1, selection);
             ++playersReady;
             if (playersReady >= numClients || numClients == 0)
             {
@@ -314,42 +313,12 @@ public class CharacterSelectActivity extends AppCompatActivity implements Respon
         ready = false;
     }
 
-    private boolean selectionTaken(String str)
-    {
-        for (Pair<Integer, String> pair : characterSelections)
-        {
-            if (str.equals(pair.second))
-            {
-                return true;
-            }
-        }
-        return false;
-    }
-
-    private boolean playerReady(int player)
-    {
-        for (Pair<Integer, String> pair : characterSelections)
-        {
-            if (player == pair.first)
-            {
-                return true;
-            }
-        }
-        return false;
-    }
-
     private void removePlayer(int player)
     {
-        for (Pair<Integer, String> pair : characterSelections)
-        {
-            if (player == pair.first)
-            {
-                serverService.writeAll(NetworkConstants.PF_FREE + pair.second);
-                uiCharacterSelect.setButtonEnabled(pair.second, true);
-                characterSelections.remove(pair);
-                return;
-            }
-        }
+        String character = characterSelections.get(player);
+        serverService.writeAll(NetworkConstants.PF_FREE + character);
+        uiCharacterSelect.setButtonEnabled(character, true);
+        characterSelections.remove(player);
     }
 
     private void startAR()
