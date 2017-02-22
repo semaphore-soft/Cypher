@@ -240,8 +240,8 @@ public class Server
         private void processMessage(String msg)
         {
             Logger.logI(msg);
-            Logger.logD(String.valueOf(clients.indexOf(this)));
-            serverService.threadRead(msg, clients.indexOf(this));
+            Logger.logD(String.valueOf(clients.indexOf(this) + 1));
+            serverService.threadRead(msg, clients.indexOf(this) + 1);
         }
     }
 }

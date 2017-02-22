@@ -237,7 +237,7 @@ public class CharacterSelectActivity extends AppCompatActivity implements Respon
         CharacterSelectActivity.selection = selection;
         if (host)
         {
-            updateSelection(selection, -1);
+            updateSelection(selection, 0);
         }
         else
         {
@@ -255,7 +255,7 @@ public class CharacterSelectActivity extends AppCompatActivity implements Respon
             --playersReady;
             uiCharacterSelect.setStatus(
                 playersReady + "/" + (numClients + 1) + " ready");
-            removePlayer(-1);
+            removePlayer(0);
         }
         else
         {
@@ -274,7 +274,7 @@ public class CharacterSelectActivity extends AppCompatActivity implements Respon
         if (characterSelections.containsValue(selection))
         {
             Logger.logI("Character taken");
-            serverService.writeToClient(NetworkConstants.GAME_TAKEN, player);
+            serverService.writeToClient(NetworkConstants.GAME_TAKEN, player - 1);
             return;
         }
         if (characterSelections.containsKey(player))
