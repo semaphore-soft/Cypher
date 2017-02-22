@@ -184,7 +184,11 @@ public class CharacterSelectActivity extends AppCompatActivity implements Respon
         }
         else if (msg.startsWith(NetworkConstants.PF_LOCK))
         {
-            uiCharacterSelect.setButtonEnabled(msg.substring(5), false);
+            String sel = msg.substring(5);
+            if (!sel.equals(selection))
+            {
+                uiCharacterSelect.setButtonEnabled(sel, false);
+            }
         }
         else if (msg.startsWith(NetworkConstants.PF_FREE))
         {
@@ -292,7 +296,10 @@ public class CharacterSelectActivity extends AppCompatActivity implements Respon
         }
         characterSelections.put(player, selection);
         serverService.writeAll(NetworkConstants.PF_LOCK + selection);
-        uiCharacterSelect.setButtonEnabled(selection, false);
+        if (!selection.equals(CharacterSelectActivity.selection))
+        {
+            uiCharacterSelect.setButtonEnabled(selection, false);
+        }
         // Since default value is 0, allow host to start game
         // even if numClients == 0 and clients are connected
         if (playersReady >= numClients)
