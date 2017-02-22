@@ -212,6 +212,14 @@ public class CharacterSelectActivity extends AppCompatActivity implements Respon
             alert.show();
             uiCharacterSelect.clearSelection();
         }
+        else if (msg.startsWith(NetworkConstants.PF_READY))
+        {
+            if (ready)
+            {
+                String[] args = msg.split(":");
+                uiCharacterSelect.setStatus(args[1] + "/" + args[2] + " ready");
+            }
+        }
         else if (msg.equals(NetworkConstants.GAME_AR_START))
         {
             startAR();
@@ -248,7 +256,6 @@ public class CharacterSelectActivity extends AppCompatActivity implements Respon
         else
         {
             clientService.write(selection);
-            uiCharacterSelect.setStatus("Waiting for Host...");
         }
         ready = true;
     }
