@@ -1,5 +1,5 @@
 # Blender MTL File: 'knightBlend.blend'
-# Material Count: 4
+# Material Count: 2
 
 newmtl armor
 Ns 96.078431
@@ -10,29 +10,7 @@ Ke 0.070000 0.070000 0.070000
 Ni 1.000000
 d 1.000000
 illum 2
-map_Kd knighttex.png
-
-newmtl armor_4.png
-Ns 96.078431
-Ka 1.000000 1.000000 1.000000
-Kd 1.000000 1.000000 1.000000
-Ks 0.500000 0.500000 0.500000
-Ke 0.070000 0.070000 0.070000
-Ni 1.000000
-d 1.000000
-illum 2
 map_Kd C:\Users\ceroj\Downloads\4.png
-
-newmtl armor_NONE
-Ns 96.078431
-Ka 1.000000 1.000000 1.000000
-Kd 1.000000 1.000000 1.000000
-Ks 0.500000 0.500000 0.500000
-Ke 0.070000 0.070000 0.070000
-Ni 1.000000
-d 1.000000
-illum 2
-map_Kd knighttex.png
 
 newmtl armor_knight.png
 Ns 96.078431
