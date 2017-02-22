@@ -179,6 +179,8 @@ public class CharacterSelectActivity extends AppCompatActivity implements Respon
             }
             // Include host when displaying connected players
             uiCharacterSelect.setStatus(playersReady + "/" + (numClients + 1) + " ready");
+            serverService.writeAll(
+                NetworkConstants.PF_READY + playersReady + ":" + (numClients + 1));
         }
         else if (msg.startsWith(NetworkConstants.PF_LOCK))
         {
@@ -255,6 +257,8 @@ public class CharacterSelectActivity extends AppCompatActivity implements Respon
             --playersReady;
             uiCharacterSelect.setStatus(
                 playersReady + "/" + (numClients + 1) + " ready");
+            serverService.writeAll(
+                NetworkConstants.PF_READY + playersReady + ":" + (numClients + 1));
             removePlayer(0);
         }
         else
@@ -297,6 +301,7 @@ public class CharacterSelectActivity extends AppCompatActivity implements Respon
         }
         // Include host when displaying connected players
         uiCharacterSelect.setStatus(playersReady + "/" + (numClients + 1) + " ready");
+        serverService.writeAll(NetworkConstants.PF_READY + playersReady + ":" + (numClients + 1));
     }
 
     private void removePlayer(int player)
