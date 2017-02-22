@@ -17,7 +17,6 @@ import java.net.SocketException;
 
 public class Client
 {
-    private static ClientThread clientThread   = null;
     private ClientService clientService;
 
     public Client()
@@ -27,13 +26,8 @@ public class Client
     public ClientThread startClient(InetAddress addr, ClientService client, boolean reconnect)
     {
         clientService = client;
-        clientThread = new ClientThread(addr, reconnect);
+        ClientThread clientThread = new ClientThread(addr, reconnect);
         clientThread.start();
-        return clientThread;
-    }
-
-    public ClientThread getClientThread()
-    {
         return clientThread;
     }
 

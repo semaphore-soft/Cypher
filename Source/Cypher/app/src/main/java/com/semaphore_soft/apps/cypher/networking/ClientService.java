@@ -19,6 +19,7 @@ import java.net.UnknownHostException;
 public class ClientService extends Service
 {
     private Client client;
+    private Client.ClientThread clientThread = null;
 
     public ClientService()
     {
@@ -54,7 +55,7 @@ public class ClientService extends Service
         Logger.logD("Staring client thread");
         try
         {
-            client.startClient(InetAddress.getByName(addr), this, false);
+            clientThread = client.startClient(InetAddress.getByName(addr), this, false);
         }
         catch (UnknownHostException e)
         {
@@ -69,7 +70,6 @@ public class ClientService extends Service
 
     public void write(String msg)
     {
-        Client.ClientThread clientThread = client.getClientThread();
         if (clientThread != null)
         {
             Logger.logD("Writing to server");
@@ -83,7 +83,6 @@ public class ClientService extends Service
 
     public void reconnect()
     {
-        Client.ClientThread clientThread = client.getClientThread();
         if (clientThread != null)
         {
             Logger.logD("reconnecting...");
