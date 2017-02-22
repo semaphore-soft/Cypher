@@ -124,6 +124,11 @@ public class Client
             clientService.threadRead(msg);
         }
 
+        public String getSocketAddress()
+        {
+            return mySocket.getRemoteSocketAddress().toString();
+        }
+
         public void reconnectSocket()
         {
             try

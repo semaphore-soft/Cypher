@@ -293,6 +293,7 @@ public class ConnectionLobbyActivity extends AppCompatActivity implements Respon
             clientService = binder.getService();
             mClientBound = true;
             clientService.write(NetworkConstants.PF_NAME + name);
+            uiConnectionLobby.setTextIP("Host IP is: " + clientService.getHostIP());
         }
 
         @Override

@@ -94,6 +94,14 @@ public class ClientService extends Service
         }
     }
 
+    public String getHostIP()
+    {
+        // Format ip address from client thread
+        String   str = clientThread.getSocketAddress();
+        String[] ip  = str.split(":");
+        return ip[0].substring(1);
+    }
+
     public void threadRead(String msg)
     {
         Logger.logD("Sending thread read");
