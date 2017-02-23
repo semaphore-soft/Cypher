@@ -53,8 +53,8 @@ public class NetworkConstants
     public static final String ERROR_DISCONNECT_SERVER = "Client had been disconnected";
 
     // Port should be between 49152-65535
-    public static final int  SERVER_PORT     = 58008;
-    public static final long HEARTBEAT_DELAY = 5000;
+    public static final int SERVER_PORT     = 58008;
+    public static final int HEARTBEAT_DELAY = 5000;
 
 
     public static IntentFilter getFilter()

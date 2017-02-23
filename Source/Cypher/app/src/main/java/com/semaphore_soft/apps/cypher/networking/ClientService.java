@@ -102,6 +102,11 @@ public class ClientService extends Service
         return ip[0].substring(1);
     }
 
+    public void setClientThread(Client.ClientThread thread)
+    {
+        clientThread = thread;
+    }
+
     public void threadRead(String msg)
     {
         Logger.logD("Sending thread read");

@@ -135,10 +135,12 @@ public class Client
             {
                 // Wait for server to detect that client has disconnected
                 Thread.sleep(NetworkConstants.HEARTBEAT_DELAY * 2);
-                startClient(inetAddress, clientService, true);
+                ClientThread client = startClient(inetAddress, clientService, true);
+                clientService.setClientThread(client);
             }
             catch (InterruptedException e)
             {
+                Logger.logI("Thread interrupted");
                 e.printStackTrace();
             }
         }

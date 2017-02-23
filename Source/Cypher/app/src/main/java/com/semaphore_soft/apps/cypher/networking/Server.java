@@ -20,7 +20,6 @@ import java.util.ArrayList;
 public class Server
 {
     private static ArrayList<ClientHandler> clients      = new ArrayList<>();
-    private static ArrayList<String>        messageLog   = new ArrayList<>();
     private static Boolean                  accepting    = false;
     private static ServerSocket             serverSocket = null;
     private        int                      maxPlayers   = 4;
@@ -50,16 +49,6 @@ public class Server
         {
             server.write(str);
         }
-        if (messageLog.isEmpty())
-        {
-            messageLog.add(str);
-        }
-        // Don't add repeated messages or heartbeat messages
-        else if (!messageLog.get(messageLog.size() - 1).equals(str) &&
-                 !str.equals(NetworkConstants.GAME_HEARTBEAT))
-        {
-            messageLog.add(str);
-        }
     }
 
     public void writeToClient(String str, int index)
@@ -86,6 +75,8 @@ public class Server
                 Logger.logI("Waiting on accept");
                 serverService.threadUpdate(NetworkConstants.STATUS_SERVER_WAIT);
 
+                // Disable timeout
+                serverSocket.setSoTimeout(0);
                 Socket        mySocket     = serverSocket.accept();
                 ClientHandler serverThread = new ClientHandler(mySocket, true);
                 clients.add(serverThread);
@@ -176,10 +167,10 @@ public class Server
         {
             if (reconnect)
             {
-                for (String msg : messageLog)
-                {
-                    write(msg);
-                }
+                //                for (String msg : messageLog)
+                //                {
+                //                    write(msg);
+                //                }
             }
             while (running)
             {
