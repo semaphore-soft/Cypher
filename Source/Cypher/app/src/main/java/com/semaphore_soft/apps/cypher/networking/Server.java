@@ -65,34 +65,6 @@ public class Server
         }
     }
 
-    public void reconnectClient()
-    {
-        // Assume only one client needs to reconnect at a time
-        if (serverSocket != null)
-        {
-            try
-            {
-                Logger.logI("Waiting on accept");
-                serverService.threadUpdate(NetworkConstants.STATUS_SERVER_WAIT);
-
-                // Disable timeout
-                serverSocket.setSoTimeout(0);
-                Socket        mySocket     = serverSocket.accept();
-                ClientHandler serverThread = new ClientHandler(mySocket, true);
-                clients.add(serverThread);
-                serverThread.start();
-            }
-            catch (SocketException e)
-            {
-                Logger.logI("Socket closed");
-            }
-            catch (IOException e)
-            {
-                e.printStackTrace();
-            }
-        }
-    }
-
     private class AcceptorThread extends Thread
     {
         Socket mySocket;
@@ -149,29 +121,15 @@ public class Server
         Socket mySocket;
 
         private boolean running = true;
-        private boolean reconnect;
 
         public ClientHandler(Socket socket)
         {
-            this(socket, false);
-        }
-
-        public ClientHandler(Socket socket, boolean reconnecting)
-        {
             mySocket = socket;
-            reconnect = reconnecting;
             serverService.threadUpdate(NetworkConstants.STATUS_SERVER_START);
         }
 
         public void run()
         {
-            if (reconnect)
-            {
-                //                for (String msg : messageLog)
-                //                {
-                //                    write(msg);
-                //                }
-            }
             while (running)
             {
                 String msg = read();
@@ -215,15 +173,10 @@ public class Server
             }
             catch (IOException e)
             {
-                // Remove bad socket
-                clients.remove(this);
-                if (e instanceof SocketException)
-                {
-                    serverService.threadError(NetworkConstants.ERROR_DISCONNECT_SERVER);
-                    Logger.logD("SocketException");
-                }
+                serverService.threadError(NetworkConstants.ERROR_DISCONNECT_SERVER);
                 e.printStackTrace();
                 running = false;
+                reconnectSocket();
             }
             return null;
         }
@@ -233,6 +186,33 @@ public class Server
             Logger.logI(msg);
             Logger.logD(String.valueOf(clients.indexOf(this) + 1));
             serverService.threadRead(msg, clients.indexOf(this) + 1);
+        }
+
+        private void reconnectSocket()
+        {
+            // Assume only one client needs to reconnect at a time
+            if (serverSocket != null)
+            {
+                try
+                {
+                    Logger.logI("Waiting on accept");
+                    serverService.threadUpdate(NetworkConstants.STATUS_SERVER_WAIT);
+
+                    // Disable timeout
+                    serverSocket.setSoTimeout(0);
+                    mySocket = serverSocket.accept();
+                    running = true;
+                    serverService.threadUpdate(NetworkConstants.STATUS_SERVER_START);
+                }
+                catch (SocketException e)
+                {
+                    Logger.logI("Socket closed");
+                }
+                catch (IOException e)
+                {
+                    e.printStackTrace();
+                }
+            }
         }
     }
 }

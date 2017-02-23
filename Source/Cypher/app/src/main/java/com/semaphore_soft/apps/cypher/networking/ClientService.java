@@ -55,7 +55,7 @@ public class ClientService extends Service
         Logger.logD("Staring client thread");
         try
         {
-            clientThread = client.startClient(InetAddress.getByName(addr), this, false);
+            clientThread = client.startClient(InetAddress.getByName(addr), this);
         }
         catch (UnknownHostException e)
         {
@@ -81,30 +81,12 @@ public class ClientService extends Service
         }
     }
 
-    public void reconnect()
-    {
-        if (clientThread != null)
-        {
-            Logger.logD("reconnecting...");
-            clientThread.reconnectSocket();
-        }
-        else
-        {
-            Logger.logD("clientThread null");
-        }
-    }
-
     public String getHostIP()
     {
         // Format ip address from client thread
         String   str = clientThread.getSocketAddress();
         String[] ip  = str.split(":");
         return ip[0].substring(1);
-    }
-
-    public void setClientThread(Client.ClientThread thread)
-    {
-        clientThread = thread;
     }
 
     public void threadRead(String msg)

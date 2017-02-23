@@ -29,16 +29,16 @@ public class NetworkConstants
     public static final String GAME_UPDATE    = "GAME_UPDATE";
     public static final String GAME_HEARTBEAT = "GAME_HEARTBEAT";
     public static final String GAME_KNIGHT    = "knight";
-    public static final String GAME_SOLDIER = "soldier";
-    public static final String GAME_RANGER  = "ranger";
-    public static final String GAME_WIZARD  = "wizard";
-    public static final String GAME_TAKEN   = "GAME_TAKEN";
+    public static final String GAME_SOLDIER   = "soldier";
+    public static final String GAME_RANGER    = "ranger";
+    public static final String GAME_WIZARD    = "wizard";
+    public static final String GAME_TAKEN     = "GAME_TAKEN";
     // Constants to use as prefixes to exchange information with other devices
-    public static final String PF_NAME      = "NAME:";
-    public static final String PF_PLAYER    = "PLAYER:";
-    public static final String PF_LOCK      = "LOCK:";
-    public static final String PF_FREE      = "FREE:";
-    public static final String PF_READY     = "READY:";
+    public static final String PF_NAME        = "NAME:";
+    public static final String PF_PLAYER      = "PLAYER:";
+    public static final String PF_LOCK        = "LOCK:";
+    public static final String PF_FREE        = "FREE:";
+    public static final String PF_READY       = "READY:";
 
     // Constants for status codes
     public static final String STATUS_SERVER_START   = "Server thread started";

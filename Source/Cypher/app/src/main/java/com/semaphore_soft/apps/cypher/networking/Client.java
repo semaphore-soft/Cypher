@@ -23,10 +23,10 @@ public class Client
     {
     }
 
-    public ClientThread startClient(InetAddress addr, ClientService client, boolean reconnect)
+    public ClientThread startClient(InetAddress addr, ClientService client)
     {
         clientService = client;
-        ClientThread clientThread = new ClientThread(addr, reconnect);
+        ClientThread clientThread = new ClientThread(addr);
         clientThread.start();
         return clientThread;
     }
@@ -37,7 +37,7 @@ public class Client
         private boolean     running     = true;
         private InetAddress inetAddress = null;
 
-        public ClientThread(InetAddress address, boolean reconnect)
+        public ClientThread(InetAddress address)
         {
             try
             {
@@ -50,10 +50,6 @@ public class Client
                 e.printStackTrace();
                 Logger.logE("Failed to start socket");
                 clientService.threadError(NetworkConstants.ERROR_CLIENT_SOCKET);
-                if (reconnect)
-                {
-                    reconnectSocket();
-                }
             }
         }
 
@@ -114,6 +110,7 @@ public class Client
                 }
                 e.printStackTrace();
                 running = false;
+                reconnectSocket();
             }
             return null;
         }
@@ -134,14 +131,21 @@ public class Client
             try
             {
                 // Wait for server to detect that client has disconnected
-                Thread.sleep(NetworkConstants.HEARTBEAT_DELAY * 2);
-                ClientThread client = startClient(inetAddress, clientService, true);
-                clientService.setClientThread(client);
+                Thread.sleep(NetworkConstants.HEARTBEAT_DELAY);
+                mySocket = new Socket(inetAddress, NetworkConstants.SERVER_PORT);
+                clientService.threadUpdate(NetworkConstants.STATUS_CLIENT_CONNECT);
+                running = true;
             }
             catch (InterruptedException e)
             {
                 Logger.logI("Thread interrupted");
                 e.printStackTrace();
+            }
+            catch (IOException e)
+            {
+                e.printStackTrace();
+                Logger.logI("Connection failed, retrying...");
+                reconnectSocket();
             }
         }
     }

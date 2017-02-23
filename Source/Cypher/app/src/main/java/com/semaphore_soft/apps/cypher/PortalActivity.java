@@ -296,14 +296,6 @@ public class PortalActivity extends ARActivity implements PortalRenderer.NewMark
     public void handleError(final String msg)
     {
         Toast.makeText(this, "Error: " + msg, Toast.LENGTH_SHORT).show();
-        if (msg.equals(NetworkConstants.ERROR_DISCONNECT_CLIENT))
-        {
-            clientService.reconnect();
-        }
-        else if (msg.equals(NetworkConstants.ERROR_DISCONNECT_SERVER))
-        {
-            serverService.reconnect();
-        }
     }
 
     @Override

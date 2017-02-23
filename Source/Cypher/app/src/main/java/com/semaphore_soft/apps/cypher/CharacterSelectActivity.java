@@ -236,14 +236,6 @@ public class CharacterSelectActivity extends AppCompatActivity implements Respon
     public void handleError(String msg)
     {
         Toast.makeText(this, "Error: " + msg, Toast.LENGTH_SHORT).show();
-        if (msg.equals(NetworkConstants.ERROR_DISCONNECT_CLIENT))
-        {
-            clientService.reconnect();
-        }
-        else if (msg.equals(NetworkConstants.ERROR_DISCONNECT_SERVER))
-        {
-            serverService.reconnect();
-        }
     }
 
     private void postSelection(String selection)

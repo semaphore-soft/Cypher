@@ -64,12 +64,6 @@ public class ServerService extends Service
         serverThread.writeAll(msg);
     }
 
-    public void reconnect()
-    {
-        Logger.logD("reconnecting...");
-        serverThread.reconnectClient();
-    }
-
     public void threadRead(String msg, int readFrom)
     {
         Logger.logD("Sending thread read");
