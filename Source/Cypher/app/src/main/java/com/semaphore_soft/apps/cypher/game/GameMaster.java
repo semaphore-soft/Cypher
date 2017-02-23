@@ -264,7 +264,7 @@ public class GameMaster
     //0: success, valid path
     //-1: failure, invalid path, bad connection
     //-2: failure, invalid path, rooms not adjacent
-    private static int getValidPath(final int startRoomId, final int endRoomId)
+    public static int getValidPath(final int startRoomId, final int endRoomId)
     {
         Map map = model.getMap();
 
@@ -440,27 +440,6 @@ public class GameMaster
         return -1;
     }
 
-    public static ConcurrentHashMap<Integer, Actor> getEnemyTargets(final int actorId)
-    {
-        Actor                             actor   = model.getActors().get(actorId);
-        Room                              room    = model.getRooms().get(actor.getRoom());
-        ConcurrentHashMap<Integer, Actor> targets = new ConcurrentHashMap<>();
-
-        System.out.println("looking for enemy targets in room: " + actor.getRoom());
-
-        for (int targetId : room.getResidentActors())
-        {
-            Actor target = model.getActors().get(targetId);
-            if (!target.isPlayer())
-            {
-                System.out.println("found valid target: " + target.getId());
-                targets.put(targetId, target);
-            }
-        }
-
-        return targets;
-    }
-
     public static ConcurrentHashMap<Integer, Actor> getPlayerTargets(final int actorId)
     {
         Actor                             actor   = model.getActors().get(actorId);
@@ -482,6 +461,27 @@ public class GameMaster
         return targets;
     }
 
+    public static ConcurrentHashMap<Integer, Actor> getNonPlayerTargets(final int actorId)
+    {
+        Actor                             actor   = model.getActors().get(actorId);
+        Room                              room    = model.getRooms().get(actor.getRoom());
+        ConcurrentHashMap<Integer, Actor> targets = new ConcurrentHashMap<>();
+
+        System.out.println("looking for non-player targets in room: " + actor.getRoom());
+
+        for (int targetId : room.getResidentActors())
+        {
+            Actor target = model.getActors().get(targetId);
+            if (!target.isPlayer())
+            {
+                System.out.println("found valid target: " + target.getId());
+                targets.put(targetId, target);
+            }
+        }
+
+        return targets;
+    }
+
     public static ArrayList<Integer> getPlayerTargetIds(final int actorId)
     {
         Actor              actor   = model.getActors().get(actorId);
@@ -493,11 +493,39 @@ public class GameMaster
 
         for (int targetId : room.getResidentActors())
         {
-            Actor target = model.getActors().get(targetId);
-            if (target.isPlayer())
+            if (targetId != actorId)
             {
-                Logger.logD("found valid target: " + target.getId());
-                targets.add(targetId);
+                Actor target = model.getActors().get(targetId);
+                if (target.isPlayer())
+                {
+                    Logger.logD("found valid target: " + target.getId());
+                    targets.add(targetId);
+                }
+            }
+        }
+
+        return targets;
+    }
+
+    public static ArrayList<Integer> getNonPlayerTargetIds(final int actorId)
+    {
+        Actor              actor   = model.getActors().get(actorId);
+        Room               room    = model.getRooms().get(actor.getRoom());
+        ArrayList<Integer> targets = new ArrayList<>();
+
+        Logger.logD("looking for player targets for: " + actorId);
+        Logger.logD("looking for player targets in room: " + actor.getRoom());
+
+        for (int targetId : room.getResidentActors())
+        {
+            if (targetId != actorId)
+            {
+                Actor target = model.getActors().get(targetId);
+                if (!target.isPlayer())
+                {
+                    Logger.logD("found valid target: " + target.getId());
+                    targets.add(targetId);
+                }
             }
         }
 

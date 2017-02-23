@@ -14,5 +14,7 @@ public interface GameController
 
     void onActorAction(int sourceId, int targetId, String action);
 
+    void onActorMove(int actorId, int roomId);
+
     void turnPassed(int turnId);
 }
