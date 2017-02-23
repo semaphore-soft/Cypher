@@ -55,7 +55,7 @@ public class Server
     {
         Logger.logD("Attempting to write to client " + String.valueOf(index));
         // Service will default to -1 if no index is given
-        if (!clients.isEmpty() && index >= 0 && index <= clients.size())
+        if (!clients.isEmpty() && index >= 0 && index < clients.size())
         {
             clients.get(index).write(str);
         }
@@ -80,7 +80,8 @@ public class Server
             {
                 e.printStackTrace();
                 Logger.logE("Failed to start server");
-                serverService.threadError(NetworkConstants.ERROR_SERVER_START);
+                // Pass 0 since this does not receive input from client
+                serverService.threadError(NetworkConstants.ERROR_SERVER_START, 0);
             }
         }
 
@@ -93,7 +94,8 @@ public class Server
                 try
                 {
                     Logger.logI("Waiting on accept");
-                    serverService.threadUpdate(NetworkConstants.STATUS_SERVER_WAIT);
+                    // Pass 0 since this does not receive input from client
+                    serverService.threadUpdate(NetworkConstants.STATUS_SERVER_WAIT, 0);
 
                     // Set a timeout for the serverSocket to block
                     serverSocket.setSoTimeout(SocketOptions.SO_TIMEOUT);
@@ -125,7 +127,8 @@ public class Server
         public ClientHandler(Socket socket)
         {
             mySocket = socket;
-            serverService.threadUpdate(NetworkConstants.STATUS_SERVER_START);
+            serverService.threadUpdate(NetworkConstants.STATUS_SERVER_START,
+                                       clients.indexOf(this) + 1);
         }
 
         public void run()
@@ -153,7 +156,7 @@ public class Server
             catch (IOException e)
             {
                 e.printStackTrace();
-                serverService.threadError(NetworkConstants.ERROR_WRITE);
+                serverService.threadError(NetworkConstants.ERROR_WRITE, clients.indexOf(this) + 1);
             }
         }
 
@@ -173,7 +176,8 @@ public class Server
             }
             catch (IOException e)
             {
-                serverService.threadError(NetworkConstants.ERROR_DISCONNECT_SERVER);
+                serverService.threadError(NetworkConstants.ERROR_DISCONNECT_SERVER,
+                                          clients.indexOf(this) + 1);
                 e.printStackTrace();
                 running = false;
                 reconnectSocket();
@@ -196,13 +200,15 @@ public class Server
                 try
                 {
                     Logger.logI("Waiting on accept");
-                    serverService.threadUpdate(NetworkConstants.STATUS_SERVER_WAIT);
+                    serverService.threadUpdate(NetworkConstants.STATUS_SERVER_WAIT,
+                                               clients.indexOf(this) + 1);
 
                     // Disable timeout
                     serverSocket.setSoTimeout(0);
                     mySocket = serverSocket.accept();
                     running = true;
-                    serverService.threadUpdate(NetworkConstants.STATUS_SERVER_START);
+                    serverService.threadUpdate(NetworkConstants.STATUS_SERVER_START,
+                                               clients.indexOf(this) + 1);
                 }
                 catch (SocketException e)
                 {

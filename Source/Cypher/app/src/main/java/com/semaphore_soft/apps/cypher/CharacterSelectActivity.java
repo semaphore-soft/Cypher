@@ -23,6 +23,7 @@ import com.semaphore_soft.apps.cypher.ui.UIListener;
 import com.semaphore_soft.apps.cypher.utils.Logger;
 
 import java.util.HashMap;
+import java.util.Set;
 
 /**
  * Created by Scorple on 1/9/2017.
@@ -227,15 +228,37 @@ public class CharacterSelectActivity extends AppCompatActivity implements Respon
     }
 
     @Override
-    public void handleStatus(String msg)
+    public void handleStatus(String msg, int readFrom)
     {
         Toast.makeText(this, "Status: " + msg, Toast.LENGTH_SHORT).show();
+        if (msg.equals(NetworkConstants.STATUS_SERVER_START))
+        {
+            Set<Integer> set = characterSelections.keySet();
+            for (Integer key : set)
+            {
+                // Don't lock the clients last selection
+                if (key != readFrom)
+                {
+                    String str = NetworkConstants.PF_LOCK + characterSelections.get(key);
+                    // Clients do not include host and are 0-indexed
+                    serverService.writeToClient(str, readFrom - 1);
+                }
+            }
+        }
     }
 
     @Override
-    public void handleError(String msg)
+    public void handleError(String msg, int readFrom)
     {
         Toast.makeText(this, "Error: " + msg, Toast.LENGTH_SHORT).show();
+        if (msg.equals(NetworkConstants.ERROR_DISCONNECT_CLIENT))
+        {
+            // Reset all selections in case they changed while disconnected
+            uiCharacterSelect.setButtonEnabled("knight", true);
+            uiCharacterSelect.setButtonEnabled("soldier", true);
+            uiCharacterSelect.setButtonEnabled("ranger", true);
+            uiCharacterSelect.setButtonEnabled("wizard", true);
+        }
     }
 
     private void postSelection(String selection)

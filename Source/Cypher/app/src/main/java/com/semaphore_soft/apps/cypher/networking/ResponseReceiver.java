@@ -34,24 +34,28 @@ public class ResponseReceiver extends BroadcastReceiver
         else if (NetworkConstants.BROADCAST_STATUS.equals(action))
         {
             // Thread status updates
-            String msg = intent.getStringExtra(NetworkConstants.MESSAGE);
-            Logger.logI(msg);
-            listener.handleStatus(msg);
+            String msg  = intent.getStringExtra(NetworkConstants.MESSAGE);
+            int    from = intent.getIntExtra(NetworkConstants.INDEX, -1);
+            Logger.logI(msg + " - " + from);
+            listener.handleStatus(msg, from);
         }
         else if (NetworkConstants.BROADCAST_ERROR.equals(action))
         {
             // Thread errors
-            String msg = intent.getStringExtra(NetworkConstants.MESSAGE);
-            Logger.logI(msg);
-            listener.handleError(msg);
+            String msg  = intent.getStringExtra(NetworkConstants.MESSAGE);
+            int    from = intent.getIntExtra(NetworkConstants.INDEX, -1);
+            Logger.logI(msg + " - " + from);
+            listener.handleError(msg, from);
         }
     }
 
     public interface Receiver
     {
         void handleRead(String msg, int readFrom);
-        void handleStatus(String msg);
-        void handleError(String msg);
+
+        void handleStatus(String msg, int readFrom);
+
+        void handleError(String msg, int readFrom);
     }
 
     public void setListener(Receiver r)

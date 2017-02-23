@@ -148,7 +148,7 @@ public class MainActivity extends AppCompatActivity implements GetNameDialogFrag
     }
 
     @Override
-    public void handleStatus(String msg)
+    public void handleStatus(String msg, int readFrom)
     {
         if (msg.equals(NetworkConstants.STATUS_CLIENT_CONNECT) ||
             msg.equals(NetworkConstants.STATUS_SERVER_WAIT))
@@ -166,7 +166,7 @@ public class MainActivity extends AppCompatActivity implements GetNameDialogFrag
     }
 
     @Override
-    public void handleError(String msg)
+    public void handleError(String msg, int readFrom)
     {
         Toast.makeText(this, msg, Toast.LENGTH_SHORT).show();
         if (msg.equals(NetworkConstants.ERROR_CLIENT_SOCKET))

@@ -73,20 +73,21 @@ public class ServerService extends Service
         LocalBroadcastManager.getInstance(this).sendBroadcast(localIntent);
     }
 
-    public void threadUpdate(String msg)
+    public void threadUpdate(String msg, int readFrom)
     {
         Logger.logD("Sending thread update");
         Intent localIntent = new Intent(NetworkConstants.BROADCAST_STATUS)
-            .putExtra(NetworkConstants.MESSAGE, msg);
+            .putExtra(NetworkConstants.MESSAGE, msg)
+            .putExtra(NetworkConstants.INDEX, readFrom);
         LocalBroadcastManager.getInstance(this).sendBroadcast(localIntent);
     }
 
-    public void threadError(String msg)
+    public void threadError(String msg, int readFrom)
     {
         Logger.logD("Sending thread error");
-        Intent localIntent = new Intent(NetworkConstants.BROADCAST_ERROR).putExtra(
-            NetworkConstants.MESSAGE,
-            msg);
+        Intent localIntent = new Intent(NetworkConstants.BROADCAST_ERROR)
+            .putExtra(NetworkConstants.MESSAGE, msg)
+            .putExtra(NetworkConstants.INDEX, readFrom);
         LocalBroadcastManager.getInstance(this).sendBroadcast(localIntent);
     }
 }

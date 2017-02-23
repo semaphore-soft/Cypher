@@ -287,13 +287,13 @@ public class PortalActivity extends ARActivity implements PortalRenderer.NewMark
     }
 
     @Override
-    public void handleStatus(final String msg)
+    public void handleStatus(final String msg, int readFrom)
     {
         Toast.makeText(this, "Status: " + msg, Toast.LENGTH_SHORT).show();
     }
 
     @Override
-    public void handleError(final String msg)
+    public void handleError(final String msg, int readFrom)
     {
         Toast.makeText(this, "Error: " + msg, Toast.LENGTH_SHORT).show();
     }
