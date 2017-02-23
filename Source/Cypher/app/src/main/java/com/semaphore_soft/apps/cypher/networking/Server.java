@@ -1,6 +1,6 @@
 package com.semaphore_soft.apps.cypher.networking;
 
-import android.util.Log;
+import com.semaphore_soft.apps.cypher.utils.Logger;
 
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
@@ -20,7 +20,6 @@ import java.util.ArrayList;
 public class Server
 {
     private static ArrayList<ClientHandler> clients      = new ArrayList<>();
-    private static ArrayList<String>        messageLog   = new ArrayList<>();
     private static Boolean                  accepting    = false;
     private static ServerSocket             serverSocket = null;
     private        int                      maxPlayers   = 4;
@@ -45,60 +44,24 @@ public class Server
 
     public void writeAll(String str)
     {
-        Log.d("Server", "Attempting to write to all clients");
+        Logger.logD("Attempting to write to all clients");
         for (ClientHandler server : clients)
         {
             server.write(str);
-        }
-        if (messageLog.isEmpty())
-        {
-            messageLog.add(str);
-        }
-        // Don't add repeated messages or heartbeat messages
-        else if (!messageLog.get(messageLog.size() - 1).equals(str) &&
-                 !str.equals(NetworkConstants.GAME_HEARTBEAT))
-        {
-            messageLog.add(str);
         }
     }
 
     public void writeToClient(String str, int index)
     {
-        Log.d("Server", "Attempting to write to client " + String.valueOf(index));
+        Logger.logD("Attempting to write to client " + String.valueOf(index));
         // Service will default to -1 if no index is given
-        if (!clients.isEmpty() && index >= 0 && index <= clients.size())
+        if (!clients.isEmpty() && index >= 0 && index < clients.size())
         {
             clients.get(index).write(str);
         }
         else
         {
-            Log.d("Server", "Could not write to client");
-        }
-    }
-
-    public void reconnectClient()
-    {
-        // Assume only one client needs to reconnect at a time
-        if (serverSocket != null)
-        {
-            try
-            {
-                Log.i("ClientHandler", "Waiting on accept");
-                serverService.threadUpdate(NetworkConstants.STATUS_SERVER_WAIT);
-
-                Socket        mySocket     = serverSocket.accept();
-                ClientHandler serverThread = new ClientHandler(mySocket, true);
-                clients.add(serverThread);
-                serverThread.start();
-            }
-            catch (SocketException e)
-            {
-                Log.i("AcceptorThread", "Socket closed");
-            }
-            catch (IOException e)
-            {
-                e.printStackTrace();
-            }
+            Logger.logD("Could not write to client");
         }
     }
 
@@ -116,8 +79,9 @@ public class Server
             catch (IOException e)
             {
                 e.printStackTrace();
-                Log.e("ClientHandler", "Failed to start server");
-                serverService.threadError(NetworkConstants.ERROR_SERVER_START);
+                Logger.logE("Failed to start server");
+                // Pass 0 since this does not receive input from client
+                serverService.threadError(NetworkConstants.ERROR_SERVER_START, 0);
             }
         }
 
@@ -129,8 +93,9 @@ public class Server
             {
                 try
                 {
-                    Log.i("ClientHandler", "Waiting on accept");
-                    serverService.threadUpdate(NetworkConstants.STATUS_SERVER_WAIT);
+                    Logger.logI("Waiting on accept");
+                    // Pass 0 since this does not receive input from client
+                    serverService.threadUpdate(NetworkConstants.STATUS_SERVER_WAIT, 0);
 
                     // Set a timeout for the serverSocket to block
                     serverSocket.setSoTimeout(SocketOptions.SO_TIMEOUT);
@@ -142,7 +107,7 @@ public class Server
                 }
                 catch (SocketException e)
                 {
-                    Log.i("AcceptorThread", "Socket closed");
+                    Logger.logI("Socket closed");
                 }
                 catch (IOException e)
                 {
@@ -158,29 +123,16 @@ public class Server
         Socket mySocket;
 
         private boolean running = true;
-        private boolean reconnect;
 
         public ClientHandler(Socket socket)
         {
-            this(socket, false);
-        }
-
-        public ClientHandler(Socket socket, boolean reconnecting)
-        {
             mySocket = socket;
-            reconnect = reconnecting;
-            serverService.threadUpdate(NetworkConstants.STATUS_SERVER_START);
+            serverService.threadUpdate(NetworkConstants.STATUS_SERVER_START,
+                                       clients.indexOf(this) + 1);
         }
 
         public void run()
         {
-            if (reconnect)
-            {
-                for (String msg : messageLog)
-                {
-                    write(msg);
-                }
-            }
             while (running)
             {
                 String msg = read();
@@ -199,12 +151,12 @@ public class Server
                 out.writeUTF(str);
                 // Flush after write or inputStream will hang on read
                 out.flush();
-                Log.d("ClientHandler", "sent message: " + str);
+                Logger.logD("sent message: " + str);
             }
             catch (IOException e)
             {
                 e.printStackTrace();
-                serverService.threadError(NetworkConstants.ERROR_WRITE);
+                serverService.threadError(NetworkConstants.ERROR_WRITE, clients.indexOf(this) + 1);
             }
         }
 
@@ -224,24 +176,49 @@ public class Server
             }
             catch (IOException e)
             {
-                // Remove bad socket
-                clients.remove(this);
-                if (e instanceof SocketException)
-                {
-                    serverService.threadError(NetworkConstants.ERROR_DISCONNECT_SERVER);
-                    Log.d("ClientHandler", "SocketException");
-                }
+                serverService.threadError(NetworkConstants.ERROR_DISCONNECT_SERVER,
+                                          clients.indexOf(this) + 1);
                 e.printStackTrace();
                 running = false;
+                reconnectSocket();
             }
             return null;
         }
 
         private void processMessage(String msg)
         {
-            Log.i("ClientHandler", msg);
-            Log.d("ClientHandler", String.valueOf(clients.indexOf(this)));
-            serverService.threadRead(msg, clients.indexOf(this));
+            Logger.logI(msg);
+            Logger.logD(String.valueOf(clients.indexOf(this) + 1));
+            serverService.threadRead(msg, clients.indexOf(this) + 1);
+        }
+
+        private void reconnectSocket()
+        {
+            // Assume only one client needs to reconnect at a time
+            if (serverSocket != null)
+            {
+                try
+                {
+                    Logger.logI("Waiting on accept");
+                    serverService.threadUpdate(NetworkConstants.STATUS_SERVER_WAIT,
+                                               clients.indexOf(this) + 1);
+
+                    // Disable timeout
+                    serverSocket.setSoTimeout(0);
+                    mySocket = serverSocket.accept();
+                    running = true;
+                    serverService.threadUpdate(NetworkConstants.STATUS_SERVER_START,
+                                               clients.indexOf(this) + 1);
+                }
+                catch (SocketException e)
+                {
+                    Logger.logI("Socket closed");
+                }
+                catch (IOException e)
+                {
+                    e.printStackTrace();
+                }
+            }
         }
     }
 }

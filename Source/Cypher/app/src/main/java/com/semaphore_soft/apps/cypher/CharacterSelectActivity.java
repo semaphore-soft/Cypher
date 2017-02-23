@@ -11,7 +11,6 @@ import android.os.IBinder;
 import android.support.v4.content.LocalBroadcastManager;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
-import android.util.Log;
 import android.widget.FrameLayout;
 import android.widget.Toast;
 
@@ -21,8 +20,10 @@ import com.semaphore_soft.apps.cypher.networking.ResponseReceiver;
 import com.semaphore_soft.apps.cypher.networking.ServerService;
 import com.semaphore_soft.apps.cypher.ui.UICharacterSelect;
 import com.semaphore_soft.apps.cypher.ui.UIListener;
+import com.semaphore_soft.apps.cypher.utils.Logger;
 
 import java.util.HashMap;
+import java.util.Set;
 
 /**
  * Created by Scorple on 1/9/2017.
@@ -179,10 +180,16 @@ public class CharacterSelectActivity extends AppCompatActivity implements Respon
             }
             // Include host when displaying connected players
             uiCharacterSelect.setStatus(playersReady + "/" + (numClients + 1) + " ready");
+            serverService.writeAll(
+                NetworkConstants.PF_READY + playersReady + ":" + (numClients + 1));
         }
         else if (msg.startsWith(NetworkConstants.PF_LOCK))
         {
-            uiCharacterSelect.setButtonEnabled(msg.substring(5), false);
+            String sel = msg.substring(5);
+            if (!sel.equals(selection))
+            {
+                uiCharacterSelect.setButtonEnabled(sel, false);
+            }
         }
         else if (msg.startsWith(NetworkConstants.PF_FREE))
         {
@@ -206,6 +213,14 @@ public class CharacterSelectActivity extends AppCompatActivity implements Respon
             alert.show();
             uiCharacterSelect.clearSelection();
         }
+        else if (msg.startsWith(NetworkConstants.PF_READY))
+        {
+            if (ready)
+            {
+                String[] args = msg.split(":");
+                uiCharacterSelect.setStatus(args[1] + "/" + args[2] + " ready");
+            }
+        }
         else if (msg.equals(NetworkConstants.GAME_AR_START))
         {
             startAR();
@@ -213,22 +228,36 @@ public class CharacterSelectActivity extends AppCompatActivity implements Respon
     }
 
     @Override
-    public void handleStatus(String msg)
+    public void handleStatus(String msg, int readFrom)
     {
         Toast.makeText(this, "Status: " + msg, Toast.LENGTH_SHORT).show();
+        if (msg.equals(NetworkConstants.STATUS_SERVER_START))
+        {
+            Set<Integer> set = characterSelections.keySet();
+            for (Integer key : set)
+            {
+                // Don't lock the clients last selection
+                if (key != readFrom)
+                {
+                    String str = NetworkConstants.PF_LOCK + characterSelections.get(key);
+                    // Clients do not include host and are 0-indexed
+                    serverService.writeToClient(str, readFrom - 1);
+                }
+            }
+        }
     }
 
     @Override
-    public void handleError(String msg)
+    public void handleError(String msg, int readFrom)
     {
         Toast.makeText(this, "Error: " + msg, Toast.LENGTH_SHORT).show();
         if (msg.equals(NetworkConstants.ERROR_DISCONNECT_CLIENT))
         {
-            clientService.reconnect();
-        }
-        else if (msg.equals(NetworkConstants.ERROR_DISCONNECT_SERVER))
-        {
-            serverService.reconnect();
+            // Reset all selections in case they changed while disconnected
+            uiCharacterSelect.setButtonEnabled("knight", true);
+            uiCharacterSelect.setButtonEnabled("soldier", true);
+            uiCharacterSelect.setButtonEnabled("ranger", true);
+            uiCharacterSelect.setButtonEnabled("wizard", true);
         }
     }
 
@@ -237,12 +266,11 @@ public class CharacterSelectActivity extends AppCompatActivity implements Respon
         CharacterSelectActivity.selection = selection;
         if (host)
         {
-            updateSelection(selection, -1);
+            updateSelection(selection, 0);
         }
         else
         {
             clientService.write(selection);
-            uiCharacterSelect.setStatus("Waiting for Host...");
         }
         ready = true;
     }
@@ -255,7 +283,9 @@ public class CharacterSelectActivity extends AppCompatActivity implements Respon
             --playersReady;
             uiCharacterSelect.setStatus(
                 playersReady + "/" + (numClients + 1) + " ready");
-            removePlayer(-1);
+            serverService.writeAll(
+                NetworkConstants.PF_READY + playersReady + ":" + (numClients + 1));
+            removePlayer(0);
         }
         else
         {
@@ -273,8 +303,8 @@ public class CharacterSelectActivity extends AppCompatActivity implements Respon
     {
         if (characterSelections.containsValue(selection))
         {
-            Log.i("CharSelect", "Character taken");
-            serverService.writeToClient(NetworkConstants.GAME_TAKEN, player);
+            Logger.logI("Character taken");
+            serverService.writeToClient(NetworkConstants.GAME_TAKEN, player - 1);
             return;
         }
         if (characterSelections.containsKey(player))
@@ -288,7 +318,10 @@ public class CharacterSelectActivity extends AppCompatActivity implements Respon
         }
         characterSelections.put(player, selection);
         serverService.writeAll(NetworkConstants.PF_LOCK + selection);
-        uiCharacterSelect.setButtonEnabled(selection, false);
+        if (!selection.equals(CharacterSelectActivity.selection))
+        {
+            uiCharacterSelect.setButtonEnabled(selection, false);
+        }
         // Since default value is 0, allow host to start game
         // even if numClients == 0 and clients are connected
         if (playersReady >= numClients)
@@ -297,6 +330,7 @@ public class CharacterSelectActivity extends AppCompatActivity implements Respon
         }
         // Include host when displaying connected players
         uiCharacterSelect.setStatus(playersReady + "/" + (numClients + 1) + " ready");
+        serverService.writeAll(NetworkConstants.PF_READY + playersReady + ":" + (numClients + 1));
     }
 
     private void removePlayer(int player)

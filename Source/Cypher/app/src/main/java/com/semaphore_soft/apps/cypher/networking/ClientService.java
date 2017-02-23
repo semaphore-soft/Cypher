@@ -5,7 +5,8 @@ import android.content.Intent;
 import android.os.Binder;
 import android.os.IBinder;
 import android.support.v4.content.LocalBroadcastManager;
-import android.util.Log;
+
+import com.semaphore_soft.apps.cypher.utils.Logger;
 
 import java.net.InetAddress;
 import java.net.UnknownHostException;
@@ -18,8 +19,7 @@ import java.net.UnknownHostException;
 public class ClientService extends Service
 {
     private Client client;
-
-    private static final String TAG = "ClientService";
+    private Client.ClientThread clientThread = null;
 
     public ClientService()
     {
@@ -52,15 +52,15 @@ public class ClientService extends Service
 
     public void startClient(String addr)
     {
-        Log.d(TAG, "Staring client thread");
+        Logger.logD("Staring client thread");
         try
         {
-            client.startClient(InetAddress.getByName(addr), this, false);
+            clientThread = client.startClient(InetAddress.getByName(addr), this);
         }
         catch (UnknownHostException e)
         {
             e.printStackTrace();
-            Log.e(TAG, "Could not resolve host");
+            Logger.logE("Could not resolve host");
             Intent localIntent = new Intent(NetworkConstants.BROADCAST_ERROR).putExtra(
                 NetworkConstants.MESSAGE,
                 NetworkConstants.ERROR_CLIENT_SOCKET);
@@ -70,35 +70,28 @@ public class ClientService extends Service
 
     public void write(String msg)
     {
-        Client.ClientThread clientThread = client.getClientThread();
         if (clientThread != null)
         {
-            Log.d(TAG, "Writing to server");
+            Logger.logD("Writing to server");
             clientThread.write(msg);
         }
         else
         {
-            Log.d(TAG, "clientThread null");
+            Logger.logD("clientThread null");
         }
     }
 
-    public void reconnect()
+    public String getHostIP()
     {
-        Client.ClientThread clientThread = client.getClientThread();
-        if (clientThread != null)
-        {
-            Log.d(TAG, "reconnecting...");
-            clientThread.reconnectSocket();
-        }
-        else
-        {
-            Log.d(TAG, "clientThread null");
-        }
+        // Format ip address from client thread
+        String   str = clientThread.getSocketAddress();
+        String[] ip  = str.split(":");
+        return ip[0].substring(1);
     }
 
     public void threadRead(String msg)
     {
-        Log.d(TAG, "Sending thread read");
+        Logger.logD("Sending thread read");
         Intent localIntent = new Intent(NetworkConstants.BROADCAST_MESSAGE)
             .putExtra(NetworkConstants.MESSAGE, msg);
         LocalBroadcastManager.getInstance(this).sendBroadcast(localIntent);
@@ -106,7 +99,7 @@ public class ClientService extends Service
 
     public void threadUpdate(String msg)
     {
-        Log.d(TAG, "Sending thread update");
+        Logger.logD("Sending thread update");
         Intent localIntent = new Intent(NetworkConstants.BROADCAST_STATUS)
             .putExtra(NetworkConstants.MESSAGE, msg);
         LocalBroadcastManager.getInstance(this).sendBroadcast(localIntent);
@@ -114,7 +107,7 @@ public class ClientService extends Service
 
     public void threadError(String msg)
     {
-        Log.d(TAG, "Sending thread error");
+        Logger.logD("Sending thread error");
         Intent localIntent = new Intent(NetworkConstants.BROADCAST_ERROR).putExtra(
             NetworkConstants.MESSAGE, msg);
         LocalBroadcastManager.getInstance(this).sendBroadcast(localIntent);

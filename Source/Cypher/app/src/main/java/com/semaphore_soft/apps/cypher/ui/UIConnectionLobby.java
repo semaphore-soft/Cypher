@@ -81,9 +81,6 @@ public class UIConnectionLobby extends UIBase
         else
         {
             btnStart.setEnabled(false);
-
-            // Hide empty ipAddress field
-            ipAddress.setVisibility(View.GONE);
         }
     }
 

@@ -38,6 +38,7 @@ public class NetworkConstants
     public static final String PF_PLAYER      = "PLAYER:";
     public static final String PF_LOCK        = "LOCK:";
     public static final String PF_FREE        = "FREE:";
+    public static final String PF_READY       = "READY:";
 
     // Constants for status codes
     public static final String STATUS_SERVER_START   = "Server thread started";
@@ -52,8 +53,8 @@ public class NetworkConstants
     public static final String ERROR_DISCONNECT_SERVER = "Client had been disconnected";
 
     // Port should be between 49152-65535
-    public static final int  SERVER_PORT     = 58008;
-    public static final long HEARTBEAT_DELAY = 5000;
+    public static final int SERVER_PORT     = 58008;
+    public static final int HEARTBEAT_DELAY = 5000;
 
 
     public static IntentFilter getFilter()
