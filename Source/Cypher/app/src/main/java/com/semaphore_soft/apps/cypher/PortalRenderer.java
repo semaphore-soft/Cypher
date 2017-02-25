@@ -549,20 +549,45 @@ class PortalRenderer extends ARRendererGLES20
                     {
                         arRoom.addEnemy(id, models.get(name));
                     }
-                    switch (actor.getState())
+                    if (actor.getHealthCurrent() <= 0)
                     {
-                        case NEUTRAL:
-                            //break;
-                        case ATTACK:
-                            //arRoom.setResidentPose(id, "attack");
-                            //break;
-                        case SPECIAL:
-                            //arRoom.setResidentPose(id, "special");
-                            arRoom.setResidentPose(id, "default");
-                            break;
-                        case DEFEND:
-                            arRoom.setResidentPose(id, "defend");
-                            break;
+                        arRoom.setResidentPose(id, "wounded");
+                    }
+                    else
+                    {
+                        switch (actor.getState())
+                        {
+                            case NEUTRAL:
+                            case ATTACK:
+                            case SPECIAL:
+                                if (GameMaster.getActorIsPlayer(id))
+                                {
+                                    if (GameMaster.getEnemiesInRoom(id) > 0)
+                                    {
+                                        arRoom.setResidentPose(id, "ready");
+                                    }
+                                    else
+                                    {
+                                        arRoom.setResidentPose(id, "idle");
+                                    }
+                                }
+                                else
+                                {
+                                    if (GameMaster.getPlayersInRoom(room.getId()) > 0)
+                                    {
+                                        arRoom.setResidentPose(id, "ready");
+                                    }
+                                    else
+                                    {
+                                        arRoom.setResidentPose(id, "idle");
+                                    }
+
+                                }
+                                break;
+                            case DEFEND:
+                                arRoom.setResidentPose(id, "defend");
+                                break;
+                        }
                     }
                 }
                 else
@@ -648,7 +673,7 @@ class PortalRenderer extends ARRendererGLES20
                             }
                             break;
                         case "help":
-                            arRoom.setResidentPose(targetId, "defend");
+                            arRoom.setResidentPose(targetId, "heroic");
                             break;
                     }
                 }
@@ -681,7 +706,29 @@ class PortalRenderer extends ARRendererGLES20
         }
         else
         {
-            arRoom.setResidentPose(sourceId, "default");
+            if (GameMaster.getActorIsPlayer(sourceId))
+            {
+                if (GameMaster.getEnemiesInRoom(roomId) > 0)
+                {
+                    arRoom.setResidentPose(sourceId, "ready");
+                }
+                else
+                {
+                    arRoom.setResidentPose(sourceId, "idle");
+                }
+            }
+            else
+            {
+                if (GameMaster.getPlayersInRoom(roomId) > 0)
+                {
+                    arRoom.setResidentPose(sourceId, "ready");
+                }
+                else
+                {
+                    arRoom.setResidentPose(sourceId, "idle");
+                }
+
+            }
         }
 
         if (actors.containsKey(targetId))
@@ -692,7 +739,29 @@ class PortalRenderer extends ARRendererGLES20
             }
             else
             {
-                arRoom.setResidentPose(sourceId, "default");
+                if (GameMaster.getActorIsPlayer(sourceId))
+                {
+                    if (GameMaster.getEnemiesInRoom(roomId) > 0)
+                    {
+                        arRoom.setResidentPose(sourceId, "ready");
+                    }
+                    else
+                    {
+                        arRoom.setResidentPose(sourceId, "idle");
+                    }
+                }
+                else
+                {
+                    if (GameMaster.getPlayersInRoom(roomId) > 0)
+                    {
+                        arRoom.setResidentPose(sourceId, "ready");
+                    }
+                    else
+                    {
+                        arRoom.setResidentPose(sourceId, "idle");
+                    }
+
+                }
             }
         }
 

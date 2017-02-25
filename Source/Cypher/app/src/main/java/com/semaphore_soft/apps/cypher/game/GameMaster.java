@@ -137,6 +137,22 @@ public class GameMaster
         return res;
     }
 
+    public static int getEnemiesInRoom(final int roomId)
+    {
+        int  res  = 0;
+        Room room = model.getRooms().get(roomId);
+
+        for (int id : room.getResidentActors())
+        {
+            if (!model.getActors().get(id).isPlayer())
+            {
+                ++res;
+            }
+        }
+
+        return res;
+    }
+
     public static Actor getActor(final int id)
     {
         return model.getActors().get(id);

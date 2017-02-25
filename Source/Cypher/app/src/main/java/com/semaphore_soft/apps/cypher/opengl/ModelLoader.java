@@ -94,9 +94,19 @@ public class ModelLoader
                                 poseName = "default";
                             }
 
-                            Logger.logI("found pose: " + poseName, 3);
+                            Logger.logI("found pose <" + poseName + ">", 3);
 
-                            poseLib.put(poseName, loadModel(context, filename, size, texture));
+                            ARModelGLES20 model = loadModel(context, filename, size, texture);
+
+                            if (model != null)
+                            {
+                                poseLib.put(poseName, model);
+                                Logger.logI("added pose <" + filename + ">", 3);
+                            }
+                            else
+                            {
+                                Logger.logI("failed to load pose <" + filename + ">", 3);
+                            }
                         }
                     }
 
@@ -248,24 +258,34 @@ public class ModelLoader
                 normalsInVertexOrder.add(0.0f);
             }
 
-            if (texCoordinates.size() > 0)
+            try
             {
-                for (short index : texCoordinatesByVertexIndex.keySet())
+                if (texCoordinates.size() > 0)
                 {
-                    for (int i = 0; i < texCoordinatesByVertexIndex.get(index).length; ++i)
+                    for (short index : texCoordinatesByVertexIndex.keySet())
                     {
-                        texCoordinatesInVertexOrder.set(index * TEX_COORDINATE_SIZE + i,
-                                                        texCoordinatesByVertexIndex.get(index)[i]);
+                        for (int i = 0; i < texCoordinatesByVertexIndex.get(index).length; ++i)
+                        {
+                            texCoordinatesInVertexOrder.set(index * TEX_COORDINATE_SIZE + i,
+                                                            texCoordinatesByVertexIndex.get(index)[i]);
+                        }
+                    }
+                }
+                for (short index : normalsByVertexIndex.keySet())
+                {
+                    for (int i = 0; i < normalsByVertexIndex.get(index).length; ++i)
+                    {
+                        normalsInVertexOrder.set(index * NORMAL_SIZE + i,
+                                                 normalsByVertexIndex.get(index)[i]);
                     }
                 }
             }
-            for (short index : normalsByVertexIndex.keySet())
+            catch (IndexOutOfBoundsException e)
             {
-                for (int i = 0; i < normalsByVertexIndex.get(index).length; ++i)
-                {
-                    normalsInVertexOrder.set(index * NORMAL_SIZE + i,
-                                             normalsByVertexIndex.get(index)[i]);
-                }
+                Logger.logD(
+                    "encountered bad index for model <" + filename + ">, check model format");
+                e.printStackTrace();
+                return null;
             }
 
             Logger.logI(
