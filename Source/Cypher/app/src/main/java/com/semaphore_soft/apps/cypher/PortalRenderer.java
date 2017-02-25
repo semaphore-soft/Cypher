@@ -127,6 +127,19 @@ class PortalRenderer extends ARRendererGLES20
         waypoint.setShaderProgram(waypointShaderProgram);
         models.put("waypoint", waypoint);
 
+        ARDrawableGLES20 overlay =
+            ModelLoader.load(context, "overlay", 40.0f);
+        DynamicShaderProgram overlayShaderProgram =
+            new DynamicShaderProgram(ShaderLoader.createShader(context,
+                                                               "shaders/vertexShaderTextured.glsl",
+                                                               GLES20.GL_VERTEX_SHADER),
+                                     ShaderLoader.createShader(context,
+                                                               "shaders/fragmentShaderTextured.glsl",
+                                                               GLES20.GL_FRAGMENT_SHADER),
+                                     new String[]{"a_Position", "a_Color", "a_Normal", "a_TexCoordinate"});
+        overlay.setShaderProgram(overlayShaderProgram);
+        models.put("overlay", overlay);
+
         ArrayList<String> actorNames = GameStatLoader.getList(context, "actors");
         if (actorNames != null)
         {
