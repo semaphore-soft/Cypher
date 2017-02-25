@@ -292,11 +292,8 @@ public class ModelLoader
                 arModel.makeTexCoordinateBuffer(texCoordinatesInVertexOrder);
             }
             arModel.makeVertexIndexBuffer(vertexIndices);
-            if (texture != null)
-            {
-                arModel.setTextureHandle(TextureLoader.loadTexture(context,
-                                                                   "textures/" + texture + ".png"));
-            }
+            arModel.setTextureHandle(TextureLoader.loadTexture(context,
+                                                               "textures/" + texture + ".png"));
 
             Logger.logI(
                 "finished making openGL object in " + ((float) openGLTimer.getTime()) / 1000f +

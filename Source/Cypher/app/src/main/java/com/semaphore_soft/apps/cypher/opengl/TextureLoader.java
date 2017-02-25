@@ -66,16 +66,35 @@ public class TextureLoader
 
             Bitmap bitmap;
 
-            try
+            if (filename != null)
             {
-                bitmap = BitmapFactory.decodeStream(context.getAssets().open(filename));
+                try
+                {
+                    bitmap = BitmapFactory.decodeStream(context.getAssets().open(filename));
+                }
+                catch (IOException e)
+                {
+                    try
+                    {
+                        bitmap =
+                            BitmapFactory.decodeStream(context.getAssets()
+                                                              .open("textures/error.png"));
+                    }
+                    catch (IOException e1)
+                    {
+                        e1.printStackTrace();
+
+                        return -1;
+                    }
+                }
             }
-            catch (IOException e)
+            else
             {
                 try
                 {
                     bitmap =
-                        BitmapFactory.decodeStream(context.getAssets().open("textures/error.png"));
+                        BitmapFactory.decodeStream(context.getAssets()
+                                                          .open("textures/error.png"));
                 }
                 catch (IOException e1)
                 {
