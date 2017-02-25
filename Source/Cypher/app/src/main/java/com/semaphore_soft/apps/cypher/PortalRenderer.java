@@ -684,7 +684,7 @@ class PortalRenderer extends ARRendererGLES20
             arRoom.setResidentPose(sourceId, "default");
         }
 
-        if (actors.contains(targetId))
+        if (actors.containsKey(targetId))
         {
             if (actors.get(sourceId).getState() == Actor.E_STATE.DEFEND)
             {
