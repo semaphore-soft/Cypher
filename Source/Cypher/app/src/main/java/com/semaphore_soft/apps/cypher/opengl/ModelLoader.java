@@ -37,6 +37,11 @@ public class ModelLoader
         return load(context, name, subFolder, 40.0f, null);
     }
 
+    public static ARDrawableGLES20 load(Context context, String name, String subFolder, float size)
+    {
+        return load(context, name, subFolder, size, null);
+    }
+
     public static ARDrawableGLES20 load(Context context, String name, float size, String texture)
     {
         return load(context, name, null, size, texture);
@@ -96,7 +101,16 @@ public class ModelLoader
 
                             Logger.logI("found pose <" + poseName + ">", 3);
 
-                            ARModelGLES20 model = loadModel(context, filename, size, texture);
+                            ARModelGLES20 model;
+
+                            if (texture == null)
+                            {
+                                model = loadModel(context, filename, size, name);
+                            }
+                            else
+                            {
+                                model = loadModel(context, filename, size, texture);
+                            }
 
                             if (model != null)
                             {
@@ -119,7 +133,14 @@ public class ModelLoader
                         filename += ".obj";
                     }
 
-                    return loadModel(context, filename, size, texture);
+                    if (texture == null)
+                    {
+                        return loadModel(context, filename, size, name);
+                    }
+                    else
+                    {
+                        return loadModel(context, filename, size, texture);
+                    }
                 }
             }
             catch (IOException e)

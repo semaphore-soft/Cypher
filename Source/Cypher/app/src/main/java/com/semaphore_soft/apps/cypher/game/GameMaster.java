@@ -98,6 +98,19 @@ public class GameMaster
         return model.getRooms().get(id).getMarker();
     }
 
+    public static int getRoomIdByMarkerId(final int markerId)
+    {
+        for (Room room : model.getRooms().values())
+        {
+            if (room.getMarker() == markerId)
+            {
+                return room.getId();
+            }
+        }
+
+        return -1;
+    }
+
     public static ArrayList<Integer> getPlacedRoomMarkerIds()
     {
         ArrayList<Integer> placedRoomMarkers = new ArrayList<>();
