@@ -449,14 +449,14 @@ public class GameMaster
         Room                              room    = model.getRooms().get(actor.getRoom());
         ConcurrentHashMap<Integer, Actor> targets = new ConcurrentHashMap<>();
 
-        System.out.println("looking for player targets in room: " + actor.getRoom());
+        Logger.logI("looking for player targets in room: " + actor.getRoom(), 1);
 
         for (int targetId : room.getResidentActors())
         {
             Actor target = model.getActors().get(targetId);
             if (target.isPlayer())
             {
-                System.out.println("found valid target: " + target.getId());
+                Logger.logI("found valid target: " + target.getId(), 1);
                 targets.put(targetId, target);
             }
         }
@@ -470,14 +470,14 @@ public class GameMaster
         Room                              room    = model.getRooms().get(actor.getRoom());
         ConcurrentHashMap<Integer, Actor> targets = new ConcurrentHashMap<>();
 
-        System.out.println("looking for non-player targets in room: " + actor.getRoom());
+        Logger.logI("looking for non-player targets in room: " + actor.getRoom(), 1);
 
         for (int targetId : room.getResidentActors())
         {
             Actor target = model.getActors().get(targetId);
             if (!target.isPlayer())
             {
-                System.out.println("found valid target: " + target.getId());
+                Logger.logI("found valid target: " + target.getId(), 1);
                 targets.put(targetId, target);
             }
         }
@@ -537,11 +537,11 @@ public class GameMaster
 
     public static ConcurrentHashMap<Integer, Special> getSpecials(final int actorId)
     {
-        System.out.println("looking for specials for actor: " + actorId);
+        Logger.logI("looking for specials for actor: " + actorId, 1);
         Actor actor = model.getActors().get(actorId);
         for (int id : actor.getSpecials().keySet())
         {
-            System.out.println("found special: " + actor.getSpecials().get(id).getName());
+            Logger.logI("found special: " + actor.getSpecials().get(id).getName(), 1);
         }
         return actor.getSpecials();
     }

@@ -2,10 +2,14 @@ package com.semaphore_soft.apps.cypher.opengl;
 
 import android.content.Context;
 
+import com.semaphore_soft.apps.cypher.utils.Logger;
+import com.semaphore_soft.apps.cypher.utils.Timer;
+
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
@@ -63,13 +67,13 @@ public class ModelLoader
                 String[] poseFiles = context.getAssets().list(filename);
                 if (poseFiles != null && poseFiles.length > 0)
                 {
-                    System.out.println("found " + poseFiles.length + " poses");
+                    Logger.logI("found " + poseFiles.length + " poses", 3);
 
                     String path = filename + "/";
 
-                    ConcurrentHashMap<String, ARModelGLES20> poseLib     =
+                    ConcurrentHashMap<String, ARModelGLES20> poseLib =
                         new ConcurrentHashMap<>();
-                    String                                   defaultPose = "default";
+                    String defaultPose = "default";
 
                     for (String poseFile : poseFiles)
                     {
@@ -90,7 +94,7 @@ public class ModelLoader
                                 poseName = "default";
                             }
 
-                            System.out.println("found pose: " + poseName);
+                            Logger.logI("found pose: " + poseName, 3);
 
                             poseLib.put(poseName, loadModel(context, filename, size, texture));
                         }
@@ -122,14 +126,17 @@ public class ModelLoader
                                            float size,
                                            String texture)
     {
+        Timer timer = new Timer();
+        timer.start();
+
         try
         {
-            System.out.println("loading model: " + filename);
+            Logger.logI("loading model <" + filename + ">", 3);
 
             BufferedReader br =
                 new BufferedReader(new InputStreamReader(context.getAssets().open(filename)));
 
-            System.out.println("opened file");
+            Logger.logI("opened file", 4);
 
             ArrayList<Float> vertices       = new ArrayList<>();
             ArrayList<Float> colors         = new ArrayList<>();
@@ -140,10 +147,10 @@ public class ModelLoader
             ArrayList<Float> texCoordinatesInVertexOrder = new ArrayList<>();
             ArrayList<Float> normalsInVertexOrder        = new ArrayList<>();
 
-            ConcurrentHashMap<Short, Float[]> texCoordinatesByVertexIndex =
-                new ConcurrentHashMap<>();
-            ConcurrentHashMap<Short, Float[]> normalsByVertexIndex        =
-                new ConcurrentHashMap<>();
+            HashMap<Short, Float[]> texCoordinatesByVertexIndex =
+                new HashMap<>();
+            HashMap<Short, Float[]> normalsByVertexIndex =
+                new HashMap<>();
 
             String line;
 
@@ -218,6 +225,16 @@ public class ModelLoader
                 }
             }
 
+            br.close();
+
+            Logger.logI("closed file", 4);
+
+            Logger.logI(
+                "finished parsing file in " + ((float) timer.getTime()) / 1000f + " seconds", 3);
+
+            Timer indexTimer = new Timer();
+            indexTimer.start();
+
             if (texCoordinates.size() > 0)
             {
                 for (int i = 0; i < vertexIndices.size() * TEX_COORDINATE_SIZE; ++i)
@@ -250,17 +267,20 @@ public class ModelLoader
                 }
             }
 
-            br.close();
+            Logger.logI(
+                "finished reconstructing indices " + ((float) indexTimer.getTime()) / 1000f +
+                " seconds", 3);
 
-            System.out.println("closed file");
+            Timer openGLTimer = new Timer();
+            openGLTimer.start();
 
-            System.out.println("indices: " + vertexIndices.size());
-            System.out.println("vertices: " + vertices.size() / VERTEX_SIZE);
-            System.out.println(
-                "texCoordinates: " + texCoordinatesInVertexOrder.size() / TEX_COORDINATE_SIZE);
-            System.out.println("normals: " + normalsInVertexOrder.size() / NORMAL_SIZE);
+            Logger.logI("indices: " + vertexIndices.size(), 4);
+            Logger.logI("vertices: " + vertices.size() / VERTEX_SIZE, 4);
+            Logger.logI(
+                "texCoordinates: " + texCoordinatesInVertexOrder.size() / TEX_COORDINATE_SIZE, 4);
+            Logger.logI("normals: " + normalsInVertexOrder.size() / NORMAL_SIZE, 4);
 
-            System.out.println("making opengl object");
+            Logger.logI("making opengl object", 4);
 
             ARModelGLES20 arModel = new ARModelGLES20(size);
             arModel.makeVertexBuffer(vertices);
@@ -271,10 +291,19 @@ public class ModelLoader
                 arModel.makeTexCoordinateBuffer(texCoordinatesInVertexOrder);
             }
             arModel.makeVertexIndexBuffer(vertexIndices);
-            arModel.setTextureHandle(TextureLoader.loadTexture(context,
-                                                               "textures/" + texture + ".png"));
-            System.out.println("finished opengl object");
-            System.out.println("finished loading model");
+            if (texture != null)
+            {
+                arModel.setTextureHandle(TextureLoader.loadTexture(context,
+                                                                   "textures/" + texture + ".png"));
+            }
+
+            Logger.logI(
+                "finished making openGL object in " + ((float) openGLTimer.getTime()) / 1000f +
+                " seconds", 3);
+
+            Logger.logI("finished opengl object", 4);
+            Logger.logI("finished loading model <" + filename + "> in " +
+                        ((float) timer.getTime()) / 1000f + " seconds", 3);
 
             return arModel;
         }

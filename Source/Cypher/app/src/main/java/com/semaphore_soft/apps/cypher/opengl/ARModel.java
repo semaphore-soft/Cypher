@@ -1,5 +1,7 @@
 package com.semaphore_soft.apps.cypher.opengl;
 
+import com.semaphore_soft.apps.cypher.utils.Logger;
+
 import org.artoolkit.ar.base.rendering.RenderUtils;
 
 import java.nio.FloatBuffer;
@@ -131,7 +133,7 @@ public class ARModel
 
         vertexIndexBuffer = RenderUtils.buildShortBuffer(indexArray);
 
-        System.out.println("indices in ar model: " + indexArray.length);
+        Logger.logI("indices in ar model: " + indexArray.length, 3);
 
         NUM_INDICES = indexArray.length;
     }

@@ -16,6 +16,7 @@ import com.semaphore_soft.apps.cypher.opengl.ModelLoader;
 import com.semaphore_soft.apps.cypher.opengl.shader.DynamicShaderProgram;
 import com.semaphore_soft.apps.cypher.opengl.shader.ShaderLoader;
 import com.semaphore_soft.apps.cypher.utils.GameStatLoader;
+import com.semaphore_soft.apps.cypher.utils.Logger;
 
 import org.artoolkit.ar.base.ARToolKit;
 import org.artoolkit.ar.base.rendering.gles20.ARRendererGLES20;
@@ -402,7 +403,7 @@ class PortalRenderer extends ARRendererGLES20
             {
                 output += mark0TransInfo[i + j] + " ";
             }
-            System.out.println(output);
+            Logger.logI(output, 5);
         }
 
         res = ((mark0TransInfo[4] >= 0) ? (float) Math.acos(mark0TransInfo[0]) : (float) (Math.PI +
@@ -410,7 +411,7 @@ class PortalRenderer extends ARRendererGLES20
                                                                                               -mark0TransInfo[0])));
 
         res *= (180 / Math.PI);
-        System.out.println("Flat angle in degrees: " + res);
+        Logger.logI("Flat angle in degrees: " + res, 5);
 
         return ((Float.isNaN(res)) ? 0 : res);
     }
@@ -443,7 +444,7 @@ class PortalRenderer extends ARRendererGLES20
         {
             output += aResVector + " ";
         }
-        System.out.println(output);
+        Logger.logI(output, 5);
 
         Matrix.multiplyMV(resVector,
                           0,
@@ -462,7 +463,7 @@ class PortalRenderer extends ARRendererGLES20
         resAngle *= (180 / Math.PI);
         resAngle = ((resAngle < 0) ? (360 + resAngle) : resAngle);
 
-        System.out.println(output);
+        Logger.logI(output, 5);
 
         return ((Float.isNaN(resAngle)) ? 0 : resAngle);
     }
@@ -535,7 +536,7 @@ class PortalRenderer extends ARRendererGLES20
             if (actors.keySet().contains(id))
             {
                 String name = actors.get(id).getName();
-                System.out.println("adding actor:" + id + ":" + name + " to room:" + room.getId());
+                Logger.logI("adding actor:" + id + ":" + name + " to room:" + room.getId(), 2);
                 Actor actor = actors.get(id);
 
                 if (name != null && models.keySet().contains(name))

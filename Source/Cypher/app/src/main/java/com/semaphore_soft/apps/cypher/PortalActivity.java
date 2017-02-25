@@ -179,7 +179,7 @@ public class PortalActivity extends ARActivity implements PortalRenderer.NewMark
     @Override
     public void onCommand(final String cmd)
     {
-        System.out.println("portal activity received commend: " + cmd);
+        Logger.logI("portal activity received command: " + cmd, 3);
 
         if (cmd.startsWith("cmd_btn"))
         {

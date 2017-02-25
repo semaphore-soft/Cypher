@@ -6,6 +6,9 @@ import android.graphics.BitmapFactory;
 import android.opengl.GLES20;
 import android.opengl.GLUtils;
 
+import com.semaphore_soft.apps.cypher.utils.Logger;
+import com.semaphore_soft.apps.cypher.utils.Timer;
+
 import java.io.IOException;
 
 /**
@@ -47,6 +50,11 @@ public class TextureLoader
 
     public static int loadTexture(Context context, String filename)
     {
+        Timer timer = new Timer();
+        timer.start();
+
+        Logger.logI("loading texture <" + filename + ">", 3);
+
         int[] textureHandle = new int[1];
 
         GLES20.glGenTextures(1, textureHandle, 0);
@@ -92,6 +100,9 @@ public class TextureLoader
 
         }
 
+        Logger.logI(
+            "finished loading texture <" + filename + "> in " + ((float) timer.getTime()) / 1000f +
+            " seconds", 3);
         return textureHandle[0];
     }
 }

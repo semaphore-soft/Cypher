@@ -11,6 +11,7 @@ import com.semaphore_soft.apps.cypher.R;
 import com.semaphore_soft.apps.cypher.game.Actor;
 import com.semaphore_soft.apps.cypher.game.Item;
 import com.semaphore_soft.apps.cypher.game.Special;
+import com.semaphore_soft.apps.cypher.utils.Logger;
 
 import java.util.ArrayList;
 import java.util.concurrent.ConcurrentHashMap;
@@ -299,7 +300,7 @@ public class UIPortalOverlay extends UIBase
                 }
             });
             lloOptions.addView(btnTarget);
-            System.out.println("added special option: " + playerTargets.get(id).getDisplayName());
+            Logger.logI("added special option: " + playerTargets.get(id).getDisplayName(), 1);
         }
 
         Button btnCancel = (Button) findViewById(R.id.btnCancel);
