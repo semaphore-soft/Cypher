@@ -922,16 +922,23 @@ public class PortalActivity extends ARActivity implements PortalRenderer.NewMark
         renderer.updateRoomResidents(GameMaster.getRoom(startRoomId), model.getActors());
         renderer.updateRoomResidents(GameMaster.getRoom(roomId), model.getActors());
 
-        Runnable turnDelayer = new Runnable()
+        if (GameMaster.getPlayersInRoom(roomId) > 0)
         {
-            @Override
-            public void run()
+            Runnable turnDelayer = new Runnable()
             {
-                postTurn();
-            }
-        };
-        handler.postDelayed(turnDelayer, 1000);
-        Logger.logD("postTurn posted to execute in " + 1000);
+                @Override
+                public void run()
+                {
+                    postTurn(actorId);
+                }
+            };
+            handler.postDelayed(turnDelayer, 1000);
+            Logger.logD("postTurn posted to execute in " + 1000);
+        }
+        else
+        {
+            postTurn(actorId);
+        }
 
         Logger.logD("exit trace");
     }
@@ -983,7 +990,7 @@ public class PortalActivity extends ARActivity implements PortalRenderer.NewMark
             @Override
             public void run()
             {
-                postTurn();
+                postTurn(actorId);
             }
         };
         handler.postDelayed(turnDelayer, 1000);
@@ -992,9 +999,11 @@ public class PortalActivity extends ARActivity implements PortalRenderer.NewMark
         Logger.logD("exit trace");
     }
 
-    private void postTurn()
+    private void postTurn(final int actorId)
     {
         Logger.logD("enter trace");
+
+        GameMaster.getActor(actorId).tick();
 
         turnId = CollectionManager.getNextIdFromId(turnId, model.getActors());
 

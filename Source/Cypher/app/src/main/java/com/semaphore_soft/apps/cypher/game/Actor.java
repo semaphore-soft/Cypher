@@ -17,6 +17,8 @@ public class Actor
     private int     roomID;
     private boolean isPlayer;
 
+    private String displayName;
+
     public enum E_STATE
     {
         NEUTRAL,
@@ -33,6 +35,12 @@ public class Actor
     private int     specialRating;
     private int     defenceRating;
     private E_STATE state;
+
+    private int     attackTickets  = 1;
+    private int     defendTickets  = 1;
+    private int     specialTickets = 1;
+    private int     moveTickets    = 1;
+    private boolean seeker         = false;
 
     private ConcurrentHashMap<Integer, Special> specials;
     private ConcurrentHashMap<Integer, Item>    items;
@@ -119,6 +127,16 @@ public class Actor
     public boolean isPlayer()
     {
         return isPlayer;
+    }
+
+    public void setDisplayName(String displayName)
+    {
+        this.displayName = displayName;
+    }
+
+    public String getDisplayName()
+    {
+        return displayName;
     }
 
     public void setHealthMaximum(int healthMaximum)
@@ -212,6 +230,56 @@ public class Actor
     public E_STATE getState()
     {
         return state;
+    }
+
+    public int getAttackTickets()
+    {
+        return attackTickets;
+    }
+
+    public void setAttackTickets(int attackTickets)
+    {
+        this.attackTickets = attackTickets;
+    }
+
+    public int getDefendTickets()
+    {
+        return defendTickets;
+    }
+
+    public void setDefendTickets(int defendTickets)
+    {
+        this.defendTickets = defendTickets;
+    }
+
+    public int getSpecialTickets()
+    {
+        return specialTickets;
+    }
+
+    public void setSpecialTickets(int specialTickets)
+    {
+        this.specialTickets = specialTickets;
+    }
+
+    public int getMoveTickets()
+    {
+        return moveTickets;
+    }
+
+    public void setMoveTickets(int moveTickets)
+    {
+        this.moveTickets = moveTickets;
+    }
+
+    public boolean isSeeker()
+    {
+        return seeker;
+    }
+
+    public void setSeeker(boolean seeker)
+    {
+        this.seeker = seeker;
     }
 
     public void attack(Actor actor)

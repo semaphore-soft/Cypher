@@ -189,7 +189,7 @@ public class UIPortalOverlay extends UIBase
         for (final int id : enemyTargets.keySet())
         {
             Button btnTarget = new Button(getContext());
-            String name      = getName(enemyTargets.get(id).getName(), 1, names);
+            String name      = getName(enemyTargets.get(id).getDisplayName(), 1, names);
             names.add(name);
             LinearLayout.LayoutParams layoutParams =
                 new LinearLayout.LayoutParams(LayoutParams.WRAP_CONTENT,
@@ -275,7 +275,7 @@ public class UIPortalOverlay extends UIBase
         for (final int id : playerTargets.keySet())
         {
             Button btnTarget = new Button(getContext());
-            btnTarget.setText(playerTargets.get(id).getName());
+            btnTarget.setText(playerTargets.get(id).getDisplayName());
             btnTarget.setOnClickListener(new OnClickListener()
             {
                 @Override
@@ -299,7 +299,7 @@ public class UIPortalOverlay extends UIBase
                 }
             });
             lloOptions.addView(btnTarget);
-            System.out.println("added special option: " + playerTargets.get(id).getName());
+            System.out.println("added special option: " + playerTargets.get(id).getDisplayName());
         }
 
         Button btnCancel = (Button) findViewById(R.id.btnCancel);

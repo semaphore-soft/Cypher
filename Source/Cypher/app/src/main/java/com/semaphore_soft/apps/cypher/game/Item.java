@@ -13,6 +13,8 @@ public abstract class Item
     private   int                        effectRating;
     private   ArrayList<Effect.E_EFFECT> effects;
 
+    private String displayName;
+
     private Item(int id, String name)
     {
         this.id = id;
@@ -39,6 +41,16 @@ public abstract class Item
     public int getEffectRating()
     {
         return effectRating;
+    }
+
+    public String getDisplayName()
+    {
+        return displayName;
+    }
+
+    public void setDisplayName(String displayName)
+    {
+        this.displayName = displayName;
     }
 
     public void addEffect(Effect.E_EFFECT effect)

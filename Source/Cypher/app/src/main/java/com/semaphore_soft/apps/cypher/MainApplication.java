@@ -3,6 +3,8 @@ package com.semaphore_soft.apps.cypher;
 import android.app.Application;
 import android.content.Context;
 
+import com.semaphore_soft.apps.cypher.utils.Logger;
+
 import org.artoolkit.ar.base.assets.AssetHelper;
 
 /**
@@ -35,6 +37,8 @@ public class MainApplication extends Application
         sInstance = this;
         mContext = getContext();
         ((MainApplication) sInstance).initializeInstance();
+
+        Logger.setLogLevel(1);
     }
 
     // Here we do one-off initialisation which should apply to all activities

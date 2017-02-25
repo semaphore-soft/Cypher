@@ -41,21 +41,24 @@ public class GameMaster
 
         Room room = new Room(id, mark);
 
-        ArrayList<String> enemyList = GameStatLoader.getList(context, "enemies");
-        if (enemyList != null)
+        int numEnemies = (int) (Math.random() * 4);
+        if (numEnemies > 0)
         {
-            int numEnemies = (int) (Math.random() * 4);
-            for (int i = 0; i < numEnemies; ++i)
+            ArrayList<String> enemyList = GameStatLoader.getList(context, "enemies");
+            if (enemyList != null)
             {
-                Collections.shuffle(enemyList);
-                String enemyName = enemyList.get(0);
+                for (int i = 0; i < numEnemies; ++i)
+                {
+                    Collections.shuffle(enemyList);
+                    String enemyName = enemyList.get(0);
 
-                Actor enemy =
-                    new Actor(CollectionManager.getNextID(model.getActors()), id, enemyName);
-                GameStatLoader.loadActorStats(enemy, enemyName, model.getSpecials(), context);
+                    Actor enemy =
+                        new Actor(CollectionManager.getNextID(model.getActors()), id, enemyName);
+                    GameStatLoader.loadActorStats(enemy, enemyName, model.getSpecials(), context);
 
-                model.addActor(enemy.getId(), enemy);
-                room.addActor(enemy.getId());
+                    model.addActor(enemy.getId(), enemy);
+                    room.addActor(enemy.getId());
+                }
             }
         }
 

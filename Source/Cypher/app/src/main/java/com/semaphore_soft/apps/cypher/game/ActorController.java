@@ -1,7 +1,5 @@
 package com.semaphore_soft.apps.cypher.game;
 
-import android.util.Log;
-
 import com.semaphore_soft.apps.cypher.utils.Logger;
 
 import java.util.ArrayList;
@@ -31,7 +29,7 @@ public class ActorController
     {
         Actor actor = GameMaster.getActor(actorId);
 
-        Log.d("takeTurn", "taking turn for actor " + actor.getName());
+        Logger.logI("taking turn for actor " + actor.getName());
 
         int attackTickets  = 0;
         int defendTickets  = 0;
@@ -43,8 +41,8 @@ public class ActorController
         ConcurrentHashMap<Integer, Special> actorSpecials = actor.getSpecials();
         if (playerTargets != null && playerTargets.size() > 0)
         {
-            attackTickets = 10;
-            defendTickets = 5;
+            attackTickets = actor.getAttackTickets();
+            defendTickets = actor.getDefendTickets();
 
             if (actorSpecials != null && actorSpecials.size() > 0)
             {
@@ -52,11 +50,15 @@ public class ActorController
                 {
                     if (actor.getSpecialCurrent() >= special.getCost())
                     {
-                        specialTickets = 5;
+                        specialTickets = actor.getSpecialTickets();
                         break;
                     }
                 }
             }
+        }
+        else
+        {
+            Logger.logI("no player targets found");
         }
 
         int                moveTickets    = 0;
@@ -75,13 +77,24 @@ public class ActorController
             }
             if (foundValidMove)
             {
-                moveTickets = 5;
+                moveTickets = actor.getMoveTickets();
             }
         }
+        if (playerTargets != null && playerTargets.size() > 0 && actor.isSeeker())
+        {
+            moveTickets = 1;
+        }
+
+        Logger.logI("attack tickets: " + attackTickets, 1);
+        Logger.logI("defend tickets: " + defendTickets, 1);
+        Logger.logI("special tickets: " + specialTickets, 1);
+        Logger.logI("move tickets: " + moveTickets, 1);
 
         int totalTickets = attackTickets + defendTickets + specialTickets + moveTickets;
 
         int ticket = (int) (Math.random() * totalTickets);
+
+        Logger.logI("ticket selected: " + ticket, 1);
 
         if (attackTickets != 0 && ticket <= attackTickets)
         {
@@ -92,14 +105,14 @@ public class ActorController
             Logger.logI("actor " + actor.getName() + " attacked " +
                         GameMaster.getActor(playerTargets.get(0)).getName());
 
-            gameController.feedback(GameMaster.getActor(actorId).getName() + " attacked " +
-                                    GameMaster.getActor(playerTargets.get(0)).getName());
+            gameController.feedback(GameMaster.getActor(actorId).getDisplayName() + " attacked " +
+                                    GameMaster.getActor(playerTargets.get(0)).getDisplayName());
 
             gameController.onActorAction(actorId, playerTargets.get(0), "attack");
         }
         else if (defendTickets != 0 && ticket <= attackTickets + defendTickets)
         {
-            gameController.feedback(GameMaster.getActor(actorId).getName() + " defended ");
+            gameController.feedback(GameMaster.getActor(actorId).getDisplayName() + " defended ");
 
             gameController.onActorAction(actorId, -1, "defend");
         }
@@ -112,13 +125,13 @@ public class ActorController
             }
             Collections.shuffle(specialIds);
 
+            boolean usedSpecial = false;
+
             for (Integer specialId : specialIds)
             {
-                boolean usedSpecial = false;
-
                 Special special = actorSpecials.get(specialId);
 
-                if (special.getCost() < actor.getSpecialCurrent())
+                if (special.getCost() <= actor.getSpecialCurrent())
                 {
                     switch (special.getTargetingType())
                     {
@@ -127,16 +140,19 @@ public class ActorController
                             {
                                 Collections.shuffle(nonPlayerTargets);
 
+                                actor.performSpecial(special,
+                                                     GameMaster.getActor(playerTargets.get(0)));
+
                                 Logger.logI(
                                     "actor " + actor.getName() + " used " + special.getName() +
                                     " on " +
                                     GameMaster.getActor(nonPlayerTargets.get(0)).getName());
 
-                                gameController.feedback(
-                                    "actor " + actor.getName() + " used special " +
-                                    special.getName() +
-                                    " on " +
-                                    GameMaster.getActor(nonPlayerTargets.get(0)).getName());
+                                gameController.feedback(actor.getDisplayName() + " used special " +
+                                                        special.getDisplayName() +
+                                                        " on " +
+                                                        GameMaster.getActor(nonPlayerTargets.get(0))
+                                                                  .getDisplayName());
 
                                 gameController.onActorAction(actorId,
                                                              nonPlayerTargets.get(0),
@@ -148,13 +164,18 @@ public class ActorController
                         case SINGLE_NON_PLAYER:
                             Collections.shuffle(playerTargets);
 
+                            actor.performSpecial(special,
+                                                 GameMaster.getActor(playerTargets.get(0)));
+
                             Logger.logI(
                                 "actor " + actor.getName() + " used " + special.getName() +
                                 " on " + GameMaster.getActor(playerTargets.get(0)).getName());
 
-                            gameController.feedback(
-                                "actor " + actor.getName() + " used special " + special.getName() +
-                                " on " + GameMaster.getActor(playerTargets.get(0)).getName());
+                            gameController.feedback(actor.getDisplayName() + " used special " +
+                                                    special.getDisplayName() +
+                                                    " on " +
+                                                    GameMaster.getActor(playerTargets.get(0))
+                                                              .getDisplayName());
 
                             gameController.onActorAction(actorId,
                                                          playerTargets.get(0),
@@ -165,12 +186,19 @@ public class ActorController
                         case AOE_PLAYER:
                             if (nonPlayerTargets != null && nonPlayerTargets.size() > 0)
                             {
+                                ArrayList<Actor> nonPlayerTargetActors = new ArrayList<>();
+                                for (int i : nonPlayerTargets)
+                                {
+                                    nonPlayerTargetActors.add(GameMaster.getActor(i));
+                                }
+
+                                actor.performSpecial(special, nonPlayerTargetActors);
+
                                 Logger.logI(
                                     "actor " + actor.getName() + " used " + special.getName());
 
-                                gameController.feedback(
-                                    "actor " + actor.getName() + " used special " +
-                                    special.getName());
+                                gameController.feedback(actor.getDisplayName() + " used special " +
+                                                        special.getDisplayName());
 
                                 gameController.onActorAction(actorId,
                                                              -1,
@@ -180,11 +208,19 @@ public class ActorController
                             }
                             break;
                         case AOE_NON_PLAYER:
+                            ArrayList<Actor> playerTargetActors = new ArrayList<>();
+                            for (int i : playerTargets)
+                            {
+                                playerTargetActors.add(GameMaster.getActor(i));
+                            }
+
+                            actor.performSpecial(special, playerTargetActors);
+
                             Logger.logI(
                                 "actor " + actor.getName() + " used " + special.getName());
 
-                            gameController.feedback(
-                                "actor " + actor.getName() + " used special " + special.getName());
+                            gameController.feedback(actor.getDisplayName() + " used special " +
+                                                    special.getDisplayName());
 
                             gameController.onActorAction(actorId,
                                                          -1,
@@ -200,6 +236,11 @@ public class ActorController
                 {
                     break;
                 }
+            }
+
+            if (!usedSpecial)
+            {
+                Logger.logD("actor <" + actorId + "> failed to use special");
             }
         }
         else if (moveTickets != 0 &&
