@@ -195,9 +195,10 @@ public class ModelLoader
                         {
                             if (vertexIndices.contains(vi[i]))
                             {
+                                int nextIndexTripleStartIndex = vi[i] * VERTEX_SIZE;
                                 for (int j = 0; j < 3; ++j)
                                 {
-                                    vertices.add(vertices.get(vi[i] * VERTEX_SIZE + j));
+                                    vertices.add(vertices.get(nextIndexTripleStartIndex + j));
                                 }
                                 vi[i] = (short) ((vertices.size() / 3) - 1);
                             }
