@@ -900,7 +900,7 @@ public class Actor
      * Add a single {@link Item} for this {@link Actor} to associate with, or
      * 'have' in its 'inventory'.
      * <p>
-     * An {@link Actor} may associate, or 'have', {@link Item Items} which are
+     * An {@link Actor} may associate with, or 'have', {@link Item Items} which are
      * {@link ItemConsumable consumable} or {@link ItemDurable durable}.
      * <p>
      * {@link ItemConsumable ItemConsumables} may be 'used' to create immediate
