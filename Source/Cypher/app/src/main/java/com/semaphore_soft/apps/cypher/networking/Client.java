@@ -23,6 +23,17 @@ public class Client
     {
     }
 
+    /**
+     * Starts the {@code ClientThread}.
+     *
+     * @param addr   Address to connect to.
+     * @param client An instance of {@code ClientService} that will interact with the thread.
+     *
+     * @return An instance of {@code ClientThread} that is connected to {@code addr}.
+     *
+     * @see ClientService#startClient(String)
+     * @see ClientThread
+     */
     public ClientThread startClient(InetAddress addr, ClientService client)
     {
         clientService = client;
@@ -31,12 +42,21 @@ public class Client
         return clientThread;
     }
 
+    /**
+     * Thread that connects to the server
+     * @see ClientThread#ClientThread(InetAddress)
+     */
     public class ClientThread extends Thread
     {
         Socket mySocket = null;
         private boolean     running     = true;
         private InetAddress inetAddress = null;
 
+        /**
+         * Create new thread that is connected to {@code address}.
+         * @see Client#startClient(InetAddress, ClientService)
+         * @param address Address to connect to.
+         */
         public ClientThread(InetAddress address)
         {
             try
@@ -71,6 +91,10 @@ public class Client
             }
         }
 
+        /**
+         * Write message to server.
+         * @param str Message to write.
+         */
         public void write(String str)
         {
             try
@@ -88,6 +112,12 @@ public class Client
             }
         }
 
+        /**
+         * Reads in data from the network.
+         * Will attempt to reconnect if {@code Socket} connection is broken.
+         * @see ClientThread#reconnectSocket()
+         * @return Message that was read.
+         */
         private String read()
         {
             try
@@ -115,17 +145,32 @@ public class Client
             return null;
         }
 
+        /**
+         * Sends message that has been read to be processed by other activities.
+         * @see ClientService#threadRead(String)
+         * @param msg Message that was read.
+         */
         private void processMessage(String msg)
         {
             Logger.logI(msg);
             clientService.threadRead(msg);
         }
 
+        /**
+         * Get the {@code SocketAddress} that the client is connected to.
+         * @see ClientService#getHostIP()
+         * @return Host's address
+         */
         public String getSocketAddress()
         {
             return mySocket.getRemoteSocketAddress().toString();
         }
 
+        /**
+         * Will try to reconnect to client if {@code Socket} connection is lost.
+         * This method will wait some amount of time for the host
+         * to notice that it has disconnected before attempting to reconnect.
+         */
         public void reconnectSocket()
         {
             try

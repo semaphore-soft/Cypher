@@ -46,24 +46,48 @@ public class ServerService extends Service
         serverThread = new Server();
     }
 
+    /**
+     * Starts server listening for connecting clients.
+     *
+     * @see Server#startAcceptor(ServerService)
+     */
     public void startServer()
     {
         Logger.logD("Starting AcceptorThread");
         serverThread.startAcceptor(this);
     }
 
+    /**
+     * Writes a message to a specific client.
+     * @see Server#writeToClient(String, int)
+     * @param msg Message to write.
+     * @param client Client to write to.
+     */
     public void writeToClient(String msg, int client)
     {
         Logger.logD("Writing to single client");
         serverThread.writeToClient(msg, client);
     }
 
+    /**
+     * Writes a message to all connected clients.
+     * @see Server#writeAll(String)
+     * @param msg Message to write.
+     */
     public void writeAll(String msg)
     {
         Logger.logD("Writing to all clients");
         serverThread.writeAll(msg);
     }
 
+    /**
+     * Sends an intent for ResponseReceiver to signal that data has been read from the network.
+     * @see ResponseReceiver
+     * @param msg Message that was read from the network.
+     * @param readFrom Client that the message was received from.
+     *                 This is in relation to an array of connected clients
+     *                 and is not related to playerID.
+     */
     public void threadRead(String msg, int readFrom)
     {
         Logger.logD("Sending thread read");
@@ -73,6 +97,14 @@ public class ServerService extends Service
         LocalBroadcastManager.getInstance(this).sendBroadcast(localIntent);
     }
 
+    /**
+     * Sends an intent for ResponseReceiver to signal that the thread's status has changed.
+     * @see ResponseReceiver
+     * @param msg Message that was sent from thread.
+     * @param readFrom Client that the message was received from.
+     *                 This is in relation to an array of connected clients
+     *                 and is not related to playerID
+     */
     public void threadUpdate(String msg, int readFrom)
     {
         Logger.logD("Sending thread update");
@@ -82,6 +114,14 @@ public class ServerService extends Service
         LocalBroadcastManager.getInstance(this).sendBroadcast(localIntent);
     }
 
+    /**
+     * Sends an intent for ResponseReceiver to signal that an error has occurred in the thread.
+     * @see ResponseReceiver
+     * @param msg Error message from the thread.
+     * @param readFrom Client that the message was received from.
+     *                 This is in relation to an array of connected clients
+     *                 and is not related to playerID.
+     */
     public void threadError(String msg, int readFrom)
     {
         Logger.logD("Sending thread error");

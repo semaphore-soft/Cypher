@@ -50,6 +50,13 @@ public class ClientService extends Service
         client = new Client();
     }
 
+    /**
+     * Starts the client thread and attempts to connect to {@code addr}.
+     *
+     * @param addr String representation of the IP address to connect to.
+     *
+     * @see Client#startClient(InetAddress, ClientService)
+     */
     public void startClient(String addr)
     {
         Logger.logD("Staring client thread");
@@ -68,6 +75,11 @@ public class ClientService extends Service
         }
     }
 
+    /**
+     * Writes a message to the server.
+     * @see com.semaphore_soft.apps.cypher.networking.Client.ClientThread#write(String)
+     * @param msg Message to write to server.
+     */
     public void write(String msg)
     {
         if (clientThread != null)
@@ -81,6 +93,10 @@ public class ClientService extends Service
         }
     }
 
+    /**
+     * Returns the formatted IP of the host that the client is connected to.
+     * @return IP address of the host.
+     */
     public String getHostIP()
     {
         // Format ip address from client thread
@@ -89,6 +105,11 @@ public class ClientService extends Service
         return ip[0].substring(1);
     }
 
+    /**
+     * Sends an intent for ResponseReceiver to signal that data has been read from the network.
+     * @see ResponseReceiver
+     * @param msg Message that was read from the network.
+     */
     public void threadRead(String msg)
     {
         Logger.logD("Sending thread read");
@@ -97,6 +118,11 @@ public class ClientService extends Service
         LocalBroadcastManager.getInstance(this).sendBroadcast(localIntent);
     }
 
+    /**
+     * Sends an intent for ResponseReceiver to signal that the thread's status has changed.
+     * @see ResponseReceiver
+     * @param msg Message that was read from the network.
+     */
     public void threadUpdate(String msg)
     {
         Logger.logD("Sending thread update");
@@ -105,6 +131,11 @@ public class ClientService extends Service
         LocalBroadcastManager.getInstance(this).sendBroadcast(localIntent);
     }
 
+    /**
+     * Sends an intent for ResponseReceiver to signal that an error has occurred in the thread.
+     * @see ResponseReceiver
+     * @param msg Message that was read from the network.
+     */
     public void threadError(String msg)
     {
         Logger.logD("Sending thread error");

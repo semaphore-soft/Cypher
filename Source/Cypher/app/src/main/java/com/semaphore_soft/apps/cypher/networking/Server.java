@@ -30,11 +30,23 @@ public class Server
     {
     }
 
+    /**
+     * Sets whether or not the {@code AcceptorThread} should continue to accept connections.
+     *
+     * @param bool Whether or not to continue accepting connections.
+     *
+     * @see AcceptorThread
+     */
     public static void setAccepting(Boolean bool)
     {
         accepting = bool;
     }
 
+    /**
+     * Starts the {@code AcceptorThread}.
+     * @see ServerService
+     * @param service An instance of {@code ServerService} that will interact with the thread.
+     */
     public void startAcceptor(ServerService service)
     {
         serverService = service;
@@ -42,6 +54,11 @@ public class Server
         acceptorThread.start();
     }
 
+    /**
+     * Write a message to all connected clients.
+     * @see ServerService#writeAll(String)
+     * @param str Message to write.
+     */
     public void writeAll(String str)
     {
         Logger.logD("Attempting to write to all clients");
@@ -51,10 +68,15 @@ public class Server
         }
     }
 
+    /**
+     * Write a message to a specific client.
+     * @see ServerService#writeToClient(String, int)
+     * @param str Message to write.
+     * @param index The specific client to connect to.
+     */
     public void writeToClient(String str, int index)
     {
         Logger.logD("Attempting to write to client " + String.valueOf(index));
-        // Service will default to -1 if no index is given
         if (!clients.isEmpty() && index >= 0 && index < clients.size())
         {
             clients.get(index).write(str);
@@ -65,10 +87,23 @@ public class Server
         }
     }
 
+    /**
+     * Class that listens for clients to connect.
+     * Once connected the socket is passed to {@code ClientHandler}.
+     * The {@code AcceptorThread} will continue to listen until either
+     * a maximum number of players has connected or
+     * the host determines that all players have connected.
+     * @see ClientHandler
+     * @see Server#setAccepting(Boolean)
+     */
     private class AcceptorThread extends Thread
     {
         Socket mySocket;
 
+        /**
+         * Creates a new {@code ServerSocket} that listens on port {@value NetworkConstants#SERVER_PORT}.
+         * @see ServerSocket
+         */
         public AcceptorThread()
         {
             try
@@ -117,6 +152,11 @@ public class Server
         }
     }
 
+    /**
+     * Class that communicates with a single connected client.
+     * @see AcceptorThread
+     * @see com.semaphore_soft.apps.cypher.networking.Client.ClientThread
+     */
     private class ClientHandler extends Thread
     {
         // The local server socket
@@ -124,6 +164,10 @@ public class Server
 
         private boolean running = true;
 
+        /**
+         * Starts a new thread to communicate with a client.
+         * @param socket {@code Socket} that is connected to a client.
+         */
         public ClientHandler(Socket socket)
         {
             mySocket = socket;
@@ -143,6 +187,10 @@ public class Server
             }
         }
 
+        /**
+         * Writes a message to the connected client.
+         * @param str Message to write.
+         */
         public void write(String str)
         {
             try
@@ -160,6 +208,12 @@ public class Server
             }
         }
 
+        /**
+         * Reads in data from the network.
+         * Will attempt to reconnect if {@code Socket} connection is broken.
+         * @see ClientHandler#reconnectSocket()
+         * @return Message that was read.
+         */
         private String read()
         {
             try
@@ -185,6 +239,11 @@ public class Server
             return null;
         }
 
+        /**
+         * Sends message that has been read to be processed by other activities.
+         * @see ServerService#threadRead(String, int)
+         * @param msg Message that was read.
+         */
         private void processMessage(String msg)
         {
             Logger.logI(msg);
@@ -192,6 +251,10 @@ public class Server
             serverService.threadRead(msg, clients.indexOf(this) + 1);
         }
 
+        /**
+         * Will try to reconnect to client if {@code Socket} connection is lost.
+         * There is no timeout for this method.
+         */
         private void reconnectSocket()
         {
             // Assume only one client needs to reconnect at a time

@@ -58,6 +58,11 @@ public class ResponseReceiver extends BroadcastReceiver
         void handleError(String msg, int readFrom);
     }
 
+    /**
+     * Used by ResponseReceiver to call interface methods
+     *
+     * @param r Instance of ResponseReceiver
+     */
     public void setListener(Receiver r)
     {
         listener = r;

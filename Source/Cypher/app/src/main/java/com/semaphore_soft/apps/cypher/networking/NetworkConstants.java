@@ -57,6 +57,11 @@ public class NetworkConstants
     public static final int HEARTBEAT_DELAY = 5000;
 
 
+    /**
+     * Method to get IntentFilters for registering a broadcast receiver
+     *
+     * @return An IntentFilter for ResponseReceiver
+     */
     public static IntentFilter getFilter()
     {
         IntentFilter intentFilter = new IntentFilter();
