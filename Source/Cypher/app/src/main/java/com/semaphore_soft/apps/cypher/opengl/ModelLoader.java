@@ -6,8 +6,13 @@ import com.semaphore_soft.apps.cypher.utils.Logger;
 import com.semaphore_soft.apps.cypher.utils.Timer;
 
 import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.concurrent.ConcurrentHashMap;
@@ -18,9 +23,14 @@ import java.util.concurrent.ConcurrentHashMap;
 
 public class ModelLoader
 {
+    private static final int INT_SIZE   = Integer.SIZE;
+    private static final int FLOAT_SIZE = Float.SIZE;
+    private static final int SHORT_SIZE = Short.SIZE;
+
     private static final int VERTEX_SIZE         = 3;
     private static final int TEX_COORDINATE_SIZE = 2;
     private static final int NORMAL_SIZE         = 3;
+    private static final int INDEX_SIZE          = 3;
 
     public static ARDrawableGLES20 load(Context context, String name)
     {
@@ -164,165 +174,217 @@ public class ModelLoader
         {
             Logger.logI("loading model <" + filename + ">", 3);
 
-            BufferedReader br =
-                new BufferedReader(new InputStreamReader(context.getAssets().open(filename)));
-
-            Logger.logI("opened file", 4);
-
-            ArrayList<Float> vertices       = new ArrayList<>();
-            ArrayList<Float> colors         = new ArrayList<>();
-            ArrayList<Float> normals        = new ArrayList<>();
-            ArrayList<Float> texCoordinates = new ArrayList<>();
-            ArrayList<Short> vertexIndices  = new ArrayList<>();
-
+            ArrayList<Float> vertices                    = new ArrayList<>();
+            ArrayList<Float> colors                      = new ArrayList<>();
             ArrayList<Float> texCoordinatesInVertexOrder = new ArrayList<>();
             ArrayList<Float> normalsInVertexOrder        = new ArrayList<>();
+            ArrayList<Short> vertexIndices               = new ArrayList<>();
 
-            HashMap<Short, Float[]> texCoordinatesByVertexIndex =
-                new HashMap<>();
-            HashMap<Short, Float[]> normalsByVertexIndex =
-                new HashMap<>();
+            String path = "";
+            String name;
 
-            String line;
+            String[] splitFilename = filename.split("/");
 
-            while ((line = br.readLine()) != null)
+            for (int i = 0; i < splitFilename.length - 1; ++i)
             {
-                String[] splitLine = line.split(" ");
-                switch (splitLine[0])
-                {
-                    case "v":
-                        for (int i = 1; i < 4; ++i)
-                        {
-                            vertices.add(Float.parseFloat(splitLine[i]));
-                        }
-                        break;
-                    case "vt":
-                        texCoordinates.add(Float.parseFloat(splitLine[1]));
-                        texCoordinates.add(1.0f -
-                                           Float.parseFloat(splitLine[2]));
-                        break;
-                    case "vn":
-                        for (int i = 1; i < 4; ++i)
-                        {
-                            normals.add(Float.parseFloat(splitLine[i]));
-                        }
-                        break;
-                    case "f":
-                        short vi[] = new short[3];
-                        short ti[] = new short[3];
-                        short ni[] = new short[3];
+                path += splitFilename[i] + ((i < splitFilename.length - 2) ? "/" : "");
+            }
 
-                        for (int i = 1; i < 4; ++i)
-                        {
-                            String triad[] = splitLine[i].split("/");
-                            vi[3 - i] = (short) (Short.parseShort(triad[0]) - 1);
-                            if (!triad[1].equals(""))
+            name = splitFilename[splitFilename.length - 1].split("\\.")[0];
+
+            Logger.logI("checking for ibo file at " + context.getExternalFilesDir(null).toString()
+                        + "/genAssets/" + path + "/" + name + ".ibo", 3);
+
+            File file = new File(context.getExternalFilesDir(null).toString()
+                                 + "/genAssets/" + path + "/" + name + ".ibo");
+
+            if (file.exists())
+            {
+                Logger.logI("found ibo file for model <" + filename + ">", 3);
+
+                readIBO(context,
+                        context.getExternalFilesDir(null).toString()
+                        + "/genAssets/" + path + "/" + name + ".ibo",
+                        vertices,
+                        texCoordinatesInVertexOrder,
+                        normalsInVertexOrder,
+                        vertexIndices);
+
+                Logger.logI(
+                    "finished parsing file in " + ((float) timer.getTime()) / 1000f + " seconds",
+                    3);
+            }
+            else
+            {
+                Logger.logI("no ibo file for model <" + filename + ">, constructing from obj", 3);
+
+                BufferedReader br =
+                    new BufferedReader(new InputStreamReader(context.getAssets().open(filename)));
+
+                Logger.logI("opened file", 4);
+
+                ArrayList<Float> normals        = new ArrayList<>();
+                ArrayList<Float> texCoordinates = new ArrayList<>();
+
+                HashMap<Short, Float[]> texCoordinatesByVertexIndex =
+                    new HashMap<>();
+                HashMap<Short, Float[]> normalsByVertexIndex =
+                    new HashMap<>();
+
+                String line;
+
+                while ((line = br.readLine()) != null)
+                {
+                    String[] splitLine = line.split(" ");
+                    switch (splitLine[0])
+                    {
+                        case "v":
+                            for (int i = 1; i < 4; ++i)
                             {
-                                ti[3 - i] = (short) (Short.parseShort(triad[1]) - 1);
+                                vertices.add(Float.parseFloat(splitLine[i]));
                             }
-                            ni[3 - i] = (short) (Short.parseShort(triad[2]) - 1);
-                        }
-                        for (int i = 0; i < 3; ++i)
-                        {
-                            if (vertexIndices.contains(vi[i]))
+                            break;
+                        case "vt":
+                            texCoordinates.add(Float.parseFloat(splitLine[1]));
+                            texCoordinates.add(1.0f -
+                                               Float.parseFloat(splitLine[2]));
+                            break;
+                        case "vn":
+                            for (int i = 1; i < 4; ++i)
                             {
-                                int nextIndexTripleStartIndex = vi[i] * VERTEX_SIZE;
-                                for (int j = 0; j < 3; ++j)
+                                normals.add(Float.parseFloat(splitLine[i]));
+                            }
+                            break;
+                        case "f":
+                            short vi[] = new short[3];
+                            short ti[] = new short[3];
+                            short ni[] = new short[3];
+
+                            for (int i = 1; i < 4; ++i)
+                            {
+                                String triad[] = splitLine[i].split("/");
+                                vi[3 - i] = (short) (Short.parseShort(triad[0]) - 1);
+                                if (!triad[1].equals(""))
                                 {
-                                    vertices.add(vertices.get(nextIndexTripleStartIndex + j));
+                                    ti[3 - i] = (short) (Short.parseShort(triad[1]) - 1);
                                 }
-                                vi[i] = (short) ((vertices.size() / 3) - 1);
+                                ni[3 - i] = (short) (Short.parseShort(triad[2]) - 1);
                             }
-
-                            vertexIndices.add(vi[i]);
-
-                            if (texCoordinates.size() > 0)
+                            for (int i = 0; i < 3; ++i)
                             {
-                                texCoordinatesByVertexIndex.put(vi[i],
-                                                                new Float[]{texCoordinates.get(
-                                                                    ti[i] *
-                                                                    TEX_COORDINATE_SIZE), texCoordinates.get(
-                                                                    ti[i] *
-                                                                    TEX_COORDINATE_SIZE +
-                                                                    1)});
+                                if (vertexIndices.contains(vi[i]))
+                                {
+                                    int nextIndexTripleStartIndex = vi[i] * VERTEX_SIZE;
+                                    for (int j = 0; j < 3; ++j)
+                                    {
+                                        vertices.add(vertices.get(nextIndexTripleStartIndex + j));
+                                    }
+                                    vi[i] = (short) ((vertices.size() / 3) - 1);
+                                }
+
+                                vertexIndices.add(vi[i]);
+
+                                if (texCoordinates.size() > 0)
+                                {
+                                    texCoordinatesByVertexIndex.put(vi[i],
+                                                                    new Float[]{texCoordinates.get(
+                                                                        ti[i] *
+                                                                        TEX_COORDINATE_SIZE), texCoordinates.get(
+                                                                        ti[i] *
+                                                                        TEX_COORDINATE_SIZE +
+                                                                        1)});
+                                }
+
+                                normalsByVertexIndex.put(vi[i],
+                                                         new Float[]{normals.get(
+                                                             ni[i] * NORMAL_SIZE), normals.get(
+                                                             ni[i] * NORMAL_SIZE + 1), normals.get(
+                                                             ni[i] * NORMAL_SIZE + 2)});
                             }
-
-                            normalsByVertexIndex.put(vi[i],
-                                                     new Float[]{normals.get(
-                                                         ni[i] * NORMAL_SIZE), normals.get(
-                                                         ni[i] * NORMAL_SIZE + 1), normals.get(
-                                                         ni[i] * NORMAL_SIZE + 2)});
-                        }
-                        break;
+                            break;
+                    }
                 }
-            }
 
-            br.close();
+                br.close();
 
-            Logger.logI("closed file", 4);
+                Logger.logI("closed file", 4);
 
-            Logger.logI(
-                "finished parsing file in " + ((float) timer.getTime()) / 1000f + " seconds", 3);
+                Logger.logI(
+                    "finished parsing file in " + ((float) timer.getTime()) / 1000f + " seconds",
+                    3);
 
-            Timer indexTimer = new Timer();
-            indexTimer.start();
+                Timer indexTimer = new Timer();
+                indexTimer.start();
 
-            if (texCoordinates.size() > 0)
-            {
-                for (int i = 0; i < vertexIndices.size() * TEX_COORDINATE_SIZE; ++i)
-                {
-                    texCoordinatesInVertexOrder.add(0.0f);
-                }
-            }
-            for (int i = 0; i < vertexIndices.size() * NORMAL_SIZE; ++i)
-            {
-                normalsInVertexOrder.add(0.0f);
-            }
-
-            try
-            {
                 if (texCoordinates.size() > 0)
                 {
-                    for (short index : texCoordinatesByVertexIndex.keySet())
+                    for (int i = 0; i < vertexIndices.size() * TEX_COORDINATE_SIZE; ++i)
                     {
-                        for (int i = 0; i < texCoordinatesByVertexIndex.get(index).length; ++i)
+                        texCoordinatesInVertexOrder.add(0.0f);
+                    }
+                }
+                for (int i = 0; i < vertexIndices.size() * NORMAL_SIZE; ++i)
+                {
+                    normalsInVertexOrder.add(0.0f);
+                }
+
+                try
+                {
+                    if (texCoordinates.size() > 0)
+                    {
+                        for (short index : texCoordinatesByVertexIndex.keySet())
                         {
-                            texCoordinatesInVertexOrder.set(index * TEX_COORDINATE_SIZE + i,
-                                                            texCoordinatesByVertexIndex.get(index)[i]);
+                            for (int i = 0; i < texCoordinatesByVertexIndex.get(index).length; ++i)
+                            {
+                                texCoordinatesInVertexOrder.set(index * TEX_COORDINATE_SIZE + i,
+                                                                texCoordinatesByVertexIndex.get(
+                                                                    index)[i]);
+                            }
+                        }
+                    }
+                    for (short index : normalsByVertexIndex.keySet())
+                    {
+                        for (int i = 0; i < normalsByVertexIndex.get(index).length; ++i)
+                        {
+                            normalsInVertexOrder.set(index * NORMAL_SIZE + i,
+                                                     normalsByVertexIndex.get(index)[i]);
                         }
                     }
                 }
-                for (short index : normalsByVertexIndex.keySet())
+                catch (IndexOutOfBoundsException e)
                 {
-                    for (int i = 0; i < normalsByVertexIndex.get(index).length; ++i)
-                    {
-                        normalsInVertexOrder.set(index * NORMAL_SIZE + i,
-                                                 normalsByVertexIndex.get(index)[i]);
-                    }
+                    Logger.logD(
+                        "encountered bad index for model <" + filename + ">, check model format");
+                    e.printStackTrace();
+                    return null;
                 }
-            }
-            catch (IndexOutOfBoundsException e)
-            {
-                Logger.logD(
-                    "encountered bad index for model <" + filename + ">, check model format");
-                e.printStackTrace();
-                return null;
+
+                Logger.logI(
+                    "finished reconstructing indices " + ((float) indexTimer.getTime()) / 1000f +
+                    " seconds", 3);
+
+                Logger.logI("indices: " + vertexIndices.size(), 4);
+                Logger.logI("vertices: " + vertices.size() / VERTEX_SIZE, 4);
+                Logger.logI(
+                    "texCoordinates: " + texCoordinatesInVertexOrder.size() / TEX_COORDINATE_SIZE,
+                    4);
+                Logger.logI("normals: " + normalsInVertexOrder.size() / NORMAL_SIZE, 4);
+
+                Logger.logI("writing model ibo file", 3);
+
+                writeIBO(context,
+                         path,
+                         name,
+                         vertices,
+                         texCoordinatesInVertexOrder,
+                         normalsInVertexOrder,
+                         vertexIndices);
             }
 
-            Logger.logI(
-                "finished reconstructing indices " + ((float) indexTimer.getTime()) / 1000f +
-                " seconds", 3);
+            Logger.logI("making opengl object", 4);
 
             Timer openGLTimer = new Timer();
             openGLTimer.start();
-
-            Logger.logI("indices: " + vertexIndices.size(), 4);
-            Logger.logI("vertices: " + vertices.size() / VERTEX_SIZE, 4);
-            Logger.logI(
-                "texCoordinates: " + texCoordinatesInVertexOrder.size() / TEX_COORDINATE_SIZE, 4);
-            Logger.logI("normals: " + normalsInVertexOrder.size() / NORMAL_SIZE, 4);
-
-            Logger.logI("making opengl object", 4);
 
             ARModelGLES20 arModel = new ARModelGLES20(size);
             arModel.makeVertexBuffer(vertices);
@@ -352,5 +414,190 @@ public class ModelLoader
         }
 
         return null;
+    }
+
+    public static void readIBO(final Context context,
+                               final String filename,
+                               final ArrayList<Float> vertices,
+                               final ArrayList<Float> texCoords,
+                               final ArrayList<Float> normals,
+                               final ArrayList<Short> indices)
+    {
+        try
+        {
+            File ibo = new File(filename);
+
+            FileInputStream fis = new FileInputStream(ibo);
+
+            byte[] vCountBuffer = new byte[INT_SIZE];
+            fis.read(vCountBuffer);
+            int        vCount  = ByteBuffer.wrap(vCountBuffer).getInt();
+            ByteBuffer vBuffer = ByteBuffer.allocate(vCount * FLOAT_SIZE);
+            fis.read(vBuffer.array(), 0, vCount * FLOAT_SIZE);
+            for (int i = 0; i < vCount; ++i)
+            {
+                vertices.add(vBuffer.getFloat(i * FLOAT_SIZE));
+            }
+
+            byte[] vtCountBuffer = new byte[INT_SIZE];
+            fis.read(vtCountBuffer);
+            int        vtCount  = ByteBuffer.wrap(vtCountBuffer).getInt();
+            ByteBuffer vtBuffer = ByteBuffer.allocate(vtCount * FLOAT_SIZE);
+            fis.read(vtBuffer.array(), 0, vtCount * FLOAT_SIZE);
+            for (int i = 0; i < vtCount; ++i)
+            {
+                texCoords.add(vtBuffer.getFloat(i * FLOAT_SIZE));
+            }
+
+            byte[] vnCountBuffer = new byte[INT_SIZE];
+            fis.read(vnCountBuffer);
+            int        vnCount  = ByteBuffer.wrap(vnCountBuffer).getInt();
+            ByteBuffer vnBuffer = ByteBuffer.allocate(vnCount * FLOAT_SIZE);
+            fis.read(vnBuffer.array(), 0, vnCount * FLOAT_SIZE);
+            for (int i = 0; i < vnCount; ++i)
+            {
+                normals.add(vnBuffer.getFloat(i * FLOAT_SIZE));
+            }
+
+            byte[] viCountBuffer = new byte[4];
+            fis.read(viCountBuffer);
+            int        viCount  = ByteBuffer.wrap(viCountBuffer).getInt();
+            ByteBuffer viBuffer = ByteBuffer.allocate(viCount * FLOAT_SIZE);
+            fis.read(viBuffer.array(), 0, viCount * SHORT_SIZE);
+            for (int i = 0; i < viCount; ++i)
+            {
+                indices.add(viBuffer.getShort(i * SHORT_SIZE));
+            }
+
+            fis.close();
+        }
+        catch (FileNotFoundException e)
+        {
+            e.printStackTrace();
+        }
+        catch (IOException e)
+        {
+            e.printStackTrace();
+        }
+    }
+
+    public static void writeIBO(final Context context,
+                                final String path,
+                                final String name,
+                                final ArrayList<Float> vertices,
+                                final ArrayList<Float> texCoords,
+                                final ArrayList<Float> normals,
+                                final ArrayList<Short> indices)
+    {
+        try
+        {
+            Logger.logI(
+                "writing ibo to "
+                + context.getExternalFilesDir(null).toString()
+                + "/genAssets/" + path + name +
+                ".ibo");
+
+            File directory = new File(""
+                                      + context.getExternalFilesDir(null).toString()
+                                      + "/genAssets/" + path);
+            if (!directory.isDirectory())
+            {
+                if (!directory.mkdirs())
+                {
+                    Logger.logI("failed to create directory "
+                                + context.getExternalFilesDir(null).toString()
+                                + "/genAssets/" + path);
+                    return;
+                }
+                else
+                {
+                    Logger.logI(
+                        "created directory "
+                        + context.getExternalFilesDir(null).toString()
+                        + "/genAssets/" +
+                        path);
+                }
+            }
+            else
+            {
+                Logger.logI(
+                    "directory "
+                    + context.getFilesDir().toString()
+                    + "/genAssets/" + path +
+                    " already exists");
+            }
+
+            if (!directory.setReadable(true))
+            {
+                Logger.logI("failed to make directory " + name + ".ibo readable");
+            }
+
+            File ibo = new File(directory, name + ".ibo");
+            if (!ibo.exists())
+            {
+                if (!ibo.createNewFile())
+                {
+                    Logger.logI("failed to create file " + name + ".ibo");
+                    return;
+                }
+                else
+                {
+                    Logger.logI("created file " + name + ".ibo");
+                }
+            }
+
+            if (!ibo.setReadable(true))
+            {
+                Logger.logI("failed to make file " + name + ".ibo readable");
+            }
+
+            FileOutputStream fos = new FileOutputStream(ibo);
+
+            Logger.logD("putting vertex buffer size:<" + vertices.size() + ">", 4);
+
+            fos.write(ByteBuffer.allocate(INT_SIZE).putInt(vertices.size()).array());
+            ByteBuffer vBuffer = ByteBuffer.allocate(vertices.size() * FLOAT_SIZE);
+            for (float v : vertices)
+            {
+                vBuffer.putFloat(v);
+            }
+            fos.write(vBuffer.array());
+
+            Logger.logD("putting texCoord buffer size:<" + texCoords.size() + ">", 4);
+
+            fos.write(ByteBuffer.allocate(INT_SIZE).putInt(texCoords.size()).array());
+            ByteBuffer vtBuffer = ByteBuffer.allocate(texCoords.size() * FLOAT_SIZE);
+            for (float vt : texCoords)
+            {
+                vtBuffer.putFloat(vt);
+            }
+            fos.write(vtBuffer.array());
+
+            Logger.logD("putting normal buffer size:<" + normals.size() + ">", 4);
+
+            fos.write(ByteBuffer.allocate(INT_SIZE).putInt(normals.size()).array());
+            ByteBuffer vnBuffer = ByteBuffer.allocate(normals.size() * FLOAT_SIZE);
+            for (float vn : normals)
+            {
+                vnBuffer.putFloat(vn);
+            }
+            fos.write(vnBuffer.array());
+
+            Logger.logD("putting index buffer size:<" + indices.size() + ">", 4);
+
+            fos.write(ByteBuffer.allocate(INT_SIZE).putInt(indices.size()).array());
+            ByteBuffer viBuffer = ByteBuffer.allocate(indices.size() * SHORT_SIZE);
+            for (short vi : indices)
+            {
+                viBuffer.putShort(vi);
+            }
+            fos.write(viBuffer.array());
+
+            fos.close();
+        }
+        catch (IOException e)
+        {
+            e.printStackTrace();
+        }
     }
 }
