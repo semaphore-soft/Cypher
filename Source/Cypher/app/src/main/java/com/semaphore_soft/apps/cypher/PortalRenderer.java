@@ -16,6 +16,8 @@ import com.semaphore_soft.apps.cypher.opengl.ModelLoader;
 import com.semaphore_soft.apps.cypher.opengl.shader.DynamicShaderProgram;
 import com.semaphore_soft.apps.cypher.opengl.shader.ShaderLoader;
 import com.semaphore_soft.apps.cypher.utils.GameStatLoader;
+import com.semaphore_soft.apps.cypher.utils.Logger;
+import com.semaphore_soft.apps.cypher.utils.Timer;
 
 import org.artoolkit.ar.base.ARToolKit;
 import org.artoolkit.ar.base.rendering.gles20.ARRendererGLES20;
@@ -91,6 +93,9 @@ class PortalRenderer extends ARRendererGLES20
     {
         super.onSurfaceCreated(unused, config);
 
+        Timer loadTimer = new Timer();
+        loadTimer.start();
+
         characterModels = new ArrayList<>();
 
         for (int i = 0; i < 4; ++i)
@@ -146,15 +151,15 @@ class PortalRenderer extends ARRendererGLES20
             for (String name : actorNames)
             {
                 ARDrawableGLES20 actorModel =
-                    ModelLoader.load(context, name, "actors");
+                    ModelLoader.load(context, name, "actors", 10.f);
                 if (actorModel != null)
                 {
                     DynamicShaderProgram actorShaderProgram =
                         new DynamicShaderProgram(ShaderLoader.createShader(context,
-                                                                           "shaders/vertexShaderUntextured.glsl",
+                                                                           "shaders/vertexShaderTextured.glsl",
                                                                            GLES20.GL_VERTEX_SHADER),
                                                  ShaderLoader.createShader(context,
-                                                                           "shaders/fragmentShaderUntextured.glsl",
+                                                                           "shaders/fragmentShaderTextured.glsl",
                                                                            GLES20.GL_FRAGMENT_SHADER),
                                                  new String[]{"a_Position", "a_Color", "a_Normal"});
                     actorModel.setShaderProgram(actorShaderProgram);
@@ -219,7 +224,7 @@ class PortalRenderer extends ARRendererGLES20
         //roomDoorOpen.setColor(0.75f, 0.75f, 0.75f, 1.0f);
         models.put("room_door_open", roomDoorOpen);
 
-        ARDrawableGLES20 error = ModelLoader.load(context, "error", 120.0f);
+        ARDrawableGLES20 error = ModelLoader.load(context, "error", 10.0f);
         DynamicShaderProgram errorShaderProgram =
             new DynamicShaderProgram(ShaderLoader.createShader(context,
                                                                "shaders/vertexShaderUntextured.glsl",
@@ -231,6 +236,9 @@ class PortalRenderer extends ARRendererGLES20
         error.setShaderProgram(errorShaderProgram);
         error.setColor(0.7f, 0.0f, 0.0f, 1.0f);
         models.put("error", error);
+
+        Logger.logI(
+            "renderer finished loading in " + ((float) loadTimer.getTime()) / 1000f + " seconds");
 
         gameController.onFinishedLoading();
     }
@@ -415,7 +423,7 @@ class PortalRenderer extends ARRendererGLES20
             {
                 output += mark0TransInfo[i + j] + " ";
             }
-            System.out.println(output);
+            Logger.logI(output, 5);
         }
 
         res = ((mark0TransInfo[4] >= 0) ? (float) Math.acos(mark0TransInfo[0]) : (float) (Math.PI +
@@ -423,7 +431,7 @@ class PortalRenderer extends ARRendererGLES20
                                                                                               -mark0TransInfo[0])));
 
         res *= (180 / Math.PI);
-        System.out.println("Flat angle in degrees: " + res);
+        Logger.logI("Flat angle in degrees: " + res, 5);
 
         return ((Float.isNaN(res)) ? 0 : res);
     }
@@ -456,7 +464,7 @@ class PortalRenderer extends ARRendererGLES20
         {
             output += aResVector + " ";
         }
-        System.out.println(output);
+        Logger.logI(output, 5);
 
         Matrix.multiplyMV(resVector,
                           0,
@@ -475,7 +483,7 @@ class PortalRenderer extends ARRendererGLES20
         resAngle *= (180 / Math.PI);
         resAngle = ((resAngle < 0) ? (360 + resAngle) : resAngle);
 
-        System.out.println(output);
+        Logger.logI(output, 5);
 
         return ((Float.isNaN(resAngle)) ? 0 : resAngle);
     }
@@ -556,7 +564,7 @@ class PortalRenderer extends ARRendererGLES20
             if (actors.keySet().contains(id))
             {
                 String name = actors.get(id).getName();
-                System.out.println("adding actor:" + id + ":" + name + " to room:" + room.getId());
+                Logger.logI("adding actor:" + id + ":" + name + " to room:" + room.getId(), 2);
                 Actor actor = actors.get(id);
 
                 if (name != null && models.keySet().contains(name))
@@ -569,20 +577,45 @@ class PortalRenderer extends ARRendererGLES20
                     {
                         arRoom.addEnemy(id, models.get(name));
                     }
-                    switch (actor.getState())
+                    if (actor.getHealthCurrent() <= 0)
                     {
-                        case NEUTRAL:
-                            //break;
-                        case ATTACK:
-                            //arRoom.setResidentPose(id, "attack");
-                            //break;
-                        case SPECIAL:
-                            //arRoom.setResidentPose(id, "special");
-                            arRoom.setResidentPose(id, "default");
-                            break;
-                        case DEFEND:
-                            arRoom.setResidentPose(id, "defend");
-                            break;
+                        arRoom.setResidentPose(id, "wounded");
+                    }
+                    else
+                    {
+                        switch (actor.getState())
+                        {
+                            case NEUTRAL:
+                            case ATTACK:
+                            case SPECIAL:
+                                if (GameMaster.getActorIsPlayer(id))
+                                {
+                                    if (GameMaster.getEnemiesInRoom(room.getId()) > 0)
+                                    {
+                                        arRoom.setResidentPose(id, "ready");
+                                    }
+                                    else
+                                    {
+                                        arRoom.setResidentPose(id, "idle");
+                                    }
+                                }
+                                else
+                                {
+                                    if (GameMaster.getPlayersInRoom(room.getId()) > 0)
+                                    {
+                                        arRoom.setResidentPose(id, "ready");
+                                    }
+                                    else
+                                    {
+                                        arRoom.setResidentPose(id, "idle");
+                                    }
+
+                                }
+                                break;
+                            case DEFEND:
+                                arRoom.setResidentPose(id, "defend");
+                                break;
+                        }
                     }
                 }
                 else
@@ -668,7 +701,7 @@ class PortalRenderer extends ARRendererGLES20
                             }
                             break;
                         case "help":
-                            arRoom.setResidentPose(targetId, "defend");
+                            arRoom.setResidentPose(targetId, "heroic");
                             break;
                     }
                 }
@@ -695,16 +728,40 @@ class PortalRenderer extends ARRendererGLES20
         arRoom.clearForwardPlayer();
         arRoom.clearForwardEnemy();
 
+        int gameRoomId = GameMaster.getRoomIdByMarkerId(roomId);
+
         if (actors.get(sourceId).getState() == Actor.E_STATE.DEFEND)
         {
             arRoom.setResidentPose(sourceId, "defend");
         }
         else
         {
-            arRoom.setResidentPose(sourceId, "default");
+            if (GameMaster.getActorIsPlayer(sourceId))
+            {
+                if (GameMaster.getEnemiesInRoom(gameRoomId) > 0)
+                {
+                    arRoom.setResidentPose(sourceId, "ready");
+                }
+                else
+                {
+                    arRoom.setResidentPose(sourceId, "idle");
+                }
+            }
+            else
+            {
+                if (GameMaster.getPlayersInRoom(gameRoomId) > 0)
+                {
+                    arRoom.setResidentPose(sourceId, "ready");
+                }
+                else
+                {
+                    arRoom.setResidentPose(sourceId, "idle");
+                }
+
+            }
         }
 
-        if (actors.contains(targetId))
+        if (actors.containsKey(targetId))
         {
             if (actors.get(sourceId).getState() == Actor.E_STATE.DEFEND)
             {
@@ -712,7 +769,29 @@ class PortalRenderer extends ARRendererGLES20
             }
             else
             {
-                arRoom.setResidentPose(sourceId, "default");
+                if (GameMaster.getActorIsPlayer(sourceId))
+                {
+                    if (GameMaster.getEnemiesInRoom(gameRoomId) > 0)
+                    {
+                        arRoom.setResidentPose(sourceId, "ready");
+                    }
+                    else
+                    {
+                        arRoom.setResidentPose(sourceId, "idle");
+                    }
+                }
+                else
+                {
+                    if (GameMaster.getPlayersInRoom(gameRoomId) > 0)
+                    {
+                        arRoom.setResidentPose(sourceId, "ready");
+                    }
+                    else
+                    {
+                        arRoom.setResidentPose(sourceId, "idle");
+                    }
+
+                }
             }
         }
 

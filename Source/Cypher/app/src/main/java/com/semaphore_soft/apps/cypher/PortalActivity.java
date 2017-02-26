@@ -115,6 +115,7 @@ public class PortalActivity extends ARActivity implements PortalRenderer.NewMark
 
         GameMaster.setModel(model);
 
+        ActorController.setModel(model);
         ActorController.setGameController(this);
 
         PortalRenderer.setHandler(handler);
@@ -178,7 +179,7 @@ public class PortalActivity extends ARActivity implements PortalRenderer.NewMark
     @Override
     public void onCommand(final String cmd)
     {
-        System.out.println("portal activity received commend: " + cmd);
+        Logger.logI("portal activity received command: " + cmd, 3);
 
         if (cmd.startsWith("cmd_btn"))
         {
@@ -216,7 +217,7 @@ public class PortalActivity extends ARActivity implements PortalRenderer.NewMark
                     }
                     break;
                 case "cmd_btnAttack":
-                    uiPortalOverlay.setEnemyTargets(GameMaster.getEnemyTargets(playerId));
+                    uiPortalOverlay.setEnemyTargets(GameMaster.getNonPlayerTargets(playerId));
                     uiPortalOverlay.setSelectMode(UIPortalOverlay.E_SELECT_MODE.ATTACK_TARGET);
                     uiPortalOverlay.overlayEnemyTargetSelect();
                     break;
@@ -237,7 +238,7 @@ public class PortalActivity extends ARActivity implements PortalRenderer.NewMark
                                         false);
                     break;
                 case "cmd_btnSpecial":
-                    uiPortalOverlay.setEnemyTargets(GameMaster.getEnemyTargets(playerId));
+                    uiPortalOverlay.setEnemyTargets(GameMaster.getNonPlayerTargets(playerId));
                     uiPortalOverlay.setPlayerTargets(GameMaster.getPlayerTargets(playerId));
                     uiPortalOverlay.setSpecials(GameMaster.getSpecials(playerId));
                     uiPortalOverlay.setSelectMode(UIPortalOverlay.E_SELECT_MODE.SPECIAL);
@@ -884,6 +885,8 @@ public class PortalActivity extends ARActivity implements PortalRenderer.NewMark
 
         Logger.logD("received action for actor " + sourceId);
 
+        boolean forwardAction = (action.equals("attack") || action.equals("special:harm"));
+
         Room room = GameMaster.getActorRoom(sourceId);
 
         Logger.logD("showing action in renderer");
@@ -894,7 +897,42 @@ public class PortalActivity extends ARActivity implements PortalRenderer.NewMark
                             targetId,
                             1000,
                             action,
-                            true);
+                            forwardAction);
+
+        Logger.logD("exit trace");
+    }
+
+    @Override
+    public void onActorMove(final int actorId, final int roomId)
+    {
+        Logger.logD("enter trace");
+
+        Logger.logD("received move for actor " + actorId + " to room " + roomId);
+
+        int startRoomId = GameMaster.getActorRoomId(actorId);
+
+        GameMaster.moveActor(actorId, roomId);
+
+        renderer.updateRoomResidents(GameMaster.getRoom(startRoomId), model.getActors());
+        renderer.updateRoomResidents(GameMaster.getRoom(roomId), model.getActors());
+
+        if (GameMaster.getPlayersInRoom(roomId) > 0)
+        {
+            Runnable turnDelayer = new Runnable()
+            {
+                @Override
+                public void run()
+                {
+                    postTurn(actorId);
+                }
+            };
+            handler.postDelayed(turnDelayer, 1000);
+            Logger.logD("postTurn posted to execute in " + 1000);
+        }
+        else
+        {
+            postTurn(actorId);
+        }
 
         Logger.logD("exit trace");
     }
@@ -946,7 +984,7 @@ public class PortalActivity extends ARActivity implements PortalRenderer.NewMark
             @Override
             public void run()
             {
-                postTurn();
+                postTurn(actorId);
             }
         };
         handler.postDelayed(turnDelayer, 1000);
@@ -955,9 +993,11 @@ public class PortalActivity extends ARActivity implements PortalRenderer.NewMark
         Logger.logD("exit trace");
     }
 
-    private void postTurn()
+    private void postTurn(final int actorId)
     {
         Logger.logD("enter trace");
+
+        GameMaster.getActor(actorId).tick();
 
         turnId = CollectionManager.getNextIdFromId(turnId, model.getActors());
 
