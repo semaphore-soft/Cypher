@@ -7,8 +7,15 @@ import android.content.Intent;
 import com.semaphore_soft.apps.cypher.utils.Logger;
 
 /**
- * Created by Evan on 2/6/2017.
- * Broadcast Receiver for network events
+ * {@link BroadcastReceiver} for app specific network events
+ *
+ * @author Evan
+ *
+ * @see NetworkConstants
+ * @see com.semaphore_soft.apps.cypher.MainActivity
+ * @see com.semaphore_soft.apps.cypher.ConnectionLobbyActivity
+ * @see com.semaphore_soft.apps.cypher.CharacterSelectActivity
+ * @see com.semaphore_soft.apps.cypher.PortalActivity
  */
 
 public class ResponseReceiver extends BroadcastReceiver
@@ -80,7 +87,7 @@ public class ResponseReceiver extends BroadcastReceiver
     /**
      * Used by {@link ResponseReceiver} to call interface methods.
      *
-     * @param r Instance of ResponseReceiver
+     * @param r Instance of {@link ResponseReceiver}
      */
     public void setListener(Receiver r)
     {

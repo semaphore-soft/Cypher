@@ -3,8 +3,15 @@ package com.semaphore_soft.apps.cypher.networking;
 import android.content.IntentFilter;
 
 /**
- * Created by Evan on 2/6/2017.
  * Class to hold networking specific constants
+ *
+ * @author Evan
+ *
+ * @see ResponseReceiver
+ * @see ServerService
+ * @see ClientService
+ * @see Client
+ * @see Server
  */
 
 public class NetworkConstants

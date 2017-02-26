@@ -9,8 +9,14 @@ import android.support.v4.content.LocalBroadcastManager;
 import com.semaphore_soft.apps.cypher.utils.Logger;
 
 /**
- * Created by Evan on 2/6/2017.
- * Server service
+ * Service to manage {@link com.semaphore_soft.apps.cypher.networking.Server.ClientHandler ServerThread}
+ * actions across activities
+ *
+ * @author Evan
+ *
+ * @see Server
+ * @see com.semaphore_soft.apps.cypher.networking.Server.AcceptorThread
+ * @see com.semaphore_soft.apps.cypher.networking.Server.ClientHandler
  */
 
 public class ServerService extends Service
@@ -27,6 +33,11 @@ public class ServerService extends Service
 
     public class LocalBinder extends Binder
     {
+        /**
+         * Allow host to call {@link ServerService} methods.
+         *
+         * @return An instance of {@link ServerService}
+         */
         public ServerService getService()
         {
             // Return this instance of ServerService so clients can call public methods

@@ -11,8 +11,12 @@ import java.net.Socket;
 import java.net.SocketException;
 
 /**
- * Created by Evan on 2/6/2017.
- * Class to hold client thread and helper methods
+ * Class to hold client thread and helper methods.
+ *
+ * @author Evan
+ *
+ * @see ClientService
+ * @see ClientThread
  */
 
 public class Client

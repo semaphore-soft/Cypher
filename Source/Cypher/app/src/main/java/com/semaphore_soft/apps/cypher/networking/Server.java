@@ -13,8 +13,13 @@ import java.net.SocketOptions;
 import java.util.ArrayList;
 
 /**
- * Created by Evan on 2/6/2017.
  * Class to hold server threads and helper methods
+ *
+ * @author Evan
+ *
+ * @see ServerService
+ * @see AcceptorThread
+ * @see ClientHandler
  */
 
 public class Server

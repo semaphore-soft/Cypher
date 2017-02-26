@@ -12,8 +12,13 @@ import java.net.InetAddress;
 import java.net.UnknownHostException;
 
 /**
- * Created by Evan on 2/6/2017.
- * Client service
+ * Service to manage {@link com.semaphore_soft.apps.cypher.networking.Client.ClientThread ClientThread}
+ * actions across activities
+ *
+ * @author Evan
+ *
+ * @see Client
+ * @see com.semaphore_soft.apps.cypher.networking.Client.ClientThread
  */
 
 public class ClientService extends Service
@@ -31,9 +36,14 @@ public class ClientService extends Service
 
     public class LocalBinder extends Binder
     {
+        /**
+         * Allow clients to call {@link ClientService} methods.
+         *
+         * @return An instance of {@link ClientService}
+         */
         public ClientService getService()
         {
-            // Return this instance of ServerService so clients can call public methods
+            // Return this instance of ClientService so clients can call public methods
             return ClientService.this;
         }
     }
