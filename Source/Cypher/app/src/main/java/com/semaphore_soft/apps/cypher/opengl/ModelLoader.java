@@ -372,13 +372,13 @@ public class ModelLoader
 
                 Logger.logI("writing model ibo file", 3);
 
-                writeIBO(context,
-                         path,
-                         name,
-                         vertices,
-                         texCoordinatesInVertexOrder,
-                         normalsInVertexOrder,
-                         vertexIndices);
+                new ModelLoader().makeIBOWriter(context,
+                                                path,
+                                                name,
+                                                vertices,
+                                                texCoordinatesInVertexOrder,
+                                                normalsInVertexOrder,
+                                                vertexIndices);
             }
 
             Logger.logI("making opengl object", 4);
@@ -431,7 +431,7 @@ public class ModelLoader
 
             byte[] vCountBuffer = new byte[INT_BYTES];
             fis.read(vCountBuffer);
-            int        vCount  = ByteBuffer.wrap(vCountBuffer).getInt();
+            int vCount = ByteBuffer.wrap(vCountBuffer).getInt();
 
             Logger.logD("expected vertex coords:<" + vCount + ">", 4);
 
@@ -445,7 +445,7 @@ public class ModelLoader
 
             byte[] vtCountBuffer = new byte[INT_BYTES];
             fis.read(vtCountBuffer);
-            int        vtCount  = ByteBuffer.wrap(vtCountBuffer).getInt();
+            int vtCount = ByteBuffer.wrap(vtCountBuffer).getInt();
 
             Logger.logD("expected texture coords:<" + vtCount + ">", 4);
 
@@ -459,7 +459,7 @@ public class ModelLoader
 
             byte[] vnCountBuffer = new byte[INT_BYTES];
             fis.read(vnCountBuffer);
-            int        vnCount  = ByteBuffer.wrap(vnCountBuffer).getInt();
+            int vnCount = ByteBuffer.wrap(vnCountBuffer).getInt();
 
             Logger.logD("expected normals coords:<" + vnCount + ">", 4);
 
@@ -473,7 +473,7 @@ public class ModelLoader
 
             byte[] viCountBuffer = new byte[4];
             fis.read(viCountBuffer);
-            int        viCount  = ByteBuffer.wrap(viCountBuffer).getInt();
+            int viCount = ByteBuffer.wrap(viCountBuffer).getInt();
 
             Logger.logD("expected indices:<" + viCount + ">", 4);
 
@@ -614,6 +614,57 @@ public class ModelLoader
         catch (IOException e)
         {
             e.printStackTrace();
+        }
+    }
+
+    private void makeIBOWriter(final Context context,
+                               final String path,
+                               final String name,
+                               final ArrayList<Float> vertices,
+                               final ArrayList<Float> texCoords,
+                               final ArrayList<Float> normals,
+                               final ArrayList<Short> indices)
+    {
+        IBOWriter iboWriter = new IBOWriter(context,
+                                            path,
+                                            name,
+                                            vertices,
+                                            texCoords,
+                                            normals,
+                                            indices);
+        iboWriter.start();
+    }
+
+    private class IBOWriter extends Thread
+    {
+        private Context          context;
+        private String           path;
+        private String           name;
+        private ArrayList<Float> vertices;
+        private ArrayList<Float> texCoords;
+        private ArrayList<Float> normals;
+        private ArrayList<Short> indices;
+
+        IBOWriter(final Context context,
+                  final String path,
+                  final String name,
+                  final ArrayList<Float> vertices,
+                  final ArrayList<Float> texCoords,
+                  final ArrayList<Float> normals,
+                  final ArrayList<Short> indices)
+        {
+            this.context = context;
+            this.path = path;
+            this.name = name;
+            this.vertices = vertices;
+            this.texCoords = texCoords;
+            this.normals = normals;
+            this.indices = indices;
+        }
+
+        public void run()
+        {
+            writeIBO(context, path, name, vertices, texCoords, normals, indices);
         }
     }
 }
