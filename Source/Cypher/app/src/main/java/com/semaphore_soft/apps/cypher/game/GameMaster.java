@@ -59,6 +59,27 @@ public class GameMaster
             }
         }
 
+        ArrayList<Short> walls = new ArrayList<>();
+        for (short i = 0; i < 4; ++i)
+        {
+            walls.add(i);
+        }
+        Collections.shuffle(walls);
+        int numDoors = (int) (Math.random() * 4);
+        int wall     = 0;
+        for (short i : walls)
+        {
+            if (wall <= numDoors)
+            {
+                room.setWallType(i, Room.E_WALL_TYPE.DOOR_UNLOCKED);
+                ++wall;
+            }
+            else
+            {
+                room.setWallType(i, Room.E_WALL_TYPE.NO_DOOR);
+            }
+        }
+
         model.addRoom(id, room);
 
         return room;

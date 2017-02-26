@@ -3,7 +3,6 @@ package com.semaphore_soft.apps.cypher.game;
 import java.util.ArrayList;
 
 import static com.semaphore_soft.apps.cypher.game.Room.E_WALL_TYPE.DOOR_UNLOCKED;
-import static com.semaphore_soft.apps.cypher.game.Room.E_WALL_TYPE.NO_DOOR;
 
 /**
  * Created by rickm on 1/19/2017.
@@ -52,7 +51,7 @@ public class Room
             DOOR_UNLOCKED,
             DOOR_UNLOCKED,
             DOOR_UNLOCKED,
-            NO_DOOR
+            DOOR_UNLOCKED
         };
     }
 
