@@ -8,6 +8,12 @@ import java.util.concurrent.ConcurrentHashMap;
  * describing room location and rotation.
  *
  * @author scorple
+ * @see Room
+ * @see Actor
+ * @see Special
+ * @see Entity
+ * @see Item
+ * @see Map
  */
 public class Model
 {
@@ -21,6 +27,13 @@ public class Model
 
     /**
      * Default constructor. Initializes member HashMaps and Map.
+     *
+     * @see Room
+     * @see Actor
+     * @see Special
+     * @see Entity
+     * @see Item
+     * @see Map
      */
     public Model()
     {
@@ -38,6 +51,8 @@ public class Model
      *
      * @return ConcurrentHashMap: A HashMap associating integer IDs with Room
      * objects.
+     *
+     * @see Room
      */
     public ConcurrentHashMap<Integer, Room> getRooms()
     {
@@ -48,7 +63,9 @@ public class Model
      * Get the HashMap of Actors being maintained my this model.
      *
      * @return ConcurrentHashMap: A HashMap associating integer IDs with Actor
-     *         objects.
+     * objects.
+     *
+     * @see Actor
      */
     public ConcurrentHashMap<Integer, Actor> getActors()
     {
@@ -59,7 +76,9 @@ public class Model
      * Get the HashMap of Specials being maintained my this model.
      *
      * @return ConcurrentHashMap: A HashMap associating integer IDs with
-     *         Special objects.
+     * Special objects.
+     *
+     * @see Special
      */
     public ConcurrentHashMap<Integer, Special> getSpecials()
     {
@@ -70,7 +89,9 @@ public class Model
      * Get the HashMap of Entities being maintained my this model.
      *
      * @return ConcurrentHashMap: A HashMap associating integer IDs with Entity
-     *         objects.
+     * objects.
+     *
+     * @see Entity
      */
     public ConcurrentHashMap<Integer, Entity> getEntities()
     {
@@ -81,7 +102,9 @@ public class Model
      * Get the HashMap of Items being maintained my this model.
      *
      * @return ConcurrentHashMap: A HashMap associating integer IDs with Item
-     *         objects.
+     * objects.
+     *
+     * @see Item
      */
     public ConcurrentHashMap<Integer, Item> getItems()
     {
@@ -93,6 +116,8 @@ public class Model
      * maintained by this model.
      *
      * @return Map: A Map object describing the location and rotation of rooms.
+     *
+     * @see Map
      */
     public Map getMap()
     {
@@ -104,6 +129,8 @@ public class Model
      *
      * @param id   int: The logical reference ID of the Room object being added.
      * @param room Room: The Room object being added.
+     *
+     * @see Room
      */
     public void addRoom(int id, Room room)
     {
@@ -115,6 +142,8 @@ public class Model
      *
      * @param id    int: The logical reference ID of the Actor object being added.
      * @param actor Actor: The Actor object being added.
+     *
+     * @see Actor
      */
     public void addActor(int id, Actor actor)
     {
@@ -126,6 +155,8 @@ public class Model
      *
      * @param id      int: The logical reference ID of the Special being added.
      * @param special Special: The Special object being added.
+     *
+     * @see Special
      */
     public void addSpecial(int id, Special special)
     {
@@ -137,6 +168,8 @@ public class Model
      *
      * @param id     int: The logical reference ID of the Entity being added.
      * @param entity Entity: The Entity object being added.
+     *
+     * @see Entity
      */
     public void addEntity(int id, Entity entity)
     {
@@ -148,6 +181,8 @@ public class Model
      *
      * @param id   int: The logical reference ID of the Item being added.
      * @param item Item: The Item object being added.
+     *
+     * @see Item
      */
     public void addItem(int id, Item item)
     {

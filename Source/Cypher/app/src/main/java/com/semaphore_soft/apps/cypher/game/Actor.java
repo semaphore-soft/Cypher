@@ -10,6 +10,10 @@ import static com.semaphore_soft.apps.cypher.utils.CollectionManager.getNextID;
  * one actor in the game, including its stats, Specials, Items, and Statuses.
  *
  * @author scorple
+ * @see Special
+ * @see Item
+ * @see Status
+ * @see ActorController
  */
 public class Actor
 {
@@ -21,6 +25,13 @@ public class Actor
 
     private String displayName;
 
+    /**
+     * Describes the most recently taken action of an Actor. Used in
+     * determining the effectiveness of attacks and Specials used against this
+     * Actor.
+     *
+     * @see Special
+     */
     public enum E_STATE
     {
         NEUTRAL,
@@ -58,6 +69,8 @@ public class Actor
      * @param id   int: The logical reference ID of this Actor.
      * @param name String: The reference name of this Actor. Primarily used for
      *             logging.
+     *
+     * @see E_STATE
      */
     public Actor(int id, String name)
     {
@@ -76,6 +89,8 @@ public class Actor
      * @param name     String: The reference name of this Actor. Primarily used for
      *                 logging.
      * @param markerID int: The marker/graphical reference ID of this Actor.
+     *
+     * @see E_STATE
      */
     public Actor(int id, String name, int markerID)
     {
@@ -102,6 +117,8 @@ public class Actor
      * @param id     int: The logical reference ID of this Actor.
      * @param roomID int: The logical reference ID of the Room this Actor is
      *               associated with, or a resident of.
+     *
+     * @see E_STATE
      */
     public Actor(int id, int roomID)
     {
@@ -121,6 +138,8 @@ public class Actor
      *               associated with, or a resident of.
      * @param name   String: The reference name of this Actor. Primarily used
      *               for logging.
+     *
+     * @see E_STATE
      */
     public Actor(int id, int roomID, String name)
     {
@@ -208,6 +227,8 @@ public class Actor
      *
      * @param roomID int: The logical reference ID of the Room this Actor is
      *               to associate with, or consider itself a resident of.
+     *
+     * @see Room
      */
     public void setRoom(int roomID)
     {
@@ -220,6 +241,8 @@ public class Actor
      *
      * @return int: The logical reference ID of the Room this Actor associates
      * with, or considers itself to be a member of.
+     *
+     * @see Room
      */
     public int getRoom()
     {
@@ -230,10 +253,10 @@ public class Actor
      * Check whether or not this Actor is a player Actor.
      *
      * @return boolean:
-     *         <ul>
-     *         <li>True if this Actor is considered to be controlled by a player.</li>
-     *         <li>False otherwise.</li>
-     *         </ul>
+     * <ul>
+     * <li>True if this Actor is considered to be controlled by a player.</li>
+     * <li>False otherwise.</li>
+     * </ul>
      */
     public boolean isPlayer()
     {
@@ -345,9 +368,11 @@ public class Actor
      * ability to use.
      *
      * @return ConcurrentHashMap: A HashMap associating integer IDs with
-     *         Special objects.
+     * Special objects.
+     *
+     * @see Special
      */
-    public ConcurrentHashMap<Integer, Special> getSpecials()
+    ConcurrentHashMap<Integer, Special> getSpecials()
     {
         return specials;
     }
@@ -357,6 +382,8 @@ public class Actor
      * ability to use.
      *
      * @param special Special: The Special object being associated with.
+     *
+     * @see Special
      */
     public void addSpecial(Special special)
     {
@@ -374,6 +401,8 @@ public class Actor
      *
      * @param specialMaximum int: The maximum amount of special energy this
      *                       Actor will be able to have.
+     *
+     * @see Special
      */
     public void setSpecialMaximum(int specialMaximum)
     {
@@ -387,6 +416,8 @@ public class Actor
      * to recover more than this amount of special energy.
      *
      * @return int: The maximum amount of special energy this Actor can have.
+     *
+     * @see Special
      */
     public int getSpecialMaximum()
     {
@@ -401,6 +432,8 @@ public class Actor
      *
      * @param specialCurrent int: The new current amount of special energy this
      *                       Actor has.
+     *
+     * @see Special
      */
     public void setSpecialCurrent(int specialCurrent)
     {
@@ -414,8 +447,10 @@ public class Actor
      * a Special move.
      *
      * @return int: The current amount of special energy this Actor has.
+     *
+     * @see Special
      */
-    public int getSpecialCurrent()
+    int getSpecialCurrent()
     {
         return specialCurrent;
     }
@@ -426,6 +461,8 @@ public class Actor
      * Used in determining the strength of Special move Effects.
      *
      * @param specialRating int: The base Special rating this Actor will have.
+     *
+     * @see Special
      */
     public void setSpecialRating(int specialRating)
     {
@@ -438,6 +475,8 @@ public class Actor
      * Used in determining the strength of Special move Effects.
      *
      * @return int: The base Special rating of this Actor.
+     *
+     * @see Special
      */
     public int getSpecialRating()
     {
@@ -478,8 +517,10 @@ public class Actor
      * Actor.
      *
      * @param state E_STATE: The new state of this Actor.
+     *
+     * @see E_STATE
      */
-    public void setState(E_STATE state)
+    void setState(E_STATE state)
     {
         this.state = state;
     }
@@ -492,6 +533,8 @@ public class Actor
      * Actor.
      *
      * @return E_STATE: The state of this Actor.
+     *
+     * @see E_STATE
      */
     public E_STATE getState()
     {
@@ -506,8 +549,10 @@ public class Actor
      * this many attack tickets in the 'action lottery'.
      *
      * @return int: The number of attack tickets given to this Actor.
+     *
+     * @see ActorController
      */
-    public int getAttackTickets()
+    int getAttackTickets()
     {
         return attackTickets;
     }
@@ -521,6 +566,8 @@ public class Actor
      *
      * @param attackTickets int: The number of attack tickets to be given to
      *                      this Actor.
+     *
+     * @see ActorController
      */
     public void setAttackTickets(int attackTickets)
     {
@@ -536,8 +583,10 @@ public class Actor
      * lottery'.
      *
      * @return int: The number of defend tickets given to this Actor.
+     *
+     * @see ActorController
      */
-    public int getDefendTickets()
+    int getDefendTickets()
     {
         return defendTickets;
     }
@@ -552,6 +601,8 @@ public class Actor
      *
      * @param defendTickets int: The number of defend tickets to be given to
      *                      this Actor.
+     *
+     * @see ActorController
      */
     public void setDefendTickets(int defendTickets)
     {
@@ -568,8 +619,10 @@ public class Actor
      * lottery'.
      *
      * @return The number of Special tickets given to this Actor.
+     *
+     * @see ActorController
      */
-    public int getSpecialTickets()
+    int getSpecialTickets()
     {
         return specialTickets;
     }
@@ -585,6 +638,8 @@ public class Actor
      *
      * @param specialTickets int: The number of Special tickets to be given to
      *                       this Actor.
+     *
+     * @see ActorController
      */
     public void setSpecialTickets(int specialTickets)
     {
@@ -599,8 +654,10 @@ public class Actor
      * will enter this many move tickets in the 'action lottery'.
      *
      * @return int: The number of move tickets given to this Actor.
+     *
+     * @see ActorController
      */
-    public int getMoveTickets()
+    int getMoveTickets()
     {
         return moveTickets;
     }
@@ -614,6 +671,8 @@ public class Actor
      *
      * @param moveTickets int: The number of move tickets to be given to this
      *                    Actor.
+     *
+     * @see ActorController
      */
     public void setMoveTickets(int moveTickets)
     {
@@ -629,12 +688,12 @@ public class Actor
      * to fight.
      *
      * @return boolean:
-     *         <ul>
-     *         <li>True of this Actor is considered a 'seeker'.</li>
-     *         <li>False otherwise.</li>
-     *         </ul>
+     * <ul>
+     * <li>True of this Actor is considered a 'seeker'.</li>
+     * <li>False otherwise.</li>
+     * </ul>
      */
-    public boolean isSeeker()
+    boolean isSeeker()
     {
         return seeker;
     }
@@ -652,6 +711,8 @@ public class Actor
      *               <li>True of this Actor is to be considered a 'seeker'.</li>
      *               <li>False otherwise.</li>
      *               </ul>
+     *
+     * @see ActorController
      */
     public void setSeeker(boolean seeker)
     {
@@ -665,7 +726,7 @@ public class Actor
      *
      * @param actor Actor: The target of this Actor's attack.
      */
-    public void attack(Actor actor)
+    void attack(Actor actor)
     {
         actor.receiveAttack(getRealAttackRating());
 
@@ -717,11 +778,11 @@ public class Actor
      * @param actor   Actor: The target Actor of this Actor's Special ability.
      *
      * @return boolean:
-     *         <ul>
-     *         <li>True if this Actor had enough Special energy to perform the
-     *         given Special ability.</li>
-     *         <li>False otherwise.</li>
-     *         </ul>
+     * <ul>
+     * <li>True if this Actor had enough Special energy to perform the
+     * given Special ability.</li>
+     * <li>False otherwise.</li>
+     * </ul>
      */
     public boolean performSpecial(Special special, Actor actor)
     {
@@ -750,12 +811,13 @@ public class Actor
      * @param special Special: The Special ability to attempt to perform.
      * @param actors  ArrayList: The list of target Actors of this Actor's
      *                Special ability.
+     *
      * @return boolean:
-     *         <ul>
-     *         <li>True if this Actor had enough Special energy to perform the
-     *         given Special ability.</li>
-     *         <li>False otherwise.</li>
-     *         </ul>
+     * <ul>
+     * <li>True if this Actor had enough Special energy to perform the
+     * given Special ability.</li>
+     * <li>False otherwise.</li>
+     * </ul>
      */
     public boolean performSpecial(Special special, ArrayList<Actor> actors)
     {
@@ -818,6 +880,12 @@ public class Actor
      *
      * @param itemID int: The logical reference ID of the Item to dissociate,
      *               or remove from, this Actor.
+     *
+     * @see Item
+     * @see ItemConsumable
+     * @see ItemDurable
+     * @see StatusLinked
+     * @see Status
      */
     public void removeItem(int itemID)
     {
@@ -847,6 +915,12 @@ public class Actor
      *
      * @param item Item: The Item object to dissociate, or remove from, this
      *             Actor.
+     *
+     * @see Item
+     * @see ItemConsumable
+     * @see ItemDurable
+     * @see StatusLinked
+     * @see Status
      */
     public void removeItem(Item item)
     {
@@ -869,6 +943,8 @@ public class Actor
      * Add a single Status for this Actor to associate with, or 'have'.
      *
      * @param status Status: The new Status for this Actor to associate with.
+     *
+     * @see Status
      */
     public void addStatus(Status status)
     {
@@ -892,8 +968,15 @@ public class Actor
      *                     created.
      * @param duration     int: The duration of the StatusTemporary to be
      *                     created.
+     *
+     * @see Status.E_STATUS_TYPE
+     * @see StatusTemporary
+     * @see Status
+     * @see ItemConsumable
+     * @see Item
+     * @see Special
      */
-    public void addNewStatusTemporary(Status.E_STATUS_TYPE type, int effectRating, int duration)
+    void addNewStatusTemporary(Status.E_STATUS_TYPE type, int effectRating, int duration)
     {
         StatusTemporary status =
             new StatusTemporary(getNextID(statuses), type, effectRating, duration);
@@ -915,8 +998,14 @@ public class Actor
      *                     created.
      * @param linkId       int: The logical reference ID of the Item to which
      *                     the StatusLinked being created is linked.
+     *
+     * @see Status.E_STATUS_TYPE
+     * @see StatusLinked
+     * @see Status
+     * @see ItemDurable
+     * @see Item
      */
-    public void addNewStatusLinked(Status.E_STATUS_TYPE type, int effectRating, int linkId)
+    void addNewStatusLinked(Status.E_STATUS_TYPE type, int effectRating, int linkId)
     {
         StatusLinked status = new StatusLinked(getNextID(statuses), type, effectRating, linkId);
 
@@ -928,6 +1017,8 @@ public class Actor
      *
      * @param statusID int: The logical reference ID of the Status to remove
      *                 from this Actor.
+     *
+     * @see Status
      */
     public void removeStatus(int statusID)
     {
@@ -941,8 +1032,10 @@ public class Actor
      * Dissociate, or remove, a Status from this Actor.
      *
      * @param status Status: The Status object to remove from this Actor.
+     *
+     * @see Status
      */
-    public void removeStatus(Status status)
+    private void removeStatus(Status status)
     {
         if (statuses.containsKey(status.getId()))
         {
@@ -951,13 +1044,17 @@ public class Actor
     }
 
     //TODO the following three methods are almost identical, merge them somehow?
+
     /**
      * Get this Actor's attack rating modified by any Statuses this Actor has
      * which impact attack rating.
      *
      * @return int: This Actor's attack rating modified by Statuses.
+     *
+     * @see Status
+     * @see Status.E_STATUS_TYPE
      */
-    public int getRealAttackRating()
+    private int getRealAttackRating()
     {
         int realAttackRating = attackRating;
 
@@ -978,8 +1075,11 @@ public class Actor
      * which impact Special rating.
      *
      * @return int: This Actor's Special rating modified by Statuses.
+     *
+     * @see Status
+     * @see Status.E_STATUS_TYPE
      */
-    public int getRealSpecialRating()
+    private int getRealSpecialRating()
     {
         int realSpecialRating = specialRating;
 
@@ -1000,8 +1100,11 @@ public class Actor
      * which impact defense rating.
      *
      * @return int: This Actor's defense rating modified by Statuses.
+     *
+     * @see Status
+     * @see Status.E_STATUS_TYPE
      */
-    public int getRealDefenceRating()
+    int getRealDefenceRating()
     {
         int realDefenceRating = defenceRating;
 
@@ -1025,6 +1128,9 @@ public class Actor
      *
      * @param itemID int: The logical reference ID of the ConsumableItem to
      *               apply the effects of to this Actor.
+     *
+     * @see ItemConsumable
+     * @see Item
      */
     public void useItem(int itemID)
     {
@@ -1041,8 +1147,11 @@ public class Actor
      *
      * @param item Item: The ConsumableItem object to apply the effects of to
      *             this Actor.
+     *
+     * @see ItemConsumable
+     * @see Item
      */
-    public void useItem(Item item)
+    private void useItem(Item item)
     {
         if (items.containsKey(item.getID()))
         {
@@ -1064,6 +1173,9 @@ public class Actor
      * with and remove any expired Statuses.
      * <p>
      * To be called at the end of an Actor's turn.
+     *
+     * @see StatusTemporary
+     * @see Status
      */
     public void tick()
     {

@@ -36,7 +36,7 @@ public class Room
     /**
      * Logical ID and marker ID constructor.
      * <p>
-     * Creates a Room object representing a game room associated with an A
+     * Creates a Room object representing a game room associated with an AR
      * marker but is not yet considered to be 'placed', accessible, or
      * connected to the rest of game map.
      *
@@ -182,7 +182,7 @@ public class Room
      * be residents of, this Room.
      *
      * @return ArrayList: A list of IDs of all the Actors associated with, or
-     *         considered to be residents of, this Room.
+     * considered to be residents of, this Room.
      */
     public ArrayList<Integer> getResidentActors()
     {
@@ -227,7 +227,7 @@ public class Room
      * to be located within, this Room.
      *
      * @return ArrayList: A list of IDs of all the Entities associated with, or
-     *         considered to be located within, this Room.
+     * considered to be located within, this Room.
      */
     public ArrayList<Integer> getResidentEntities()
     {
@@ -249,7 +249,7 @@ public class Room
      *             position references will also be rotated.
      *
      * @return E_WALL_TYPE: The type of the wall at the given wall position
-     *         reference ID.
+     * reference ID.
      */
     public E_WALL_TYPE getWallType(short wall)
     {
