@@ -27,6 +27,9 @@ import java.util.Set;
 
 /**
  * Created by Scorple on 1/9/2017.
+ * Activity where players will choose their characters.
+ * Only one of each character is allowed.
+ * @see UICharacterSelect
  */
 
 public class CharacterSelectActivity extends AppCompatActivity implements ResponseReceiver.Receiver,
@@ -86,6 +89,7 @@ public class CharacterSelectActivity extends AppCompatActivity implements Respon
         uiCharacterSelect.setStartEnabled(false);
     }
 
+    // Runnable to send heartbeat signal to client
     private Runnable heartbeat = new Runnable()
     {
         @Override
@@ -137,6 +141,11 @@ public class CharacterSelectActivity extends AppCompatActivity implements Respon
         sendHeartbeat = false;
     }
 
+    /**
+     * {@inheritDoc}
+     *
+     * @param cmd Command from UI interaction
+     */
     @Override
     public void onCommand(String cmd)
     {
@@ -161,6 +170,12 @@ public class CharacterSelectActivity extends AppCompatActivity implements Respon
         }
     }
 
+    /**
+     * {@inheritDoc}
+     * Verifies that only one of each character is selected.
+     * @param msg Message read from network
+     * @param readFrom Device that message was received from
+     */
     @Override
     public void handleRead(String msg, int readFrom)
     {
@@ -227,6 +242,12 @@ public class CharacterSelectActivity extends AppCompatActivity implements Respon
         }
     }
 
+    /**
+     * {@inheritDoc}
+     * Synchronizes state with client after a reconnect.
+     * @param msg Status update
+     * @param readFrom Device that update was received from
+     */
     @Override
     public void handleStatus(String msg, int readFrom)
     {
@@ -247,6 +268,12 @@ public class CharacterSelectActivity extends AppCompatActivity implements Respon
         }
     }
 
+    /**
+     * {@inheritDoc}
+     * Resets client selections after a reconnect to they can be synchronized by the host.
+     * @param msg Error message
+     * @param readFrom Device that error was received from
+     */
     @Override
     public void handleError(String msg, int readFrom)
     {
@@ -261,6 +288,10 @@ public class CharacterSelectActivity extends AppCompatActivity implements Respon
         }
     }
 
+    /**
+     * Update the host with the players characters selection.
+     * @param selection Character selected by player
+     */
     private void postSelection(String selection)
     {
         CharacterSelectActivity.selection = selection;
@@ -275,6 +306,9 @@ public class CharacterSelectActivity extends AppCompatActivity implements Respon
         ready = true;
     }
 
+    /**
+     * Remove a players character selection and update game status.
+     */
     private void clearSelection()
     {
         if (host)
@@ -299,6 +333,12 @@ public class CharacterSelectActivity extends AppCompatActivity implements Respon
         ready = false;
     }
 
+    /**
+     * Checks if players selection is valid and updates the players character selection and
+     * ready status.
+     * @param selection Character selected by player
+     * @param player Player ID
+     */
     private void updateSelection(String selection, int player)
     {
         if (characterSelections.containsValue(selection))
@@ -333,6 +373,10 @@ public class CharacterSelectActivity extends AppCompatActivity implements Respon
         serverService.writeAll(NetworkConstants.PF_READY + playersReady + ":" + (numClients + 1));
     }
 
+    /**
+     * Remove a given players character selection and notify clients.
+     * @param player ID of player
+     */
     private void removePlayer(int player)
     {
         String character = characterSelections.get(player);
@@ -341,6 +385,10 @@ public class CharacterSelectActivity extends AppCompatActivity implements Respon
         characterSelections.remove(player);
     }
 
+    /**
+     * Starts {@code PortalActivity}.
+     * @see PortalActivity
+     */
     private void startAR()
     {
         Toast.makeText(CharacterSelectActivity.this, "Starting AR Activity", Toast.LENGTH_SHORT)

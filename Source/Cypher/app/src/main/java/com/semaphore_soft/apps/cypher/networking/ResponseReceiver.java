@@ -19,6 +19,7 @@ public class ResponseReceiver extends BroadcastReceiver
     {
     }
 
+    @Override
     public void onReceive(Context context, Intent intent)
     {
         String action = intent.getAction();
@@ -51,16 +52,31 @@ public class ResponseReceiver extends BroadcastReceiver
 
     public interface Receiver
     {
+        /**
+         * Handle messages that have been read from the network.
+         *
+         * @param msg      Message read from network
+         * @param readFrom Device that message was received from
+         */
         void handleRead(String msg, int readFrom);
 
+        /**
+         * Handle status updates.
+         * @param msg Status update
+         * @param readFrom Device that update was received from
+         */
         void handleStatus(String msg, int readFrom);
 
+        /**
+         * Handle error messages.
+         * @param msg Error message
+         * @param readFrom Device that error was received from
+         */
         void handleError(String msg, int readFrom);
     }
 
     /**
-     * Used by ResponseReceiver to call interface methods
-     *
+     * Used by ResponseReceiver to call interface methods.
      * @param r Instance of ResponseReceiver
      */
     public void setListener(Receiver r)

@@ -12,6 +12,8 @@ import com.semaphore_soft.apps.cypher.R;
 
 /**
  * Created by Scorple on 2/19/2017.
+ * UI class for {@code CharacterSelectActivity}.
+ * @see com.semaphore_soft.apps.cypher.CharacterSelectActivity
  */
 
 public class UICharacterSelect extends UIBase
@@ -109,16 +111,29 @@ public class UICharacterSelect extends UIBase
         });
     }
 
+    /**
+     * Set ready status of all players.
+     *
+     * @param status status of players
+     */
     public void setStatus(String status)
     {
         txtStatus.setText(status);
     }
 
+    /**
+     * Set if game can be continued by the host.
+     * @param enabled whether or not button is enabled
+     */
     public void setStartEnabled(boolean enabled)
     {
         btnStart.setEnabled(enabled);
     }
 
+    /**
+     * Update UI to show player's selection.
+     * @param selection Player's selection
+     */
     private void setSelection(String selection)
     {
         if (selected.equals(selection))
@@ -161,6 +176,9 @@ public class UICharacterSelect extends UIBase
         }
     }
 
+    /**
+     * Update UI to clear player's selection
+     */
     public void clearSelection()
     {
         selected = "";
@@ -171,6 +189,11 @@ public class UICharacterSelect extends UIBase
         notifyListener("clear");
     }
 
+    /**
+     * Set whether or not a character can be chosen by a player
+     * @param selection Character to enable or disable
+     * @param enabled Whether to enable or disable selection
+     */
     public void setButtonEnabled(String selection, boolean enabled)
     {
         switch (selection)

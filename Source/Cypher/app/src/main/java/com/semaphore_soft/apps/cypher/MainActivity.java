@@ -1,6 +1,5 @@
 package com.semaphore_soft.apps.cypher;
 
-
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.DialogInterface;
@@ -83,6 +82,11 @@ public class MainActivity extends AppCompatActivity implements GetNameDialogFrag
         }
     }
 
+    /**
+     * Creates an instance of {@code GetNameDialogFragment}.
+     *
+     * @see GetNameDialogFragment
+     */
     private void showGetNameDialog()
     {
         FragmentManager       fm                    = getSupportFragmentManager();
@@ -91,6 +95,10 @@ public class MainActivity extends AppCompatActivity implements GetNameDialogFrag
         getNameDialogFragment.show(fm, "get_name_dialog");
     }
 
+    /**
+     * Creates an instance of {@code ConnectFragment}.
+     * @see ConnectFragment
+     */
     private void showConnectDialog()
     {
         FragmentManager fm              = getSupportFragmentManager();
@@ -124,6 +132,14 @@ public class MainActivity extends AppCompatActivity implements GetNameDialogFrag
         return super.onOptionsItemSelected(item);
     }
 
+    /**
+     * {@inheritDoc}
+     * Starts {@code Client}.
+     * @see ClientService
+     * @see com.semaphore_soft.apps.cypher.networking.Client
+     * @param addr Address to connect to
+     * @param name Name of the player
+     */
     @Override
     public void startClient(String addr, String name)
     {
@@ -132,6 +148,13 @@ public class MainActivity extends AppCompatActivity implements GetNameDialogFrag
         clientService.startClient(addr);
     }
 
+    /**
+     * {@inheritDoc}
+     * Starts {@code Server}.
+     * @see ServerService
+     * @see com.semaphore_soft.apps.cypher.networking.Server
+     * @param name Name of the player
+     */
     @Override
     public void onFinishGetName(String name)
     {
@@ -141,12 +164,25 @@ public class MainActivity extends AppCompatActivity implements GetNameDialogFrag
         serverService.startServer();
     }
 
+    /**
+     * {@inheritDoc}
+     * @param msg Message read from network
+     * @param readFrom Device that message was received from
+     */
     @Override
     public void handleRead(String msg, int readFrom)
     {
         Toast.makeText(this, msg, Toast.LENGTH_SHORT).show();
     }
 
+    /**
+     * {@inheritDoc}
+     * Moves players to {@code ConnectionLobbyActivity} when client or server
+     * notify that they have successfully started a connection.
+     * @see ConnectionLobbyActivity
+     * @param msg Status update
+     * @param readFrom Device that update was received from
+     */
     @Override
     public void handleStatus(String msg, int readFrom)
     {
@@ -165,6 +201,12 @@ public class MainActivity extends AppCompatActivity implements GetNameDialogFrag
         }
     }
 
+    /**
+     * {@inheritDoc}
+     * Shows alert if client was unable to successfully start a connection.
+     * @param msg Error message
+     * @param readFrom Device that error was received from
+     */
     @Override
     public void handleError(String msg, int readFrom)
     {
@@ -188,6 +230,10 @@ public class MainActivity extends AppCompatActivity implements GetNameDialogFrag
         }
     }
 
+    /**
+     * {@inheritDoc}
+     * @param cmd Command from UI interaction
+     */
     @Override
     public void onCommand(String cmd)
     {
