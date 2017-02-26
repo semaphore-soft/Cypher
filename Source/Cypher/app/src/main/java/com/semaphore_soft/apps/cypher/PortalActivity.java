@@ -69,6 +69,7 @@ public class PortalActivity extends ARActivity implements PortalRenderer.NewMark
     private static boolean turn;
     private static int     turnId;
 
+    // Runnable to send heartbeat signal to clients
     private Runnable heartbeat = new Runnable()
     {
         @Override
@@ -176,6 +177,11 @@ public class PortalActivity extends ARActivity implements PortalRenderer.NewMark
         return (FrameLayout) this.findViewById(R.id.portal_frame);
     }
 
+    /**
+     * {@inheritDoc}
+     *
+     * @param cmd Command from UI interaction
+     */
     @Override
     public void onCommand(final String cmd)
     {
@@ -281,18 +287,36 @@ public class PortalActivity extends ARActivity implements PortalRenderer.NewMark
         }
     }
 
+    /**
+     * {@inheritDoc}
+     *
+     * @param msg      Message read from network
+     * @param readFrom Device that message was received from
+     */
     @Override
     public void handleRead(final String msg, final int readFrom)
     {
         Toast.makeText(this, "Read: " + msg, Toast.LENGTH_SHORT).show();
     }
 
+    /**
+     * {@inheritDoc}
+     *
+     * @param msg Status update
+     * @param readFrom Device that update was received from
+     */
     @Override
     public void handleStatus(final String msg, int readFrom)
     {
         Toast.makeText(this, "Status: " + msg, Toast.LENGTH_SHORT).show();
     }
 
+    /**
+     * {@inheritDoc}
+     *
+     * @param msg Error message
+     * @param readFrom Device that error was received from
+     */
     @Override
     public void handleError(final String msg, int readFrom)
     {

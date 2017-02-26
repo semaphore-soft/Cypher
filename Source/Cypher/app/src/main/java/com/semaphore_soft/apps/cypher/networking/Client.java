@@ -11,8 +11,12 @@ import java.net.Socket;
 import java.net.SocketException;
 
 /**
- * Created by Evan on 2/6/2017.
- * Class to hold client thread and helper methods
+ * Class to hold client thread and helper methods.
+ *
+ * @author Evan
+ *
+ * @see ClientService
+ * @see ClientThread
  */
 
 public class Client
@@ -23,6 +27,16 @@ public class Client
     {
     }
 
+    /**
+     * Starts the {@link ClientThread ClientThread}.
+     *
+     * @param addr   Address to connect to.
+     * @param client An instance of {@link ClientService} that will interact with the thread.
+     *
+     * @return An instance of {@link ClientThread ClientThread} that is connected to {@code addr}.
+     *
+     * @see ClientService#startClient(String)
+     */
     public ClientThread startClient(InetAddress addr, ClientService client)
     {
         clientService = client;
@@ -31,12 +45,25 @@ public class Client
         return clientThread;
     }
 
+    /**
+     * Thread that connects to the server
+     *
+     * @see ClientThread#ClientThread(InetAddress)
+     * @see com.semaphore_soft.apps.cypher.networking.Server.ClientHandler
+     */
     public class ClientThread extends Thread
     {
         Socket mySocket = null;
         private boolean     running     = true;
         private InetAddress inetAddress = null;
 
+        /**
+         * Create new thread that is connected to {@code address}.
+         *
+         * @param address Address to connect to.
+         *
+         * @see Client#startClient(InetAddress, ClientService)
+         */
         public ClientThread(InetAddress address)
         {
             try
@@ -71,6 +98,11 @@ public class Client
             }
         }
 
+        /**
+         * Write message to server.
+         *
+         * @param str Message to write.
+         */
         public void write(String str)
         {
             try
@@ -88,6 +120,14 @@ public class Client
             }
         }
 
+        /**
+         * Reads in data from the network.
+         * Will attempt to reconnect if {@link Socket} connection is broken.
+         *
+         * @return Message that was read.
+         *
+         * @see ClientThread#reconnectSocket()
+         */
         private String read()
         {
             try
@@ -115,17 +155,36 @@ public class Client
             return null;
         }
 
+        /**
+         * Sends message that has been read to be processed by other activities.
+         *
+         * @param msg Message that was read.
+         *
+         * @see ClientService#threadRead(String)
+         */
         private void processMessage(String msg)
         {
             Logger.logI(msg);
             clientService.threadRead(msg);
         }
 
+        /**
+         * Get the {@link java.net.SocketAddress SocketAddress} that the client is connected to.
+         *
+         * @return Host's address as a string
+         *
+         * @see ClientService#getHostIP()
+         */
         public String getSocketAddress()
         {
             return mySocket.getRemoteSocketAddress().toString();
         }
 
+        /**
+         * Will try to reconnect to client if {@link Socket} connection is lost.
+         * This method will wait some amount of time for the host
+         * to notice that it has disconnected before attempting to reconnect.
+         */
         public void reconnectSocket()
         {
             try

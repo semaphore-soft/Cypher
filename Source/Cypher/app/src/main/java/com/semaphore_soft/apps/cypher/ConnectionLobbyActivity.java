@@ -30,6 +30,10 @@ import java.util.Enumeration;
 
 /**
  * Created by Scorple on 1/9/2017.
+ * Activity where players will start after they have connected to the host and
+ * wait for other players to join.
+ *
+ * @see UIConnectionLobby
  */
 
 public class ConnectionLobbyActivity extends AppCompatActivity implements ResponseReceiver.Receiver,
@@ -145,6 +149,12 @@ public class ConnectionLobbyActivity extends AppCompatActivity implements Respon
         }
     }
 
+    /**
+     * Assign new players an ID and update clients with new players.
+     *
+     * @param player Name of player
+     * @param id     ID to be assigned to player
+     */
     private void addPlayer(String player, int id)
     {
         PlayerID playerID = new PlayerID();
@@ -164,6 +174,11 @@ public class ConnectionLobbyActivity extends AppCompatActivity implements Respon
         }
     }
 
+    /**
+     * {@inheritDoc}
+     *
+     * @param cmd Command from UI interaction
+     */
     public void onCommand(String cmd)
     {
         switch (cmd)
@@ -188,6 +203,12 @@ public class ConnectionLobbyActivity extends AppCompatActivity implements Respon
         }
     }
 
+    /**
+     * {@inheritDoc}
+     *
+     * @param msg Message read from network
+     * @param readFrom Device that message was received from
+     */
     @Override
     public void handleRead(String msg, int readFrom)
     {
@@ -219,12 +240,24 @@ public class ConnectionLobbyActivity extends AppCompatActivity implements Respon
         }
     }
 
+    /**
+     * {@inheritDoc}
+     *
+     * @param msg Status update
+     * @param readFrom Device that update was received from
+     */
     @Override
     public void handleStatus(String msg, int readFrom)
     {
         Toast.makeText(this, "Status: " + msg, Toast.LENGTH_SHORT).show();
     }
 
+    /**
+     * {@inheritDoc}
+     *
+     * @param msg Error message
+     * @param readFrom Device that error was received from
+     */
     @Override
     public void handleError(String msg, int readFrom)
     {

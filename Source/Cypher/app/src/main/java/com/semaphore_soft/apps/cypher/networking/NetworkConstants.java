@@ -3,8 +3,15 @@ package com.semaphore_soft.apps.cypher.networking;
 import android.content.IntentFilter;
 
 /**
- * Created by Evan on 2/6/2017.
  * Class to hold networking specific constants
+ *
+ * @author Evan
+ *
+ * @see ResponseReceiver
+ * @see ServerService
+ * @see ClientService
+ * @see Client
+ * @see Server
  */
 
 public class NetworkConstants
@@ -57,6 +64,13 @@ public class NetworkConstants
     public static final int HEARTBEAT_DELAY = 5000;
 
 
+    /**
+     * Method to get {@link IntentFilter IntentFilters} for registering a broadcast receiver
+     *
+     * @return An IntentFilter for ResponseReceiver
+     *
+     * @see ResponseReceiver
+     */
     public static IntentFilter getFilter()
     {
         IntentFilter intentFilter = new IntentFilter();
