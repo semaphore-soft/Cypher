@@ -1,11 +1,32 @@
 package com.semaphore_soft.apps.cypher.game;
 
 /**
- * Created by rickm on 2/4/2017.
+ * {@link Effect game.Effect} provides a list of effect types for {@link Item
+ * Items} and {@link Special Specials} to associate with, and the methods
+ * necessary to apply an effect to an {@link Actor}, directly modifying {@link
+ * Actor} stats or applying new {@link Status Statuses} to {@link Actor Actors}
+ * as necessary.
+ *
+ * @author scorple
+ * @see Item
+ * @see ItemConsumable
+ * @see ItemDurable
+ * @see Special
+ * @see Actor
+ * @see Status
+ * @see StatusLinked
+ * @see StatusTemporary
  */
-
 public abstract class Effect
 {
+    /**
+     * Describes a stat effect applied by an {@link Item} or {@link Special}.
+     *
+     * @see Item
+     * @see ItemConsumable
+     * @see ItemDurable
+     * @see Special
+     */
     public enum E_EFFECT
     {
         HEAL,
@@ -22,10 +43,35 @@ public abstract class Effect
         DEFENCE_RATING_DOWN
     }
 
-    public static void applyTemporaryEffect(E_EFFECT effect,
-                                            int effectRating,
-                                            int duration,
-                                            Actor actor)
+    /**
+     * Applies an {@link Effect} temporarily to an {@link Actor}, either performing
+     * an instantaneous change of one of the {@link Actor Actor's} stats, or
+     * creating and applying a new {@link StatusTemporary} to that {@link
+     * Actor}, based on the provided {@link Effect} rating and duration.
+     * <p>
+     * Invoked by the use of an {@link ItemConsumable} or a {@link Special}.
+     *
+     * @param effect       {@link E_EFFECT}: The type of effect to apply to the
+     *                     target {@link Actor}.
+     * @param effectRating int: The rating of the {@link Effect} modifier to apply to
+     *                     the target {@link Actor}.
+     * @param duration     int: The duration of any {@link StatusTemporary} to
+     *                     be applied to the target {@link Actor}.
+     * @param actor        {@link Actor}: The target to apply the given {@link Effect}
+     *                     to.
+     *
+     * @see E_EFFECT
+     * @see Actor
+     * @see StatusTemporary
+     * @see Status
+     * @see ItemConsumable
+     * @see Item
+     * @see Special
+     */
+    static void applyTemporaryEffect(E_EFFECT effect,
+                                     int effectRating,
+                                     int duration,
+                                     Actor actor)
     {
         switch (effect)
         {
@@ -138,10 +184,34 @@ public abstract class Effect
         }
     }
 
-    public static void applyLinkedEffect(E_EFFECT effect,
-                                         int effectRating,
-                                         Actor actor,
-                                         int linkId)
+    /**
+     * Applies an {@link Effect} linked to an {@link ItemDurable} to an {@link Actor},
+     * either performing an instantaneous change of one of the {@link Actor
+     * Actor's} stats, or creating and applying a new {@link StatusLinked} to
+     * that {@link Actor}, based on the provided {@link Effect} rating and associated
+     * {@link ItemDurable} ID.
+     *
+     * @param effect       {@link E_EFFECT}: The type of effect to apply to the
+     *                     target {@link Actor}.
+     * @param effectRating int: The rating of the {@link Effect} modifier to apply to
+     *                     the target {@link Actor}.
+     * @param actor        {@link Actor}: The target to apply the given {@link Effect}
+     *                     to.
+     * @param linkId       int: The logical reference ID of {@link ItemDurable}
+     *                     this {@link Effect} and any resulting {@link StatusLinked}
+     *                     is tied to.
+     *
+     * @see E_EFFECT
+     * @see Actor
+     * @see StatusLinked
+     * @see Status
+     * @see ItemDurable
+     * @see Item
+     */
+    static void applyLinkedEffect(E_EFFECT effect,
+                                  int effectRating,
+                                  Actor actor,
+                                  int linkId)
     {
         switch (effect)
         {
