@@ -1,13 +1,15 @@
 package com.semaphore_soft.apps.cypher.game;
 
 /**
- * An instance of game.Status holds and maintains information about the state
- * of one status in the game, including the type of modifier it applied to an
- * Actor and the rating of that modifier's effect.
+ * An instance of {@link Status game.Status} holds and maintains information
+ * about the state of one status in the game, including the {@link
+ * E_STATUS_TYPE type} of modifier it applies to an {@link Actor} and the
+ * rating, or strength, of that modifier.
  * <p>
  * Must be extended and given qualifications describing under what conditions
- * the Status will apply and cease to apply.
+ * the {@link Status} will apply and cease to apply.
  *
+ * @author scorple
  * @see StatusLinked
  * @see StatusTemporary
  * @see Actor
@@ -15,16 +17,15 @@ package com.semaphore_soft.apps.cypher.game;
  * @see ItemConsumable
  * @see ItemDurable
  * @see Item
- *
- * @author scorple
  */
 abstract class Status
 {
     protected int id;
 
     /**
-     * Describes the type of modifier applied to an Actor which associates with
-     * this Status. Used in determining the Status modified stats of an Actor.
+     * Describes the type of modifier applied to an {@link Actor} which
+     * associates with this {@link Status}. Used in determining the {@link Status} modified
+     * stats of an {@link Actor}.
      */
     enum E_STATUS_TYPE
     {
@@ -40,17 +41,18 @@ abstract class Status
     protected int           effectRating;
 
     /**
-     * Logical ID and Status type constructor.
+     * Logical ID and {@link E_STATUS_TYPE Status type} constructor.
      * <p>
-     * Creates a Status object representing a status to be applied to an Actor
-     * with a Status modifier type and no specified modifier effect rating.
+     * Creates a {@link Status} object representing a status to be applied to an {@link
+     * Actor} with a {@link E_STATUS_TYPE Status modifier type} and no
+     * specified modifier rating.
      * <p>
-     * WARNING: A Status without a modifier effect rating cannot be properly
-     * applied to an Actor.
+     * WARNING: A Status without a modifier rating cannot be properly applied
+     * to an {@link Actor}.
      *
-     * @param id   int: The logical reference ID of this Status.
-     * @param type E_STATUS_TYPE: The type of modifier applied to an
-     *             Actor by this Status.
+     * @param id   int: The logical reference ID of this {@link Status}.
+     * @param type {@link E_STATUS_TYPE}: The {@link E_STATUS_TYPE} of modifier
+     *             applied to an {@link Actor} by this {@link Status}.
      *
      * @see E_STATUS_TYPE
      * @see Actor
@@ -62,16 +64,18 @@ abstract class Status
     }
 
     /**
-     * Logical ID, Status type, and modifier effect rating constructor.
+     * Logical ID, {@link E_STATUS_TYPE Status type}, and modifier rating
+     * constructor.
      * <p>
-     * Creates a Status object representing a status to be applied to an Actor
-     * with a Status modifier type and an modifier effect rating.
+     * Creates a {@link Status} object representing a status to be applied to an {@link
+     * Actor} with a {@link E_STATUS_TYPE Status modifier type} and a modifier
+     * effect rating.
      *
-     * @param id           int: The logical reference ID of this Status.
-     * @param type         E_STATUS_TYPE: The type of modifier applied to an
-     *                     Actor by this Status.
-     * @param effectRating int: The rating of the modifier applied to an Actor
-     *                     by this Status.
+     * @param id           int: The logical reference ID of this {@link Status}.
+     * @param type         {@link E_STATUS_TYPE}: The type of modifier applied
+     *                     to an {@link Actor} by this {@link Status}.
+     * @param effectRating int: The rating of the modifier applied to an {@link
+     *                     Actor} by this {@link Status}.
      *
      * @see E_STATUS_TYPE
      * @see Actor
@@ -83,9 +87,9 @@ abstract class Status
     }
 
     /**
-     * Get the logical reference ID of this Status.
+     * Get the logical reference ID of this {@link Status}.
      *
-     * @return int: The logical reference ID of this Status.
+     * @return int: The logical reference ID of this {@link Status}.
      */
     public int getId()
     {
@@ -103,9 +107,10 @@ abstract class Status
     }
 
     /**
-     * Get the type of modifier applied to an Actor by this Status.
+     * Get the type of modifier applied to an {@link Actor} by this {@link Status}.
      *
-     * @return E_STATUS_TYPE: The type of modified applied by this Status.
+     * @return {@link E_STATUS_TYPE}: The type of modified applied by this
+     * {@link Status}.
      *
      * @see E_STATUS_TYPE
      * @see Actor
@@ -116,10 +121,10 @@ abstract class Status
     }
 
     /**
-     * Get the rating of the modifier effect applied to an Actor by this
-     * Status.
+     * Get the rating of the modifier effect applied to an {@link Actor} by
+     * this {@link Status}.
      *
-     * @return int: The rating of the modifier applied by this Status.
+     * @return int: The rating of the modifier applied by this {@link Status}.
      *
      * @see Actor
      */

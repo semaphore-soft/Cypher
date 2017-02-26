@@ -3,9 +3,10 @@ package com.semaphore_soft.apps.cypher.game;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
- * An instance of game.Model holds and maintains information about game state,
- * including the status of rooms, actors, specials, entities, items, and a map
- * describing room location and rotation.
+ * An instance of {@link Model game.Model} holds and maintains information
+ * about game state, including the status of {@link Room Rooms}, {@link Actor
+ * Actors}, {@link Special Specials}, {@link Entity Entities}, {@link Item
+ * Items}, and a {@link Map} describing {@link Room} location and rotation.
  *
  * @author scorple
  * @see Room
@@ -47,10 +48,11 @@ public class Model
     }
 
     /**
-     * Get the HashMap of Rooms being maintained my this model.
+     * Get the HashMap of {@link Room Rooms} being maintained my this {@link
+     * Model}.
      *
-     * @return ConcurrentHashMap: A HashMap associating integer IDs with Room
-     * objects.
+     * @return ConcurrentHashMap: A HashMap associating integer IDs with {@link
+     * Room} objects.
      *
      * @see Room
      */
@@ -60,10 +62,11 @@ public class Model
     }
 
     /**
-     * Get the HashMap of Actors being maintained my this model.
+     * Get the HashMap of {@link Actor Actors} being maintained my this {@link
+     * Model}.
      *
-     * @return ConcurrentHashMap: A HashMap associating integer IDs with Actor
-     * objects.
+     * @return ConcurrentHashMap: A HashMap associating integer IDs with {@link
+     * Actor} objects.
      *
      * @see Actor
      */
@@ -73,10 +76,11 @@ public class Model
     }
 
     /**
-     * Get the HashMap of Specials being maintained my this model.
+     * Get the HashMap of {@link Special Specials} being maintained my this
+     * {@link Model}.
      *
      * @return ConcurrentHashMap: A HashMap associating integer IDs with
-     * Special objects.
+     * {@link Special} objects.
      *
      * @see Special
      */
@@ -86,10 +90,11 @@ public class Model
     }
 
     /**
-     * Get the HashMap of Entities being maintained my this model.
+     * Get the HashMap of {@link Entity Entities} being maintained my this
+     * {@link Model}.
      *
-     * @return ConcurrentHashMap: A HashMap associating integer IDs with Entity
-     * objects.
+     * @return ConcurrentHashMap: A HashMap associating integer IDs with {@link
+     * Entity} objects.
      *
      * @see Entity
      */
@@ -99,10 +104,11 @@ public class Model
     }
 
     /**
-     * Get the HashMap of Items being maintained my this model.
+     * Get the HashMap of {@link Item Items} being maintained my this {@link
+     * Model}.
      *
-     * @return ConcurrentHashMap: A HashMap associating integer IDs with Item
-     * objects.
+     * @return ConcurrentHashMap: A HashMap associating integer IDs with {@link
+     * Item} objects.
      *
      * @see Item
      */
@@ -112,12 +118,14 @@ public class Model
     }
 
     /**
-     * Get the Map describing the location and rotation of rooms being
-     * maintained by this model.
+     * Get the {@link Map} describing the location and rotation of {@link Room
+     * Rooms} being maintained by this {@link Model}.
      *
-     * @return Map: A Map object describing the location and rotation of rooms.
+     * @return {@link Map}: A {@link Map} object describing the location and
+     * rotation of {@link Room Rooms}.
      *
      * @see Map
+     * @see Room
      */
     public Map getMap()
     {
@@ -125,10 +133,11 @@ public class Model
     }
 
     /**
-     * Add a single Room object to this Model.
+     * Add a single {@link Room} object to this {@link Model}.
      *
-     * @param id   int: The logical reference ID of the Room object being added.
-     * @param room Room: The Room object being added.
+     * @param id   int: The logical reference ID of the {@link Room} object
+     *             being added.
+     * @param room {@link Room}: The {@link Room} object being added.
      *
      * @see Room
      */
@@ -138,10 +147,11 @@ public class Model
     }
 
     /**
-     * Add a single Actor object to this Model.
+     * Add a single {@link Actor} object to this {@link Model}.
      *
-     * @param id    int: The logical reference ID of the Actor object being added.
-     * @param actor Actor: The Actor object being added.
+     * @param id    int: The logical reference ID of the {@link Actor} object
+     *              being added.
+     * @param actor {@link Actor}: The {@link Actor} object being added.
      *
      * @see Actor
      */
@@ -151,10 +161,11 @@ public class Model
     }
 
     /**
-     * Add a single Special object to this Model.
+     * Add a single {@link Special} object to this {@link Model}.
      *
-     * @param id      int: The logical reference ID of the Special being added.
-     * @param special Special: The Special object being added.
+     * @param id      int: The logical reference ID of the {@link Special}
+     *                being added.
+     * @param special {@link Special}: The {@link Special} object being added.
      *
      * @see Special
      */
@@ -164,10 +175,11 @@ public class Model
     }
 
     /**
-     * Add a single Entity object to this Model.
+     * Add a single {@link Entity} object to this {@link Model}.
      *
-     * @param id     int: The logical reference ID of the Entity being added.
-     * @param entity Entity: The Entity object being added.
+     * @param id     int: The logical reference ID of the {@link Entity} being
+     *               added.
+     * @param entity {@link Entity}: The {@link Entity} object being added.
      *
      * @see Entity
      */
@@ -177,10 +189,11 @@ public class Model
     }
 
     /**
-     * Add a single Item object to this Model.
+     * Add a single {@link Item} object to this {@link Model}.
      *
-     * @param id   int: The logical reference ID of the Item being added.
-     * @param item Item: The Item object being added.
+     * @param id   int: The logical reference ID of the {@link Item} being
+     *             added.
+     * @param item {@link Item}: The {@link Item} object being added.
      *
      * @see Item
      */
