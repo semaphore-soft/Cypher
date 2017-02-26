@@ -23,7 +23,7 @@ public class Room
      * Describes the type of a wall, including whether or not it hosts a door,
      * and, if there is a door, the status of that door.
      */
-    enum E_WALL_TYPE
+    public enum E_WALL_TYPE
     {
         NO_DOOR,
         DOOR_UNLOCKED,
