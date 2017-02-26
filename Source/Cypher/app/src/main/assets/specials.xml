@@ -10,7 +10,7 @@
         </effects>
     </heal>
 
-    <!--Protect-->
+    <!--Beef Increase-->
     <beef_increase>
         <name>Beef Incease</name>
         <cost>5</cost>
@@ -20,4 +20,14 @@
             <effect>DEFENCE_RATING_UP</effect>
         </effects>
     </beef_increase>
+
+    <!--Suckerpunch-->
+    <suckerpunch>
+        <name>Suckerpunch</name>
+        <cost>5</cost>
+        <targetingType>SINGLE_NON_PLAYER</targetingType>
+        <effects>
+            <effect>ATTACK</effect>
+        </effects>
+    </suckerpunch>
 </specials>

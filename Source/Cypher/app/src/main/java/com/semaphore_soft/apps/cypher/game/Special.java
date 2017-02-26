@@ -13,6 +13,8 @@ public class Special
     private int    cost;
     private int    duration;
 
+    private String displayName;
+
     public enum E_TARGETING_TYPE
     {
         SINGLE_PLAYER,
@@ -47,6 +49,16 @@ public class Special
     public int getCost()
     {
         return cost;
+    }
+
+    public String getDisplayName()
+    {
+        return displayName;
+    }
+
+    public void setDisplayName(String displayName)
+    {
+        this.displayName = displayName;
     }
 
     public E_TARGETING_TYPE getTargetingType()

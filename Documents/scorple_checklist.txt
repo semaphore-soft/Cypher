@@ -9,3 +9,5 @@ _self targeting targeting type
 _comment model loader
 
 _specials need a scalar
+
+_timing analysis on model loader, texture loader

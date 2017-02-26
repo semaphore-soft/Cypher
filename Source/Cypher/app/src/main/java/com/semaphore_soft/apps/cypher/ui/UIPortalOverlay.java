@@ -4,6 +4,7 @@ import android.content.Context;
 import android.util.AttributeSet;
 import android.view.View;
 import android.widget.Button;
+import android.widget.ImageButton;
 import android.widget.LinearLayout;
 import android.widget.Toast;
 
@@ -11,6 +12,7 @@ import com.semaphore_soft.apps.cypher.R;
 import com.semaphore_soft.apps.cypher.game.Actor;
 import com.semaphore_soft.apps.cypher.game.Item;
 import com.semaphore_soft.apps.cypher.game.Special;
+import com.semaphore_soft.apps.cypher.utils.Logger;
 
 import java.util.ArrayList;
 import java.util.concurrent.ConcurrentHashMap;
@@ -133,7 +135,7 @@ public class UIPortalOverlay extends UIBase
             }
         });
 
-        Button btnAttack = (Button) findViewById(R.id.btnAttack);
+        ImageButton btnAttack = (ImageButton) findViewById(R.id.btnAttack);
         btnAttack.setOnClickListener(new OnClickListener()
         {
             @Override
@@ -143,7 +145,7 @@ public class UIPortalOverlay extends UIBase
             }
         });
 
-        Button btnDefend = (Button) findViewById(R.id.btnDefend);
+        ImageButton btnDefend = (ImageButton) findViewById(R.id.btnDefend);
         btnDefend.setOnClickListener(new OnClickListener()
         {
             @Override
@@ -153,7 +155,7 @@ public class UIPortalOverlay extends UIBase
             }
         });
 
-        Button btnSpecial = (Button) findViewById(R.id.btnSpecial);
+        ImageButton btnSpecial = (ImageButton) findViewById(R.id.btnSpecial);
         btnSpecial.setOnClickListener(new OnClickListener()
         {
             @Override
@@ -189,7 +191,7 @@ public class UIPortalOverlay extends UIBase
         for (final int id : enemyTargets.keySet())
         {
             Button btnTarget = new Button(getContext());
-            String name      = getName(enemyTargets.get(id).getName(), 1, names);
+            String name      = getName(enemyTargets.get(id).getDisplayName(), 1, names);
             names.add(name);
             LinearLayout.LayoutParams layoutParams =
                 new LinearLayout.LayoutParams(LayoutParams.WRAP_CONTENT,
@@ -275,7 +277,7 @@ public class UIPortalOverlay extends UIBase
         for (final int id : playerTargets.keySet())
         {
             Button btnTarget = new Button(getContext());
-            btnTarget.setText(playerTargets.get(id).getName());
+            btnTarget.setText(playerTargets.get(id).getDisplayName());
             btnTarget.setOnClickListener(new OnClickListener()
             {
                 @Override
@@ -299,7 +301,7 @@ public class UIPortalOverlay extends UIBase
                 }
             });
             lloOptions.addView(btnTarget);
-            System.out.println("added special option: " + playerTargets.get(id).getName());
+            Logger.logI("added special option: " + playerTargets.get(id).getDisplayName(), 1);
         }
 
         Button btnCancel = (Button) findViewById(R.id.btnCancel);

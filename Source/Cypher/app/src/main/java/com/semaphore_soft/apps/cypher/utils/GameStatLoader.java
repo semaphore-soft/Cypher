@@ -41,8 +41,7 @@ public class GameStatLoader
             boolean foundList    = false;
             boolean finishedList = false;
 
-            System.out.println("loading list");
-            System.out.println("list name is: " + listName);
+            Logger.logI("loading list <" + listName + ">");
 
             ArrayList<String> res = new ArrayList<>();
 
@@ -55,20 +54,20 @@ public class GameStatLoader
                         if (listName.equals(listParser.getName()))
                         {
                             foundList = true;
-                            System.out.println("found list");
+                            Logger.logI("found list", 1);
                         }
                         else if (foundList && listParser.getName().equals("name"))
                         {
                             listParser.next();
                             res.add(listParser.getText());
-                            System.out.println("added list member: " + listParser.getText());
+                            Logger.logI("added list member: " + listParser.getText(), 1);
                         }
                         break;
                     case XmlPullParser.END_TAG:
                         if (listName.equals(listParser.getName()))
                         {
                             finishedList = true;
-                            System.out.println("finished list");
+                            Logger.logI("finished list", 1);
                         }
                         break;
                     default:
@@ -76,15 +75,26 @@ public class GameStatLoader
                 }
                 event = listParser.next();
             }
-            System.out.println("finished loading list");
+
+            if (foundList)
+            {
+                Logger.logI("finished loading list <" + listName + ">");
+            }
+            else
+            {
+                Logger.logI("list <" + listName + "> not found");
+            }
+
             return res;
         }
         catch (XmlPullParserException e)
         {
+            Logger.logD("error parsing list <" + listName + ">");
             e.printStackTrace();
         }
         catch (IOException e)
         {
+            Logger.logD("list file error");
             e.printStackTrace();
         }
         return null;
@@ -136,11 +146,11 @@ public class GameStatLoader
             boolean finishedActor    = false;
             boolean foundSpecials    = false;
             boolean finishedSpecials = false;
+            String  actorBehavior    = null;
 
             ArrayList<String> actorSpecials = new ArrayList<>();
 
-            System.out.println("loading actor");
-            System.out.println("actor name is: " + actorName);
+            Logger.logI("loading actor <" + actorName + ">");
 
             int event = actorParser.getEventType();
             while (event != XmlPullParser.END_DOCUMENT && !finishedActor)
@@ -151,56 +161,69 @@ public class GameStatLoader
                         if (actorName.equals(actorParser.getName()))
                         {
                             foundActor = true;
-                            System.out.println("found actor");
+                            Logger.logI("found actor", 1);
                         }
                         else if (foundActor)
                         {
                             if (actorParser.getName().equals("specials"))
                             {
                                 foundSpecials = true;
-                                System.out.println("found actor specials");
+                                Logger.logI("found actor specials", 1);
                             }
                             else if (foundSpecials && !finishedSpecials)
                             {
                                 actorParser.next();
                                 actorSpecials.add(actorParser.getText());
-                                System.out.println("found special: " + actorParser.getText());
+                                Logger.logI("found special: " + actorParser.getText(), 1);
+                            }
+                            else if (actorParser.getName().equals("name"))
+                            {
+                                actorParser.next();
+                                actor.setDisplayName(actorParser.getText());
+                                Logger.logI("found actor display name: " + actorParser.getText(),
+                                            1);
                             }
                             else if (actorParser.getName().equals("healthMaximum"))
                             {
                                 actorParser.next();
                                 actor.setHealthMaximum(Integer.parseInt(actorParser.getText()));
                                 actor.setHealthCurrent(actor.getHealthMaximum());
-                                System.out.println(
-                                    "found health maximum: " + actorParser.getText());
+                                Logger.logI(
+                                    "found health maximum: " + actorParser.getText(), 1);
                             }
                             else if (actorParser.getName().equals("attackRating"))
                             {
                                 actorParser.next();
                                 actor.setAttackRating(Integer.parseInt(actorParser.getText()));
-                                System.out.println("found attack rating: " + actorParser.getText());
+                                Logger.logI("found attack rating: " + actorParser.getText());
                             }
                             else if (actorParser.getName().equals("specialMaximum"))
                             {
                                 actorParser.next();
                                 actor.setSpecialMaximum(Integer.parseInt(actorParser.getText()));
                                 actor.setSpecialCurrent(actor.getSpecialMaximum());
-                                System.out.println(
-                                    "found special maximum: " + actorParser.getText());
+                                Logger.logI(
+                                    "found special maximum: " + actorParser.getText(), 1);
                             }
                             else if (actorParser.getName().equals("specialRating"))
                             {
                                 actorParser.next();
                                 actor.setSpecialRating(Integer.parseInt(actorParser.getText()));
-                                System.out.println(
-                                    "found special rating: " + actorParser.getText());
+                                Logger.logI(
+                                    "found special rating: " + actorParser.getText(), 1);
                             }
                             else if (actorParser.getName().equals("defenceRating"))
                             {
                                 actorParser.next();
                                 actor.setDefenceRating(Integer.parseInt(actorParser.getText()));
-                                System.out.println(
-                                    "found defence rating: " + actorParser.getText());
+                                Logger.logI(
+                                    "found defence rating: " + actorParser.getText(), 1);
+                            }
+                            else if (actorParser.getName().equals("behavior"))
+                            {
+                                actorParser.next();
+                                actorBehavior = actorParser.getText();
+                                Logger.logI("found behavior: " + actorBehavior, 1);
                             }
                         }
                         break;
@@ -210,14 +233,14 @@ public class GameStatLoader
                             if (actorName.equals(actorParser.getName()))
                             {
                                 finishedActor = true;
-                                System.out.println("finished actor");
+                                Logger.logI("finished actor", 1);
                             }
                             else if (foundSpecials && !finishedSpecials)
                             {
                                 if (actorParser.getName().equals("specials"))
                                 {
                                     finishedSpecials = true;
-                                    System.out.println("finished actor specials");
+                                    Logger.logI("finished actor specials", 1);
                                 }
                             }
                         }
@@ -228,11 +251,11 @@ public class GameStatLoader
 
             if (!foundActor)
             {
-                System.out.println("failed to load actor: actor not found");
+                Logger.logI("actor <" + actorName + "> not found");
                 return;
             }
 
-            System.out.println("loading actor specials");
+            Logger.logI("loading actor specials", 1);
             for (String specialName : actorSpecials)
             {
                 Special special = loadSpecialStats(specialName, specials, context);
@@ -241,15 +264,29 @@ public class GameStatLoader
                     actor.addSpecial(special);
                 }
             }
-            System.out.println("finished loading actor specials");
-            System.out.println("finished loading actor");
+            Logger.logI("finished loading actor specials", 1);
+
+            if (actorBehavior != null)
+            {
+                Logger.logI("loading actor behavior", 1);
+                loadBehavior(actor, actorBehavior, context);
+                Logger.logI("finished loading actor behavior", 1);
+            }
+            else
+            {
+                Logger.logI("actor behavior not defined", 1);
+            }
+
+            Logger.logI("finished loading actor <" + actorName + ">");
         }
         catch (XmlPullParserException e)
         {
+            Logger.logD("error parsing actor <" + actorName + ">");
             e.printStackTrace();
         }
         catch (IOException e)
         {
+            Logger.logD("actors file error");
             e.printStackTrace();
         }
     }
@@ -258,16 +295,15 @@ public class GameStatLoader
                                            ConcurrentHashMap<Integer, Special> specials,
                                            Context context)
     {
-        System.out.println("loading special");
-        System.out.println("special name is: " + specialName);
+        Logger.logI("loading special <" + specialName + ">");
 
         for (int specialId : specials.keySet())
         {
             Special special = specials.get(specialId);
             if (specialName.equals(special.getName()))
             {
-                System.out.println("special already exists in special table");
-                System.out.println("finished loading special");
+                Logger.logI("special already exists in special table", 1);
+                Logger.logI("finished loading special");
                 return special;
             }
         }
@@ -286,10 +322,11 @@ public class GameStatLoader
             boolean foundEffects    = false;
             boolean finishedEffects = false;
 
-            int               cost          = -1;
-            int               duration      = -1;
-            String            targetingType = "";
-            ArrayList<String> effects       = new ArrayList<>();
+            int               cost               = -1;
+            int               duration           = -1;
+            String            targetingType      = "";
+            ArrayList<String> effects            = new ArrayList<>();
+            String            specialDisplayName = null;
 
             int event = specialParser.getEventType();
             while (event != XmlPullParser.END_DOCUMENT && !finishedSpecial)
@@ -300,42 +337,48 @@ public class GameStatLoader
                         if (specialName.equals(specialParser.getName()))
                         {
                             foundSpecial = true;
-                            System.out.println("found special");
+                            Logger.logI("found special", 1);
                         }
                         else if (foundSpecial)
                         {
                             if (specialParser.getName().equals("effects"))
                             {
                                 foundEffects = true;
-                                System.out.println("found special effects");
+                                Logger.logI("found special effects", 1);
                             }
                             else if (foundEffects && !finishedEffects)
                             {
                                 specialParser.next();
                                 effects.add(specialParser.getText());
-                                System.out.println(
-                                    "found effect: " + specialParser.getText());
+                                Logger.logI(
+                                    "found effect: " + specialParser.getText(), 1);
+                            }
+                            else if (specialParser.getName().equals("name"))
+                            {
+                                specialParser.next();
+                                specialDisplayName = specialParser.getText();
+                                Logger.logI("found display name: " + specialParser.getText(), 1);
                             }
                             else if (specialParser.getName().equals("cost"))
                             {
                                 specialParser.next();
                                 cost = Integer.parseInt(specialParser.getText());
-                                System.out.println(
-                                    "found cost: " + specialParser.getText());
+                                Logger.logI(
+                                    "found cost: " + specialParser.getText(), 1);
                             }
                             else if (specialParser.getName().equals("duration"))
                             {
                                 specialParser.next();
                                 duration = Integer.parseInt(specialParser.getText());
-                                System.out.println(
-                                    "found duration: " + specialParser.getText());
+                                Logger.logI(
+                                    "found duration: " + specialParser.getText(), 1);
                             }
                             else if (specialParser.getName().equals("targetingType"))
                             {
                                 specialParser.next();
                                 targetingType = specialParser.getText();
-                                System.out.println(
-                                    "found targeting type: " + specialParser.getText());
+                                Logger.logI(
+                                    "found targeting type: " + specialParser.getText(), 1);
                             }
                         }
                         break;
@@ -345,14 +388,14 @@ public class GameStatLoader
                             if (specialName.equals(specialParser.getName()))
                             {
                                 finishedSpecial = true;
-                                System.out.println("finished special");
+                                Logger.logI("finished special", 1);
                             }
                             else if (foundEffects && !finishedEffects)
                             {
                                 if (specialParser.getName().equals("effects"))
                                 {
                                     finishedEffects = true;
-                                    System.out.println("finished special effects");
+                                    Logger.logI("finished special effects", 1);
                                 }
                             }
                         }
@@ -363,7 +406,7 @@ public class GameStatLoader
 
             if (!foundSpecial)
             {
-                System.out.println("failed to load special: special not found");
+                Logger.logI("special <" + specialName + "> not found");
                 return null;
             }
 
@@ -395,6 +438,11 @@ public class GameStatLoader
                                               cost,
                                               duration,
                                               specialTargetingType);
+
+                if (specialDisplayName != null)
+                {
+                    special.setDisplayName(specialDisplayName);
+                }
 
                 for (String effect : effects)
                 {
@@ -447,27 +495,120 @@ public class GameStatLoader
                             }
                             else
                             {
-                                System.out.println("failed to add special effect: " + effect);
+                                Logger.logI("failed to add special effect: " + effect, 1);
                             }
                     }
                 }
 
                 specials.put(special.getId(), special);
-                System.out.println("special added to specials table");
-                System.out.println("finished loading special");
+                Logger.logI("special added to specials table", 1);
+                Logger.logI("finished loading special <" + specialName + ">");
                 return special;
             }
         }
         catch (XmlPullParserException e)
         {
+            Logger.logD("error parsing special <" + specialName + ">");
             e.printStackTrace();
         }
         catch (IOException e)
         {
+            Logger.logD("specials file error");
             e.printStackTrace();
         }
 
         return null;
+    }
+
+    public static void loadBehavior(Actor actor, String behaviorName, Context context)
+    {
+        Logger.logI("loading behavior <" + behaviorName + ">");
+
+        try
+        {
+            XmlPullParserFactory factory      = XmlPullParserFactory.newInstance();
+            AssetManager         assetManager = context.getAssets();
+
+            XmlPullParser behaviorParser      = factory.newPullParser();
+            InputStream   behaviorInputStream = assetManager.open("behaviors.xml");
+            behaviorParser.setInput(behaviorInputStream, null);
+
+            boolean foundBehavior    = false;
+            boolean finishedBehavior = false;
+
+            int event = behaviorParser.getEventType();
+            while (event != XmlPullParser.END_DOCUMENT && !finishedBehavior)
+            {
+                switch (event)
+                {
+                    case XmlPullParser.START_TAG:
+                        if (behaviorName.equals(behaviorParser.getName()))
+                        {
+                            foundBehavior = true;
+                            Logger.logI("found item", 1);
+                        }
+                        else if (foundBehavior)
+                        {
+                            if (behaviorParser.getName().equals("attack"))
+                            {
+                                behaviorParser.next();
+                                actor.setAttackTickets(Integer.parseInt(behaviorParser.getText()));
+                                Logger.logI("found attack tickets: " + behaviorParser.getText(), 1);
+                            }
+                            else if (behaviorParser.getName().equals("defend"))
+                            {
+                                behaviorParser.next();
+                                actor.setDefendTickets(Integer.parseInt(behaviorParser.getText()));
+                                Logger.logI("found defend tickets: " + behaviorParser.getText(), 1);
+                            }
+                            else if (behaviorParser.getName().equals("special"))
+                            {
+                                behaviorParser.next();
+                                actor.setSpecialTickets(Integer.parseInt(behaviorParser.getText()));
+                                Logger.logI("found special tickets: " + behaviorParser.getText(),
+                                            1);
+                            }
+                            else if (behaviorParser.getName().equals("move"))
+                            {
+                                behaviorParser.next();
+                                actor.setMoveTickets(Integer.parseInt(behaviorParser.getText()));
+                                Logger.logI("found move tickets: " + behaviorParser.getText(), 1);
+                            }
+                            else if (behaviorParser.getName().equals("seek"))
+                            {
+                                behaviorParser.next();
+                                actor.setSeeker(behaviorParser.getText().equals("1"));
+                                Logger.logI("found seek flag: " + behaviorParser.getText(), 1);
+                            }
+                        }
+                        break;
+                    case XmlPullParser.END_TAG:
+                        if (foundBehavior)
+                        {
+                            if (behaviorName.equals(behaviorParser.getName()))
+                            {
+                                finishedBehavior = true;
+                                Logger.logI("finished item", 1);
+                            }
+                        }
+                        break;
+                }
+                event = behaviorParser.next();
+            }
+
+            Logger.logI("finished loading behavior <" + behaviorName + ">");
+        }
+        catch (XmlPullParserException e)
+        {
+            Logger.logD("error parsing behavior <" + behaviorName + ">");
+            e.printStackTrace();
+        }
+        catch (IOException e)
+        {
+            Logger.logD("behavior file error");
+            e.printStackTrace();
+        }
+
     }
 
     public static Item loadItemStats(String itemName,
@@ -475,16 +616,15 @@ public class GameStatLoader
                                      ConcurrentHashMap<Integer, Special> specials,
                                      Context context)
     {
-        System.out.println("loading item");
-        System.out.println("item name is: " + itemName);
+        Logger.logI("loading item <" + itemName + ">");
 
         for (Integer itemId : items.keySet())
         {
             Item item = items.get(itemId);
             if (itemName.equals(item.getName()))
             {
-                System.out.println("item already exists in item table");
-                System.out.println("borrowing item stats");
+                Logger.logI("item already exists in item table", 1);
+                Logger.logI("borrowing item stats", 1);
                 Item newItem = null;
                 if (item instanceof ItemConsumable)
                 {
@@ -502,13 +642,13 @@ public class GameStatLoader
                 }
                 else
                 {
-                    System.out.println("error: bad item in table, removing");
+                    Logger.logI("error: bad item in table, removing", 1);
                     items.remove(item.getID());
                 }
                 if (newItem != null)
                 {
                     items.put(newItem.getID(), newItem);
-                    System.out.println("finished loading item");
+                    Logger.logI("finished loading item");
                     return newItem;
                 }
             }
@@ -533,6 +673,8 @@ public class GameStatLoader
             String            targetingType = null;
             ArrayList<String> effects       = new ArrayList<>();
 
+            String itemDisplayName = null;
+
             int event = itemParser.getEventType();
             while (event != XmlPullParser.END_DOCUMENT && !finishedItem)
             {
@@ -542,39 +684,45 @@ public class GameStatLoader
                         if (itemName.equals(itemParser.getName()))
                         {
                             foundItem = true;
-                            System.out.println("found item");
+                            Logger.logI("found item", 1);
                         }
                         else if (foundItem)
                         {
                             if (itemParser.getName().equals("effects"))
                             {
                                 foundEffects = true;
-                                System.out.println("found item effects");
+                                Logger.logI("found item effects", 1);
                             }
                             else if (foundEffects && !finishedEffects)
                             {
                                 itemParser.next();
                                 effects.add(itemParser.getText());
-                                System.out.println("found effect: " + itemParser.getText());
+                                Logger.logI("found effect: " + itemParser.getText(), 1);
+                            }
+                            else if (itemParser.getName().equals("name"))
+                            {
+                                itemParser.next();
+                                itemDisplayName = itemParser.getText();
+                                Logger.logI("found display name: " + itemParser.getText(), 1);
                             }
                             else if (itemParser.getName().equals("effectRating"))
                             {
                                 itemParser.next();
                                 effectRating = Integer.parseInt(itemParser.getText());
-                                System.out.println("found effect rating: " + itemParser.getText());
+                                Logger.logI("found effect rating: " + itemParser.getText(), 1);
                             }
                             else if (itemParser.getName().equals("duration"))
                             {
                                 itemParser.next();
                                 duration = Integer.parseInt(itemParser.getText());
-                                System.out.println("found duration: " + itemParser.getText());
+                                Logger.logI("found duration: " + itemParser.getText(), 1);
                             }
                             else if (itemParser.getName().equals("targetingType"))
                             {
                                 itemParser.next();
                                 targetingType = itemParser.getText();
-                                System.out.println(
-                                    "found targeting type: " + itemParser.getText());
+                                Logger.logI(
+                                    "found targeting type: " + itemParser.getText(), 1);
                             }
                         }
                         break;
@@ -584,14 +732,14 @@ public class GameStatLoader
                             if (itemName.equals(itemParser.getName()))
                             {
                                 finishedItem = true;
-                                System.out.println("finished item");
+                                Logger.logI("finished item", 1);
                             }
                             else if (foundEffects && !finishedEffects)
                             {
                                 if (itemParser.getName().equals("effect"))
                                 {
                                     finishedEffects = true;
-                                    System.out.println("finished item effects");
+                                    Logger.logI("finished item effects", 1);
                                 }
                             }
                         }
@@ -602,7 +750,7 @@ public class GameStatLoader
 
             if (!foundItem)
             {
-                System.out.println("failed to load item: item not found");
+                Logger.logI("item <" + itemName + "> not found");
                 return null;
             }
 
@@ -636,12 +784,17 @@ public class GameStatLoader
                                           effectRating,
                                           duration,
                                           itemTargetingType);
-                System.out.println("created new consumable item");
+                Logger.logI("created new consumable item", 1);
             }
             else
             {
                 item = new ItemDurable(getNextID(items), itemName, effectRating);
-                System.out.println("created new durable item");
+                Logger.logI("created new durable item", 1);
+            }
+
+            if (itemDisplayName != null)
+            {
+                item.setDisplayName(itemDisplayName);
             }
 
             for (String effect : effects)
@@ -695,23 +848,24 @@ public class GameStatLoader
                         }
                         else
                         {
-                            System.out.println("failed to add item effect: " + effect);
+                            Logger.logI("failed to add item effect: " + effect, 1);
                         }
                 }
             }
 
             items.put(item.getID(), item);
-            System.out.println("item added to items table");
-            System.out.println("finished loading item");
+            Logger.logI("item added to items table", 1);
+            Logger.logI("finished loading item <" + itemName + ">");
             return item;
         }
         catch (XmlPullParserException e)
         {
-
+            Logger.logD("error parsing item <" + itemName + ">");
+            e.printStackTrace();
         }
         catch (IOException e)
         {
-
+            Logger.logD("items file error");
         }
 
         return null;

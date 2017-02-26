@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+                xmlns:app="http://schemas.android.com/apk/res-auto"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent">
 
@@ -20,35 +21,44 @@
             android:layout_alignParentStart="true"/>
 
     <Button
-            android:text="Attack"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:id="@+id/btnAttack"
-            android:layout_alignParentTop="true"
-            android:layout_alignParentEnd="true"/>
-
-    <Button
-            android:text="Defend"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:id="@+id/btnDefend"
-            android:layout_centerVertical="true"
-            android:layout_alignParentEnd="true"/>
-
-    <Button
-            android:text="Special"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_alignParentBottom="true"
-            android:layout_alignParentEnd="true"
-            android:id="@+id/btnSpecial"/>
-
-    <Button
             android:text="Generate\nRoom"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_alignBottom="@+id/btnDefend"
-            android:layout_alignParentStart="true"
-            android:id="@+id/btnGenerateRoom"/>
+            android:id="@+id/btnGenerateRoom"
+            android:layout_centerVertical="true"
+            android:layout_alignParentStart="true"/>
+
+    <ImageButton
+            android:layout_width="100dp"
+            android:layout_height="100dp"
+            app:srcCompat="@drawable/button_atk"
+            android:src="@drawable/button_atk"
+            android:id="@+id/btnAttack"
+            android:scaleType="centerInside"
+            android:background="?android:selectableItemBackground"
+            android:layout_alignParentTop="true"
+            android:layout_alignParentEnd="true"/>
+
+    <ImageButton
+            android:layout_width="100dp"
+            android:layout_height="100dp"
+            app:srcCompat="@drawable/button_def"
+            android:src="@drawable/button_def"
+            android:id="@+id/btnDefend"
+            android:scaleType="centerInside"
+            android:background="?android:selectableItemBackground"
+            android:layout_centerVertical="true"
+            android:layout_alignParentEnd="true"/>
+
+    <ImageButton
+            android:layout_width="100dp"
+            android:layout_height="100dp"
+            app:srcCompat="@drawable/button_mag"
+            android:src="@drawable/button_mag"
+            android:id="@+id/btnSpecial"
+            android:scaleType="centerInside"
+            android:background="?android:selectableItemBackground"
+            android:layout_alignParentBottom="true"
+            android:layout_alignParentEnd="true"/>
 
 </RelativeLayout>
