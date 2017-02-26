@@ -112,9 +112,17 @@ public class ARRoom implements ARDrawableGLES20
 
     public void addEffect(int id, ARDrawableGLES20 model)
     {
-        if (!effects.keySet().contains(id))
+        if (!effects.containsKey(id))
         {
             effects.put(id, model);
+        }
+    }
+
+    public void removeEffect(int id)
+    {
+        if (effects.containsKey(id))
+        {
+            effects.remove(id);
         }
     }
 
@@ -357,8 +365,6 @@ public class ARRoom implements ARDrawableGLES20
                 enemyLine.get(id).draw(projectionMatrix, transformationMatrix, lightPos);
                 if (effects.containsKey(id))
                 {
-                    // rotate to face the camera, probably
-                    //                    Matrix.rotateM(transformationMatrix, 0, 90.0f, 0.0f, 0.0f, 1.0f);
                     // Plane will appear in front of the enemy
                     effects.get(id).draw(projectionMatrix, transformationMatrix, lightPos);
                 }
