@@ -62,6 +62,7 @@ public class ResponseReceiver extends BroadcastReceiver
 
         /**
          * Handle status updates.
+         *
          * @param msg Status update
          * @param readFrom Device that update was received from
          */
@@ -69,6 +70,7 @@ public class ResponseReceiver extends BroadcastReceiver
 
         /**
          * Handle error messages.
+         *
          * @param msg Error message
          * @param readFrom Device that error was received from
          */
@@ -76,7 +78,8 @@ public class ResponseReceiver extends BroadcastReceiver
     }
 
     /**
-     * Used by ResponseReceiver to call interface methods.
+     * Used by {@link ResponseReceiver} to call interface methods.
+     *
      * @param r Instance of ResponseReceiver
      */
     public void setListener(Receiver r)

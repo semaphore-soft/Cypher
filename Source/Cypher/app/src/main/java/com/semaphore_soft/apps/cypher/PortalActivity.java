@@ -177,6 +177,11 @@ public class PortalActivity extends ARActivity implements PortalRenderer.NewMark
         return (FrameLayout) this.findViewById(R.id.portal_frame);
     }
 
+    /**
+     * {@inheritDoc}
+     *
+     * @param cmd Command from UI interaction
+     */
     @Override
     public void onCommand(final String cmd)
     {
@@ -296,6 +301,7 @@ public class PortalActivity extends ARActivity implements PortalRenderer.NewMark
 
     /**
      * {@inheritDoc}
+     *
      * @param msg Status update
      * @param readFrom Device that update was received from
      */
@@ -307,6 +313,7 @@ public class PortalActivity extends ARActivity implements PortalRenderer.NewMark
 
     /**
      * {@inheritDoc}
+     *
      * @param msg Error message
      * @param readFrom Device that error was received from
      */

@@ -83,9 +83,7 @@ public class MainActivity extends AppCompatActivity implements GetNameDialogFrag
     }
 
     /**
-     * Creates an instance of {@code GetNameDialogFragment}.
-     *
-     * @see GetNameDialogFragment
+     * Creates an instance of {@link GetNameDialogFragment}.
      */
     private void showGetNameDialog()
     {
@@ -96,8 +94,7 @@ public class MainActivity extends AppCompatActivity implements GetNameDialogFrag
     }
 
     /**
-     * Creates an instance of {@code ConnectFragment}.
-     * @see ConnectFragment
+     * Creates an instance of {@link ConnectFragment}.
      */
     private void showConnectDialog()
     {
@@ -134,11 +131,12 @@ public class MainActivity extends AppCompatActivity implements GetNameDialogFrag
 
     /**
      * {@inheritDoc}
-     * Starts {@code Client}.
-     * @see ClientService
-     * @see com.semaphore_soft.apps.cypher.networking.Client
+     * Starts {@link com.semaphore_soft.apps.cypher.networking.Client Client}.
+     *
      * @param addr Address to connect to
      * @param name Name of the player
+     *
+     * @see ClientService
      */
     @Override
     public void startClient(String addr, String name)
@@ -150,10 +148,11 @@ public class MainActivity extends AppCompatActivity implements GetNameDialogFrag
 
     /**
      * {@inheritDoc}
-     * Starts {@code Server}.
-     * @see ServerService
-     * @see com.semaphore_soft.apps.cypher.networking.Server
+     * Starts {@link com.semaphore_soft.apps.cypher.networking.Server Server}.
+     *
      * @param name Name of the player
+     *
+     * @see ServerService
      */
     @Override
     public void onFinishGetName(String name)
@@ -166,6 +165,7 @@ public class MainActivity extends AppCompatActivity implements GetNameDialogFrag
 
     /**
      * {@inheritDoc}
+     *
      * @param msg Message read from network
      * @param readFrom Device that message was received from
      */
@@ -177,9 +177,10 @@ public class MainActivity extends AppCompatActivity implements GetNameDialogFrag
 
     /**
      * {@inheritDoc}
-     * Moves players to {@code ConnectionLobbyActivity} when client or server
+     * <p>
+     * Moves players to {@link ConnectionLobbyActivity} when client or server
      * notify that they have successfully started a connection.
-     * @see ConnectionLobbyActivity
+     *
      * @param msg Status update
      * @param readFrom Device that update was received from
      */
@@ -203,7 +204,9 @@ public class MainActivity extends AppCompatActivity implements GetNameDialogFrag
 
     /**
      * {@inheritDoc}
+     * <p>
      * Shows alert if client was unable to successfully start a connection.
+     *
      * @param msg Error message
      * @param readFrom Device that error was received from
      */
@@ -232,6 +235,7 @@ public class MainActivity extends AppCompatActivity implements GetNameDialogFrag
 
     /**
      * {@inheritDoc}
+     *
      * @param cmd Command from UI interaction
      */
     @Override

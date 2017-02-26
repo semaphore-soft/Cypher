@@ -32,6 +32,7 @@ import java.util.Enumeration;
  * Created by Scorple on 1/9/2017.
  * Activity where players will start after they have connected to the host and
  * wait for other players to join.
+ *
  * @see UIConnectionLobby
  */
 
@@ -175,6 +176,7 @@ public class ConnectionLobbyActivity extends AppCompatActivity implements Respon
 
     /**
      * {@inheritDoc}
+     *
      * @param cmd Command from UI interaction
      */
     public void onCommand(String cmd)
@@ -203,6 +205,7 @@ public class ConnectionLobbyActivity extends AppCompatActivity implements Respon
 
     /**
      * {@inheritDoc}
+     *
      * @param msg Message read from network
      * @param readFrom Device that message was received from
      */
@@ -239,6 +242,7 @@ public class ConnectionLobbyActivity extends AppCompatActivity implements Respon
 
     /**
      * {@inheritDoc}
+     *
      * @param msg Status update
      * @param readFrom Device that update was received from
      */
@@ -250,6 +254,7 @@ public class ConnectionLobbyActivity extends AppCompatActivity implements Respon
 
     /**
      * {@inheritDoc}
+     *
      * @param msg Error message
      * @param readFrom Device that error was received from
      */

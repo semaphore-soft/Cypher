@@ -31,11 +31,9 @@ public class Server
     }
 
     /**
-     * Sets whether or not the {@code AcceptorThread} should continue to accept connections.
+     * Sets whether or not the {@link AcceptorThread AcceptorThread} should continue to accept connections.
      *
      * @param bool Whether or not to continue accepting connections.
-     *
-     * @see AcceptorThread
      */
     public static void setAccepting(Boolean bool)
     {
@@ -43,9 +41,9 @@ public class Server
     }
 
     /**
-     * Starts the {@code AcceptorThread}.
-     * @see ServerService
-     * @param service An instance of {@code ServerService} that will interact with the thread.
+     * Starts the {@link AcceptorThread AcceptorThread}.
+     *
+     * @param service An instance of {@link ServerService} that will interact with the thread.
      */
     public void startAcceptor(ServerService service)
     {
@@ -56,8 +54,10 @@ public class Server
 
     /**
      * Write a message to all connected clients.
-     * @see ServerService#writeAll(String)
+     *
      * @param str Message to write.
+     *
+     * @see ServerService#writeAll(String)
      */
     public void writeAll(String str)
     {
@@ -70,9 +70,11 @@ public class Server
 
     /**
      * Write a message to a specific client.
-     * @see ServerService#writeToClient(String, int)
+     *
      * @param str Message to write.
      * @param index The specific client to connect to.
+     *
+     * @see ServerService#writeToClient(String, int)
      */
     public void writeToClient(String str, int index)
     {
@@ -89,11 +91,12 @@ public class Server
 
     /**
      * Class that listens for clients to connect.
-     * Once connected the socket is passed to {@code ClientHandler}.
-     * The {@code AcceptorThread} will continue to listen until either
+     * <p>
+     * Once connected the socket is passed to {@link ClientHandler ClientHandler}.
+     * The {@link AcceptorThread AcceptorThread} will continue to listen until either
      * a maximum number of players has connected or
      * the host determines that all players have connected.
-     * @see ClientHandler
+     *
      * @see Server#setAccepting(Boolean)
      */
     private class AcceptorThread extends Thread
@@ -101,8 +104,10 @@ public class Server
         Socket mySocket;
 
         /**
-         * Creates a new {@code ServerSocket} that listens on port {@value NetworkConstants#SERVER_PORT}.
-         * @see ServerSocket
+         * Creates a new {@link ServerSocket} that listens on port {@value NetworkConstants#SERVER_PORT}.
+         * <p>
+         * The {@link ServerSocket} will timeout after a delay to ensure that new clients cannot
+         * connect after the host has started the game.
          */
         public AcceptorThread()
         {
@@ -154,6 +159,7 @@ public class Server
 
     /**
      * Class that communicates with a single connected client.
+     *
      * @see AcceptorThread
      * @see com.semaphore_soft.apps.cypher.networking.Client.ClientThread
      */
@@ -166,7 +172,8 @@ public class Server
 
         /**
          * Starts a new thread to communicate with a client.
-         * @param socket {@code Socket} that is connected to a client.
+         *
+         * @param socket {@link Socket} that is connected to a client.
          */
         public ClientHandler(Socket socket)
         {
@@ -189,6 +196,7 @@ public class Server
 
         /**
          * Writes a message to the connected client.
+         *
          * @param str Message to write.
          */
         public void write(String str)
@@ -210,9 +218,11 @@ public class Server
 
         /**
          * Reads in data from the network.
-         * Will attempt to reconnect if {@code Socket} connection is broken.
-         * @see ClientHandler#reconnectSocket()
+         * Will attempt to reconnect if {@link Socket} connection is broken.
+         *
          * @return Message that was read.
+         *
+         * @see ClientHandler#reconnectSocket()
          */
         private String read()
         {
@@ -241,8 +251,10 @@ public class Server
 
         /**
          * Sends message that has been read to be processed by other activities.
-         * @see ServerService#threadRead(String, int)
+         *
          * @param msg Message that was read.
+         *
+         * @see ServerService#threadRead(String, int)
          */
         private void processMessage(String msg)
         {
@@ -252,8 +264,8 @@ public class Server
         }
 
         /**
-         * Will try to reconnect to client if {@code Socket} connection is lost.
-         * There is no timeout for this method.
+         * Will try to reconnect to client if {@link Socket} connection is lost.
+         * There is no timeout for the {@link ServerSocket} in this method.
          */
         private void reconnectSocket()
         {

@@ -59,9 +59,11 @@ public class ServerService extends Service
 
     /**
      * Writes a message to a specific client.
-     * @see Server#writeToClient(String, int)
+     *
      * @param msg Message to write.
      * @param client Client to write to.
+     *
+     * @see Server#writeToClient(String, int)
      */
     public void writeToClient(String msg, int client)
     {
@@ -71,8 +73,10 @@ public class ServerService extends Service
 
     /**
      * Writes a message to all connected clients.
-     * @see Server#writeAll(String)
+     *
      * @param msg Message to write.
+     *
+     * @see Server#writeAll(String)
      */
     public void writeAll(String msg)
     {
@@ -81,8 +85,8 @@ public class ServerService extends Service
     }
 
     /**
-     * Sends an intent for ResponseReceiver to signal that data has been read from the network.
-     * @see ResponseReceiver
+     * Sends an intent for {@link ResponseReceiver} to signal that data has been read from the network.
+     *
      * @param msg Message that was read from the network.
      * @param readFrom Client that the message was received from.
      *                 This is in relation to an array of connected clients
@@ -98,8 +102,8 @@ public class ServerService extends Service
     }
 
     /**
-     * Sends an intent for ResponseReceiver to signal that the thread's status has changed.
-     * @see ResponseReceiver
+     * Sends an intent for {@link ResponseReceiver} to signal that the thread's status has changed.
+     *
      * @param msg Message that was sent from thread.
      * @param readFrom Client that the message was received from.
      *                 This is in relation to an array of connected clients
@@ -115,8 +119,8 @@ public class ServerService extends Service
     }
 
     /**
-     * Sends an intent for ResponseReceiver to signal that an error has occurred in the thread.
-     * @see ResponseReceiver
+     * Sends an intent for {@link ResponseReceiver} to signal that an error has occurred in the thread.
+     *
      * @param msg Error message from the thread.
      * @param readFrom Client that the message was received from.
      *                 This is in relation to an array of connected clients

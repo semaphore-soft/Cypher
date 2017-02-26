@@ -172,7 +172,9 @@ public class CharacterSelectActivity extends AppCompatActivity implements Respon
 
     /**
      * {@inheritDoc}
+     * <p>
      * Verifies that only one of each character is selected.
+     *
      * @param msg Message read from network
      * @param readFrom Device that message was received from
      */
@@ -244,7 +246,9 @@ public class CharacterSelectActivity extends AppCompatActivity implements Respon
 
     /**
      * {@inheritDoc}
+     * <p>
      * Synchronizes state with client after a reconnect.
+     *
      * @param msg Status update
      * @param readFrom Device that update was received from
      */
@@ -270,7 +274,9 @@ public class CharacterSelectActivity extends AppCompatActivity implements Respon
 
     /**
      * {@inheritDoc}
+     * <p>
      * Resets client selections after a reconnect to they can be synchronized by the host.
+     *
      * @param msg Error message
      * @param readFrom Device that error was received from
      */
@@ -290,6 +296,7 @@ public class CharacterSelectActivity extends AppCompatActivity implements Respon
 
     /**
      * Update the host with the players characters selection.
+     *
      * @param selection Character selected by player
      */
     private void postSelection(String selection)
@@ -307,7 +314,7 @@ public class CharacterSelectActivity extends AppCompatActivity implements Respon
     }
 
     /**
-     * Remove a players character selection and update game status.
+     * Remove a players character selection and update game ready status.
      */
     private void clearSelection()
     {
@@ -336,6 +343,7 @@ public class CharacterSelectActivity extends AppCompatActivity implements Respon
     /**
      * Checks if players selection is valid and updates the players character selection and
      * ready status.
+     *
      * @param selection Character selected by player
      * @param player Player ID
      */
@@ -375,6 +383,7 @@ public class CharacterSelectActivity extends AppCompatActivity implements Respon
 
     /**
      * Remove a given players character selection and notify clients.
+     *
      * @param player ID of player
      */
     private void removePlayer(int player)
@@ -386,8 +395,7 @@ public class CharacterSelectActivity extends AppCompatActivity implements Respon
     }
 
     /**
-     * Starts {@code PortalActivity}.
-     * @see PortalActivity
+     * Starts {@link PortalActivity}.
      */
     private void startAR()
     {

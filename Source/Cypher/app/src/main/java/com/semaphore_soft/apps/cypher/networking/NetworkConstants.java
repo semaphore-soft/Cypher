@@ -58,9 +58,11 @@ public class NetworkConstants
 
 
     /**
-     * Method to get IntentFilters for registering a broadcast receiver
+     * Method to get {@link IntentFilter IntentFilters} for registering a broadcast receiver
      *
      * @return An IntentFilter for ResponseReceiver
+     *
+     * @see ResponseReceiver
      */
     public static IntentFilter getFilter()
     {

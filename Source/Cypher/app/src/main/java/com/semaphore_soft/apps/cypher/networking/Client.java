@@ -24,15 +24,14 @@ public class Client
     }
 
     /**
-     * Starts the {@code ClientThread}.
+     * Starts the {@link ClientThread ClientThread}.
      *
      * @param addr   Address to connect to.
-     * @param client An instance of {@code ClientService} that will interact with the thread.
+     * @param client An instance of {@link ClientService} that will interact with the thread.
      *
-     * @return An instance of {@code ClientThread} that is connected to {@code addr}.
+     * @return An instance of {@link ClientThread ClientThread} that is connected to {@code addr}.
      *
      * @see ClientService#startClient(String)
-     * @see ClientThread
      */
     public ClientThread startClient(InetAddress addr, ClientService client)
     {
@@ -44,7 +43,9 @@ public class Client
 
     /**
      * Thread that connects to the server
+     *
      * @see ClientThread#ClientThread(InetAddress)
+     * @see com.semaphore_soft.apps.cypher.networking.Server.ClientHandler
      */
     public class ClientThread extends Thread
     {
@@ -54,8 +55,10 @@ public class Client
 
         /**
          * Create new thread that is connected to {@code address}.
-         * @see Client#startClient(InetAddress, ClientService)
+         *
          * @param address Address to connect to.
+         *
+         * @see Client#startClient(InetAddress, ClientService)
          */
         public ClientThread(InetAddress address)
         {
@@ -93,6 +96,7 @@ public class Client
 
         /**
          * Write message to server.
+         *
          * @param str Message to write.
          */
         public void write(String str)
@@ -114,9 +118,11 @@ public class Client
 
         /**
          * Reads in data from the network.
-         * Will attempt to reconnect if {@code Socket} connection is broken.
-         * @see ClientThread#reconnectSocket()
+         * Will attempt to reconnect if {@link Socket} connection is broken.
+         *
          * @return Message that was read.
+         *
+         * @see ClientThread#reconnectSocket()
          */
         private String read()
         {
@@ -147,8 +153,10 @@ public class Client
 
         /**
          * Sends message that has been read to be processed by other activities.
-         * @see ClientService#threadRead(String)
+         *
          * @param msg Message that was read.
+         *
+         * @see ClientService#threadRead(String)
          */
         private void processMessage(String msg)
         {
@@ -157,9 +165,11 @@ public class Client
         }
 
         /**
-         * Get the {@code SocketAddress} that the client is connected to.
+         * Get the {@link java.net.SocketAddress SocketAddress} that the client is connected to.
+         *
+         * @return Host's address as a string
+         *
          * @see ClientService#getHostIP()
-         * @return Host's address
          */
         public String getSocketAddress()
         {
@@ -167,7 +177,7 @@ public class Client
         }
 
         /**
-         * Will try to reconnect to client if {@code Socket} connection is lost.
+         * Will try to reconnect to client if {@link Socket} connection is lost.
          * This method will wait some amount of time for the host
          * to notice that it has disconnected before attempting to reconnect.
          */

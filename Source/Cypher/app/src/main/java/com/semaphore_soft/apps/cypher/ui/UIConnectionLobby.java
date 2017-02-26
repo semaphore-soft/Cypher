@@ -14,8 +14,7 @@ import java.util.ArrayList;
 
 /**
  * Created by Scorple on 2/6/2017.
- * UI class for {@code ConnectionLobbyActivity}
- * @see com.semaphore_soft.apps.cypher.ConnectionLobbyActivity
+ * UI class for {@link com.semaphore_soft.apps.cypher.ConnectionLobbyActivity ConnectionLobbyActivity}
  */
 
 public class UIConnectionLobby extends UIBase
@@ -94,6 +93,7 @@ public class UIConnectionLobby extends UIBase
 
     /**
      * Set list of players connected to host.
+     *
      * @param list New list of players connected
      */
     public void setPlayersList(ArrayList<PlayerID> list)
@@ -111,6 +111,7 @@ public class UIConnectionLobby extends UIBase
 
     /**
      * Set IP information.
+     *
      * @param text Message to display
      */
     public void setTextIP(String text)
@@ -120,6 +121,7 @@ public class UIConnectionLobby extends UIBase
 
     /**
      * Set welcome message for the player.
+     *
      * @param text Message to display
      */
     public void setTxtDisplayName(String text)

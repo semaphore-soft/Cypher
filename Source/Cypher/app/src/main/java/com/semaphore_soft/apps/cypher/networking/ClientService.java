@@ -77,8 +77,10 @@ public class ClientService extends Service
 
     /**
      * Writes a message to the server.
-     * @see com.semaphore_soft.apps.cypher.networking.Client.ClientThread#write(String)
+     *
      * @param msg Message to write to server.
+     *
+     * @see com.semaphore_soft.apps.cypher.networking.Client.ClientThread#write(String)
      */
     public void write(String msg)
     {
@@ -95,6 +97,7 @@ public class ClientService extends Service
 
     /**
      * Returns the formatted IP of the host that the client is connected to.
+     *
      * @return IP address of the host.
      */
     public String getHostIP()
@@ -107,8 +110,10 @@ public class ClientService extends Service
 
     /**
      * Sends an intent for ResponseReceiver to signal that data has been read from the network.
-     * @see ResponseReceiver
+     *
      * @param msg Message that was read from the network.
+     *
+     * @see ResponseReceiver
      */
     public void threadRead(String msg)
     {
@@ -120,8 +125,10 @@ public class ClientService extends Service
 
     /**
      * Sends an intent for ResponseReceiver to signal that the thread's status has changed.
-     * @see ResponseReceiver
+     *
      * @param msg Message that was read from the network.
+     *
+     * @see ResponseReceiver
      */
     public void threadUpdate(String msg)
     {
@@ -133,8 +140,10 @@ public class ClientService extends Service
 
     /**
      * Sends an intent for ResponseReceiver to signal that an error has occurred in the thread.
-     * @see ResponseReceiver
+     *
      * @param msg Message that was read from the network.
+     *
+     * @see ResponseReceiver
      */
     public void threadError(String msg)
     {

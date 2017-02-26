@@ -12,8 +12,7 @@ import com.semaphore_soft.apps.cypher.R;
 
 /**
  * Created by Scorple on 2/19/2017.
- * UI class for {@code CharacterSelectActivity}.
- * @see com.semaphore_soft.apps.cypher.CharacterSelectActivity
+ * UI class for {@link com.semaphore_soft.apps.cypher.CharacterSelectActivity CharacterSelectActivity}.
  */
 
 public class UICharacterSelect extends UIBase
@@ -123,6 +122,7 @@ public class UICharacterSelect extends UIBase
 
     /**
      * Set if game can be continued by the host.
+     *
      * @param enabled whether or not button is enabled
      */
     public void setStartEnabled(boolean enabled)
@@ -132,6 +132,7 @@ public class UICharacterSelect extends UIBase
 
     /**
      * Update UI to show player's selection.
+     *
      * @param selection Player's selection
      */
     private void setSelection(String selection)
@@ -177,7 +178,7 @@ public class UICharacterSelect extends UIBase
     }
 
     /**
-     * Update UI to clear player's selection
+     * Update UI to clear player's selection.
      */
     public void clearSelection()
     {
@@ -190,7 +191,8 @@ public class UICharacterSelect extends UIBase
     }
 
     /**
-     * Set whether or not a character can be chosen by a player
+     * Set whether or not a character can be chosen by a player.
+     *
      * @param selection Character to enable or disable
      * @param enabled Whether to enable or disable selection
      */
