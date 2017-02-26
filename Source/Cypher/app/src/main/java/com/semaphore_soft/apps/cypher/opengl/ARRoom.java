@@ -3,6 +3,7 @@ package com.semaphore_soft.apps.cypher.opengl;
 import android.opengl.Matrix;
 
 import com.semaphore_soft.apps.cypher.opengl.shader.DynamicShaderProgram;
+import com.semaphore_soft.apps.cypher.utils.Logger;
 
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Semaphore;
@@ -20,6 +21,7 @@ public class ARRoom implements ARDrawableGLES20
     private ConcurrentHashMap<Integer, ARDrawableGLES20> playerLine;
     private ConcurrentHashMap<Integer, ARDrawableGLES20> enemyLine;
     private ConcurrentHashMap<Integer, ARDrawableGLES20> entityPile;
+    private ConcurrentHashMap<Integer, ARDrawableGLES20> effects;
     private short alignment = 2;
 
     private Semaphore assetAccess;
@@ -29,6 +31,7 @@ public class ARRoom implements ARDrawableGLES20
         playerLine = new ConcurrentHashMap<>();
         enemyLine = new ConcurrentHashMap<>();
         entityPile = new ConcurrentHashMap<>();
+        effects = new ConcurrentHashMap<>();
 
         assetAccess = new Semaphore(1);
     }
@@ -105,6 +108,14 @@ public class ARRoom implements ARDrawableGLES20
         if (entityPile.keySet().contains(id))
         {
             entityPile.remove(id);
+        }
+    }
+
+    public void addEffect(int id, ARDrawableGLES20 model)
+    {
+        if (!effects.keySet().contains(id))
+        {
+            effects.put(id, model);
         }
     }
 
@@ -345,6 +356,12 @@ public class ARRoom implements ARDrawableGLES20
                 }
 
                 enemyLine.get(id).draw(projectionMatrix, transformationMatrix, lightPos);
+                if (effects.containsKey(id))
+                {
+                    Logger.logI("adding effect");
+                    Matrix.translateM(transformationMatrix, 0, 10.0f, 0.0f, 20.0f);
+                    effects.get(id).draw(projectionMatrix, transformationMatrix, lightPos);
+                }
                 ++i;
             }
 
