@@ -16,7 +16,6 @@ import com.semaphore_soft.apps.cypher.opengl.ModelLoader;
 import com.semaphore_soft.apps.cypher.opengl.shader.DynamicShaderProgram;
 import com.semaphore_soft.apps.cypher.opengl.shader.ShaderLoader;
 import com.semaphore_soft.apps.cypher.utils.GameStatLoader;
-import com.semaphore_soft.apps.cypher.utils.Logger;
 
 import org.artoolkit.ar.base.ARToolKit;
 import org.artoolkit.ar.base.rendering.gles20.ARRendererGLES20;
@@ -129,7 +128,7 @@ class PortalRenderer extends ARRendererGLES20
         models.put("waypoint", waypoint);
 
         ARDrawableGLES20 overlay =
-            ModelLoader.load(context, "overlay", 40.0f);
+            ModelLoader.load(context, "overlay", 10.0f);
         DynamicShaderProgram overlayShaderProgram =
             new DynamicShaderProgram(ShaderLoader.createShader(context,
                                                                "shaders/vertexShaderTextured.glsl",
@@ -258,9 +257,6 @@ class PortalRenderer extends ARRendererGLES20
                 characterModels.get(i).draw(projectionMatrix,
                                             ARToolKit.getInstance()
                                                      .queryMarkerTransformation(playerMarkerIDs[i]));
-                models.get("overlay")
-                      .draw(projectionMatrix,
-                            ARToolKit.getInstance().queryMarkerTransformation(playerMarkerIDs[i]));
             }
         }
 
@@ -492,9 +488,9 @@ class PortalRenderer extends ARRendererGLES20
     //TODO set duration
     void setEnemyEffect(Actor actor)
     {
-        int roomId = actor.getRoom();
-        Logger.logD("roomID: " + roomId);
-        arRooms.get(roomId).addEffect(actor.getId(), models.get("overlay"));
+        int roomId       = actor.getRoom();
+        int actualRoomId = GameMaster.getRoomMarkerId(roomId);
+        arRooms.get(actualRoomId).addEffect(actor.getId(), models.get("overlay"));
     }
 
     void createRoom(final Room room)

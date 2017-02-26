@@ -3,7 +3,6 @@ package com.semaphore_soft.apps.cypher.opengl;
 import android.opengl.Matrix;
 
 import com.semaphore_soft.apps.cypher.opengl.shader.DynamicShaderProgram;
-import com.semaphore_soft.apps.cypher.utils.Logger;
 
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Semaphore;
@@ -358,8 +357,9 @@ public class ARRoom implements ARDrawableGLES20
                 enemyLine.get(id).draw(projectionMatrix, transformationMatrix, lightPos);
                 if (effects.containsKey(id))
                 {
-                    Logger.logI("adding effect");
-                    Matrix.translateM(transformationMatrix, 0, 10.0f, 0.0f, 20.0f);
+                    // rotate to face the camera, probably
+                    //                    Matrix.rotateM(transformationMatrix, 0, 90.0f, 0.0f, 0.0f, 1.0f);
+                    // Plane will appear in front of the enemy
                     effects.get(id).draw(projectionMatrix, transformationMatrix, lightPos);
                 }
                 ++i;
