@@ -23,9 +23,9 @@ import java.util.concurrent.ConcurrentHashMap;
 
 public class ModelLoader
 {
-    private static final int INT_SIZE   = Integer.SIZE;
-    private static final int FLOAT_SIZE = Float.SIZE;
-    private static final int SHORT_SIZE = Short.SIZE;
+    private static final int INT_BYTES   = Integer.SIZE / 8;
+    private static final int FLOAT_BYTES = Float.SIZE / 8;
+    private static final int SHORT_BYTES = Short.SIZE / 8;
 
     private static final int VERTEX_SIZE         = 3;
     private static final int TEX_COORDINATE_SIZE = 2;
@@ -429,44 +429,60 @@ public class ModelLoader
 
             FileInputStream fis = new FileInputStream(ibo);
 
-            byte[] vCountBuffer = new byte[INT_SIZE];
+            byte[] vCountBuffer = new byte[INT_BYTES];
             fis.read(vCountBuffer);
             int        vCount  = ByteBuffer.wrap(vCountBuffer).getInt();
-            ByteBuffer vBuffer = ByteBuffer.allocate(vCount * FLOAT_SIZE);
-            fis.read(vBuffer.array(), 0, vCount * FLOAT_SIZE);
+
+            Logger.logD("expected vertex coords:<" + vCount + ">", 4);
+
+            ByteBuffer vBuffer = ByteBuffer.allocate(vCount * FLOAT_BYTES);
+            fis.read(vBuffer.array(), 0, vCount * FLOAT_BYTES);
             for (int i = 0; i < vCount; ++i)
             {
-                vertices.add(vBuffer.getFloat(i * FLOAT_SIZE));
+                vertices.add(vBuffer.getFloat(i * FLOAT_BYTES));
+                //Logger.logD("vertex coord:<" + vBuffer.getFloat(i * FLOAT_BYTES) + ">");
             }
 
-            byte[] vtCountBuffer = new byte[INT_SIZE];
+            byte[] vtCountBuffer = new byte[INT_BYTES];
             fis.read(vtCountBuffer);
             int        vtCount  = ByteBuffer.wrap(vtCountBuffer).getInt();
-            ByteBuffer vtBuffer = ByteBuffer.allocate(vtCount * FLOAT_SIZE);
-            fis.read(vtBuffer.array(), 0, vtCount * FLOAT_SIZE);
+
+            Logger.logD("expected texture coords:<" + vtCount + ">", 4);
+
+            ByteBuffer vtBuffer = ByteBuffer.allocate(vtCount * FLOAT_BYTES);
+            fis.read(vtBuffer.array(), 0, vtCount * FLOAT_BYTES);
             for (int i = 0; i < vtCount; ++i)
             {
-                texCoords.add(vtBuffer.getFloat(i * FLOAT_SIZE));
+                texCoords.add(vtBuffer.getFloat(i * FLOAT_BYTES));
+                //Logger.logD("texture coord:<" + vtBuffer.getFloat(i * FLOAT_BYTES) + ">");
             }
 
-            byte[] vnCountBuffer = new byte[INT_SIZE];
+            byte[] vnCountBuffer = new byte[INT_BYTES];
             fis.read(vnCountBuffer);
             int        vnCount  = ByteBuffer.wrap(vnCountBuffer).getInt();
-            ByteBuffer vnBuffer = ByteBuffer.allocate(vnCount * FLOAT_SIZE);
-            fis.read(vnBuffer.array(), 0, vnCount * FLOAT_SIZE);
+
+            Logger.logD("expected normals coords:<" + vnCount + ">", 4);
+
+            ByteBuffer vnBuffer = ByteBuffer.allocate(vnCount * FLOAT_BYTES);
+            fis.read(vnBuffer.array(), 0, vnCount * FLOAT_BYTES);
             for (int i = 0; i < vnCount; ++i)
             {
-                normals.add(vnBuffer.getFloat(i * FLOAT_SIZE));
+                normals.add(vnBuffer.getFloat(i * FLOAT_BYTES));
+                //Logger.logD("normal coord:<" + vnBuffer.getFloat(i * FLOAT_BYTES) + ">");
             }
 
             byte[] viCountBuffer = new byte[4];
             fis.read(viCountBuffer);
             int        viCount  = ByteBuffer.wrap(viCountBuffer).getInt();
-            ByteBuffer viBuffer = ByteBuffer.allocate(viCount * FLOAT_SIZE);
-            fis.read(viBuffer.array(), 0, viCount * SHORT_SIZE);
+
+            Logger.logD("expected indices:<" + viCount + ">", 4);
+
+            ByteBuffer viBuffer = ByteBuffer.allocate(viCount * FLOAT_BYTES);
+            fis.read(viBuffer.array(), 0, viCount * SHORT_BYTES);
             for (int i = 0; i < viCount; ++i)
             {
-                indices.add(viBuffer.getShort(i * SHORT_SIZE));
+                indices.add(viBuffer.getShort(i * SHORT_BYTES));
+                //Logger.logD("index:<" + viBuffer.getShort(i * SHORT_BYTES) + ">");
             }
 
             fis.close();
@@ -555,8 +571,8 @@ public class ModelLoader
 
             Logger.logD("putting vertex buffer size:<" + vertices.size() + ">", 4);
 
-            fos.write(ByteBuffer.allocate(INT_SIZE).putInt(vertices.size()).array());
-            ByteBuffer vBuffer = ByteBuffer.allocate(vertices.size() * FLOAT_SIZE);
+            fos.write(ByteBuffer.allocate(INT_BYTES).putInt(vertices.size()).array());
+            ByteBuffer vBuffer = ByteBuffer.allocate(vertices.size() * FLOAT_BYTES);
             for (float v : vertices)
             {
                 vBuffer.putFloat(v);
@@ -565,8 +581,8 @@ public class ModelLoader
 
             Logger.logD("putting texCoord buffer size:<" + texCoords.size() + ">", 4);
 
-            fos.write(ByteBuffer.allocate(INT_SIZE).putInt(texCoords.size()).array());
-            ByteBuffer vtBuffer = ByteBuffer.allocate(texCoords.size() * FLOAT_SIZE);
+            fos.write(ByteBuffer.allocate(INT_BYTES).putInt(texCoords.size()).array());
+            ByteBuffer vtBuffer = ByteBuffer.allocate(texCoords.size() * FLOAT_BYTES);
             for (float vt : texCoords)
             {
                 vtBuffer.putFloat(vt);
@@ -575,8 +591,8 @@ public class ModelLoader
 
             Logger.logD("putting normal buffer size:<" + normals.size() + ">", 4);
 
-            fos.write(ByteBuffer.allocate(INT_SIZE).putInt(normals.size()).array());
-            ByteBuffer vnBuffer = ByteBuffer.allocate(normals.size() * FLOAT_SIZE);
+            fos.write(ByteBuffer.allocate(INT_BYTES).putInt(normals.size()).array());
+            ByteBuffer vnBuffer = ByteBuffer.allocate(normals.size() * FLOAT_BYTES);
             for (float vn : normals)
             {
                 vnBuffer.putFloat(vn);
@@ -585,8 +601,8 @@ public class ModelLoader
 
             Logger.logD("putting index buffer size:<" + indices.size() + ">", 4);
 
-            fos.write(ByteBuffer.allocate(INT_SIZE).putInt(indices.size()).array());
-            ByteBuffer viBuffer = ByteBuffer.allocate(indices.size() * SHORT_SIZE);
+            fos.write(ByteBuffer.allocate(INT_BYTES).putInt(indices.size()).array());
+            ByteBuffer viBuffer = ByteBuffer.allocate(indices.size() * SHORT_BYTES);
             for (short vi : indices)
             {
                 viBuffer.putShort(vi);

@@ -38,7 +38,7 @@ public class MainApplication extends Application
         mContext = getContext();
         ((MainApplication) sInstance).initializeInstance();
 
-        Logger.setLogLevel(3);
+        Logger.setLogLevel(4);
     }
 
     // Here we do one-off initialisation which should apply to all activities
