@@ -1030,7 +1030,7 @@ public class Actor
 
     /**
      * Create a new {@link StatusTemporary temporary Status} for this {@link
-     * Actor} to associate, or 'have', from a given {@link Status} {@link
+     * Actor} to associate with, or 'have', from a given {@link Status} {@link
      * Status.E_STATUS_TYPE type}, {@link Effect} rating, and duration.
      * <p>
      * A {@link StatusTemporary} may be added as the result of this {@link
