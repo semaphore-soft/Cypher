@@ -2,8 +2,21 @@ package com.semaphore_soft.apps.cypher.game;
 
 /**
  * The {@link GameController game.GameController} interface defines the methods
- * which must be defined on a class which coordinates the game state model with
- * the graphical presentation of the game.
+ * which must be defined on a class which coordinates the game state {@link
+ * Model} and interaction with it with the {@link
+ * com.semaphore_soft.apps.cypher.PortalRenderer graphical presentation} of the
+ * game.
+ * <p>
+ * Used to provide a listener to callback to for the {@link
+ * com.semaphore_soft.apps.cypher.PortalRenderer renderer} and the non-player
+ * {@link Actor} control class {@link ActorController}.
+ *
+ * @author scorple
+ * @see com.semaphore_soft.apps.cypher.PortalActivity
+ * @see com.semaphore_soft.apps.cypher.PortalRenderer
+ * @see Model
+ * @see Actor
+ * @see ActorController
  */
 public interface GameController
 {
@@ -50,6 +63,8 @@ public interface GameController
      * <p>
      * Actions reference descriptions include "attack", "defend",
      * "special:help", and "special:harm".
+     * <p>
+     * Used by {@link ActorController}.
      *
      * @param sourceId int: The logical reference ID of the {@link Actor}
      *                 performing the action
@@ -59,12 +74,15 @@ public interface GameController
      *                 performed.
      *
      * @see Actor
+     * @see ActorController
      */
     void onActorAction(int sourceId, int targetId, String action);
 
     /**
      * Callback method, informed the {@link GameController} that a non-player
      * {@link Actor} has moved to a specified {@link Room}.
+     * <p>
+     * Used by {@link ActorController}.
      *
      * @param actorId int: The logical reference ID of the {@link Actor} which
      *                has moved.
@@ -73,6 +91,7 @@ public interface GameController
      *
      * @see Actor
      * @see Room
+     * @see ActorController
      */
     void onActorMove(int actorId, int roomId);
 
@@ -80,11 +99,14 @@ public interface GameController
      * Callback method, informs the {@link GameController} that the given turn
      * ID, and therefore the turn for the {@link Actor} associated with that
      * ID, has passed.
+     * <p>
+     * Used by {@link ActorController}.
      *
      * @param turnId int: The logical reference ID of the turn that has passed,
      *               and also the {@link Actor} for which that turn was taken.
      *
      * @see Actor
+     * @see ActorController
      */
     void turnPassed(int turnId);
 }

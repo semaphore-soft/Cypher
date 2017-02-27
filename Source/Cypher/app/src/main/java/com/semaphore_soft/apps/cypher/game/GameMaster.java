@@ -1,6 +1,8 @@
 package com.semaphore_soft.apps.cypher.game;
 
 import android.content.Context;
+import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
 import android.util.Log;
 import android.util.Pair;
 
@@ -13,28 +15,103 @@ import java.util.Collections;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
- * Created by Scorple on 2/18/2017.
+ * {@link GameMaster game.GameMaster} is a coordinator class intended to define
+ * interaction with the game state {@link Model}, including game state status
+ * checks, game state updating, and the performing of game action updates on
+ * the game state {@link Model} as a whole.
+ * <p>
+ * Used by classes at all levels.
+ *
+ * @author scorple
+ * @see Model
  */
-
 public class GameMaster
 {
     private static Model model;
 
+    /**
+     * Set the {@link Model} which describes the game state.
+     *
+     * @param model {@link Model}: The {@link Model} which describes game
+     *              state.
+     */
     public static void setModel(final Model model)
     {
         GameMaster.model = model;
     }
 
+    /**
+     * Creates a new {@link Room} with the next available logical reference ID
+     * and not associated with an AR marker, and add it to the {@link Model}.
+     * <p>
+     * The {@link Room} will host 0-3 random non-player {@link Actor Actors}
+     * and 1-4 doors in a random configuration.
+     * <p>
+     * WARNING: Players will not be able to interact with or connect with the
+     * rest of the game map a {@link Room} which is not associated with an AR
+     * marker.
+     *
+     * @param context Context: The application context. Used for loading in
+     *                any stats needed during {@link Room} generation.
+     *
+     * @return {@link Room}: The created {@link Room} object.
+     *
+     * @see Room
+     * @see Actor
+     * @see Model
+     */
     public static Room generateRoom(final Context context)
     {
         return generateRoom(context, CollectionManager.getNextID(model.getRooms()));
     }
 
+    /**
+     * Creates a new {@link Room} with a given logical reference ID and not
+     * associated with an AR marker, and add it to the {@link Model}.
+     * <p>
+     * The {@link Room} will host 0-3 random non-player {@link Actor Actors}
+     * and 1-4 doors in a random configuration.
+     * <p>
+     * WARNING: Players will not be able to interact with or connect with the
+     * rest of the game map a {@link Room} which is not associated with an AR
+     * marker.
+     *
+     * @param context Context: The application context. Used for loading in
+     *                any stats needed during {@link Room} generation.
+     * @param id      int: The logical reference ID to use for the created
+     *                {@link Room}.
+     *
+     * @return {@link Room}: The created {@link Room} object.
+     *
+     * @see Room
+     * @see Actor
+     * @see Model
+     */
     public static Room generateRoom(final Context context, final int id)
     {
         return generateRoom(context, id, -1);
     }
 
+    /**
+     * Creates a new {@link Room} with a given logical reference ID and
+     * associated with a given AR marker ID, and add it to the {@link Model}.
+     * <p>
+     * The {@link Room} will host 0-3 random non-player {@link Actor Actors}
+     * and 1-4 doors in a random configuration.
+     *
+     * @param context Context: The application context. Used for loading in
+     *                any stats needed during {@link Room} generation.
+     * @param id      int: The logical reference ID to use for the created
+     *                {@link Room}.
+     * @param mark    int: The reference ID of the AR marker the created {@link
+     *                Room} will associate with.
+     *
+     * @return {@link Room}: The created {@link Room} object.
+     *
+     * @see Room
+     * @see Actor
+     * @see Model
+     */
     public static Room generateRoom(final Context context, final int id, final int mark)
     {
         Log.d("GameMaster", "Generating room with id " + id + " at mark " + mark);
@@ -88,16 +165,66 @@ public class GameMaster
         return room;
     }
 
+    /**
+     * Get the {@link Room} object associated with a given logical reference
+     * ID.
+     *
+     * @param id int: The logical reference ID of the desired {@link Room}.
+     *
+     * @return {@link Room}: The {@link Room} object associated ith the
+     * provided logical reference ID in the {@link Model}, or <code>null</code>
+     * if the given logical reference ID does not correspond to a {@link Room}.
+     *
+     * @see Room
+     * @see Model
+     */
+    @Nullable
     public static Room getRoom(final int id)
     {
         return model.getRooms().get(id);
     }
 
+    /**
+     * Get the reference ID of the AR marker associated with by a given {@link
+     * Room}.
+     * <p>
+     * To be used for checking the AR marker the given {@link Room} is anchored
+     * to and referencing it in a graphical ({@link
+     * com.semaphore_soft.apps.cypher.PortalRenderer}) context ONLY.
+     *
+     * @param id int: The logical reference ID of the desired {@link Room}.
+     *
+     * @return int: The AR marker ID associated with by the given {@link Room},
+     * or a flag (-1) if the {@link Room} does not associated with an AR
+     * marker.
+     *
+     * @see Room
+     * @see com.semaphore_soft.apps.cypher.PortalRenderer
+     */
     public static int getRoomMarkerId(final int id)
     {
         return model.getRooms().get(id).getMarker();
     }
 
+    /**
+     * Get the logical reference ID of the {@link Room} which associates with
+     * a given AR marker reference ID.
+     * <p>
+     * To be used for getting game state information about a {@link Room} from
+     * and for use in a graphical ({@link
+     * com.semaphore_soft.apps.cypher.PortalRenderer}) context ONLY.
+     *
+     * @param markerId int: The reference ID of the AR marker associated with
+     *                 by the desired {@link Room}.
+     *
+     * @return int: The logical reference ID of the {@link Room} which
+     * associates with, or is anchored to, the AR marker indexed by the given
+     * ID, or a flag (-1) if no {@link Room} in the {@link Model} associates
+     * with the given AR marker ID.
+     *
+     * @see Room
+     * @see com.semaphore_soft.apps.cypher.PortalRenderer
+     */
     public static int getRoomIdByMarkerId(final int markerId)
     {
         for (Room room : model.getRooms().values())
@@ -111,6 +238,19 @@ public class GameMaster
         return -1;
     }
 
+    /**
+     * Get a list of the logical reference IDs of every {@link Room} in the
+     * {@link Model} which is considered to be 'placed', accessible, and part
+     * of the game {@link Map}.
+     *
+     * @return ArrayList: A list containing the logical reference IDs of every
+     * {@link Room} in the {@link Model} which is considered to be 'placed'.
+     *
+     * @see Room
+     * @see Model
+     * @see Map
+     */
+    @NonNull
     public static ArrayList<Integer> getPlacedRoomMarkerIds()
     {
         ArrayList<Integer> placedRoomMarkers = new ArrayList<>();
@@ -124,16 +264,55 @@ public class GameMaster
         return placedRoomMarkers;
     }
 
+    /**
+     * Get a list of the logical reference IDs of every {@link Room} which is
+     * adjacent to a given {@link Room}.
+     *
+     * @param startRoomId int: The logical reference ID of the desired {@link
+     *                    Room} to search for {@link Room Rooms} adjacent to.
+     *
+     * @return ArrayList: A list containing the logical reference IDs of every
+     * {@link Room} which is adjacent to the given start {@link Room}.
+     *
+     * @see Room
+     */
+    @NonNull
     public static ArrayList<Integer> getAdjacentRoomIds(final int startRoomId)
     {
         return model.getMap().getAdjacentRooms(startRoomId);
     }
 
+    /**
+     * Get the short index of the wall of an end {@link Room} connecting it to
+     * a start {@link Room}. Assumes the given {@link Room Rooms} are adjacent.
+     *
+     * @param startRoomId int: The logical reference ID of the desired start
+     *                    {@link Room}.
+     * @param endRoomId   int: The logical reference ID of the desired end
+     *                    {@link Room}.
+     *
+     * @return short: The index of the end {@link Room} wall which connects it
+     * to the start {@link Room}.
+     *
+     * @see Room
+     */
     public static short getSideOfRoomFrom(final int startRoomId, final int endRoomId)
     {
         return model.getMap().getWallsBetweenAdjacentRooms(startRoomId, endRoomId).second;
     }
 
+    /**
+     * Get the number of player {@link Actor Actors} in a given {@link Room}.
+     *
+     * @param roomId int: The logical reference ID of the desired {@link Room}.
+     *
+     * @return int: The count of player controlled {@link Actor Actors} in the
+     * given {@link Room}. 0 if there are no player controlled {@link Actor
+     * Actors} in the given {@link Room}.
+     *
+     * @see Room
+     * @see Actor
+     */
     public static int getPlayersInRoom(final int roomId)
     {
         int  res  = 0;
@@ -150,6 +329,19 @@ public class GameMaster
         return res;
     }
 
+    /**
+     * Get the number of non-player {@link Actor Actors} in a given {@link
+     * Room}.
+     *
+     * @param roomId int: The logical reference ID of the desired {@link Room}.
+     *
+     * @return int: The count of player controlled {@link Actor Actors} in the
+     * given {@link Room}. 0 if there are no non-player controlled {@link Actor
+     * Actors} in the given {@link Room}.
+     *
+     * @see Room
+     * @see Actor
+     */
     public static int getEnemiesInRoom(final int roomId)
     {
         int  res  = 0;
@@ -166,35 +358,119 @@ public class GameMaster
         return res;
     }
 
+    /**
+     * Get the {@link Actor} object associated with a given logical reference
+     * ID.
+     *
+     * @param id int: The logical reference ID of the desired {@link Actor}.
+     *
+     * @return {@link Actor}: The {@link Actor} object associated ith the
+     * provided logical reference ID in the {@link Model}, or <code>null</code>
+     * if the given logical reference ID does not correspond to an {@link
+     * Actor}.
+     *
+     * @see Actor
+     * @see Model
+     */
+    @Nullable
     public static Actor getActor(final int id)
     {
         return model.getActors().get(id);
     }
 
+    /**
+     * Get the reference ID of the AR marker associated with by a given {@link
+     * Actor}.
+     * <p>
+     * To be used for checking the AR marker the given {@link Actor} associates
+     * with and referencing it in a graphical ({@link
+     * com.semaphore_soft.apps.cypher.PortalRenderer}) context ONLY.
+     *
+     * @param id int: The logical reference ID of the desired {@link Actor}.
+     *
+     * @return int: The AR marker ID associated with by the given {@link
+     * Actor}, or a flag (-1) if the {@link Actor} does not associated with an
+     * AR marker.
+     *
+     * @see Actor
+     * @see com.semaphore_soft.apps.cypher.PortalRenderer
+     */
     public static int getActorMakerId(final int id)
     {
         return model.getActors().get(id).getMarker();
     }
 
+    /**
+     * Get the logical reference ID of the {@link Room} a given {@link Actor}
+     * associates with, or considers itself to be a resident of.
+     *
+     * @param id int The logical reference ID of the desired {@link Actor}.
+     *
+     * @return int: The logical reference ID of the {@link Room} the given
+     * {@link Actor} associates with, or considers itself to be a resident of.
+     *
+     * @see Actor
+     * @see Room
+     */
     public static int getActorRoomId(final int id)
     {
         return model.getActors().get(id).getRoom();
     }
 
+    /**
+     * Get the {@link Room} object a given {@link Actor} associates with, or
+     * considers itself to be a reference of.
+     *
+     * @param id int: The logical reference ID of the desired {@link Actor}.
+     *
+     * @return {@link Room}: The {@link Room} object the given {@link Actor}
+     * associates with, or considers itself to be a resident of.
+     *
+     * @see Actor
+     * @see Room
+     */
     public static Room getActorRoom(final int id)
     {
         return model.getRooms().get(model.getActors().get(id).getRoom());
     }
 
+    /**
+     * Check whether or not a given {@link Actor} is a considered to be player
+     * controlled.
+     *
+     * @param id int: The logical reference ID of the desired {@link Actor}.
+     *
+     * @return boolean:
+     * <ul>
+     * <li>True if the given {@link Actor} is considered to be player
+     * controlled.</li>
+     * <li>False otherwise.</li>
+     * </ul>
+     *
+     * @see Actor
+     */
     public static boolean getActorIsPlayer(final int id)
     {
         return model.getActors().get(id).isPlayer();
     }
 
-    //returns
-    //1: marker attached to a room
-    //0: marker attached to a player
-    //-1: marker not attached to anything
+    /**
+     * Get the type of object a given AR marker reference ID is associated
+     * with.
+     *
+     * @param markId int: The reference ID of the desired AR marker.
+     *
+     * @return int:
+     * <ul>
+     * <li>1: The given AR marker ID is associated with a {@link Room}.</li>
+     * <li>0: The given AR marker ID is associated with an {@link Actor}.</li>
+     * <li>-1: The given AR marker ID is not associated with a game
+     * object.</li>
+     * </ul>
+     *
+     * @see Actor
+     * @see Room
+     */
     public static int getMarkerAttachment(final int markId)
     {
         for (Actor actor : model.getActors().values())
@@ -216,6 +492,20 @@ public class GameMaster
         return -1;
     }
 
+    /**
+     * Get the logical reference ID of the game object associated with a given
+     * AR marker reference ID, regardless of what type of game object it is.
+     *
+     * @param markId int: The reference ID of the desired AR marker.
+     *
+     * @return int: The logical reference ID of the {@link Actor} or {@link
+     * Room} associated with the given AR marker reference ID, or a flag (-1)
+     * if the given AR marker reference ID is not associated with a game
+     * object.
+     *
+     * @see Actor
+     * @see Room
+     */
     public static int getIdByMarker(final int markId)
     {
         for (Actor actor : model.getActors().values())
@@ -237,14 +527,31 @@ public class GameMaster
         return -1;
     }
 
-    //returns
-    //2: success, start room established
-    //1: success, remain in room
-    //0: success, actor moves from old room to new room
-    //-1: failure, invalid path, bad connection
-    //-2: failure, invalid path, rooms not adjacent
-    //-3: failure, room not placed
-    //-4: failure, unknown
+    /**
+     * Attempt to move a given {@link Actor} to a given {@link Room} and return
+     * a code describing the success or failure of the move.
+     *
+     * @param actorId   int: The logical reference ID of the {@link Actor}
+     *                  attempting to move.
+     * @param endRoomId int: The logical reference ID of the {@link Room} the
+     *                  given {@link Actor} is attempting to move to.
+     *
+     * @return int:
+     * <ul>
+     * <li>2: Success, start {@link Room} established, {@link Actor} moves to
+     * start {@link Room}.</li>
+     * <li>1: Success, {@link Actor} remains in current {@link Room}.</li>
+     * <li>0: Success, {@link Actor} moves from previous {@link Room}to new
+     * {@link Room}.</li>
+     * <li>-1: Failure, invalid path, bad connection between {@link Room
+     * Rooms}.</li>
+     * <li>-2: Failure, invalid path, {@link Room Rooms} not adjacent.</li>
+     * <li>-3: Failure, destination {@link Room} is not placed.</li>
+     * <li>-4: Failure, unknown.</li>
+     * </ul>
+     *
+     * @see Room
+     */
     public static int moveActor(final int actorId, final int endRoomId)
     {
         Actor actor   = model.getActors().get(actorId);
@@ -292,10 +599,30 @@ public class GameMaster
         return -4;
     }
 
-    //returns
-    //0: success, valid path
-    //-1: failure, invalid path, bad connection
-    //-2: failure, invalid path, rooms not adjacent
+    /**
+     * Check whether or not there is a valid path between two given {@link Room
+     * Rooms} and return a code describing if the path is valid or, if not, why
+     * not.
+     * <p>
+     * A path between two {@link Room Rooms} is considered valid if and only if
+     * there is an open door in the wall each connecting each {@link Room} with
+     * the opposite {@link Room}.
+     *
+     * @param startRoomId int: The logical reference ID of the {@link Room}
+     *                    checking for path from.
+     * @param endRoomId   int: The logical reference ID of the {@link Room}
+     *                    checking for path to.
+     *
+     * @return int:
+     * <ul>
+     * <li>0: Valid path.</li>
+     * <li>-1: Invalid path, bad connection between given {@link Room
+     * Rooms}.</li>
+     * <li>-2: Invalid path, given {@link Room Rooms} not adjacent.</li>
+     * </ul>
+     *
+     * @see Room
+     */
     public static int getValidPath(final int startRoomId, final int endRoomId)
     {
         Map map = model.getMap();
@@ -323,6 +650,34 @@ public class GameMaster
         return -1;
     }
 
+    /**
+     * Attempt to open a door connecting two given {@link Room Rooms} using the
+     * given the side, or wall, of each {@link Room} the door should be in and
+     * return a code describing success or failure.
+     * <p>
+     * A door can be opened between two {@link Room Rooms} if and only if there
+     * is an unlocked door in the given wall index of the start {@link Room}
+     * and the end {@link Room} and a valid adjacency can be formed between the
+     * end {@link Room} and all adjacent {@link Room Rooms}.
+     *
+     * @param startRoomId     int: The logical reference ID of the {@link Room}
+     *                        opening door from.
+     * @param endRoomId       int: The logical reference ID of the {@link Room}
+     *                        opening door to.
+     * @param sideOfStartRoom short: The index of the wall the door must be in
+     *                        for the start {@link Room}.
+     * @param sideOfEndRoom   short: The index of the wall the door must be in
+     *                        for the end {@link Room}.
+     *
+     * @return int:
+     * <ul>
+     * <li>0: Success, door opened between given {@link Room Rooms}.</li>
+     * <li>-1: Failure, door could not be opened between given {@link Room
+     * Rooms}.</li>
+     * </ul>
+     *
+     * @see Room
+     */
     public static int openDoor(final int startRoomId,
                                final int endRoomId,
                                final short sideOfStartRoom,
@@ -379,6 +734,32 @@ public class GameMaster
         return -1;
     }
 
+    /**
+     * Check whether or not two given walls of two given {@link Room Rooms}
+     * form a valid adjacency and return a code describing the validity.
+     * <p>
+     * A proposed adjacency between two {@link Room Rooms} is valid if and only
+     * if the wall connecting the start {@link Room} to the end {@link Room} is
+     * the same type as the wall connecting the end {@link Room} to the start
+     * {@link Room}.
+     *
+     * @param startRoomId     int: The logical reference ID of the {@link Room}
+     *                        checking validity from.
+     * @param endRoomId       int: The logical reference ID of the {@link Room}
+     *                        checking validity to.
+     * @param sideOfStartRoom short: The index of the wall of the start {@link
+     *                        Room} to check adjacency with.
+     * @param sideOfEndRoom   short: The index of the wall of the end {@link
+     *                        Room} to check adjacency with.
+     *
+     * @return int:
+     * <ul>
+     * <li>0: Valid adjacency between given {@link Room Rooms}.</li>
+     * <li>-1: Invalid adjacency between given {@link Room Rooms}.</li>
+     * </ul>
+     *
+     * @see Room
+     */
     private static int getValidAdjacency(final int startRoomId,
                                          final int endRoomId,
                                          final short sideOfStartRoom,
@@ -421,6 +802,38 @@ public class GameMaster
         return 0;
     }
 
+    /**
+     * Check whether or not a given {@link Room} at proposed X and Y position
+     * with proposed rotation in the {@link Map} forms a valid adjacency with
+     * another given {@link Room} and return a code describing the validity or
+     * invalidity of the adjacency.
+     * <p>
+     * A proposed adjacency between two {@link Room Rooms} is valid if and only
+     * if the wall connecting the start {@link Room} to the end {@link Room} is
+     * the same type as the wall connecting the end {@link Room} to the start
+     * {@link Room}.
+     *
+     * @param proposedRoomPositionX int: The proposed X position of the
+     *                              proposed {@link Room} in the {@link Map}.
+     * @param proposedRoomPositionY int: The proposed Y position of the
+     *                              proposed {@link Room} in the {@link Map}.
+     * @param proposedRoomRotation  int: The proposed rotation of the proposed
+     *                              {@link Room} in the {@link Map}.
+     * @param testRoomId            int: The logical reference ID of the {@link
+     *                              Room} to test the proposed {@link Room
+     *                              Room's} adjacency with.
+     * @param proposedRoomId        int: The logical reference ID of a proposed
+     *                              {@link Room} to add to the {@link Map}.
+     *
+     * @return int:
+     * <ul>
+     * <li>0: Valid adjacency between given {@link Room Rooms}.</li>
+     * <li>-1: Invalid adjacency between given {@link Room Rooms}.</li>
+     * </ul>
+     *
+     * @see Room
+     * @see Map
+     */
     private static int getValidAdjacencyProposedRoom(final int proposedRoomPositionX,
                                                      final int proposedRoomPositionY,
                                                      final short proposedRoomRotation,

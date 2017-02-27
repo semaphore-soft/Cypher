@@ -10,7 +10,8 @@ import static com.semaphore_soft.apps.cypher.utils.CollectionManager.getNextID;
  * about the state of one actor in the game, including its stats, {@link
  * Special Specials}, {@link Item Items}, and {@link Status Statuses}.
  * <p>
- * May either be controlled by a player user or the {@link ActorController}.
+ * May either be a player controlled 'character' or a non-player 'enemy'
+ * controlled by the {@link ActorController}.
  *
  * @author scorple
  * @see Special
