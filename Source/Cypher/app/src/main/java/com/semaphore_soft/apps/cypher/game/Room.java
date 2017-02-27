@@ -23,7 +23,8 @@ public class Room
      * Describes the type of a wall, including whether or not it hosts a door,
      * and, if there is a door, the status of that door.
      */
-    @SuppressWarnings("WeakerAccess")
+    @SuppressWarnings("WeakerAccess") //this enum must be public so the
+    //renderer can use it, don't believe Android Studio's lies
     public enum E_WALL_TYPE
     {
         NO_DOOR,
