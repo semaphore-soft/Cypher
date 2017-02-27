@@ -493,12 +493,29 @@ class PortalRenderer extends ARRendererGLES20
         playerMarkerIDs[playerID] = markerID;
     }
 
-    //TODO set duration
-    void setEnemyEffect(Actor actor)
+    /**
+     * Applies an effect texture on an {@link Actor} for {@code duration}.
+     *
+     * @param actor    {@link Actor} to apply the effect to
+     * @param effect   Name of the effect to apply
+     * @param duration How long the effect should last in milliseconds
+     */
+    void setEnemyEffect(final Actor actor, String effect, long duration)
     {
-        int roomId       = actor.getRoom();
-        int actualRoomId = GameMaster.getRoomMarkerId(roomId);
-        arRooms.get(actualRoomId).addEffect(actor.getId(), models.get("overlay"));
+        int          roomId       = actor.getRoom();
+        int          actualRoomId = GameMaster.getRoomMarkerId(roomId);
+        final ARRoom room         = arRooms.get(actualRoomId);
+        room.addEffect(actor.getId(), models.get(effect));
+        Runnable removeEffect = new Runnable()
+        {
+            @Override
+            public void run()
+            {
+                room.removeEffect(actor.getId());
+            }
+        };
+        // Remove effect after the duration has passed
+        handler.postDelayed(removeEffect, duration);
     }
 
     void createRoom(final Room room)

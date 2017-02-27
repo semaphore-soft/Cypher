@@ -110,6 +110,14 @@ public class ARRoom implements ARDrawableGLES20
         }
     }
 
+    /**
+     * Applies an effect to the {@link com.semaphore_soft.apps.cypher.game.Actor Actor}
+     * specified by {@code id}.
+     *
+     * @param id    ID of the {@link com.semaphore_soft.apps.cypher.game.Actor Actor} to apply
+     *              the effect to
+     * @param model The effect texture to overlay on the {@link com.semaphore_soft.apps.cypher.game.Actor Actor}
+     */
     public void addEffect(int id, ARDrawableGLES20 model)
     {
         if (!effects.containsKey(id))
@@ -118,6 +126,13 @@ public class ARRoom implements ARDrawableGLES20
         }
     }
 
+    /**
+     * Remove the effect that has been applied to the {@link com.semaphore_soft.apps.cypher.game.Actor Actor}
+     * specified by {@code id}.
+     *
+     * @param id ID of the {@link com.semaphore_soft.apps.cypher.game.Actor Actor}
+     *           to remove the effect from
+     */
     public void removeEffect(int id)
     {
         if (effects.containsKey(id))
