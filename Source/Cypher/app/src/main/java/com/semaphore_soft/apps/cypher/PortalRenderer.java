@@ -668,6 +668,7 @@ class PortalRenderer extends ARRendererGLES20
                 if (targetId > -1)
                 {
                     arRoom.setForwardEnemy(targetId);
+                    setEnemyEffect(actors.get(targetId), "overlay", 1000);
                 }
             }
             else
@@ -676,6 +677,7 @@ class PortalRenderer extends ARRendererGLES20
                 if (targetId > -1)
                 {
                     arRoom.setForwardPlayer(targetId);
+                    setEnemyEffect(actors.get(targetId), "overlay", 1000);
                 }
             }
         }

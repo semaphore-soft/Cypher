@@ -677,8 +677,6 @@ public class PortalActivity extends ARActivity implements PortalRenderer.NewMark
     {
         int res = GameMaster.attack(attackerId, defenderId);
 
-        renderer.setEnemyEffect(model.getActors().get(defenderId), "overlay", 2000);
-
         postAttackResults(attackerId, defenderId, res);
     }
 

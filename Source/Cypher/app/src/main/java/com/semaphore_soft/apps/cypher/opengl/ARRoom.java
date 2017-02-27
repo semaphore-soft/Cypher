@@ -314,6 +314,11 @@ public class ARRoom implements ARDrawableGLES20
                 }
 
                 playerLine.get(id).draw(projectionMatrix, transformationMatrix, lightPos);
+                if (effects.containsKey(id))
+                {
+                    // Plane will appear in front of the enemy
+                    effects.get(id).draw(projectionMatrix, transformationMatrix, lightPos);
+                }
                 ++i;
             }
 
