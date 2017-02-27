@@ -9,6 +9,7 @@ package com.semaphore_soft.apps.cypher.game;
  * Room}, {@link Actor}, or {@link Item}.
  *
  * @author scorple
+ * @see Model
  * @see Room
  * @see Actor
  * @see Item
@@ -90,6 +91,8 @@ public class Entity
      *
      * @param roomID int: The logical reference ID of the {@link Room} this
      *               {@link Entity} will associate with.
+     *
+     * @see Room
      */
     public void setRoom(int roomID)
     {
@@ -102,6 +105,8 @@ public class Entity
      *
      * @return int: The logical reference ID of the {@link Room} this {@link
      * Entity} associates with.
+     *
+     * @see Room
      */
     public int getRoomID()
     {
