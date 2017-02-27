@@ -111,6 +111,8 @@ public class Room
      *
      * @param markerID int: The marker/graphical reference ID the be used for
      *                 this {@link Room}
+     *
+     * @see com.semaphore_soft.apps.cypher.PortalRenderer
      */
     public void setMarker(int markerID)
     {
@@ -125,6 +127,8 @@ public class Room
      * com.semaphore_soft.apps.cypher.PortalRenderer}) context ONLY.
      *
      * @return int: The marker/graphical reference ID of this {@link Room}.
+     *
+     * @see com.semaphore_soft.apps.cypher.PortalRenderer
      */
     public int getMarker()
     {
@@ -140,6 +144,10 @@ public class Room
      * and in some way connected to the rest of the game map.</li>
      * <li>False otherwise.</li>
      * </ul>
+     *
+     * @see GameMaster#moveActor(int, int)
+     * @see GameMaster#getValidPath(int, int)
+     * @see GameMaster#openDoor(int, int, short, short)
      */
     public boolean isPlaced()
     {
@@ -156,6 +164,10 @@ public class Room
      *               of the game map.</li>
      *               <li>False otherwise.</li>
      *               </ul>
+     *
+     * @see GameMaster#moveActor(int, int)
+     * @see GameMaster#getValidPath(int, int)
+     * @see GameMaster#openDoor(int, int, short, short)
      */
     public void setPlaced(boolean placed)
     {
@@ -172,6 +184,10 @@ public class Room
      *                associated with, or a resident of, this {@link Room}.
      *
      * @see Actor
+     * @see GameMaster#getPlayerTargets(int)
+     * @see GameMaster#getNonPlayerTargets(int)
+     * @see GameMaster#getPlayerTargetIds(int)
+     * @see GameMaster#getNonPlayerTargetIds(int)
      */
     public void addActor(int actorID)
     {
@@ -192,6 +208,11 @@ public class Room
      *                {@link Room}.
      *
      * @see Actor
+     * @see GameMaster#getPlayerTargets(int)
+     * @see GameMaster#getNonPlayerTargets(int)
+     * @see GameMaster#getPlayerTargetIds(int)
+     * @see GameMaster#getNonPlayerTargetIds(int)
+     * @see GameMaster#removeDeadActors()
      */
     public void removeActor(int actorID)
     {
@@ -209,6 +230,10 @@ public class Room
      * associated with, or considered to be residents of, this {@link Room}.
      *
      * @see Actor
+     * @see GameMaster#getPlayerTargets(int)
+     * @see GameMaster#getNonPlayerTargets(int)
+     * @see GameMaster#getPlayerTargetIds(int)
+     * @see GameMaster#getNonPlayerTargetIds(int)
      */
     public ArrayList<Integer> getResidentActors()
     {
@@ -284,6 +309,8 @@ public class Room
      *
      * @return {@link E_WALL_TYPE}: The {@link E_WALL_TYPE type} of the wall at
      * the given wall position reference ID.
+     *
+     * @see GameMaster#getValidAdjacency(int, int, short, short)
      */
     public E_WALL_TYPE getWallType(short wall)
     {
@@ -307,6 +334,8 @@ public class Room
      * @param type {@link E_WALL_TYPE}: The new wall {@link E_WALL_TYPE type}
      *             to associated with the wall at the given wall position
      *             reference ID.
+     *
+     * @see GameMaster#getValidAdjacency(int, int, short, short)
      */
     public void setWallType(short wall, E_WALL_TYPE type)
     {

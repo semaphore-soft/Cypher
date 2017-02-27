@@ -90,7 +90,7 @@ public class ActorController
         ArrayList<Integer> nonPlayerTargets =
             GameMaster.getNonPlayerTargetIds(actorId);
         ConcurrentHashMap<Integer, Special> actorSpecials = actor.getSpecials();
-        if (playerTargets != null && playerTargets.size() > 0)
+        if (playerTargets.size() > 0)
         {
             attackTickets = actor.getAttackTickets();
             defendTickets = actor.getDefendTickets();
@@ -131,7 +131,7 @@ public class ActorController
                 moveTickets = actor.getMoveTickets();
             }
         }
-        if (playerTargets != null && playerTargets.size() > 0 && actor.isSeeker())
+        if (playerTargets.size() > 0 && actor.isSeeker())
         {
             moveTickets = 1;
         }
@@ -187,7 +187,7 @@ public class ActorController
                     switch (special.getTargetingType())
                     {
                         case SINGLE_PLAYER:
-                            if (nonPlayerTargets != null && nonPlayerTargets.size() > 0)
+                            if (nonPlayerTargets.size() > 0)
                             {
                                 Collections.shuffle(nonPlayerTargets);
 
@@ -235,7 +235,7 @@ public class ActorController
                             usedSpecial = true;
                             break;
                         case AOE_PLAYER:
-                            if (nonPlayerTargets != null && nonPlayerTargets.size() > 0)
+                            if (nonPlayerTargets.size() > 0)
                             {
                                 ArrayList<Actor> nonPlayerTargetActors = new ArrayList<>();
                                 for (int i : nonPlayerTargets)

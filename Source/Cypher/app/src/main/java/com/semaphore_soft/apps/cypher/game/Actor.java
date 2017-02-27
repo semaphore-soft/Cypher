@@ -165,7 +165,7 @@ public class Actor
      * Get the logical reference ID of this {@link Actor}.
      * <p>
      * To be used for referencing this {@link Actor} in a game state context
-     * (associating with rooms, checking stats, etc.) ONLY.
+     * (associating with {@link Room Rooms}, checking stats, etc.) ONLY.
      *
      * @return int: The logical reference ID of this {@link Actor}.
      */
@@ -204,10 +204,13 @@ public class Actor
     /**
      * Set the marker/graphical reference ID of this {@link Actor}.
      * <p>
-     * To be used for checking the position of a player marker/waypoint ONLY.
+     * To be used for checking the position of a player marker/waypoint
+     * ({@link com.semaphore_soft.apps.cypher.PortalRenderer}) ONLY.
      *
      * @param tagID int: The marker/graphical reference ID to be used for this
      *              {@link Actor}.
+     *
+     * @see com.semaphore_soft.apps.cypher.PortalRenderer
      */
     public void setMarker(int tagID)
     {
@@ -217,9 +220,12 @@ public class Actor
     /**
      * Get the marker/graphical reference ID of this {@link Actor}.
      * <p>
-     * To be used for checking the position of a player marker/waypoint ONLY.
+     * To be used for checking the position of a player marker/waypoint
+     * ({@link com.semaphore_soft.apps.cypher.PortalRenderer}) ONLY.
      *
      * @return int: The marker/graphical reference ID of this {@link Actor}.
+     *
+     * @see com.semaphore_soft.apps.cypher.PortalRenderer
      */
     public int getMarker()
     {
@@ -279,7 +285,7 @@ public class Actor
      * {@link Actor} in plain text.
      *
      * @param displayName String: The display name to be used for this {@link
-     * Actor}.
+     *                    Actor}.
      */
     public void setDisplayName(String displayName)
     {
@@ -307,6 +313,12 @@ public class Actor
      *
      * @param healthMaximum int: The maximum amount of health this {@link Actor}
      *                      will be able to have.
+     *
+     * @see #receiveAttack(int)
+     * @see Special#applySpecial(int, Actor)
+     * @see GameMaster#attack(int, int)
+     * @see GameMaster#special(int, int)
+     * @see GameMaster#special(int, int, int)
      */
     public void setHealthMaximum(int healthMaximum)
     {
@@ -320,6 +332,12 @@ public class Actor
      * to be healed to have more than this amount of health.
      *
      * @return int: The maximum amount of health this {@link Actor} can have.
+     *
+     * @see #receiveAttack(int)
+     * @see Special#applySpecial(int, Actor)
+     * @see GameMaster#attack(int, int)
+     * @see GameMaster#special(int, int)
+     * @see GameMaster#special(int, int, int)
      */
     public int getHealthMaximum()
     {
@@ -331,6 +349,12 @@ public class Actor
      *
      * @param healthCurrent int: The new current amount of health this {@link
      *                      Actor} is to have.
+     *
+     * @see #receiveAttack(int)
+     * @see Special#applySpecial(int, Actor)
+     * @see GameMaster#attack(int, int)
+     * @see GameMaster#special(int, int)
+     * @see GameMaster#special(int, int, int)
      */
     public void setHealthCurrent(int healthCurrent)
     {
@@ -341,6 +365,12 @@ public class Actor
      * Get the current amount of health this {@link Actor} has.
      *
      * @return int: The current amount of health this {@link Actor} has.
+     *
+     * @see #receiveAttack(int)
+     * @see Special#applySpecial(int, Actor)
+     * @see GameMaster#attack(int, int)
+     * @see GameMaster#special(int, int)
+     * @see GameMaster#special(int, int, int)
      */
     public int getHealthCurrent()
     {
@@ -355,6 +385,9 @@ public class Actor
      *
      * @param attackRating int: The base attack rating this {@link Actor} will
      *                     have.
+     *
+     * @see #attack(Actor)
+     * @see #getRealAttackRating()
      */
     public void setAttackRating(int attackRating)
     {
@@ -368,6 +401,9 @@ public class Actor
      * does to another {@link Actor} when performing an attack.
      *
      * @return int: The base attack rating of this {@link Actor}.
+     *
+     * @see #attack(Actor)
+     * @see #getRealAttackRating()
      */
     public int getAttackRating()
     {
@@ -382,6 +418,8 @@ public class Actor
      * {@link Special} objects.
      *
      * @see Special
+     * @see #performSpecial(Special, Actor)
+     * @see #performSpecial(Special, ArrayList)
      */
     ConcurrentHashMap<Integer, Special> getSpecials()
     {
@@ -396,6 +434,8 @@ public class Actor
      *                with.
      *
      * @see Special
+     * @see #performSpecial(Special, Actor)
+     * @see #performSpecial(Special, ArrayList)
      */
     public void addSpecial(Special special)
     {
@@ -417,6 +457,8 @@ public class Actor
      *                       this {@link Actor} will be able to have.
      *
      * @see Special
+     * @see #performSpecial(Special, Actor)
+     * @see #performSpecial(Special, ArrayList)
      */
     public void setSpecialMaximum(int specialMaximum)
     {
@@ -435,6 +477,8 @@ public class Actor
      * Actor} can have.
      *
      * @see Special
+     * @see #performSpecial(Special, Actor)
+     * @see #performSpecial(Special, ArrayList)
      */
     public int getSpecialMaximum()
     {
@@ -451,6 +495,8 @@ public class Actor
      *                       energy this {@link Actor} has.
      *
      * @see Special
+     * @see #performSpecial(Special, Actor)
+     * @see #performSpecial(Special, ArrayList)
      */
     public void setSpecialCurrent(int specialCurrent)
     {
@@ -467,6 +513,8 @@ public class Actor
      * Actor} has.
      *
      * @see Special
+     * @see #performSpecial(Special, Actor)
+     * @see #performSpecial(Special, ArrayList)
      */
     int getSpecialCurrent()
     {
@@ -484,6 +532,10 @@ public class Actor
      *
      * @see Special
      * @see Effect
+     * @see #getRealSpecialRating()
+     * @see #performSpecial(Special, Actor)
+     * @see #performSpecial(Special, ArrayList)
+     * @see Special#applySpecial(int, Actor)
      */
     public void setSpecialRating(int specialRating)
     {
@@ -500,6 +552,10 @@ public class Actor
      *
      * @see Special
      * @see Effect
+     * @see #getRealSpecialRating()
+     * @see #performSpecial(Special, Actor)
+     * @see #performSpecial(Special, ArrayList)
+     * @see Special#applySpecial(int, Actor)
      */
     public int getSpecialRating()
     {
@@ -514,6 +570,9 @@ public class Actor
      *
      * @param defenceRating int: The base defense rating this {@link Actor}
      *                      will have.
+     *
+     * @see #receiveAttack(int)
+     * @see #getRealDefenceRating()
      */
     public void setDefenceRating(int defenceRating)
     {
@@ -527,6 +586,9 @@ public class Actor
      * attacked.
      *
      * @return int: The base defense rating of this {@link Actor}.
+     *
+     * @see #receiveAttack(int)
+     * @see #getRealDefenceRating()
      */
     public int getDefenceRating()
     {
@@ -545,6 +607,12 @@ public class Actor
      *
      * @see E_STATE
      * @see Special
+     * @see GameMaster#attack(int, int)
+     * @see GameMaster#special(int, int)
+     * @see GameMaster#special(int, int, int)
+     * @see GameMaster#setActorState(int, E_STATE)
+     * @see #receiveAttack(int)
+     * @see Special#applySpecial(int, Actor)
      */
     void setState(E_STATE state)
     {
@@ -561,6 +629,8 @@ public class Actor
      * @return {@link E_STATE}: The {@link E_STATE state} of this {@link Actor}.
      *
      * @see E_STATE
+     * @see #receiveAttack(int)
+     * @see Special#applySpecial(int, Actor)
      */
     public E_STATE getState()
     {
@@ -578,6 +648,7 @@ public class Actor
      * @return int: The number of attack tickets given to this {@link Actor}.
      *
      * @see ActorController
+     * @see ActorController#takeTurn(int)
      */
     int getAttackTickets()
     {
@@ -596,6 +667,7 @@ public class Actor
      *                      this {@link Actor}.
      *
      * @see ActorController
+     * @see ActorController#takeTurn(int)
      */
     public void setAttackTickets(int attackTickets)
     {
@@ -613,6 +685,7 @@ public class Actor
      * @return int: The number of defend tickets given to this {@link Actor}.
      *
      * @see ActorController
+     * @see ActorController#takeTurn(int)
      */
     int getDefendTickets()
     {
@@ -631,6 +704,7 @@ public class Actor
      *                      this {@link Actor}.
      *
      * @see ActorController
+     * @see ActorController#takeTurn(int)
      */
     public void setDefendTickets(int defendTickets)
     {
@@ -651,6 +725,7 @@ public class Actor
      *
      * @see ActorController
      * @see Special
+     * @see ActorController#takeTurn(int)
      */
     int getSpecialTickets()
     {
@@ -672,6 +747,7 @@ public class Actor
      *
      * @see ActorController
      * @see Special
+     * @see ActorController#takeTurn(int)
      */
     public void setSpecialTickets(int specialTickets)
     {
@@ -691,6 +767,7 @@ public class Actor
      * @see ActorController
      * @see Room
      * @see Map
+     * @see ActorController#takeTurn(int)
      */
     int getMoveTickets()
     {
@@ -711,6 +788,7 @@ public class Actor
      * @see ActorController
      * @see Room
      * @see Map
+     * @see ActorController#takeTurn(int)
      */
     public void setMoveTickets(int moveTickets)
     {
@@ -733,6 +811,7 @@ public class Actor
      * </ul>
      *
      * @see ActorController
+     * @see ActorController#takeTurn(int)
      */
     boolean isSeeker()
     {
@@ -755,6 +834,7 @@ public class Actor
      *               </ul>
      *
      * @see ActorController
+     * @see ActorController#takeTurn(int)
      */
     public void setSeeker(boolean seeker)
     {
@@ -771,6 +851,7 @@ public class Actor
      *              attack.
      *
      * @see E_STATE
+     * @see #receiveAttack(int)
      */
     void attack(Actor actor)
     {
@@ -788,6 +869,7 @@ public class Actor
      * @param attackRating int: The attack rating of the incoming attack.
      *
      * @see E_STATE
+     * @see #attack(Actor)
      */
     private void receiveAttack(int attackRating)
     {
@@ -838,6 +920,7 @@ public class Actor
      * </ul>
      *
      * @see Special
+     * @see Special#applySpecial(int, Actor)
      */
     public boolean performSpecial(Special special, Actor actor)
     {
@@ -877,6 +960,9 @@ public class Actor
      * perform the given {@link Special} ability.</li>
      * <li>False otherwise.</li>
      * </ul>
+     *
+     * @see Special
+     * @see Special#applySpecial(int, Actor)
      */
     public boolean performSpecial(Special special, ArrayList<Actor> actors)
     {
@@ -918,6 +1004,7 @@ public class Actor
      * @see ItemConsumable
      * @see ItemDurable
      * @see Effect
+     * @see Effect#applyLinkedEffect(Effect.E_EFFECT, int, Actor, int)
      * @see Status
      * @see StatusLinked
      * @see StatusTemporary
@@ -957,6 +1044,7 @@ public class Actor
      * @see ItemDurable
      * @see StatusLinked
      * @see Status
+     * @see #removeStatus(Status)
      */
     public void removeItem(int itemID)
     {
@@ -994,6 +1082,7 @@ public class Actor
      * @see ItemDurable
      * @see StatusLinked
      * @see Status
+     * @see #removeStatus(Status)
      */
     public void removeItem(Item item)
     {
@@ -1138,6 +1227,8 @@ public class Actor
      *
      * @see Status
      * @see Status.E_STATUS_TYPE
+     * @see Status#getType()
+     * @see Status#getEffectRating()
      */
     private int getRealAttackRating()
     {
@@ -1166,6 +1257,8 @@ public class Actor
      * @see Special
      * @see Status
      * @see Status.E_STATUS_TYPE
+     * @see Status#getType()
+     * @see Status#getEffectRating()
      */
     private int getRealSpecialRating()
     {
@@ -1192,6 +1285,8 @@ public class Actor
      *
      * @see Status
      * @see Status.E_STATUS_TYPE
+     * @see Status#getType()
+     * @see Status#getEffectRating()
      */
     int getRealDefenceRating()
     {
@@ -1224,6 +1319,7 @@ public class Actor
      * @see Item
      * @see Effect
      * @see Effect.E_EFFECT
+     * @see Effect#applyTemporaryEffect(Effect.E_EFFECT, int, int, Actor)
      */
     public void useItem(int itemID)
     {
@@ -1246,6 +1342,7 @@ public class Actor
      * @see Item
      * @see Effect
      * @see Effect.E_EFFECT
+     * @see Effect#applyTemporaryEffect(Effect.E_EFFECT, int, int, Actor)
      */
     private void useItem(Item item)
     {
@@ -1273,6 +1370,8 @@ public class Actor
      *
      * @see StatusTemporary
      * @see Status
+     * @see StatusTemporary#tick()
+     * @see #removeStatus(Status)
      */
     public void tick()
     {

@@ -6,6 +6,7 @@ import android.support.annotation.Nullable;
 import android.util.Log;
 import android.util.Pair;
 
+import com.semaphore_soft.apps.cypher.PortalActivity;
 import com.semaphore_soft.apps.cypher.utils.CollectionManager;
 import com.semaphore_soft.apps.cypher.utils.GameStatLoader;
 import com.semaphore_soft.apps.cypher.utils.Logger;
@@ -275,6 +276,8 @@ public class GameMaster
      * {@link Room} which is adjacent to the given start {@link Room}.
      *
      * @see Room
+     * @see Map
+     * @see Map#getAdjacentRooms(int)
      */
     @NonNull
     public static ArrayList<Integer> getAdjacentRoomIds(final int startRoomId)
@@ -295,6 +298,8 @@ public class GameMaster
      * to the start {@link Room}.
      *
      * @see Room
+     * @see Map
+     * @see Map#getWallsBetweenAdjacentRooms(int, int)
      */
     public static short getSideOfRoomFrom(final int startRoomId, final int endRoomId)
     {
@@ -318,11 +323,14 @@ public class GameMaster
         int  res  = 0;
         Room room = model.getRooms().get(roomId);
 
-        for (int id : room.getResidentActors())
+        if (room != null)
         {
-            if (model.getActors().get(id).isPlayer())
+            for (int id : room.getResidentActors())
             {
-                ++res;
+                if (model.getActors().get(id).isPlayer())
+                {
+                    ++res;
+                }
             }
         }
 
@@ -347,11 +355,14 @@ public class GameMaster
         int  res  = 0;
         Room room = model.getRooms().get(roomId);
 
-        for (int id : room.getResidentActors())
+        if (room != null)
         {
-            if (!model.getActors().get(id).isPlayer())
+            for (int id : room.getResidentActors())
             {
-                ++res;
+                if (!model.getActors().get(id).isPlayer())
+                {
+                    ++res;
+                }
             }
         }
 
@@ -403,6 +414,10 @@ public class GameMaster
     /**
      * Get the logical reference ID of the {@link Room} a given {@link Actor}
      * associates with, or considers itself to be a resident of.
+     * <p>
+     * To be used for referencing the {@link Room} in a game state context
+     * (associating with {@link Actor Actors}, checking path validity, etc.)
+     * ONLY.
      *
      * @param id int The logical reference ID of the desired {@link Actor}.
      *
@@ -429,6 +444,7 @@ public class GameMaster
      * @see Actor
      * @see Room
      */
+    @Nullable
     public static Room getActorRoom(final int id)
     {
         return model.getRooms().get(model.getActors().get(id).getRoom());
@@ -495,6 +511,9 @@ public class GameMaster
     /**
      * Get the logical reference ID of the game object associated with a given
      * AR marker reference ID, regardless of what type of game object it is.
+     * <p>
+     * To be used for referencing an object in a game state context (checking
+     * game object associations, stats, etc.) ONLY.
      *
      * @param markId int: The reference ID of the desired AR marker.
      *
@@ -551,6 +570,8 @@ public class GameMaster
      * </ul>
      *
      * @see Room
+     * @see PortalActivity#moveActor(int)
+     * @see PortalActivity#onActorMove(int, int)
      */
     public static int moveActor(final int actorId, final int endRoomId)
     {
@@ -605,8 +626,8 @@ public class GameMaster
      * not.
      * <p>
      * A path between two {@link Room Rooms} is considered valid if and only if
-     * there is an open door in the wall each connecting each {@link Room} with
-     * the opposite {@link Room}.
+     * there is an open door in the wall connecting each {@link Room} with the
+     * opposite {@link Room}.
      *
      * @param startRoomId int: The logical reference ID of the {@link Room}
      *                    checking for path from.
@@ -622,6 +643,9 @@ public class GameMaster
      * </ul>
      *
      * @see Room
+     * @see #moveActor(int, int)
+     * @see ActorController#takeTurn(int)
+     * @see Room.E_WALL_TYPE
      */
     public static int getValidPath(final int startRoomId, final int endRoomId)
     {
@@ -652,8 +676,9 @@ public class GameMaster
 
     /**
      * Attempt to open a door connecting two given {@link Room Rooms} using the
-     * given the side, or wall, of each {@link Room} the door should be in and
-     * return a code describing success or failure.
+     * given the side, or wall, of each {@link Room} the door should be in, add
+     * the proposed end {@link Room} to the {@link Map} if door opening is
+     * successful and return a code describing success or failure.
      * <p>
      * A door can be opened between two {@link Room Rooms} if and only if there
      * is an unlocked door in the given wall index of the start {@link Room}
@@ -677,6 +702,11 @@ public class GameMaster
      * </ul>
      *
      * @see Room
+     * @see Map
+     * @see #getValidAdjacency(int, int, short, short)
+     * @see #getValidAdjacencyProposedRoom(int, int, short, int, int)
+     * @see PortalActivity#openDoor()
+     * @see Room.E_WALL_TYPE
      */
     public static int openDoor(final int startRoomId,
                                final int endRoomId,
@@ -735,8 +765,11 @@ public class GameMaster
     }
 
     /**
-     * Check whether or not two given walls of two given {@link Room Rooms}
-     * form a valid adjacency and return a code describing the validity.
+     * Check whether or not the placement of a proposed end {@link Room}
+     * rotated such that its given wall connects to a given wall of the given
+     * start {@link Room} forms a valid adjacency with that {@link Room} and
+     * all other {@link Room Rooms} which would be adjacent to the proposed
+     * {@link Room}, and return a code describing the validity.
      * <p>
      * A proposed adjacency between two {@link Room Rooms} is valid if and only
      * if the wall connecting the start {@link Room} to the end {@link Room} is
@@ -759,6 +792,10 @@ public class GameMaster
      * </ul>
      *
      * @see Room
+     * @see Map
+     * @see #getValidAdjacencyProposedRoom(int, int, short, int, int)
+     * @see #openDoor(int, int, short, short)
+     * @see Room.E_WALL_TYPE
      */
     private static int getValidAdjacency(final int startRoomId,
                                          final int endRoomId,
@@ -833,6 +870,9 @@ public class GameMaster
      *
      * @see Room
      * @see Map
+     * @see #getValidAdjacency(int, int, short, short)
+     * @see #openDoor(int, int, short, short)
+     * @see Room.E_WALL_TYPE
      */
     private static int getValidAdjacencyProposedRoom(final int proposedRoomPositionX,
                                                      final int proposedRoomPositionY,
@@ -885,6 +925,25 @@ public class GameMaster
         return -1;
     }
 
+    /**
+     * Get a map of the valid player {@link Actor} targets for a given {@link
+     * Actor}.
+     * <p>
+     * A target is valid if and only if it resides within the same {@link Room}
+     * as the given {@link Actor}.
+     * <p>
+     * Map may include the given {@link Actor}.
+     *
+     * @param actorId int: The logical reference ID of the desired {@link
+     *                Actor}.
+     *
+     * @return ConcurrentHashMap: A map containing valid player {@link Actor}
+     * targets indexed by their logical reference IDs.
+     *
+     * @see Actor
+     * @see Room
+     */
+    @NonNull
     public static ConcurrentHashMap<Integer, Actor> getPlayerTargets(final int actorId)
     {
         Actor                             actor   = model.getActors().get(actorId);
@@ -906,6 +965,25 @@ public class GameMaster
         return targets;
     }
 
+    /**
+     * Get a map of the valid non-player {@link Actor} targets for a given
+     * {@link Actor}.
+     * <p>
+     * A target is valid if and only if it resides within the same {@link Room}
+     * as the given {@link Actor}.
+     * <p>
+     * Map may include the given {@link Actor}.
+     *
+     * @param actorId int: The logical reference ID of the desired {@link
+     *                Actor}.
+     *
+     * @return ConcurrentHashMap: A map containing valid non-player {@link
+     * Actor} targets indexed by their logical reference IDs.
+     *
+     * @see Actor
+     * @see Room
+     */
+    @NonNull
     public static ConcurrentHashMap<Integer, Actor> getNonPlayerTargets(final int actorId)
     {
         Actor                             actor   = model.getActors().get(actorId);
@@ -927,6 +1005,25 @@ public class GameMaster
         return targets;
     }
 
+    /**
+     * Get a list of the logical reference IDs of valid player {@link Actor}
+     * targets for a given {@link Actor}.
+     * <p>
+     * A target is valid if and only if it resides within the same {@link Room}
+     * as the given {@link Actor}.
+     * <p>
+     * Will not include the logical reference ID of the given {@link Actor}.
+     *
+     * @param actorId int: The logical reference ID of the desired {@link
+     *                Actor}.
+     *
+     * @return ArrayList: A list containing the logical reference IDs of valid
+     * player {@link Actor} targets for a given {@link Actor}.
+     *
+     * @see Actor
+     * @see Room
+     */
+    @NonNull
     public static ArrayList<Integer> getPlayerTargetIds(final int actorId)
     {
         Actor              actor   = model.getActors().get(actorId);
@@ -952,6 +1049,25 @@ public class GameMaster
         return targets;
     }
 
+    /**
+     * Get a list of the logical reference IDs of valid non-player {@link
+     * Actor} targets for a given {@link Actor}.
+     * <p>
+     * A target is valid if and only if it resides within the same {@link Room}
+     * as the given {@link Actor}.
+     * <p>
+     * Will not include the logical reference ID of the given {@link Actor}.
+     *
+     * @param actorId int: The logical reference ID of the desired {@link
+     *                Actor}.
+     *
+     * @return ArrayList: A list containing the logical reference IDs of valid
+     * non-player {@link Actor} targets for a given {@link Actor}.
+     *
+     * @see Actor
+     * @see Room
+     */
+    @NonNull
     public static ArrayList<Integer> getNonPlayerTargetIds(final int actorId)
     {
         Actor              actor   = model.getActors().get(actorId);
@@ -977,6 +1093,21 @@ public class GameMaster
         return targets;
     }
 
+    /**
+     * Get a map of the {@link Special} abilities associated with, or known by,
+     * a given {@link Actor}.
+     *
+     * @param actorId int: The logical reference ID of the desired {@link
+     *                Actor}.
+     *
+     * @return ConcurrentHashMap: A map containing the {@link Special}
+     * abilities associated with, or known by, a given {@link Actor}, indexed
+     * by logical reference ID.
+     *
+     * @see Actor
+     * @see Actor#getSpecials()
+     * @see Special
+     */
     public static ConcurrentHashMap<Integer, Special> getSpecials(final int actorId)
     {
         Logger.logI("looking for specials for actor: " + actorId, 1);
@@ -988,14 +1119,47 @@ public class GameMaster
         return actor.getSpecials();
     }
 
+    /**
+     * Update the {@link Actor.E_STATE state} of a given {@link Actor},
+     * reflecting the most recent action taken by that {@link Actor}.
+     *
+     * @param id    int: The logical reference ID of the desired {@link Actor}.
+     * @param state {@link Actor.E_STATE}: The new {@link Actor.E_STATE state}
+     *              of the given {@link Actor}, reflecting the most recent
+     *              action taken by that {@link Actor}.
+     *
+     * @see Actor
+     * @see Actor.E_STATE
+     * @see Actor#setState(Actor.E_STATE)
+     */
     public static void setActorState(final int id, final Actor.E_STATE state)
     {
         model.getActors().get(id).setState(state);
     }
 
-    //returns
-    //1: success, enemy dead
-    //0: success, enemy still alive
+    /**
+     * Perform an attack originating from a given attacker {@link Actor}
+     * directed at a given defender {@link Actor}, update the {@link Actor
+     * attacker} {@link Actor.E_STATE state} accordingly and return a code
+     * describing the outcome of the attack.
+     *
+     * @param attackerId int: The logical reference ID of the attacking {@link
+     *                   Actor}.
+     * @param defenderId int: The logical reference ID of the target {@link
+     *                   Actor}.
+     *
+     * @return int:
+     * <ul>
+     * <li>1: Attack success, target {@link Actor} killed.</li>
+     * <li>0: Attack success, target {@link Actor} still alive.</li>
+     * </ul>
+     *
+     * @see Actor
+     * @see Actor.E_STATE
+     * @see Actor#attack(Actor)
+     * @see Actor#receiveAttack(int)
+     * @see PortalActivity#postAttackResults(int, int, int)
+     */
     public static int attack(final int attackerId, final int defenderId)
     {
         Actor attacker = model.getActors().get(attackerId);
@@ -1013,12 +1177,38 @@ public class GameMaster
         return 0;
     }
 
+    /**
+     * Remove a given {@link Actor} from the {@link Model}, including any
+     * {@link Room} which associated with it.
+     *
+     * @param actorId int: The logical reference ID of the desired {@link
+     *                Actor}.
+     *
+     * @see Actor
+     * @see Room
+     * @see Model
+     */
     public static void removeActor(final int actorId)
     {
-        getActorRoom(actorId).removeActor(actorId);
+        Room room = getActorRoom(actorId);
+        if (room != null)
+        {
+            room.removeActor(actorId);
+        }
         model.getActors().remove(actorId);
     }
 
+    /**
+     * Remove all {@link Actor Actors} with a current health value less than or
+     * equal to 0 from the {@link Model} and from any {@link Room Rooms} which
+     * associated with them.
+     * <p>
+     * Excludes player-controlled {@link Actor Actors}.
+     *
+     * @see Actor
+     * @see Room
+     * @see Model
+     */
     public static void removeDeadActors()
     {
         Logger.logD("enter trace");
@@ -1027,7 +1217,7 @@ public class GameMaster
         ArrayList<Integer>                markedForRemoval = new ArrayList<>();
         for (int id : actors.keySet())
         {
-            if (actors.get(id).getHealthCurrent() <= 0)
+            if (!actors.get(id).isPlayer() && actors.get(id).getHealthCurrent() <= 0)
             {
                 markedForRemoval.add(id);
                 Logger.logD("marked " + id + " for removal");
@@ -1045,11 +1235,36 @@ public class GameMaster
         Logger.logD("exit trace");
     }
 
-    //returns
-    //1: success, killed one or more targets
-    //0: success
-    //-1: failure, not enough energy
-    //-2: failure, no targets in room
+    /**
+     * Perform a given {@link Special} ability originating from a given source
+     * {@link Actor} without a specific target, update the source {@link Actor}
+     * {@link Actor.E_STATE state} if the {@link Special} was performed
+     * successfully and return a code describing the outcome of the {@link
+     * Special} performance.
+     *
+     * @param sourceId  int: The logical reference ID of the desired source
+     *                  {@link Actor}.
+     * @param specialId int: The logical reference ID of the {@link Special}
+     *                  being performed.
+     *
+     * @return int:
+     * <ul>
+     * <li>1: {@link Special} performance success, one or more target {@link
+     * Actor Actors} killed by {@link Special}.</li>
+     * <li>0: {@link Special} performance success, no significant outcome to
+     * report.</li>
+     * <li>-1: {@link Special} performance failure, source {@link Actor} does
+     * not have enough {@link Special} energy.</li>
+     * <li>-2: {@link Special} performance failure, no valid targets for {@link
+     * Special} ability.</li>
+     * </ul>
+     *
+     * @see Actor
+     * @see Actor.E_STATE
+     * @see Actor#performSpecial(Special, ArrayList)
+     * @see PortalActivity#postSpecialResult(int, int, int, int)
+     * @see Special
+     */
     public static int special(final int sourceId, final int specialId)
     {
         Actor            source  = model.getActors().get(sourceId);
@@ -1086,7 +1301,11 @@ public class GameMaster
 
                     if (target.getHealthCurrent() <= 0)
                     {
-                        getActorRoom(target.getId()).removeActor(target.getId());
+                        /*Room room = getActorRoom(target.getId());
+                        if (room != null)
+                        {
+                            room.removeActor(target.getId());
+                        }*/
 
                         kill = true;
                     }
@@ -1106,11 +1325,38 @@ public class GameMaster
         return -2;
     }
 
-    //returns
-    //1: success, killed target
-    //0: success
-    //-1: failure, not enough energy
-    //-2: failure, target not valid, not in same room
+    /**
+     * Perform a given {@link Special} ability originating from a given source
+     * {@link Actor} with a specific target {@link Actor}, update the source
+     * {@link Actor} {@link Actor.E_STATE state} if the {@link Special} was
+     * performed successfully and return a code describing the outcome of the
+     * {@link Special} performance.
+     *
+     * @param sourceId  int: The logical reference ID of the desired source
+     *                  {@link Actor}.
+     * @param targetId  int: The logical reference ID of the desired target
+     *                  {@link Actor}.
+     * @param specialId int: The logical reference ID of the {@link Special}
+     *                  being performed.
+     *
+     * @return int:
+     * <ul>
+     * <li>1: {@link Special} performance success, target {@link Actor Actors}
+     * killed by {@link Special}.</li>
+     * <li>0: {@link Special} performance success, no significant outcome to
+     * report.</li>
+     * <li>-1: {@link Special} performance failure, source {@link Actor} does
+     * not have enough {@link Special} energy.</li>
+     * <li>-2: {@link Special} performance failure, no valid targets for {@link
+     * Special} ability.</li>
+     * </ul>
+     *
+     * @see Actor
+     * @see Actor.E_STATE
+     * @see Actor#performSpecial(Special, ArrayList)
+     * @see PortalActivity#postSpecialResult(int, int, int, int)
+     * @see Special
+     */
     public static int special(final int sourceId, final int targetId, final int specialId)
     {
         Actor   source  = model.getActors().get(sourceId);
@@ -1125,7 +1371,11 @@ public class GameMaster
 
                 if (target.getHealthCurrent() <= 0)
                 {
-                    getActorRoom(target.getId()).removeActor(target.getId());
+                    /*Room room = getActorRoom(targetId);
+                    if (room != null)
+                    {
+                        room.removeActor(target.getId());
+                    }*/
 
                     return 1;
                 }
@@ -1139,19 +1389,41 @@ public class GameMaster
         return -2;
     }
 
+    /**
+     * Get a String descriptor of the type of a given {@link Special}.
+     * <p>
+     * To be used for presentation ({@link
+     * com.semaphore_soft.apps.cypher.PortalRenderer}) purposes ONLY.
+     *
+     * @param id int: The logical reference ID of the desired {@link Special}.
+     *
+     * @return String:
+     * <ul>
+     * <li>"help": The given {@link Special} has a helping effect, e.g.
+     * positive stat modifier, buff, heal.</li>
+     * <li>"harm": The given {@link Special} has a harming effect, e.g.
+     * negative stat modifier, de-buff, damage.</li>
+     * </ul>
+     *
+     * @see Special
+     * @see Special#getEffects()
+     * @see com.semaphore_soft.apps.cypher.PortalRenderer
+     * @see PortalActivity#postSpecialResult(int, int, int, int)
+     */
     public static String getSpecialType(final int id)
     {
         ArrayList<Effect.E_EFFECT> specialEffects = model.getSpecials().get(id).getEffects();
 
-        if (specialEffects.contains(Effect.E_EFFECT.HEAL))
+        if (specialEffects.contains(Effect.E_EFFECT.HEAL) ||
+            specialEffects.contains(Effect.E_EFFECT.ATTACK_RATING_UP) ||
+            specialEffects.contains(Effect.E_EFFECT.DEFENCE_RATING_UP) ||
+            specialEffects.contains(Effect.E_EFFECT.HEALTH_MAXIMUM_UP) ||
+            specialEffects.contains(Effect.E_EFFECT.SPECIAL_MAXIMUM_UP) ||
+            specialEffects.contains(Effect.E_EFFECT.SPECIAL_RATING_UP))
         {
             return "help";
         }
-        else if (specialEffects.contains(Effect.E_EFFECT.ATTACK))
-        {
-            return "harm";
-        }
 
-        return "help";
+        return "harm";
     }
 }

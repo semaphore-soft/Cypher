@@ -26,6 +26,10 @@ public abstract class Effect
      * @see ItemConsumable
      * @see ItemDurable
      * @see Special
+     * @see Item#addEffect(E_EFFECT)
+     * @see Item#getEffects()
+     * @see Special#addEffect(E_EFFECT)
+     * @see Special#getEffects()
      */
     public enum E_EFFECT
     {
@@ -67,6 +71,10 @@ public abstract class Effect
      * @see ItemConsumable
      * @see Item
      * @see Special
+     * @see Special#applySpecial(int, Actor)
+     * @see Actor#useItem(int)
+     * @see Actor#useItem(Item)
+     * @see Actor#addNewStatusTemporary(Status.E_STATUS_TYPE, int, int)
      */
     static void applyTemporaryEffect(E_EFFECT effect,
                                      int effectRating,
@@ -207,6 +215,8 @@ public abstract class Effect
      * @see Status
      * @see ItemDurable
      * @see Item
+     * @see Actor#addItem(Item)
+     * @see Actor#addNewStatusLinked(Status.E_STATUS_TYPE, int, int)
      */
     static void applyLinkedEffect(E_EFFECT effect,
                                   int effectRating,
