@@ -134,6 +134,19 @@ class PortalRenderer extends ARRendererGLES20
         waypoint.setShaderProgram(waypointShaderProgram);
         models.put("waypoint", waypoint);
 
+        ARDrawableGLES20 overlay =
+            ModelLoader.load(context, "overlay", 10.0f);
+        DynamicShaderProgram overlayShaderProgram =
+            new DynamicShaderProgram(ShaderLoader.createShader(context,
+                                                               "shaders/vertexShaderTextured.glsl",
+                                                               GLES20.GL_VERTEX_SHADER),
+                                     ShaderLoader.createShader(context,
+                                                               "shaders/fragmentShaderTextured.glsl",
+                                                               GLES20.GL_FRAGMENT_SHADER),
+                                     new String[]{"a_Position", "a_Color", "a_Normal", "a_TexCoordinate"});
+        overlay.setShaderProgram(overlayShaderProgram);
+        models.put("overlay", overlay);
+
         ArrayList<String> actorNames = GameStatLoader.getList(context, "actors");
         if (actorNames != null)
         {
@@ -483,6 +496,33 @@ class PortalRenderer extends ARRendererGLES20
     }
 
     /**
+     * Applies an effect texture on an {@link Actor} for {@code duration}.
+     *
+     * @param roomId   int: The reference ID of the AR marker to which the
+     *                 {@link ARRoom} containing the desired {@link Actor} to
+     *                 apply the effect to.
+     * @param actorId  int: The logical reference ID of the desired {@link
+     *                 Actor} to apply the effect to.
+     * @param effect   Name of the effect to apply
+     * @param duration How long the effect should last in milliseconds
+     */
+    private void setActorEffect(final int roomId, final int actorId, String effect, long duration)
+    {
+        final ARRoom room = arRooms.get(roomId);
+        room.addEffect(actorId, models.get(effect));
+        Runnable removeEffect = new Runnable()
+        {
+            @Override
+            public void run()
+            {
+                room.removeEffect(actorId);
+            }
+        };
+        // Remove effect after the duration has passed
+        handler.postDelayed(removeEffect, duration);
+    }
+
+    /**
      * Create an AR representation of a {@link Room}, an {@link ARRoom},
      * anchored to a given AR marker reference ID and hosting walls matching
      * given descriptors, and add it to the {@link PortalRenderer
@@ -634,6 +674,7 @@ class PortalRenderer extends ARRendererGLES20
                 if (targetId > -1)
                 {
                     arRoom.setForwardEnemy(targetId);
+                    setActorEffect(roomId, targetId, "overlay", 1000);
                 }
             }
             else
@@ -642,6 +683,7 @@ class PortalRenderer extends ARRendererGLES20
                 if (targetId > -1)
                 {
                     arRoom.setForwardPlayer(targetId);
+                    setActorEffect(roomId, targetId, "overlay", 1000);
                 }
             }
         }

@@ -2,15 +2,12 @@ package com.semaphore_soft.apps.cypher;
 
 import android.content.ComponentName;
 import android.content.Context;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.ServiceConnection;
 import android.os.Bundle;
 import android.os.IBinder;
 import android.support.v4.content.LocalBroadcastManager;
-import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
-import android.util.Log;
 import android.widget.FrameLayout;
 import android.widget.Toast;
 
@@ -22,6 +19,7 @@ import com.semaphore_soft.apps.cypher.networking.ServerService;
 import com.semaphore_soft.apps.cypher.ui.PlayerID;
 import com.semaphore_soft.apps.cypher.ui.UIConnectionLobby;
 import com.semaphore_soft.apps.cypher.ui.UIListener;
+import com.semaphore_soft.apps.cypher.utils.Logger;
 
 import java.net.Inet4Address;
 import java.net.InetAddress;
@@ -32,6 +30,10 @@ import java.util.Enumeration;
 
 /**
  * Created by Scorple on 1/9/2017.
+ * Activity where players will start after they have connected to the host and
+ * wait for other players to join.
+ *
+ * @see UIConnectionLobby
  */
 
 public class ConnectionLobbyActivity extends AppCompatActivity implements ResponseReceiver.Receiver,
@@ -97,7 +99,7 @@ public class ConnectionLobbyActivity extends AppCompatActivity implements Respon
                         if (!inetAddress.isLoopbackAddress() && inetAddress instanceof Inet4Address)
                         {
                             ip = inetAddress.getHostAddress();
-                            Log.i("Lobby", ip);
+                            Logger.logI(ip);
                             break outerloop;
                         }
                     }
@@ -105,7 +107,7 @@ public class ConnectionLobbyActivity extends AppCompatActivity implements Respon
             }
             catch (SocketException ex)
             {
-                Log.e("Lobby", ex.toString());
+                Logger.logE(ex.toString());
             }
 
             uiConnectionLobby.setTextIP("Your IP Address is: " + ip);
@@ -147,6 +149,12 @@ public class ConnectionLobbyActivity extends AppCompatActivity implements Respon
         }
     }
 
+    /**
+     * Assign new players an ID and update clients with new players.
+     *
+     * @param player Name of player
+     * @param id     ID to be assigned to player
+     */
     private void addPlayer(String player, int id)
     {
         PlayerID playerID = new PlayerID();
@@ -166,6 +174,11 @@ public class ConnectionLobbyActivity extends AppCompatActivity implements Respon
         }
     }
 
+    /**
+     * {@inheritDoc}
+     *
+     * @param cmd Command from UI interaction
+     */
     public void onCommand(String cmd)
     {
         switch (cmd)
@@ -190,6 +203,12 @@ public class ConnectionLobbyActivity extends AppCompatActivity implements Respon
         }
     }
 
+    /**
+     * {@inheritDoc}
+     *
+     * @param msg Message read from network
+     * @param readFrom Device that message was received from
+     */
     @Override
     public void handleRead(String msg, int readFrom)
     {
@@ -221,46 +240,28 @@ public class ConnectionLobbyActivity extends AppCompatActivity implements Respon
         }
     }
 
+    /**
+     * {@inheritDoc}
+     *
+     * @param msg Status update
+     * @param readFrom Device that update was received from
+     */
     @Override
-    public void handleStatus(String msg)
+    public void handleStatus(String msg, int readFrom)
     {
         Toast.makeText(this, "Status: " + msg, Toast.LENGTH_SHORT).show();
     }
 
+    /**
+     * {@inheritDoc}
+     *
+     * @param msg Error message
+     * @param readFrom Device that error was received from
+     */
     @Override
-    public void handleError(String msg)
+    public void handleError(String msg, int readFrom)
     {
         Toast.makeText(this, "Error: " + msg, Toast.LENGTH_SHORT).show();
-        if (msg.equals(NetworkConstants.ERROR_DISCONNECT_CLIENT))
-        {
-            AlertDialog.Builder builder = new AlertDialog.Builder(this);
-            builder.setTitle("Error");
-            builder.setMessage("Connection lost. Retry?");
-            builder.setPositiveButton("YES", new DialogInterface.OnClickListener()
-            {
-                @Override
-                public void onClick(DialogInterface dialogInterface, int i)
-                {
-                    clientService.reconnect();
-                    playersList.clear();
-                    dialogInterface.dismiss();
-                }
-            });
-            builder.setNegativeButton("NO", new DialogInterface.OnClickListener()
-            {
-                @Override
-                public void onClick(DialogInterface dialogInterface, int i)
-                {
-                    dialogInterface.dismiss();
-                }
-            });
-            AlertDialog alert = builder.create();
-            alert.show();
-        }
-        else if (msg.equals(NetworkConstants.ERROR_DISCONNECT_SERVER))
-        {
-            serverService.reconnect();
-        }
     }
 
     // Defines callbacks for service binding, passed to bindService()
@@ -293,6 +294,7 @@ public class ConnectionLobbyActivity extends AppCompatActivity implements Respon
             clientService = binder.getService();
             mClientBound = true;
             clientService.write(NetworkConstants.PF_NAME + name);
+            uiConnectionLobby.setTextIP("Host IP is: " + clientService.getHostIP());
         }
 
         @Override

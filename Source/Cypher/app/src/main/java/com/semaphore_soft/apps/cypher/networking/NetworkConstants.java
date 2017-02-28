@@ -3,8 +3,15 @@ package com.semaphore_soft.apps.cypher.networking;
 import android.content.IntentFilter;
 
 /**
- * Created by Evan on 2/6/2017.
  * Class to hold networking specific constants
+ *
+ * @author Evan
+ *
+ * @see ResponseReceiver
+ * @see ServerService
+ * @see ClientService
+ * @see Client
+ * @see Server
  */
 
 public class NetworkConstants
@@ -38,6 +45,7 @@ public class NetworkConstants
     public static final String PF_PLAYER      = "PLAYER:";
     public static final String PF_LOCK        = "LOCK:";
     public static final String PF_FREE        = "FREE:";
+    public static final String PF_READY       = "READY:";
 
     // Constants for status codes
     public static final String STATUS_SERVER_START   = "Server thread started";
@@ -52,10 +60,17 @@ public class NetworkConstants
     public static final String ERROR_DISCONNECT_SERVER = "Client had been disconnected";
 
     // Port should be between 49152-65535
-    public static final int  SERVER_PORT     = 58008;
-    public static final long HEARTBEAT_DELAY = 5000;
+    public static final int SERVER_PORT     = 58008;
+    public static final int HEARTBEAT_DELAY = 5000;
 
 
+    /**
+     * Method to get {@link IntentFilter IntentFilters} for registering a broadcast receiver
+     *
+     * @return An IntentFilter for ResponseReceiver
+     *
+     * @see ResponseReceiver
+     */
     public static IntentFilter getFilter()
     {
         IntentFilter intentFilter = new IntentFilter();

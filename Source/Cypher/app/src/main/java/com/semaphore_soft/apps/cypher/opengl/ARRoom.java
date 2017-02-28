@@ -20,6 +20,7 @@ public class ARRoom implements ARDrawableGLES20
     private ConcurrentHashMap<Integer, ARDrawableGLES20> playerLine;
     private ConcurrentHashMap<Integer, ARDrawableGLES20> enemyLine;
     private ConcurrentHashMap<Integer, ARDrawableGLES20> entityPile;
+    private ConcurrentHashMap<Integer, ARDrawableGLES20> effects;
     private short alignment = 2;
 
     private Semaphore assetAccess;
@@ -29,6 +30,7 @@ public class ARRoom implements ARDrawableGLES20
         playerLine = new ConcurrentHashMap<>();
         enemyLine = new ConcurrentHashMap<>();
         entityPile = new ConcurrentHashMap<>();
+        effects = new ConcurrentHashMap<>();
 
         assetAccess = new Semaphore(1);
     }
@@ -105,6 +107,37 @@ public class ARRoom implements ARDrawableGLES20
         if (entityPile.keySet().contains(id))
         {
             entityPile.remove(id);
+        }
+    }
+
+    /**
+     * Applies an effect to the {@link com.semaphore_soft.apps.cypher.game.Actor Actor}
+     * specified by {@code id}.
+     *
+     * @param id    ID of the {@link com.semaphore_soft.apps.cypher.game.Actor Actor} to apply
+     *              the effect to
+     * @param model The effect texture to overlay on the {@link com.semaphore_soft.apps.cypher.game.Actor Actor}
+     */
+    public void addEffect(int id, ARDrawableGLES20 model)
+    {
+        if (!effects.containsKey(id))
+        {
+            effects.put(id, model);
+        }
+    }
+
+    /**
+     * Remove the effect that has been applied to the {@link com.semaphore_soft.apps.cypher.game.Actor Actor}
+     * specified by {@code id}.
+     *
+     * @param id ID of the {@link com.semaphore_soft.apps.cypher.game.Actor Actor}
+     *           to remove the effect from
+     */
+    public void removeEffect(int id)
+    {
+        if (effects.containsKey(id))
+        {
+            effects.remove(id);
         }
     }
 
@@ -281,6 +314,11 @@ public class ARRoom implements ARDrawableGLES20
                 }
 
                 playerLine.get(id).draw(projectionMatrix, transformationMatrix, lightPos);
+                if (effects.containsKey(id))
+                {
+                    // Plane will appear in front of the enemy
+                    effects.get(id).draw(projectionMatrix, transformationMatrix, lightPos);
+                }
                 ++i;
             }
 
@@ -345,6 +383,11 @@ public class ARRoom implements ARDrawableGLES20
                 }
 
                 enemyLine.get(id).draw(projectionMatrix, transformationMatrix, lightPos);
+                if (effects.containsKey(id))
+                {
+                    // Plane will appear in front of the enemy
+                    effects.get(id).draw(projectionMatrix, transformationMatrix, lightPos);
+                }
                 ++i;
             }
 

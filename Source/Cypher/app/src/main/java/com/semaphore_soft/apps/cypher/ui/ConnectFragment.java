@@ -74,6 +74,10 @@ public class ConnectFragment extends DialogFragment
 
     public interface Callback
     {
+        /**
+         * @param addr Address to connect to
+         * @param name Name of the player
+         */
         void startClient(String addr, String name);
     }
 

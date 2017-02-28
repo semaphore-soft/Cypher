@@ -11,7 +11,6 @@ import android.os.IBinder;
 import android.support.v4.content.LocalBroadcastManager;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
-import android.util.Log;
 import android.widget.FrameLayout;
 import android.widget.Toast;
 
@@ -21,11 +20,16 @@ import com.semaphore_soft.apps.cypher.networking.ResponseReceiver;
 import com.semaphore_soft.apps.cypher.networking.ServerService;
 import com.semaphore_soft.apps.cypher.ui.UICharacterSelect;
 import com.semaphore_soft.apps.cypher.ui.UIListener;
+import com.semaphore_soft.apps.cypher.utils.Logger;
 
 import java.util.HashMap;
+import java.util.Set;
 
 /**
  * Created by Scorple on 1/9/2017.
+ * Activity where players will choose their characters.
+ * Only one of each character is allowed.
+ * @see UICharacterSelect
  */
 
 public class CharacterSelectActivity extends AppCompatActivity implements ResponseReceiver.Receiver,
@@ -85,6 +89,7 @@ public class CharacterSelectActivity extends AppCompatActivity implements Respon
         uiCharacterSelect.setStartEnabled(false);
     }
 
+    // Runnable to send heartbeat signal to client
     private Runnable heartbeat = new Runnable()
     {
         @Override
@@ -136,6 +141,11 @@ public class CharacterSelectActivity extends AppCompatActivity implements Respon
         sendHeartbeat = false;
     }
 
+    /**
+     * {@inheritDoc}
+     *
+     * @param cmd Command from UI interaction
+     */
     @Override
     public void onCommand(String cmd)
     {
@@ -160,6 +170,14 @@ public class CharacterSelectActivity extends AppCompatActivity implements Respon
         }
     }
 
+    /**
+     * {@inheritDoc}
+     * <p>
+     * Verifies that only one of each character is selected.
+     *
+     * @param msg Message read from network
+     * @param readFrom Device that message was received from
+     */
     @Override
     public void handleRead(String msg, int readFrom)
     {
@@ -179,10 +197,16 @@ public class CharacterSelectActivity extends AppCompatActivity implements Respon
             }
             // Include host when displaying connected players
             uiCharacterSelect.setStatus(playersReady + "/" + (numClients + 1) + " ready");
+            serverService.writeAll(
+                NetworkConstants.PF_READY + playersReady + ":" + (numClients + 1));
         }
         else if (msg.startsWith(NetworkConstants.PF_LOCK))
         {
-            uiCharacterSelect.setButtonEnabled(msg.substring(5), false);
+            String sel = msg.substring(5);
+            if (!sel.equals(selection))
+            {
+                uiCharacterSelect.setButtonEnabled(sel, false);
+            }
         }
         else if (msg.startsWith(NetworkConstants.PF_FREE))
         {
@@ -206,47 +230,92 @@ public class CharacterSelectActivity extends AppCompatActivity implements Respon
             alert.show();
             uiCharacterSelect.clearSelection();
         }
+        else if (msg.startsWith(NetworkConstants.PF_READY))
+        {
+            if (ready)
+            {
+                String[] args = msg.split(":");
+                uiCharacterSelect.setStatus(args[1] + "/" + args[2] + " ready");
+            }
+        }
         else if (msg.equals(NetworkConstants.GAME_AR_START))
         {
             startAR();
         }
     }
 
+    /**
+     * {@inheritDoc}
+     * <p>
+     * Synchronizes state with client after a reconnect.
+     *
+     * @param msg Status update
+     * @param readFrom Device that update was received from
+     */
     @Override
-    public void handleStatus(String msg)
+    public void handleStatus(String msg, int readFrom)
     {
         Toast.makeText(this, "Status: " + msg, Toast.LENGTH_SHORT).show();
+        if (msg.equals(NetworkConstants.STATUS_SERVER_START))
+        {
+            Set<Integer> set = characterSelections.keySet();
+            for (Integer key : set)
+            {
+                // Don't lock the clients last selection
+                if (key != readFrom)
+                {
+                    String str = NetworkConstants.PF_LOCK + characterSelections.get(key);
+                    // Clients do not include host and are 0-indexed
+                    serverService.writeToClient(str, readFrom - 1);
+                }
+            }
+        }
     }
 
+    /**
+     * {@inheritDoc}
+     * <p>
+     * Resets client selections after a reconnect to they can be synchronized by the host.
+     *
+     * @param msg Error message
+     * @param readFrom Device that error was received from
+     */
     @Override
-    public void handleError(String msg)
+    public void handleError(String msg, int readFrom)
     {
         Toast.makeText(this, "Error: " + msg, Toast.LENGTH_SHORT).show();
         if (msg.equals(NetworkConstants.ERROR_DISCONNECT_CLIENT))
         {
-            clientService.reconnect();
-        }
-        else if (msg.equals(NetworkConstants.ERROR_DISCONNECT_SERVER))
-        {
-            serverService.reconnect();
+            // Reset all selections in case they changed while disconnected
+            uiCharacterSelect.setButtonEnabled("knight", true);
+            uiCharacterSelect.setButtonEnabled("soldier", true);
+            uiCharacterSelect.setButtonEnabled("ranger", true);
+            uiCharacterSelect.setButtonEnabled("wizard", true);
         }
     }
 
+    /**
+     * Update the host with the players characters selection.
+     *
+     * @param selection Character selected by player
+     */
     private void postSelection(String selection)
     {
         CharacterSelectActivity.selection = selection;
         if (host)
         {
-            updateSelection(selection, -1);
+            updateSelection(selection, 0);
         }
         else
         {
             clientService.write(selection);
-            uiCharacterSelect.setStatus("Waiting for Host...");
         }
         ready = true;
     }
 
+    /**
+     * Remove a players character selection and update game ready status.
+     */
     private void clearSelection()
     {
         if (host)
@@ -255,7 +324,9 @@ public class CharacterSelectActivity extends AppCompatActivity implements Respon
             --playersReady;
             uiCharacterSelect.setStatus(
                 playersReady + "/" + (numClients + 1) + " ready");
-            removePlayer(-1);
+            serverService.writeAll(
+                NetworkConstants.PF_READY + playersReady + ":" + (numClients + 1));
+            removePlayer(0);
         }
         else
         {
@@ -269,12 +340,19 @@ public class CharacterSelectActivity extends AppCompatActivity implements Respon
         ready = false;
     }
 
+    /**
+     * Checks if players selection is valid and updates the players character selection and
+     * ready status.
+     *
+     * @param selection Character selected by player
+     * @param player Player ID
+     */
     private void updateSelection(String selection, int player)
     {
         if (characterSelections.containsValue(selection))
         {
-            Log.i("CharSelect", "Character taken");
-            serverService.writeToClient(NetworkConstants.GAME_TAKEN, player);
+            Logger.logI("Character taken");
+            serverService.writeToClient(NetworkConstants.GAME_TAKEN, player - 1);
             return;
         }
         if (characterSelections.containsKey(player))
@@ -288,7 +366,10 @@ public class CharacterSelectActivity extends AppCompatActivity implements Respon
         }
         characterSelections.put(player, selection);
         serverService.writeAll(NetworkConstants.PF_LOCK + selection);
-        uiCharacterSelect.setButtonEnabled(selection, false);
+        if (!selection.equals(CharacterSelectActivity.selection))
+        {
+            uiCharacterSelect.setButtonEnabled(selection, false);
+        }
         // Since default value is 0, allow host to start game
         // even if numClients == 0 and clients are connected
         if (playersReady >= numClients)
@@ -297,8 +378,14 @@ public class CharacterSelectActivity extends AppCompatActivity implements Respon
         }
         // Include host when displaying connected players
         uiCharacterSelect.setStatus(playersReady + "/" + (numClients + 1) + " ready");
+        serverService.writeAll(NetworkConstants.PF_READY + playersReady + ":" + (numClients + 1));
     }
 
+    /**
+     * Remove a given players character selection and notify clients.
+     *
+     * @param player ID of player
+     */
     private void removePlayer(int player)
     {
         String character = characterSelections.get(player);
@@ -307,6 +394,9 @@ public class CharacterSelectActivity extends AppCompatActivity implements Respon
         characterSelections.remove(player);
     }
 
+    /**
+     * Starts {@link PortalActivity}.
+     */
     private void startAR()
     {
         Toast.makeText(CharacterSelectActivity.this, "Starting AR Activity", Toast.LENGTH_SHORT)
