@@ -1,5 +1,6 @@
 package com.semaphore_soft.apps.cypher.opengl;
 
+import android.opengl.GLES20;
 import android.opengl.Matrix;
 
 import com.semaphore_soft.apps.cypher.opengl.shader.DynamicShaderProgram;
@@ -20,6 +21,7 @@ public class ARRoom implements ARDrawableGLES20
     private ConcurrentHashMap<Integer, ARDrawableGLES20> playerLine;
     private ConcurrentHashMap<Integer, ARDrawableGLES20> enemyLine;
     private ConcurrentHashMap<Integer, ARDrawableGLES20> entityPile;
+    private ConcurrentHashMap<Integer, ARDrawableGLES20> effects;
     private short alignment = 2;
 
     private Semaphore assetAccess;
@@ -29,6 +31,7 @@ public class ARRoom implements ARDrawableGLES20
         playerLine = new ConcurrentHashMap<>();
         enemyLine = new ConcurrentHashMap<>();
         entityPile = new ConcurrentHashMap<>();
+        effects = new ConcurrentHashMap<>();
 
         assetAccess = new Semaphore(1);
     }
@@ -105,6 +108,48 @@ public class ARRoom implements ARDrawableGLES20
         if (entityPile.keySet().contains(id))
         {
             entityPile.remove(id);
+        }
+    }
+
+    /**
+     * Applies an effect to the {@link com.semaphore_soft.apps.cypher.game.Actor Actor}
+     * specified by {@code id}.
+     *
+     * @param id    ID of the {@link com.semaphore_soft.apps.cypher.game.Actor Actor} to apply
+     *              the effect to
+     * @param model The effect texture to overlay on the {@link com.semaphore_soft.apps.cypher.game.Actor Actor}
+     */
+    public void addEffect(int id, ARDrawableGLES20 model)
+    {
+        if (!effects.containsKey(id))
+        {
+            effects.put(id, model);
+        }
+    }
+
+    /**
+     * Remove the effect that has been applied to the {@link com.semaphore_soft.apps.cypher.game.Actor Actor}
+     * specified by {@code id}.
+     *
+     * @param id ID of the {@link com.semaphore_soft.apps.cypher.game.Actor Actor}
+     *           to remove the effect from
+     */
+    public void removeEffect(int id)
+    {
+        try
+        {
+            assetAccess.acquire();
+
+            if (effects.containsKey(id))
+            {
+                effects.remove(id);
+            }
+
+            assetAccess.release();
+        }
+        catch (InterruptedException e)
+        {
+            e.printStackTrace();
         }
     }
 
@@ -281,6 +326,18 @@ public class ARRoom implements ARDrawableGLES20
                 }
 
                 playerLine.get(id).draw(projectionMatrix, transformationMatrix, lightPos);
+                if (effects.containsKey(id))
+                {
+                    // Plane will appear in front of the enemy
+                    transformationMatrix = getEffectTransformationMatrix(transformationMatrix);
+
+                    GLES20.glEnable(GLES20.GL_BLEND);
+                    GLES20.glBlendFunc(GLES20.GL_SRC_ALPHA, GLES20.GL_ONE_MINUS_SRC_ALPHA);
+
+                    effects.get(id).draw(projectionMatrix, transformationMatrix, lightPos);
+
+                    GLES20.glDisable(GLES20.GL_BLEND);
+                }
                 ++i;
             }
 
@@ -345,6 +402,18 @@ public class ARRoom implements ARDrawableGLES20
                 }
 
                 enemyLine.get(id).draw(projectionMatrix, transformationMatrix, lightPos);
+                if (effects.containsKey(id))
+                {
+                    // Plane will appear in front of the enemy
+                    transformationMatrix = getEffectTransformationMatrix(transformationMatrix);
+
+                    GLES20.glEnable(GLES20.GL_BLEND);
+                    GLES20.glBlendFunc(GLES20.GL_SRC_ALPHA, GLES20.GL_ONE_MINUS_SRC_ALPHA);
+
+                    effects.get(id).draw(projectionMatrix, transformationMatrix, lightPos);
+
+                    GLES20.glDisable(GLES20.GL_BLEND);
+                }
                 ++i;
             }
 
@@ -368,5 +437,24 @@ public class ARRoom implements ARDrawableGLES20
     public void setColor(float r, float g, float b, float a)
     {
 
+    }
+
+    private float[] getEffectTransformationMatrix(final float[] transformationMatrix)
+    {
+        transformationMatrix[0] = 1;
+        transformationMatrix[1] = 0;
+        transformationMatrix[2] = 0;
+        transformationMatrix[4] = 0;
+        transformationMatrix[5] = 1;
+        transformationMatrix[6] = 0;
+        transformationMatrix[8] = 0;
+        transformationMatrix[9] = 0;
+        transformationMatrix[10] = 1;
+
+        transformationMatrix[14] += 40;
+
+        Matrix.rotateM(transformationMatrix, 0, -90.0f, 1.0f, 0.0f, 0.0f);
+
+        return transformationMatrix;
     }
 }

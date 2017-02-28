@@ -7,24 +7,75 @@ import java.util.Collections;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
- * Created by Scorple on 2/18/2017.
+ * {@link ActorController game.ActorController} provides the logic necessary to
+ * decide what action a given non-player {@link Actor} should take, and then
+ * notify the attached {@link GameController} of that action. Requires a {@link
+ * Model} for decision making purposes.
+ *
+ * @author scorple
+ * @see Actor
+ * @see GameController
+ * @see Model
  */
-
 public class ActorController
 {
     private static Model          model;
     private static GameController gameController;
 
+    /**
+     * Set the {@link Model} to consult for information about game state to
+     * make an informed decision about what action an {@link Actor} will take.
+     *
+     * @param model {@link Model}: The game state model to consult for
+     *              information used in deciding what action an {@link Actor}
+     *              will take.
+     *
+     * @see Model
+     * @see Actor
+     */
     public static void setModel(Model model)
     {
         ActorController.model = model;
     }
 
+    /**
+     * Set the {@link GameController} to report the action taken by a
+     * non-player {@link Actor} to.
+     *
+     * @param gameController {@link GameController}: The {@link GameController}
+     *                       to report the action taken by a non-player {@link
+     *                       Actor} to.
+     *
+     * @see GameController
+     * @see Actor
+     */
     public static void setGameController(GameController gameController)
     {
         ActorController.gameController = gameController;
     }
 
+    /**
+     * Given a non-player {@link Actor} ID, decide what action that {@link
+     * Actor} will take and take that action via necessary calls to {@link
+     * GameMaster}. The {@link GameController} will then be notified of this
+     * action for presentation to the user.
+     * <p>
+     * Action decision will be made based on what actions are available to the
+     * {@link Actor}, checked against the state of the {@link Model}, and the
+     * {@link Actor Actor's} ticket counts for each available action. The total
+     * of all ticket counts will be summed and a random ticket selected in that
+     * range. The action selected will depend on which action's ticket range
+     * the randomly selected ticket number falls within, working as a
+     * 'lottery'.
+     *
+     * @param actorId int: The logical reference ID of the {@link Actor} for
+     *                which an action is being selected an taken.
+     *
+     * @see Actor
+     * @see Model
+     * @see GameMaster
+     * @see GameController
+     */
     public static void takeTurn(int actorId)
     {
         Actor actor = GameMaster.getActor(actorId);
@@ -39,7 +90,7 @@ public class ActorController
         ArrayList<Integer> nonPlayerTargets =
             GameMaster.getNonPlayerTargetIds(actorId);
         ConcurrentHashMap<Integer, Special> actorSpecials = actor.getSpecials();
-        if (playerTargets != null && playerTargets.size() > 0)
+        if (playerTargets.size() > 0)
         {
             attackTickets = actor.getAttackTickets();
             defendTickets = actor.getDefendTickets();
@@ -62,27 +113,31 @@ public class ActorController
         }
 
         int                moveTickets    = 0;
-        ArrayList<Integer> adjacentRooms  = model.getMap().getAdjacentRooms(actor.getRoom());
+        Room               room           = GameMaster.getActorRoom(actorId);
         ArrayList<Integer> validMoveRooms = new ArrayList<>();
-        if (adjacentRooms != null && adjacentRooms.size() > 0)
+        if (room != null && room.isPlaced())
         {
-            boolean foundValidMove = false;
-            for (int roomId : adjacentRooms)
+            ArrayList<Integer> adjacentRooms = model.getMap().getAdjacentRooms(actor.getRoom());
+            if (adjacentRooms != null && adjacentRooms.size() > 0)
             {
-                if (GameMaster.getValidPath(actor.getRoom(), roomId) == 0)
+                boolean foundValidMove = false;
+                for (int roomId : adjacentRooms)
                 {
-                    validMoveRooms.add(roomId);
-                    foundValidMove = true;
+                    if (GameMaster.getValidPath(actor.getRoom(), roomId) == 0)
+                    {
+                        validMoveRooms.add(roomId);
+                        foundValidMove = true;
+                    }
+                }
+                if (foundValidMove)
+                {
+                    moveTickets = actor.getMoveTickets();
                 }
             }
-            if (foundValidMove)
+            if (playerTargets.size() == 0 && actor.isSeeker())
             {
-                moveTickets = actor.getMoveTickets();
+                moveTickets = 1;
             }
-        }
-        if (playerTargets != null && playerTargets.size() > 0 && actor.isSeeker())
-        {
-            moveTickets = 1;
         }
 
         Logger.logI("attack tickets: " + attackTickets, 1);
@@ -136,7 +191,7 @@ public class ActorController
                     switch (special.getTargetingType())
                     {
                         case SINGLE_PLAYER:
-                            if (nonPlayerTargets != null && nonPlayerTargets.size() > 0)
+                            if (nonPlayerTargets.size() > 0)
                             {
                                 Collections.shuffle(nonPlayerTargets);
 
@@ -184,7 +239,7 @@ public class ActorController
                             usedSpecial = true;
                             break;
                         case AOE_PLAYER:
-                            if (nonPlayerTargets != null && nonPlayerTargets.size() > 0)
+                            if (nonPlayerTargets.size() > 0)
                             {
                                 ArrayList<Actor> nonPlayerTargetActors = new ArrayList<>();
                                 for (int i : nonPlayerTargets)
@@ -258,7 +313,8 @@ public class ActorController
         }
         else
         {
-            //actor can't do anything, shouldn't ever be the case
+            //actor can't do anything, should only be the case if actor is in an
+            //unplaced room
 
             Logger.logI(
                 "actor " + actorId + ":" + actor.getName() + " was unable to act");

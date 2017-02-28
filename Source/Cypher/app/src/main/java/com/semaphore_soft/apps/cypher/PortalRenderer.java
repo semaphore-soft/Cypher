@@ -4,6 +4,8 @@ import android.content.Context;
 import android.opengl.GLES20;
 import android.opengl.Matrix;
 import android.os.Handler;
+import android.support.annotation.Nullable;
+import android.support.v4.util.Pair;
 
 import com.semaphore_soft.apps.cypher.game.Actor;
 import com.semaphore_soft.apps.cypher.game.GameController;
@@ -131,6 +133,19 @@ class PortalRenderer extends ARRendererGLES20
                                      new String[]{"a_Position", "a_Color", "a_Normal", "a_TexCoordinate"});
         waypoint.setShaderProgram(waypointShaderProgram);
         models.put("waypoint", waypoint);
+
+        ARDrawableGLES20 overlay =
+            ModelLoader.load(context, "overlay", 5.0f, "spark");
+        DynamicShaderProgram overlayShaderProgram =
+            new DynamicShaderProgram(ShaderLoader.createShader(context,
+                                                               "shaders/vertexShaderTextured.glsl",
+                                                               GLES20.GL_VERTEX_SHADER),
+                                     ShaderLoader.createShader(context,
+                                                               "shaders/fragmentShaderShadelessTexturedTransparent.glsl",
+                                                               GLES20.GL_FRAGMENT_SHADER),
+                                     new String[]{"a_Position", "a_Color", "a_Normal", "a_TexCoordinate"});
+        overlay.setShaderProgram(overlayShaderProgram);
+        models.put("overlay", overlay);
 
         ArrayList<String> actorNames = GameStatLoader.getList(context, "actors");
         if (actorNames != null)
@@ -480,148 +495,181 @@ class PortalRenderer extends ARRendererGLES20
         playerMarkerIDs[playerID] = markerID;
     }
 
-    void createRoom(final Room room)
+    /**
+     * Applies an effect texture on an {@link Actor} for {@code duration}.
+     *
+     * @param roomId   int: The reference ID of the AR marker to which the
+     *                 {@link ARRoom} containing the desired {@link Actor} to
+     *                 apply the effect to.
+     * @param actorId  int: The logical reference ID of the desired {@link
+     *                 Actor} to apply the effect to.
+     * @param effect   Name of the effect to apply
+     * @param duration How long the effect should last in milliseconds
+     */
+    private void setActorEffect(final int roomId, final int actorId, String effect, long duration)
+    {
+        final ARRoom room = arRooms.get(roomId);
+        room.addEffect(actorId, models.get(effect));
+        Runnable removeEffect = new Runnable()
+        {
+            @Override
+            public void run()
+            {
+                room.removeEffect(actorId);
+            }
+        };
+        // Remove effect after the duration has passed
+        handler.postDelayed(removeEffect, duration);
+    }
+
+    /**
+     * Create an AR representation of a {@link Room}, an {@link ARRoom},
+     * anchored to a given AR marker reference ID and hosting walls matching
+     * given descriptors, and add it to the {@link PortalRenderer
+     * PortalRenderer's}{@link ARRoom} map.
+     *
+     * @param arRoomId        int: The reference ID of the AR marker the new
+     *                        {@link ARRoom} is anchored to. Should match the
+     *                        marker reference ID of exactly one {@link Room}.
+     * @param wallDescriptors String[]: An array of descriptors which match
+     *                        the names of {@link ARDrawableGLES20} drawables
+     *                        to be used for the wall drawable 'slots' in the
+     *                        {@link ARRoom}.
+     *
+     * @see ARRoom
+     * @see Room
+     * @see ARDrawableGLES20
+     * @see PortalActivity#generateRoom()
+     */
+    void createRoom(final int arRoomId,
+                    final String[] wallDescriptors)
     {
         ARRoom arRoom = new ARRoom();
         arRoom.setRoomModel(models.get("room_base"));
-        for (short i = 0; i < 4; ++i)
+        for (short i = 0; i < wallDescriptors.length; ++i)
         {
-            switch (room.getWallType(i))
-            {
-                case NO_DOOR:
-                    arRoom.setWall(i, models.get("room_wall"));
-                    break;
-                case DOOR_UNLOCKED:
-                    arRoom.setWall(i, models.get("room_door_unlocked"));
-                    break;
-                case DOOR_OPEN:
-                    arRoom.setWall(i, models.get("room_door_open"));
-                    break;
-                case DOOR_LOCKED:
-                    arRoom.setWall(i, models.get("room_door_locked"));
-                    break;
-            }
+            arRoom.setWall(i, models.get(wallDescriptors[i]));
         }
-        arRooms.put(room.getMarker(), arRoom);
+        arRooms.put(arRoomId, arRoom);
     }
 
-    void updateRoomWalls(final Room room)
+    /**
+     * Updates the {@link ARDrawableGLES20} drawables in the corresponding wall
+     * 'slots' of a given {@link ARRoom} based on given wall descriptors.
+     *
+     * @param arRoomId        int: The reference ID of the AR marker the
+     *                        desired {@link ARRoom} is anchored to. Should
+     *                        match the marker reference ID of exactly one
+     *                        {@link Room}.
+     * @param wallDescriptors String[]: An array of descriptors which match
+     *                        the names of {@link ARDrawableGLES20} drawables
+     *                        to be used for the wall drawable 'slots' in the
+     *                        {@link ARRoom}.
+     *
+     * @see ARRoom
+     * @see Room
+     * @see ARDrawableGLES20
+     * @see PortalActivity#postOpenDoorResult(int, int)
+     */
+    void updateRoomWalls(final int arRoomId,
+                         final String[] wallDescriptors)
     {
-        ARRoom arRoom = arRooms.get(room.getMarker());
-        for (short i = 0; i < 4; ++i)
+        ARRoom arRoom = arRooms.get(arRoomId);
+        for (short i = 0; i < wallDescriptors.length; ++i)
         {
-            switch (room.getWallType(i))
-            {
-                case NO_DOOR:
-                    arRoom.setWall(i, models.get("room_wall"));
-                    break;
-                case DOOR_UNLOCKED:
-                    arRoom.setWall(i, models.get("room_door_unlocked"));
-                    break;
-                case DOOR_OPEN:
-                    arRoom.setWall(i, models.get("room_door_open"));
-                    break;
-                case DOOR_LOCKED:
-                    arRoom.setWall(i, models.get("room_door_locked"));
-                    break;
-            }
+            arRoom.setWall(i, models.get(wallDescriptors[i]));
         }
     }
 
-    void updateRoomAlignment(final Room room, final short side)
+    /**
+     * Updates the alignment, or orientation of residents, of a given {@link
+     * ARRoom}.
+     * <p>
+     * Alignment is given as an index representing a side of an {@link ARRoom},
+     * or {@link Room}, and specifies that player {@link Actor} character
+     * {@link ARDrawableGLES20} drawables should be lined up along that wall.
+     * Non-player {@link Actor} character {@link ARDrawableGLES20} drawables,
+     * then, should be lined up along the opposite wall.
+     *
+     * @param arRoomId int: The reference ID of the AR marker the desired
+     *                 {@link ARRoom} is anchored to. Should match the marker
+     *                 reference ID of exactly one {@link Room}.
+     * @param side     short: The index of the side of the {@link ARRoom}
+     *                 player character {@link ARDrawableGLES20} drawables
+     *                 should line up along.
+     *
+     * @see ARRoom
+     * @see Room
+     * @see Actor
+     * @see ARDrawableGLES20
+     * @see PortalActivity#postMoveResult(int, int, int, int)
+     */
+    void updateRoomAlignment(final int arRoomId, final short side)
     {
-        ARRoom arRoom = arRooms.get(room.getMarker());
+        ARRoom arRoom = arRooms.get(arRoomId);
         arRoom.setAlignment(side);
     }
 
-    void updateRoomResidents(final Room room, final ConcurrentHashMap<Integer, Actor> actors)
+    void updateRoomResidents(final int arRoomId,
+                             final ConcurrentHashMap<Integer, Pair<Boolean, String>> residents)
     {
-        ARRoom arRoom = arRooms.get(room.getMarker());
+        Logger.logD("enter trace");
+
+        ARRoom arRoom = arRooms.get(arRoomId);
         arRoom.removeActors();
-        for (int id : room.getResidentActors())
+        for (int id : residents.keySet())
         {
-            if (actors.keySet().contains(id))
+            Pair<Boolean, String> resident = residents.get(id);
+
+            String[] splitResident = resident.second.split(":");
+
+            String name = splitResident[0];
+
+            Logger.logI("adding actor:" + id + ":" + name + " to arRoom:" + arRoomId, 2);
+
+            String pose = ((splitResident.length > 1) ? splitResident[1] : null);
+
+            if (name != null && models.keySet().contains(name))
             {
-                String name = actors.get(id).getName();
-                Logger.logI("adding actor:" + id + ":" + name + " to room:" + room.getId(), 2);
-                Actor actor = actors.get(id);
-
-                if (name != null && models.keySet().contains(name))
+                if (resident.first)
                 {
-                    if (actor.isPlayer())
-                    {
-                        arRoom.addPlayer(id, models.get(name));
-                    }
-                    else
-                    {
-                        arRoom.addEnemy(id, models.get(name));
-                    }
-                    if (actor.getHealthCurrent() <= 0)
-                    {
-                        arRoom.setResidentPose(id, "wounded");
-                    }
-                    else
-                    {
-                        switch (actor.getState())
-                        {
-                            case NEUTRAL:
-                            case ATTACK:
-                            case SPECIAL:
-                                if (GameMaster.getActorIsPlayer(id))
-                                {
-                                    if (GameMaster.getEnemiesInRoom(room.getId()) > 0)
-                                    {
-                                        arRoom.setResidentPose(id, "ready");
-                                    }
-                                    else
-                                    {
-                                        arRoom.setResidentPose(id, "idle");
-                                    }
-                                }
-                                else
-                                {
-                                    if (GameMaster.getPlayersInRoom(room.getId()) > 0)
-                                    {
-                                        arRoom.setResidentPose(id, "ready");
-                                    }
-                                    else
-                                    {
-                                        arRoom.setResidentPose(id, "idle");
-                                    }
-
-                                }
-                                break;
-                            case DEFEND:
-                                arRoom.setResidentPose(id, "defend");
-                                break;
-                        }
-                    }
+                    arRoom.addPlayer(id, models.get(name));
                 }
                 else
                 {
-                    if (actor.isPlayer())
-                    {
-                        arRoom.addPlayer(id, models.get("error"));
-                    }
-                    else
-                    {
-                        arRoom.addEnemy(id, models.get("error"));
-                    }
+                    arRoom.addEnemy(id, models.get(name));
+                }
+
+                if (pose != null)
+                {
+                    arRoom.setResidentPose(id, pose);
+                }
+            }
+            else
+            {
+                if (resident.first)
+                {
+                    arRoom.addPlayer(id, models.get("error"));
+                }
+                else
+                {
+                    arRoom.addEnemy(id, models.get("error"));
                 }
             }
         }
+
+        Logger.logD("enter trace");
     }
 
-    void showAction(final Room room,
-                    final ConcurrentHashMap<Integer, Actor> actors,
+    void showAction(final int arRoomId,
                     final int sourceId,
                     final int targetId,
                     final long length,
                     final String actionType,
+                    @Nullable final String targetState,
                     final boolean forward)
     {
-        final int roomId = room.getMarker();
-        ARRoom    arRoom = arRooms.get(roomId);
+        ARRoom arRoom = arRooms.get(arRoomId);
         if (forward)
         {
             if (GameMaster.getActorIsPlayer(sourceId))
@@ -630,6 +678,7 @@ class PortalRenderer extends ARRendererGLES20
                 if (targetId > -1)
                 {
                     arRoom.setForwardEnemy(targetId);
+                    setActorEffect(arRoomId, targetId, "overlay", 1000);
                 }
             }
             else
@@ -638,6 +687,7 @@ class PortalRenderer extends ARRendererGLES20
                 if (targetId > -1)
                 {
                     arRoom.setForwardPlayer(targetId);
+                    setActorEffect(arRoomId, targetId, "overlay", 1000);
                 }
             }
         }
@@ -650,13 +700,13 @@ class PortalRenderer extends ARRendererGLES20
                 arRoom.setResidentPose(sourceId, "attack");
                 if (targetId > -1)
                 {
-                    if (!(actors.get(targetId).getState() == Actor.E_STATE.DEFEND))
+                    if (targetState != null && targetState.equals("defend"))
                     {
-                        arRoom.setResidentPose(targetId, "hurt");
+                        arRoom.setResidentPose(targetId, "defend");
                     }
                     else
                     {
-                        arRoom.setResidentPose(targetId, "defend");
+                        arRoom.setResidentPose(targetId, "hurt");
                     }
                 }
                 break;
@@ -670,13 +720,13 @@ class PortalRenderer extends ARRendererGLES20
                     switch (splitAction[1])
                     {
                         case "harm":
-                            if (!(actors.get(targetId).getState() == Actor.E_STATE.DEFEND))
+                            if (targetState != null && targetState.equals("defend"))
                             {
-                                arRoom.setResidentPose(targetId, "hurt");
+                                arRoom.setResidentPose(targetId, "defend");
                             }
                             else
                             {
-                                arRoom.setResidentPose(targetId, "defend");
+                                arRoom.setResidentPose(targetId, "hurt");
                             }
                             break;
                         case "help":
@@ -692,86 +742,30 @@ class PortalRenderer extends ARRendererGLES20
             @Override
             public void run()
             {
-                concludeAction(roomId, actors, sourceId, targetId);
+                concludeAction(arRoomId, sourceId, targetId, targetState);
             }
         };
         handler.postDelayed(actionFinisher, length);
     }
 
-    private void concludeAction(final int roomId,
-                                final ConcurrentHashMap<Integer, Actor> actors,
+    private void concludeAction(final int arRoomId,
                                 final int sourceId,
-                                final int targetId)
+                                final int targetId,
+                                @Nullable final String targetState)
     {
-        ARRoom arRoom = arRooms.get(roomId);
+        ARRoom arRoom = arRooms.get(arRoomId);
         arRoom.clearForwardPlayer();
         arRoom.clearForwardEnemy();
 
-        int gameRoomId = GameMaster.getRoomIdByMarkerId(roomId);
+        arRoom.setResidentPose(sourceId, "idle");
 
-        if (actors.get(sourceId).getState() == Actor.E_STATE.DEFEND)
+        if (targetState != null && targetState.equals("defend"))
         {
-            arRoom.setResidentPose(sourceId, "defend");
+            arRoom.setResidentPose(targetId, "defend");
         }
         else
         {
-            if (GameMaster.getActorIsPlayer(sourceId))
-            {
-                if (GameMaster.getEnemiesInRoom(gameRoomId) > 0)
-                {
-                    arRoom.setResidentPose(sourceId, "ready");
-                }
-                else
-                {
-                    arRoom.setResidentPose(sourceId, "idle");
-                }
-            }
-            else
-            {
-                if (GameMaster.getPlayersInRoom(gameRoomId) > 0)
-                {
-                    arRoom.setResidentPose(sourceId, "ready");
-                }
-                else
-                {
-                    arRoom.setResidentPose(sourceId, "idle");
-                }
-
-            }
-        }
-
-        if (actors.containsKey(targetId))
-        {
-            if (actors.get(sourceId).getState() == Actor.E_STATE.DEFEND)
-            {
-                arRoom.setResidentPose(sourceId, "defend");
-            }
-            else
-            {
-                if (GameMaster.getActorIsPlayer(sourceId))
-                {
-                    if (GameMaster.getEnemiesInRoom(gameRoomId) > 0)
-                    {
-                        arRoom.setResidentPose(sourceId, "ready");
-                    }
-                    else
-                    {
-                        arRoom.setResidentPose(sourceId, "idle");
-                    }
-                }
-                else
-                {
-                    if (GameMaster.getPlayersInRoom(gameRoomId) > 0)
-                    {
-                        arRoom.setResidentPose(sourceId, "ready");
-                    }
-                    else
-                    {
-                        arRoom.setResidentPose(sourceId, "idle");
-                    }
-
-                }
-            }
+            arRoom.setResidentPose(targetId, "idle");
         }
 
         gameController.onFinishedAction(sourceId);
