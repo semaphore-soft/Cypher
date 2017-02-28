@@ -320,6 +320,8 @@ public class Server
                     serverService.threadUpdate(NetworkConstants.STATUS_SERVER_WAIT,
                                                getClientID(clients.indexOf(this)));
 
+                    // Wait for the AcceptorThread to timeout so the timings don't overlap
+                    Thread.sleep(SocketOptions.SO_TIMEOUT);
                     // Disable timeout
                     serverSocket.setSoTimeout(0);
                     mySocket = serverSocket.accept();
@@ -333,6 +335,12 @@ public class Server
                 }
                 catch (IOException e)
                 {
+                    Logger.logE("IOException during reconnection");
+                    e.printStackTrace();
+                }
+                catch (InterruptedException e)
+                {
+                    Logger.logI("Thread interrupted");
                     e.printStackTrace();
                 }
             }

@@ -8,7 +8,6 @@ import java.io.EOFException;
 import java.io.IOException;
 import java.net.InetAddress;
 import java.net.Socket;
-import java.net.SocketException;
 
 /**
  * Class to hold client thread and helper methods.
@@ -144,10 +143,7 @@ public class Client
             }
             catch (IOException e)
             {
-                if (e instanceof SocketException)
-                {
-                    clientService.threadError(NetworkConstants.ERROR_DISCONNECT_CLIENT);
-                }
+                clientService.threadError(NetworkConstants.ERROR_DISCONNECT_CLIENT);
                 e.printStackTrace();
                 running = false;
                 reconnectSocket();

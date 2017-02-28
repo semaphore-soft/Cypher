@@ -256,6 +256,26 @@ public class ConnectionLobbyActivity extends AppCompatActivity implements Respon
     public void handleStatus(String msg, int readFrom)
     {
         Toast.makeText(this, "Status: " + msg, Toast.LENGTH_SHORT).show();
+        if (msg.equals(NetworkConstants.STATUS_SERVER_WAIT) && readFrom != 0)
+        {
+            // Don't use status updates from the AcceptorThread (uses host id)
+            // If we get a disconnect, stop the AcceptorThread
+            Server.setAccepting(false);
+        }
+        else if (msg.equals(NetworkConstants.STATUS_SERVER_START) && readFrom != 0)
+        {
+            // Don't use status updates from the AcceptorThread (uses host id)
+            // Once we a reconnected let the AcceptorThread start again
+            Server.setAccepting(true);
+            // Resend updates, just in case a client missed it while disconnected
+            // This is needed since this is how the client gets its playerID
+            serverService.writeAll(NetworkConstants.GAME_UPDATE);
+            for (PlayerID pid : playersList)
+            {
+                serverService.writeAll(
+                    NetworkConstants.PF_PLAYER + pid.getPlayerName() + ":" + pid.getID());
+            }
+        }
     }
 
     /**
