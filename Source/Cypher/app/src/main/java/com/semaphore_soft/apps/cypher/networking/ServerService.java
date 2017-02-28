@@ -96,12 +96,25 @@ public class ServerService extends Service
     }
 
     /**
+     * Add a playerID to identify a thread with.
+     *
+     * @param playerID The playerID, as assigned by the host
+     * @param index    The index of the thread
+     *
+     * @see Server#mapPlayerIDToSocket(int, int)
+     */
+    public void addPlayerID(int playerID, int index)
+    {
+        serverThread.mapPlayerIDToSocket(playerID, index);
+    }
+
+    /**
      * Sends an intent for {@link ResponseReceiver} to signal that data has been read from the network.
      *
      * @param msg Message that was read from the network.
-     * @param readFrom Client that the message was received from.
-     *                 This is in relation to an array of connected clients
-     *                 and is not related to playerID.
+     * @param readFrom The playerID of the device that the message was received from.
+     *                 If the client has not received a playerID,
+     *                 this will be the index of the thread.
      */
     public void threadRead(String msg, int readFrom)
     {

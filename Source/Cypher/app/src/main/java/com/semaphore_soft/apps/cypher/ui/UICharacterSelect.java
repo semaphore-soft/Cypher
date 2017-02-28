@@ -131,9 +131,9 @@ public class UICharacterSelect extends UIBase
     }
 
     /**
-     * Update UI to show player's selection.
+     * Update UI to show players selection.
      *
-     * @param selection Player's selection
+     * @param selection Players selection
      */
     private void setSelection(String selection)
     {
@@ -178,7 +178,7 @@ public class UICharacterSelect extends UIBase
     }
 
     /**
-     * Update UI to clear player's selection.
+     * Update UI to clear players selection.
      */
     public void clearSelection()
     {

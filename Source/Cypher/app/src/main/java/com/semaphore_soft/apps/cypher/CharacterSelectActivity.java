@@ -265,8 +265,7 @@ public class CharacterSelectActivity extends AppCompatActivity implements Respon
                 if (key != readFrom)
                 {
                     String str = NetworkConstants.PF_LOCK + characterSelections.get(key);
-                    // Clients do not include host and are 0-indexed
-                    serverService.writeToClient(str, readFrom - 1);
+                    serverService.writeToClient(str, readFrom);
                 }
             }
         }
@@ -352,12 +351,12 @@ public class CharacterSelectActivity extends AppCompatActivity implements Respon
         if (characterSelections.containsValue(selection))
         {
             Logger.logI("Character taken");
-            serverService.writeToClient(NetworkConstants.GAME_TAKEN, player - 1);
+            serverService.writeToClient(NetworkConstants.GAME_TAKEN, player);
             return;
         }
         if (characterSelections.containsKey(player))
         {
-            // Update player's character
+            // Update players character
             removePlayer(player);
         }
         else

@@ -11,6 +11,7 @@ import java.net.Socket;
 import java.net.SocketException;
 import java.net.SocketOptions;
 import java.util.ArrayList;
+import java.util.HashMap;
 
 /**
  * Class to hold server threads and helper methods
@@ -24,10 +25,12 @@ import java.util.ArrayList;
 
 public class Server
 {
-    private static ArrayList<ClientHandler> clients      = new ArrayList<>();
-    private static Boolean                  accepting    = false;
-    private static ServerSocket             serverSocket = null;
-    private        int                      maxPlayers   = 4;
+    private static ArrayList<ClientHandler>        clients      = new ArrayList<>();
+    private static HashMap<Integer, Integer>       indexToID    = new HashMap<>();
+    private static HashMap<Integer, ClientHandler> idToSocket   = new HashMap<>();
+    private static Boolean                         accepting    = false;
+    private static ServerSocket                    serverSocket = null;
+    private        int                             maxPlayers   = 4;
     private ServerService serverService;
 
 
@@ -43,6 +46,21 @@ public class Server
     public static void setAccepting(Boolean bool)
     {
         accepting = bool;
+    }
+
+
+    /**
+     * Map the {@code playerID} to a {@link ClientHandler} at {@code index}
+     *
+     * @param playerID The playerID, as assigned by the host
+     * @param index    The index of the {@link ClientHandler}
+     *
+     * @see ServerService#addPlayerID(int, int)
+     */
+    public void mapPlayerIDToSocket(int playerID, int index)
+    {
+        indexToID.put(index, playerID);
+        idToSocket.put(playerID, clients.get(index));
     }
 
     /**
@@ -77,16 +95,16 @@ public class Server
      * Write a message to a specific client.
      *
      * @param str Message to write.
-     * @param index The specific client to connect to.
+     * @param id The playerID of the specific client to connect to.
      *
      * @see ServerService#writeToClient(String, int)
      */
-    public void writeToClient(String str, int index)
+    public void writeToClient(String str, int id)
     {
-        Logger.logD("Attempting to write to client " + String.valueOf(index));
-        if (!clients.isEmpty() && index >= 0 && index < clients.size())
+        Logger.logD("Attempting to write to client " + String.valueOf(id));
+        if (idToSocket.containsKey(id))
         {
-            clients.get(index).write(str);
+            idToSocket.get(id).write(str);
         }
         else
         {
@@ -200,6 +218,25 @@ public class Server
         }
 
         /**
+         * Get the appropriate identifier to send to {@link ServerService}
+         *
+         * @param index The index of the client in {@code clients}
+         *
+         * @return The playerID if assigned, otherwise the index
+         */
+        private int getClientID(int index)
+        {
+            if (indexToID.containsKey(index))
+            {
+                return indexToID.get(index);
+            }
+            else
+            {
+                return index;
+            }
+        }
+
+        /**
          * Writes a message to the connected client.
          *
          * @param str Message to write.
@@ -217,7 +254,7 @@ public class Server
             catch (IOException e)
             {
                 e.printStackTrace();
-                serverService.threadError(NetworkConstants.ERROR_WRITE, clients.indexOf(this) + 1);
+                serverService.threadError(NetworkConstants.ERROR_WRITE, getClientID(clients.indexOf(this)));
             }
         }
 
@@ -246,7 +283,7 @@ public class Server
             catch (IOException e)
             {
                 serverService.threadError(NetworkConstants.ERROR_DISCONNECT_SERVER,
-                                          clients.indexOf(this) + 1);
+                                          getClientID(clients.indexOf(this)));
                 e.printStackTrace();
                 running = false;
                 reconnectSocket();
@@ -264,8 +301,8 @@ public class Server
         private void processMessage(String msg)
         {
             Logger.logI(msg);
-            Logger.logD(String.valueOf(clients.indexOf(this) + 1));
-            serverService.threadRead(msg, clients.indexOf(this) + 1);
+            Logger.logD(String.valueOf(getClientID(clients.indexOf(this))));
+            serverService.threadRead(msg, getClientID(clients.indexOf(this)));
         }
 
         /**
@@ -281,14 +318,14 @@ public class Server
                 {
                     Logger.logI("Waiting on accept");
                     serverService.threadUpdate(NetworkConstants.STATUS_SERVER_WAIT,
-                                               clients.indexOf(this) + 1);
+                                               getClientID(clients.indexOf(this)));
 
                     // Disable timeout
                     serverSocket.setSoTimeout(0);
                     mySocket = serverSocket.accept();
                     running = true;
                     serverService.threadUpdate(NetworkConstants.STATUS_SERVER_START,
-                                               clients.indexOf(this) + 1);
+                                               getClientID(clients.indexOf(this)));
                 }
                 catch (SocketException e)
                 {

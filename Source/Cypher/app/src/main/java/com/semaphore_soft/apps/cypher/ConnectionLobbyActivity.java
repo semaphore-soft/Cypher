@@ -227,12 +227,18 @@ public class ConnectionLobbyActivity extends AppCompatActivity implements Respon
         {
             // add players on server
             addPlayer(msg.substring(5), ++playerID);
+            serverService.addPlayerID(playerID, readFrom);
         }
         else if (msg.startsWith(NetworkConstants.PF_PLAYER))
         {
             // add players on client
             String args[] = msg.split(":");
             addPlayer(args[1], Integer.valueOf(args[2]));
+            // Update client with their playerID
+            if (args[1].equals(name))
+            {
+                playerID = Integer.valueOf(args[2]);
+            }
         }
         else if (msg.equals(NetworkConstants.GAME_UPDATE))
         {
