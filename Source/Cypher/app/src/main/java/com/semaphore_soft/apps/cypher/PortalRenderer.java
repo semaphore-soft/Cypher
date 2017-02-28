@@ -496,22 +496,24 @@ class PortalRenderer extends ARRendererGLES20
     /**
      * Applies an effect texture on an {@link Actor} for {@code duration}.
      *
-     * @param actor    {@link Actor} to apply the effect to
+     * @param roomId   int: The reference ID of the AR marker to which the
+     *                 {@link ARRoom} containing the desired {@link Actor} to
+     *                 apply the effect to.
+     * @param actorId  int: The logical reference ID of the desired {@link
+     *                 Actor} to apply the effect to.
      * @param effect   Name of the effect to apply
      * @param duration How long the effect should last in milliseconds
      */
-    void setEnemyEffect(final Actor actor, String effect, long duration)
+    private void setActorEffect(final int roomId, final int actorId, String effect, long duration)
     {
-        int          roomId       = actor.getRoom();
-        int          actualRoomId = GameMaster.getRoomMarkerId(roomId);
-        final ARRoom room         = arRooms.get(actualRoomId);
-        room.addEffect(actor.getId(), models.get(effect));
+        final ARRoom room = arRooms.get(roomId);
+        room.addEffect(actorId, models.get(effect));
         Runnable removeEffect = new Runnable()
         {
             @Override
             public void run()
             {
-                room.removeEffect(actor.getId());
+                room.removeEffect(actorId);
             }
         };
         // Remove effect after the duration has passed
@@ -668,7 +670,7 @@ class PortalRenderer extends ARRendererGLES20
                 if (targetId > -1)
                 {
                     arRoom.setForwardEnemy(targetId);
-                    setEnemyEffect(actors.get(targetId), "overlay", 1000);
+                    setActorEffect(roomId, targetId, "overlay", 1000);
                 }
             }
             else
@@ -677,7 +679,7 @@ class PortalRenderer extends ARRendererGLES20
                 if (targetId > -1)
                 {
                     arRoom.setForwardPlayer(targetId);
-                    setEnemyEffect(actors.get(targetId), "overlay", 1000);
+                    setActorEffect(roomId, targetId, "overlay", 1000);
                 }
             }
         }
