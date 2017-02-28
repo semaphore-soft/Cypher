@@ -1186,7 +1186,6 @@ public class PortalActivity extends ARActivity implements PortalRenderer.NewMark
 
                 if (actor != null)
                 {
-
                     String name = actor.getName();
 
                     String pose = "default";

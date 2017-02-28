@@ -135,13 +135,13 @@ class PortalRenderer extends ARRendererGLES20
         models.put("waypoint", waypoint);
 
         ARDrawableGLES20 overlay =
-            ModelLoader.load(context, "overlay", 10.0f);
+            ModelLoader.load(context, "overlay", 5.0f, "spark");
         DynamicShaderProgram overlayShaderProgram =
             new DynamicShaderProgram(ShaderLoader.createShader(context,
                                                                "shaders/vertexShaderTextured.glsl",
                                                                GLES20.GL_VERTEX_SHADER),
                                      ShaderLoader.createShader(context,
-                                                               "shaders/fragmentShaderTextured.glsl",
+                                                               "shaders/fragmentShaderShadelessTexturedTransparent.glsl",
                                                                GLES20.GL_FRAGMENT_SHADER),
                                      new String[]{"a_Position", "a_Color", "a_Normal", "a_TexCoordinate"});
         overlay.setShaderProgram(overlayShaderProgram);
@@ -613,6 +613,8 @@ class PortalRenderer extends ARRendererGLES20
     void updateRoomResidents(final int arRoomId,
                              final ConcurrentHashMap<Integer, Pair<Boolean, String>> residents)
     {
+        Logger.logD("enter trace");
+
         ARRoom arRoom = arRooms.get(arRoomId);
         arRoom.removeActors();
         for (int id : residents.keySet())
@@ -655,6 +657,8 @@ class PortalRenderer extends ARRendererGLES20
                 }
             }
         }
+
+        Logger.logD("enter trace");
     }
 
     void showAction(final int arRoomId,

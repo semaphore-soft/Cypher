@@ -510,7 +510,7 @@ public class ModelLoader
             Logger.logI(
                 "writing ibo to "
                 + context.getExternalFilesDir(null).toString()
-                + "/genAssets/" + path + name +
+                + "/genAssets/" + path + "/" + name +
                 ".ibo");
 
             File directory = new File(""
