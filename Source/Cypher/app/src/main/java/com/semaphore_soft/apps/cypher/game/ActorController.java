@@ -113,27 +113,31 @@ public class ActorController
         }
 
         int                moveTickets    = 0;
-        ArrayList<Integer> adjacentRooms  = model.getMap().getAdjacentRooms(actor.getRoom());
+        Room               room           = GameMaster.getActorRoom(actorId);
         ArrayList<Integer> validMoveRooms = new ArrayList<>();
-        if (adjacentRooms != null && adjacentRooms.size() > 0)
+        if (room != null && room.isPlaced())
         {
-            boolean foundValidMove = false;
-            for (int roomId : adjacentRooms)
+            ArrayList<Integer> adjacentRooms = model.getMap().getAdjacentRooms(actor.getRoom());
+            if (adjacentRooms != null && adjacentRooms.size() > 0)
             {
-                if (GameMaster.getValidPath(actor.getRoom(), roomId) == 0)
+                boolean foundValidMove = false;
+                for (int roomId : adjacentRooms)
                 {
-                    validMoveRooms.add(roomId);
-                    foundValidMove = true;
+                    if (GameMaster.getValidPath(actor.getRoom(), roomId) == 0)
+                    {
+                        validMoveRooms.add(roomId);
+                        foundValidMove = true;
+                    }
+                }
+                if (foundValidMove)
+                {
+                    moveTickets = actor.getMoveTickets();
                 }
             }
-            if (foundValidMove)
+            if (playerTargets.size() > 0 && actor.isSeeker())
             {
-                moveTickets = actor.getMoveTickets();
+                moveTickets = 1;
             }
-        }
-        if (playerTargets.size() > 0 && actor.isSeeker())
-        {
-            moveTickets = 1;
         }
 
         Logger.logI("attack tickets: " + attackTickets, 1);
@@ -309,7 +313,8 @@ public class ActorController
         }
         else
         {
-            //actor can't do anything, shouldn't ever be the case
+            //actor can't do anything, should only be the case if actor is in an
+            //unplaced room
 
             Logger.logI(
                 "actor " + actorId + ":" + actor.getName() + " was unable to act");

@@ -1,5 +1,7 @@
 package com.semaphore_soft.apps.cypher.game;
 
+import android.support.annotation.NonNull;
+
 import java.util.ArrayList;
 
 import static com.semaphore_soft.apps.cypher.game.Room.E_WALL_TYPE.DOOR_UNLOCKED;
@@ -235,6 +237,7 @@ public class Room
      * @see GameMaster#getPlayerTargetIds(int)
      * @see GameMaster#getNonPlayerTargetIds(int)
      */
+    @NonNull
     public ArrayList<Integer> getResidentActors()
     {
         return residentActorIDs;
@@ -287,6 +290,7 @@ public class Room
      *
      * @see Entity
      */
+    @NonNull
     public ArrayList<Integer> getResidentEntities()
     {
         return residentEntityIDs;

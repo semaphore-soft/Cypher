@@ -7,7 +7,9 @@ import android.content.ServiceConnection;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.IBinder;
+import android.support.annotation.NonNull;
 import android.support.v4.content.LocalBroadcastManager;
+import android.support.v4.util.Pair;
 import android.widget.FrameLayout;
 import android.widget.Toast;
 
@@ -34,6 +36,7 @@ import org.artoolkit.ar.base.ARActivity;
 import org.artoolkit.ar.base.rendering.ARRenderer;
 
 import java.util.ArrayList;
+import java.util.concurrent.ConcurrentHashMap;
 
 import static com.semaphore_soft.apps.cypher.utils.CollectionManager.getNextID;
 
@@ -223,19 +226,27 @@ public class PortalActivity extends ARActivity implements PortalRenderer.NewMark
                     break;
                 case "cmd_btnDefend":
                     GameMaster.setActorState(playerId, Actor.E_STATE.DEFEND);
-                    renderer.updateRoomResidents(GameMaster.getActorRoom(playerId),
-                                                 model.getActors());
+                    Room room = GameMaster.getActorRoom(playerId);
+                    /*if (room != null)
+                    {
+                        renderer.updateRoomResidents(room.getMarker(),
+                                                     getResidents(room.getId()));
+                    }*/
+
                     Toast.makeText(getApplicationContext(),
                                    "Success",
                                    Toast.LENGTH_SHORT).show();
 
-                    renderer.showAction(GameMaster.getActorRoom(playerId),
-                                        model.getActors(),
-                                        playerId,
-                                        -1,
-                                        1000,
-                                        "defend",
-                                        false);
+                    if (room != null)
+                    {
+                        renderer.showAction(room.getMarker(),
+                                            playerId,
+                                            -1,
+                                            1000,
+                                            "defend",
+                                            null,
+                                            false);
+                    }
                     break;
                 case "cmd_btnSpecial":
                     uiPortalOverlay.setEnemyTargets(GameMaster.getNonPlayerTargets(playerId));
@@ -412,24 +423,27 @@ public class PortalActivity extends ARActivity implements PortalRenderer.NewMark
         if (mark > -1)
         {
             //generate a new, placed room
-            int  roomID = getNextID(model.getRooms());
-            Room room   = new Room(roomID, mark, true);
-            model.getRooms().put(roomID, room);
-            renderer.createRoom(room);
+            int  roomId = getNextID(model.getRooms());
+            Room room   = new Room(roomId, mark, true);
+            model.getRooms().put(roomId, room);
+
+            String[] wallDescriptors = getWallDescriptors(roomId);
+
+            renderer.createRoom(mark, wallDescriptors);
 
             //place every player actor in that room
             for (Actor actor : model.getActors().values())
             {
                 if (actor.isPlayer())
                 {
-                    actor.setRoom(roomID);
+                    actor.setRoom(roomId);
                     room.addActor(actor.getId());
                 }
             }
 
-            renderer.updateRoomResidents(room, model.getActors());
+            renderer.updateRoomResidents(room.getMarker(), getResidents(roomId));
 
-            model.getMap().init(roomID);
+            model.getMap().init(roomId);
 
             Toast.makeText(getApplicationContext(),
                            "Starting Room Established",
@@ -512,17 +526,30 @@ public class PortalActivity extends ARActivity implements PortalRenderer.NewMark
         {
             if (startRoomId > -1)
             {
-                renderer.updateRoomResidents(GameMaster.getRoom(startRoomId), model.getActors());
+                Room room = GameMaster.getRoom(startRoomId);
+                if (room != null)
+                {
+                    renderer.updateRoomResidents(room.getMarker(),
+                                                 getResidents(startRoomId));
+                }
             }
             if (endRoomId > -1)
             {
                 if (GameMaster.getPlayersInRoom(endRoomId) == 1)
                 {
-                    renderer.updateRoomAlignment(GameMaster.getRoom(endRoomId),
-                                                 GameMaster.getSideOfRoomFrom(startRoomId,
-                                                                              endRoomId));
+                    Room room = GameMaster.getRoom(endRoomId);
+                    if (room != null)
+                    {
+                        renderer.updateRoomAlignment(room.getMarker(),
+                                                     GameMaster.getSideOfRoomFrom(startRoomId,
+                                                                                  endRoomId));
+                    }
                 }
-                renderer.updateRoomResidents(GameMaster.getRoom(endRoomId), model.getActors());
+                Room room = GameMaster.getRoom(endRoomId);
+                if (room != null)
+                {
+                    renderer.updateRoomResidents(room.getMarker(), getResidents(endRoomId));
+                }
             }
         }
     }
@@ -535,7 +562,9 @@ public class PortalActivity extends ARActivity implements PortalRenderer.NewMark
             Room room =
                 GameMaster.generateRoom(this, CollectionManager.getNextID(model.getRooms()), mark);
 
-            renderer.createRoom(room);
+            String[] wallDescriptors = getWallDescriptors(room.getId());
+
+            renderer.createRoom(mark, wallDescriptors);
 
             Toast.makeText(getApplicationContext(),
                            "New Room Generated",
@@ -646,13 +675,19 @@ public class PortalActivity extends ARActivity implements PortalRenderer.NewMark
         if (res >= 0)
         {
             Room room = GameMaster.getRoom(endRoomId);
-            renderer.updateRoomWalls(room);
+            if (room != null)
+            {
+                renderer.updateRoomWalls(room.getMarker(), getWallDescriptors(endRoomId));
+            }
 
             ArrayList<Integer> adjacentRoomIds = GameMaster.getAdjacentRoomIds(endRoomId);
             for (int id : adjacentRoomIds)
             {
                 Room adjacentRoom = GameMaster.getRoom(id);
-                renderer.updateRoomWalls(adjacentRoom);
+                if (adjacentRoom != null)
+                {
+                    renderer.updateRoomWalls(adjacentRoom.getMarker(), getWallDescriptors(id));
+                }
             }
         }
     }
@@ -683,15 +718,20 @@ public class PortalActivity extends ARActivity implements PortalRenderer.NewMark
 
         if (res >= 0)
         {
-            Room room = GameMaster.getActorRoom(attackerId);
+            Room  room     = GameMaster.getActorRoom(attackerId);
+            Actor defender = GameMaster.getActor(defenderId);
 
-            renderer.showAction(room,
-                                model.getActors(),
-                                attackerId,
-                                defenderId,
-                                1000,
-                                "attack",
-                                true);
+            if (room != null)
+            {
+                renderer.showAction(room.getMarker(),
+                                    attackerId,
+                                    defenderId,
+                                    1000,
+                                    "attack",
+                                    ((defender != null) ? (defender.getState() ==
+                                                           Actor.E_STATE.DEFEND ? "defend" : null) : null),
+                                    true);
+            }
         }
     }
 
@@ -737,18 +777,22 @@ public class PortalActivity extends ARActivity implements PortalRenderer.NewMark
 
         if (res >= 0)
         {
-            Room room = GameMaster.getActorRoom(sourceId);
-            //renderer.updateRoomResidents(room, model.getActors());
+            Room  room   = GameMaster.getActorRoom(sourceId);
+            Actor target = GameMaster.getActor(targetId);
 
             String specialType = GameMaster.getSpecialType(specialId);
 
-            renderer.showAction(room,
-                                model.getActors(),
-                                sourceId,
-                                targetId,
-                                1000,
-                                "special:" + specialType,
-                                specialType.equals("harm"));
+            if (room != null)
+            {
+                renderer.showAction(room.getMarker(),
+                                    sourceId,
+                                    targetId,
+                                    1000,
+                                    "special:" + specialType,
+                                    ((target != null) ? (target.getState() ==
+                                                         Actor.E_STATE.DEFEND ? "defend" : null) : null),
+                                    specialType.equals("harm"));
+            }
         }
     }
 
@@ -893,17 +937,22 @@ public class PortalActivity extends ARActivity implements PortalRenderer.NewMark
 
         boolean forwardAction = (action.equals("attack") || action.equals("special:harm"));
 
-        Room room = GameMaster.getActorRoom(sourceId);
+        Room  room   = GameMaster.getActorRoom(sourceId);
+        Actor target = GameMaster.getActor(targetId);
 
         Logger.logD("showing action in renderer");
 
-        renderer.showAction(room,
-                            model.getActors(),
-                            sourceId,
-                            targetId,
-                            1000,
-                            action,
-                            forwardAction);
+        if (room != null)
+        {
+            renderer.showAction(room.getMarker(),
+                                sourceId,
+                                targetId,
+                                1000,
+                                action,
+                                ((target != null) ? (target.getState() ==
+                                                     Actor.E_STATE.DEFEND ? "defend" : null) : null),
+                                forwardAction);
+        }
 
         Logger.logD("exit trace");
     }
@@ -919,8 +968,16 @@ public class PortalActivity extends ARActivity implements PortalRenderer.NewMark
 
         GameMaster.moveActor(actorId, roomId);
 
-        renderer.updateRoomResidents(GameMaster.getRoom(startRoomId), model.getActors());
-        renderer.updateRoomResidents(GameMaster.getRoom(roomId), model.getActors());
+        Room room = GameMaster.getRoom(startRoomId);
+        if (room != null)
+        {
+            renderer.updateRoomResidents(room.getMarker(), getResidents(room.getId()));
+        }
+        room = GameMaster.getRoom(roomId);
+        if (room != null)
+        {
+            renderer.updateRoomResidents(room.getMarker(), getResidents(room.getId()));
+        }
 
         if (GameMaster.getPlayersInRoom(roomId) > 0)
         {
@@ -978,7 +1035,12 @@ public class PortalActivity extends ARActivity implements PortalRenderer.NewMark
         Logger.logD("removing dead actors");
         GameMaster.removeDeadActors();
         Logger.logD("updating renderer room");
-        renderer.updateRoomResidents(GameMaster.getActorRoom(actorId), model.getActors());
+
+        Room room = GameMaster.getActorRoom(actorId);
+        if (room != null)
+        {
+            renderer.updateRoomResidents(room.getMarker(), getResidents(room.getId()));
+        }
 
         if (turn)
         {
@@ -1003,7 +1065,11 @@ public class PortalActivity extends ARActivity implements PortalRenderer.NewMark
     {
         Logger.logD("enter trace");
 
-        GameMaster.getActor(actorId).tick();
+        Actor actor = GameMaster.getActor(actorId);
+        if (actor != null)
+        {
+            actor.tick();
+        }
 
         turnId = CollectionManager.getNextIdFromId(turnId, model.getActors());
 
@@ -1021,6 +1087,145 @@ public class PortalActivity extends ARActivity implements PortalRenderer.NewMark
         }
 
         Logger.logD("exit trace");
+    }
+
+    /**
+     * Construct a list of String wall descriptors describing the walls of a
+     * {@link Room} in a way that is meaningful to the {@link PortalRenderer}.
+     *
+     * @param roomId int: The logical reference ID of the desired {@link Room}.
+     *
+     * @return String[]: An array of {@link Room} wall descriptors meaningful
+     * to the {@link PortalRenderer}.
+     *
+     * @see Room
+     * @see PortalRenderer
+     * @see PortalRenderer#createRoom(int, String[])
+     * @see PortalRenderer#updateRoomWalls(int, String[])
+     */
+    @NonNull
+    private String[] getWallDescriptors(final int roomId)
+    {
+        Room room = GameMaster.getRoom(roomId);
+
+        String[] wallDescriptors = new String[4];
+
+        if (room != null)
+        {
+            for (short i = 0; i < wallDescriptors.length; ++i)
+            {
+                switch (room.getWallType(i))
+                {
+                    case NO_DOOR:
+                        wallDescriptors[i] = "room_wall";
+                        break;
+                    case DOOR_UNLOCKED:
+                        wallDescriptors[i] = "room_door_unlocked";
+                        break;
+                    case DOOR_OPEN:
+                        wallDescriptors[i] = "room_door_open";
+                        break;
+                    case DOOR_LOCKED:
+                        wallDescriptors[i] = "room_door_locked";
+                        break;
+                }
+            }
+        }
+
+        return wallDescriptors;
+    }
+
+    /**
+     * Construct a map of {@link Actor} logical reference IDs to Pairs of a
+     * boolean value representing whether or not that {@link Actor} is player
+     * controlled and a String providing the reference name of that {@link
+     * Actor} and the state of that {@link Actor} as a pose name meaningful to
+     * the {@link PortalRenderer} separated by a colon (<code>:</code>).
+     *
+     * @param roomId int: The logical reference ID of the {@link Room} to to
+     *               get the list of resident {@link Actor Actors} from.
+     *
+     * @return ConcurrentHashMap: A map indexing Pairs of a boolean value
+     * representing whether or not an {@link Actor} is a player and a String
+     * providing that {@link Actor Actor's} reference name and state separated
+     * by a colon (<code>:</code>) by {@link Actor} logical reference ID.
+     *
+     * @see Actor
+     * @see Room
+     * @see PortalRenderer
+     * @see PortalRenderer#updateRoomResidents(int, ConcurrentHashMap)
+     */
+    @NonNull
+    private ConcurrentHashMap<Integer, Pair<Boolean, String>> getResidents(final int roomId)
+    {
+        ConcurrentHashMap<Integer, Pair<Boolean, String>> res = new ConcurrentHashMap<>();
+
+        Room room = GameMaster.getRoom(roomId);
+
+        if (room != null)
+        {
+            for (int id : room.getResidentActors())
+            {
+                Actor actor = GameMaster.getActor(id);
+
+                if (actor != null)
+                {
+
+                    String name = actor.getName();
+
+                    String pose = "default";
+
+                    if (actor.getHealthCurrent() <= 0)
+                    {
+                        pose = "wounded";
+                    }
+                    else
+                    {
+                        switch (actor.getState())
+                        {
+                            case NEUTRAL:
+                            case ATTACK:
+                            case SPECIAL:
+                                if (GameMaster.getActorIsPlayer(id))
+                                {
+                                    if (GameMaster.getEnemiesInRoom(room.getId()) > 0)
+                                    {
+                                        pose = "ready";
+                                    }
+                                    else
+                                    {
+                                        pose = "idle";
+                                    }
+                                }
+                                else
+                                {
+                                    if (GameMaster.getPlayersInRoom(room.getId()) > 0)
+                                    {
+                                        pose = "ready";
+                                    }
+                                    else
+                                    {
+                                        pose = "idle";
+                                    }
+
+                                }
+                                break;
+                            case DEFEND:
+                                pose = "defend";
+                                break;
+                        }
+                    }
+
+                    Pair<Boolean, String> residentDescriptor =
+                        new Pair<>(GameMaster.getActorIsPlayer(id),
+                                   name + ":" + pose);
+
+                    res.put(id, residentDescriptor);
+                }
+            }
+        }
+
+        return res;
     }
 
     // Defines callbacks for service binding, passed to bindService()
