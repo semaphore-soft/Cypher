@@ -134,7 +134,7 @@ public class ActorController
                     moveTickets = actor.getMoveTickets();
                 }
             }
-            if (playerTargets.size() > 0 && actor.isSeeker())
+            if (playerTargets.size() == 0 && actor.isSeeker())
             {
                 moveTickets = 1;
             }
