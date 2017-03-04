@@ -29,6 +29,7 @@ import java.util.Set;
  * Created by Scorple on 1/9/2017.
  * Activity where players will choose their characters.
  * Only one of each character is allowed.
+ *
  * @see UICharacterSelect
  */
 
@@ -164,7 +165,7 @@ public class CharacterSelectActivity extends AppCompatActivity implements Respon
                 if (host)
                 {
                     serverService.writeAll(NetworkConstants.GAME_AR_START);
-                    startAR();
+                    startARHost();
                 }
                 break;
         }
@@ -175,7 +176,7 @@ public class CharacterSelectActivity extends AppCompatActivity implements Respon
      * <p>
      * Verifies that only one of each character is selected.
      *
-     * @param msg Message read from network
+     * @param msg      Message read from network
      * @param readFrom Device that message was received from
      */
     @Override
@@ -240,7 +241,7 @@ public class CharacterSelectActivity extends AppCompatActivity implements Respon
         }
         else if (msg.equals(NetworkConstants.GAME_AR_START))
         {
-            startAR();
+            startARClient();
         }
     }
 
@@ -249,7 +250,7 @@ public class CharacterSelectActivity extends AppCompatActivity implements Respon
      * <p>
      * Synchronizes state with client after a reconnect.
      *
-     * @param msg Status update
+     * @param msg      Status update
      * @param readFrom Device that update was received from
      */
     @Override
@@ -276,7 +277,7 @@ public class CharacterSelectActivity extends AppCompatActivity implements Respon
      * <p>
      * Resets client selections after a reconnect to they can be synchronized by the host.
      *
-     * @param msg Error message
+     * @param msg      Error message
      * @param readFrom Device that error was received from
      */
     @Override
@@ -344,7 +345,7 @@ public class CharacterSelectActivity extends AppCompatActivity implements Respon
      * ready status.
      *
      * @param selection Character selected by player
-     * @param player Player ID
+     * @param player    Player ID
      */
     private void updateSelection(String selection, int player)
     {
@@ -396,7 +397,7 @@ public class CharacterSelectActivity extends AppCompatActivity implements Respon
     /**
      * Starts {@link PortalActivity}.
      */
-    private void startAR()
+    private void startARHost()
     {
         Toast.makeText(CharacterSelectActivity.this, "Starting AR Activity", Toast.LENGTH_SHORT)
              .show();
@@ -406,7 +407,24 @@ public class CharacterSelectActivity extends AppCompatActivity implements Respon
         handler.removeCallbacks(heartbeat);
 
         Intent intent = new Intent(getBaseContext(), PortalActivity.class);
-        intent.putExtra("host", host);
+        intent.putExtra("player", playerID);
+        intent.putExtra("character", selection);
+        intent.putExtra("num_clients", numClients);
+
+        intent.putExtra("player_ids", characterSelections.keySet().toArray());
+        intent.putExtra("player_characters", (String[]) characterSelections.values().toArray());
+
+        startActivity(intent);
+    }
+
+    private void startARClient()
+    {
+        Toast.makeText(CharacterSelectActivity.this, "Starting AR Activity", Toast.LENGTH_SHORT)
+             .show();
+        LocalBroadcastManager.getInstance(CharacterSelectActivity.this)
+                             .unregisterReceiver(responseReceiver);
+
+        Intent intent = new Intent(getBaseContext(), PortalClientActivity.class);
         intent.putExtra("player", playerID);
         intent.putExtra("character", selection);
 

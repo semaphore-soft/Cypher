@@ -17,11 +17,9 @@ import com.semaphore_soft.apps.cypher.game.Actor;
 import com.semaphore_soft.apps.cypher.game.ActorController;
 import com.semaphore_soft.apps.cypher.game.GameController;
 import com.semaphore_soft.apps.cypher.game.GameMaster;
-import com.semaphore_soft.apps.cypher.game.Item;
 import com.semaphore_soft.apps.cypher.game.Model;
 import com.semaphore_soft.apps.cypher.game.Room;
 import com.semaphore_soft.apps.cypher.game.Special;
-import com.semaphore_soft.apps.cypher.networking.ClientService;
 import com.semaphore_soft.apps.cypher.networking.NetworkConstants;
 import com.semaphore_soft.apps.cypher.networking.ResponseReceiver;
 import com.semaphore_soft.apps.cypher.networking.ServerService;
@@ -36,6 +34,7 @@ import org.artoolkit.ar.base.ARActivity;
 import org.artoolkit.ar.base.rendering.ARRenderer;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.concurrent.ConcurrentHashMap;
 
 import static com.semaphore_soft.apps.cypher.utils.CollectionManager.getNextID;
@@ -56,13 +55,9 @@ public class PortalActivity extends ARActivity implements PortalRenderer.NewMark
 
     private static ResponseReceiver responseReceiver;
     private static ServerService    serverService;
-    private static ClientService    clientService;
     private static boolean mServerBound  = false;
-    private static boolean mClientBound  = false;
     private static boolean sendHeartbeat = true;
     private static Handler handler       = new Handler();
-
-    private static boolean host;
 
     private static int    playerId;
     private static String characterName;
@@ -71,6 +66,15 @@ public class PortalActivity extends ARActivity implements PortalRenderer.NewMark
 
     private static boolean turn;
     private static int     turnId;
+
+    private static ArrayList<Integer> reservedMarkers;
+
+    private static HashMap<Integer, String> playerCharacterMap;
+
+    private static boolean playerMarkerSelected = false;
+
+    private static int numClients;
+    private static int numClientsSelected = 0;
 
     // Runnable to send heartbeat signal to clients
     private Runnable heartbeat = new Runnable()
@@ -112,10 +116,8 @@ public class PortalActivity extends ARActivity implements PortalRenderer.NewMark
         LocalBroadcastManager.getInstance(this)
                              .registerReceiver(responseReceiver, NetworkConstants.getFilter());
 
-        //get this user's game roles passed down from the previous activity
-        host = getIntent().getBooleanExtra("host", false);
-        playerId = getIntent().getIntExtra("player", 0);
-        characterName = getIntent().getExtras().getString("character", "knight");
+        playerId = 0;
+        characterName = getIntent().getStringExtra("character");
 
         GameMaster.setModel(model);
 
@@ -124,27 +126,49 @@ public class PortalActivity extends ARActivity implements PortalRenderer.NewMark
 
         PortalRenderer.setHandler(handler);
 
-        turn = host;
+        turn = true;
         turnId = 0;
+
+        reservedMarkers = new ArrayList<>();
+
+        playerCharacterMap = new HashMap<>();
+        playerCharacterMap.put(playerId, characterName);
+
+        numClients = getIntent().getExtras().getInt("num_clients", 0);
+
+        int[]    playerIds        = getIntent().getIntArrayExtra("player_ids");
+        String[] playerCharacters = getIntent().getStringArrayExtra("player_characters");
+
+        if (playerIds != null && playerCharacters != null)
+        {
+            if (playerIds.length != playerCharacters.length)
+            {
+                Toast.makeText(this,
+                               "player_ids length != player_characters length, abort",
+                               Toast.LENGTH_SHORT).show();
+
+                Intent intent = new Intent();
+                intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NEW_TASK |
+                                Intent.FLAG_ACTIVITY_CLEAR_TASK);
+                startActivity(intent);
+                finish();
+            }
+
+            for (int i = 0; i < playerIds.length; ++i)
+            {
+                playerCharacterMap.put(playerIds[i], playerCharacters[i]);
+            }
+        }
     }
 
     @Override
     protected void onStart()
     {
         super.onStart();
-        if (host)
-        {
-            // Bind to ServerService
-            Intent intent = new Intent(this, ServerService.class);
-            bindService(intent, mServerConnection, Context.BIND_AUTO_CREATE);
-            handler.postDelayed(heartbeat, NetworkConstants.HEARTBEAT_DELAY);
-        }
-        else
-        {
-            // Bind to ClientService
-            Intent intent = new Intent(this, ClientService.class);
-            bindService(intent, mClientConnection, Context.BIND_AUTO_CREATE);
-        }
+        // Bind to ServerService
+        Intent intent = new Intent(this, ServerService.class);
+        bindService(intent, mServerConnection, Context.BIND_AUTO_CREATE);
+        handler.postDelayed(heartbeat, NetworkConstants.HEARTBEAT_DELAY);
     }
 
     @Override
@@ -156,11 +180,6 @@ public class PortalActivity extends ARActivity implements PortalRenderer.NewMark
         {
             unbindService(mServerConnection);
             mServerBound = false;
-        }
-        else if (mClientBound)
-        {
-            unbindService(mClientConnection);
-            mClientBound = false;
         }
         sendHeartbeat = false;
     }
@@ -195,15 +214,27 @@ public class PortalActivity extends ARActivity implements PortalRenderer.NewMark
             switch (cmd)
             {
                 case "cmd_btnPlayerMarkerSelect":
-                    if (selectPlayerMarker())
+                    int firstUnreservedMarker = getFirstUnreservedMarker();
+                    if (firstUnreservedMarker > -1 &&
+                        selectPlayerMarker(playerId, characterName, firstUnreservedMarker))
                     {
-                        if (host)
+                        Toast.makeText(getApplicationContext(),
+                                       "Player Marker Set",
+                                       Toast.LENGTH_SHORT)
+                             .show();
+
+                        serverService.writeAll("reserve;" + firstUnreservedMarker);
+                        serverService.writeAll("attach;" + firstUnreservedMarker + ";" + playerId);
+
+                        playerMarkerSelected = true;
+
+                        if (numClientsSelected == numClients)
                         {
                             uiPortalOverlay.overlayStartMarkerSelect();
                         }
                         else
                         {
-                            //wait for host
+                            uiPortalOverlay.overlayWaitingForClients();
                         }
                     }
                     break;
@@ -233,11 +264,6 @@ public class PortalActivity extends ARActivity implements PortalRenderer.NewMark
                 case "cmd_btnDefend":
                     GameMaster.setActorState(playerId, Actor.E_STATE.DEFEND);
                     Room room = GameMaster.getActorRoom(playerId);
-                    /*if (room != null)
-                    {
-                        renderer.updateRoomResidents(room.getMarker(),
-                                                     getResidents(room.getId()));
-                    }*/
 
                     Toast.makeText(getApplicationContext(),
                                    "Success",
@@ -307,31 +333,55 @@ public class PortalActivity extends ARActivity implements PortalRenderer.NewMark
     @Override
     public void handleRead(final String msg, final int readFrom)
     {
-        Toast.makeText(this, "Read: " + msg, Toast.LENGTH_SHORT).show();
+        Toast.makeText(this, "Read: " + msg + " from <" + readFrom + ">", Toast.LENGTH_SHORT)
+             .show();
+
+        if (msg.startsWith("mark_request"))
+        {
+            String[] splitMsg = msg.split(";");
+
+            if (selectPlayerMarker(readFrom,
+                                   playerCharacterMap.get(readFrom),
+                                   Integer.parseInt(splitMsg[1])))
+            {
+                serverService.writeToClient("wait", readFrom);
+                serverService.writeAll("reserve;" + splitMsg[1]);
+                serverService.writeAll("attach;" + splitMsg[1] + ";" + readFrom);
+
+                ++numClientsSelected;
+
+                if (numClientsSelected == numClients && playerMarkerSelected)
+                {
+                    uiPortalOverlay.overlayStartMarkerSelect();
+                }
+            }
+        }
     }
 
     /**
      * {@inheritDoc}
      *
-     * @param msg Status update
+     * @param msg      Status update
      * @param readFrom Device that update was received from
      */
     @Override
     public void handleStatus(final String msg, int readFrom)
     {
-        Toast.makeText(this, "Status: " + msg, Toast.LENGTH_SHORT).show();
+        Toast.makeText(this, "Status: " + msg + " from <" + readFrom + ">", Toast.LENGTH_SHORT)
+             .show();
     }
 
     /**
      * {@inheritDoc}
      *
-     * @param msg Error message
+     * @param msg      Error message
      * @param readFrom Device that error was received from
      */
     @Override
     public void handleError(final String msg, int readFrom)
     {
-        Toast.makeText(this, "Error: " + msg, Toast.LENGTH_SHORT).show();
+        Toast.makeText(this, "Error: " + msg + " from <" + readFrom + ">", Toast.LENGTH_SHORT)
+             .show();
     }
 
     @Override
@@ -397,9 +447,8 @@ public class PortalActivity extends ARActivity implements PortalRenderer.NewMark
         return -1;
     }
 
-    private boolean selectPlayerMarker()
+    private boolean selectPlayerMarker(int playerId, String characterName, int mark)
     {
-        int mark = getFirstUnreservedMarker();
         if (mark > -1)
         {
             Actor actor = new Actor(playerId, characterName, mark);
@@ -410,15 +459,6 @@ public class PortalActivity extends ARActivity implements PortalRenderer.NewMark
             model.getActors().put(playerId, actor);
             renderer.setPlayerMarker(playerId, mark);
 
-            Item item = GameStatLoader.loadItemStats("delightful_bread",
-                                                     model.getItems(),
-                                                     model.getSpecials(),
-                                                     getApplicationContext());
-
-            Toast.makeText(getApplicationContext(),
-                           "Player Marker Set",
-                           Toast.LENGTH_SHORT)
-                 .show();
 
             return true;
         }
@@ -600,7 +640,7 @@ public class PortalActivity extends ARActivity implements PortalRenderer.NewMark
         }
     }
 
-    private short getWallFromAngle(final float angle)
+    private static short getWallFromAngle(final float angle)
     {
         if (angle > 315 || angle <= 45)
         {
@@ -1259,24 +1299,6 @@ public class PortalActivity extends ARActivity implements PortalRenderer.NewMark
         public void onServiceDisconnected(ComponentName componentName)
         {
             mServerBound = false;
-        }
-    };
-
-    private ServiceConnection mClientConnection = new ServiceConnection()
-    {
-        @Override
-        public void onServiceConnected(ComponentName componentName, IBinder iBinder)
-        {
-            // We've bound to ServerService, cast the IBinder and get ServerService instance
-            ClientService.LocalBinder binder = (ClientService.LocalBinder) iBinder;
-            clientService = binder.getService();
-            mClientBound = true;
-        }
-
-        @Override
-        public void onServiceDisconnected(ComponentName componentName)
-        {
-            mClientBound = false;
         }
     };
 }

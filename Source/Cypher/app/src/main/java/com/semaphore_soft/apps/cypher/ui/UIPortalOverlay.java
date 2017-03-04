@@ -91,9 +91,14 @@ public class UIPortalOverlay extends UIBase
         });
     }
 
+    public void overlayWaitingForClients()
+    {
+        makeView(R.layout.overlay_waiting_for_clients);
+    }
+
     public void overlayWaitingForHost()
     {
-
+        makeView(R.layout.overlay_waiting_for_host);
     }
 
     public void overlayWaitingForTurn()
