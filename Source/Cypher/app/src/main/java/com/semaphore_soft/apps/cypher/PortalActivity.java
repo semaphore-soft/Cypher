@@ -202,8 +202,10 @@ public class PortalActivity extends ARActivity implements PortalRenderer.NewMark
                                        Toast.LENGTH_SHORT)
                              .show();
 
-                        serverService.writeAll("reserve;" + firstUnreservedMarker);
-                        serverService.writeAll("attach;" + firstUnreservedMarker + ";" + playerId);
+                        serverService.writeAll(
+                            NetworkConstants.PREFIX_RESERVE + firstUnreservedMarker);
+                        serverService.writeAll(NetworkConstants.PREFIX_ATTACH + playerId + ":" +
+                                               firstUnreservedMarker);
 
                         playerMarkerSelected = true;
 
