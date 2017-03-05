@@ -47,7 +47,7 @@ class PortalRenderer extends ARRendererGLES20
     private static ConcurrentHashMap<String, ARDrawableGLES20> models;
     private static ConcurrentHashMap<Integer, ARRoom>          arRooms;
 
-    private static Handler handler;
+    private static Handler handler = null;
 
     @Override
     public boolean configureARScene()
@@ -539,7 +539,7 @@ class PortalRenderer extends ARRendererGLES20
      * @see ARRoom
      * @see Room
      * @see ARDrawableGLES20
-     * @see PortalActivity#generateRoom()
+     * @see PortalActivity#generateRoom(int)
      */
     void createRoom(final int arRoomId,
                     final String[] wallDescriptors)
@@ -757,37 +757,22 @@ class PortalRenderer extends ARRendererGLES20
                 break;
         }
 
-        Runnable actionFinisher = new Runnable()
+        if (handler != null)
         {
-            @Override
-            public void run()
+            Runnable actionFinisher = new Runnable()
             {
-                concludeAction(arRoomId, sourceId, targetId, targetState);
-            }
-        };
-        handler.postDelayed(actionFinisher, length);
+                @Override
+                public void run()
+                {
+                    concludeAction(sourceId);
+                }
+            };
+            handler.postDelayed(actionFinisher, length);
+        }
     }
 
-    private void concludeAction(final int arRoomId,
-                                final int sourceId,
-                                final int targetId,
-                                @Nullable final String targetState)
+    private void concludeAction(final int sourceId)
     {
-        ARRoom arRoom = arRooms.get(arRoomId);
-        arRoom.clearForwardPlayer();
-        arRoom.clearForwardEnemy();
-
-        arRoom.setResidentPose(sourceId, "idle");
-
-        if (targetState != null && targetState.equals("defend"))
-        {
-            arRoom.setResidentPose(targetId, "defend");
-        }
-        else
-        {
-            arRoom.setResidentPose(targetId, "idle");
-        }
-
         gameController.onFinishedAction(sourceId);
     }
 

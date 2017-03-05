@@ -84,6 +84,9 @@ public class ARRoom implements ARDrawableGLES20
         {
             assetAccess.acquire();
 
+            clearForwardPlayer();
+            clearForwardEnemy();
+
             playerLine.clear();
             enemyLine.clear();
 
