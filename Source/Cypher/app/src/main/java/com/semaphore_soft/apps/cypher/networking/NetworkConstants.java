@@ -54,6 +54,8 @@ public class NetworkConstants
     // Use a different delimiter, because of how residents are stored
     public static final String PREFIX_UPDATE_ROOM_RESIDENTS = "UPDATE_ROOM_RESIDENTS~";
     public static final String PREFIX_SHOW_ACTION           = "SHOW_ACTION:";
+    public static final String PREFIX_UPDATE_ROOM_WALLS     = "UPDATE_ROOM_WALLS:";
+    public static final String PREFIX_UPDATE_ROOM_ALIGNMENT = "UPDATE_ROOM_ALIGNMENT:";
 
     // Constants for status codes
     public static final String STATUS_SERVER_START   = "Server thread started";

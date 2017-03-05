@@ -666,14 +666,7 @@ public class PortalActivity extends ARActivity implements PortalRenderer.NewMark
 
             String[] wallDescriptors = getWallDescriptors(roomId);
 
-            renderer.createRoom(mark, wallDescriptors);
-            String clientWallDescriptors = "";
-            for (String str : wallDescriptors)
-            {
-                clientWallDescriptors = clientWallDescriptors.concat(str + ":");
-            }
-            serverService.writeAll(
-                NetworkConstants.PREFIX_CREATE_ROOM + mark + ":" + clientWallDescriptors);
+            createRoom(mark, wallDescriptors);
 
             //place every player actor in that room
             for (Actor actor : model.getActors().values())
@@ -784,9 +777,14 @@ public class PortalActivity extends ARActivity implements PortalRenderer.NewMark
                     Room room = GameMaster.getRoom(endRoomId);
                     if (room != null)
                     {
-                        renderer.updateRoomAlignment(room.getMarker(),
-                                                     GameMaster.getSideOfRoomFrom(startRoomId,
-                                                                                  endRoomId));
+                        int markerID = room.getMarker();
+                        short roomSide = GameMaster.getSideOfRoomFrom(startRoomId,
+                                                                      endRoomId);
+                        renderer.updateRoomAlignment(markerID,
+                                                     roomSide);
+                        serverService.writeAll(
+                            NetworkConstants.PREFIX_UPDATE_ROOM_ALIGNMENT + markerID + ":" +
+                            roomSide);
                     }
                 }
                 Room room = GameMaster.getRoom(endRoomId);
@@ -808,7 +806,7 @@ public class PortalActivity extends ARActivity implements PortalRenderer.NewMark
 
             String[] wallDescriptors = getWallDescriptors(room.getId());
 
-            renderer.createRoom(mark, wallDescriptors);
+            createRoom(mark, wallDescriptors);
 
             Toast.makeText(getApplicationContext(),
                            "New Room Generated",
@@ -921,7 +919,7 @@ public class PortalActivity extends ARActivity implements PortalRenderer.NewMark
             Room room = GameMaster.getRoom(endRoomId);
             if (room != null)
             {
-                renderer.updateRoomWalls(room.getMarker(), getWallDescriptors(endRoomId));
+                updateRoomWalls(room.getMarker(), getWallDescriptors(endRoomId));
             }
 
             ArrayList<Integer> adjacentRoomIds = GameMaster.getAdjacentRoomIds(endRoomId);
@@ -930,7 +928,7 @@ public class PortalActivity extends ARActivity implements PortalRenderer.NewMark
                 Room adjacentRoom = GameMaster.getRoom(id);
                 if (adjacentRoom != null)
                 {
-                    renderer.updateRoomWalls(adjacentRoom.getMarker(), getWallDescriptors(id));
+                    updateRoomWalls(adjacentRoom.getMarker(), getWallDescriptors(id));
                 }
             }
         }
@@ -1297,15 +1295,15 @@ public class PortalActivity extends ARActivity implements PortalRenderer.NewMark
     /**
      * Update room residents for the client and host
      *
-     * @param markerID  MarkerID of the room to update
-     * @param residents List of residents that are updated
+     * @param arRoomId  MarkerID of the room to update
+     * @param residents Updated list of residents
      *
      * @see PortalRenderer#updateRoomResidents(int, ConcurrentHashMap)
      */
-    private void updateRoomResidents(int markerID,
+    private void updateRoomResidents(int arRoomId,
                                      ConcurrentHashMap<Integer, Pair<Boolean, String>> residents)
     {
-        renderer.updateRoomResidents(markerID, residents);
+        renderer.updateRoomResidents(arRoomId, residents);
         String clientRoomResidents = "";
         // Use a different delimiter, because of how residents are stored
         for (Integer residentID : residents.keySet())
@@ -1315,11 +1313,13 @@ public class PortalActivity extends ARActivity implements PortalRenderer.NewMark
                 residentID + ";" + pair.first + "," + pair.second + "~");
         }
         serverService.writeAll(
-            NetworkConstants.PREFIX_UPDATE_ROOM_RESIDENTS + markerID + "~" + clientRoomResidents);
+            NetworkConstants.PREFIX_UPDATE_ROOM_RESIDENTS + arRoomId + "~" + clientRoomResidents);
     }
 
     /**
-     * @param markerID
+     * Show actions for client and host
+     *
+     * @param arRoomId
      * @param playerId
      * @param targetId
      * @param length
@@ -1329,7 +1329,7 @@ public class PortalActivity extends ARActivity implements PortalRenderer.NewMark
      *
      * @see PortalRenderer#showAction(int, int, int, long, String, String, boolean)
      */
-    private void showAction(int markerID,
+    private void showAction(int arRoomId,
                             int playerId,
                             int targetId,
                             int length,
@@ -1337,7 +1337,7 @@ public class PortalActivity extends ARActivity implements PortalRenderer.NewMark
                             String targetState,
                             boolean forward)
     {
-        renderer.showAction(markerID,
+        renderer.showAction(arRoomId,
                             playerId,
                             targetId,
                             length,
@@ -1345,8 +1345,48 @@ public class PortalActivity extends ARActivity implements PortalRenderer.NewMark
                             targetState,
                             forward);
         serverService.writeAll(
-            NetworkConstants.PREFIX_SHOW_ACTION + markerID + ":" + playerId + ":" + targetId + ":" +
+            NetworkConstants.PREFIX_SHOW_ACTION + arRoomId + ":" + playerId + ":" + targetId + ":" +
             length + ":" + actionType + ":" + targetState + ":" + forward);
+    }
+
+    /**
+     * Create room for client and host
+     *
+     * @param roomID          MarkerID of new room
+     * @param wallDescriptors Array of wall descriptors
+     *
+     * @see PortalRenderer#createRoom(int, String[])
+     */
+    private void createRoom(int roomID, String[] wallDescriptors)
+    {
+        renderer.createRoom(roomID, wallDescriptors);
+        String clientWallDescriptors = "";
+        for (String str : wallDescriptors)
+        {
+            clientWallDescriptors = clientWallDescriptors.concat(str + ":");
+        }
+        serverService.writeAll(
+            NetworkConstants.PREFIX_CREATE_ROOM + roomID + ":" + clientWallDescriptors);
+    }
+
+    /**
+     * Update room walls for client and host
+     *
+     * @param arRoomID        MarkerID of room to update
+     * @param wallDescriptors Updated array of wall descriptors
+     *
+     * @see PortalRenderer#updateRoomWalls(int, String[])
+     */
+    private void updateRoomWalls(int arRoomID, String[] wallDescriptors)
+    {
+        renderer.updateRoomWalls(arRoomID, wallDescriptors);
+        String clientWallDescriptors = "";
+        for (String str : wallDescriptors)
+        {
+            clientWallDescriptors = clientWallDescriptors.concat(str + ":");
+        }
+        serverService.writeAll(
+            NetworkConstants.PREFIX_UPDATE_ROOM_WALLS + arRoomID + ":" + clientWallDescriptors);
     }
 
     /**

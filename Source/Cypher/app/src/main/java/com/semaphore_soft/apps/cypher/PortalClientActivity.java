@@ -228,7 +228,7 @@ public class PortalClientActivity extends ARActivity implements UIListener,
 
             renderer.createRoom(arRoomId, wallDescriptors);
         }
-        else if (msg.startsWith("update_room_walls"))
+        else if (msg.startsWith(NetworkConstants.PREFIX_UPDATE_ROOM_WALLS))
         {
             // Expect the RoomID of the room to update,
             // and a list of wall descriptors
@@ -245,7 +245,7 @@ public class PortalClientActivity extends ARActivity implements UIListener,
 
             renderer.createRoom(arRoomId, wallDescriptors);
         }
-        else if (msg.startsWith("update_room_alignment"))
+        else if (msg.startsWith(NetworkConstants.PREFIX_UPDATE_ROOM_ALIGNMENT))
         {
             // Expect the RoomId of the room to update,
             // and the new alignment of the room
