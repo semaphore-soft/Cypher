@@ -254,7 +254,7 @@ public class PortalClientActivity extends ARActivity implements UIListener,
 
             for (int i = 2; i < splitMsg.length; ++i)
             {
-                String[] splitResident = splitMsg[i].split(":");
+                String[] splitResident = splitMsg[i].split(";");
                 String[] splitPair     = splitResident[1].split(",");
 
                 Pair<Boolean, String> residentPair =
