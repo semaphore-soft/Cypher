@@ -199,17 +199,18 @@ public class CharacterSelectActivity extends AppCompatActivity implements Respon
             // Include host when displaying connected players
             uiCharacterSelect.setStatus(playersReady + "/" + (numClients + 1) + " ready");
             serverService.writeAll(
-                NetworkConstants.PF_READY + playersReady + ":" + (numClients + 1));
+                NetworkConstants.PREFIX_READY + playersReady + ":" + (numClients + 1));
         }
-        else if (msg.startsWith(NetworkConstants.PF_LOCK))
+        else if (msg.startsWith(NetworkConstants.PREFIX_LOCK))
         {
+            // Use substring to ignore prefix and get the selection
             String sel = msg.substring(5);
             if (!sel.equals(selection))
             {
                 uiCharacterSelect.setButtonEnabled(sel, false);
             }
         }
-        else if (msg.startsWith(NetworkConstants.PF_FREE))
+        else if (msg.startsWith(NetworkConstants.PREFIX_FREE))
         {
             uiCharacterSelect.setButtonEnabled(msg.substring(5), true);
         }
@@ -231,10 +232,12 @@ public class CharacterSelectActivity extends AppCompatActivity implements Respon
             alert.show();
             uiCharacterSelect.clearSelection();
         }
-        else if (msg.startsWith(NetworkConstants.PF_READY))
+        else if (msg.startsWith(NetworkConstants.PREFIX_READY))
         {
             if (ready)
             {
+                // Expect the number of ready players,
+                // and the total number of connected players
                 String[] args = msg.split(":");
                 uiCharacterSelect.setStatus(args[1] + "/" + args[2] + " ready");
             }
@@ -265,7 +268,7 @@ public class CharacterSelectActivity extends AppCompatActivity implements Respon
                 // Don't lock the clients last selection
                 if (key != readFrom)
                 {
-                    String str = NetworkConstants.PF_LOCK + characterSelections.get(key);
+                    String str = NetworkConstants.PREFIX_LOCK + characterSelections.get(key);
                     serverService.writeToClient(str, readFrom);
                 }
             }
@@ -325,7 +328,7 @@ public class CharacterSelectActivity extends AppCompatActivity implements Respon
             uiCharacterSelect.setStatus(
                 playersReady + "/" + (numClients + 1) + " ready");
             serverService.writeAll(
-                NetworkConstants.PF_READY + playersReady + ":" + (numClients + 1));
+                NetworkConstants.PREFIX_READY + playersReady + ":" + (numClients + 1));
             removePlayer(0);
         }
         else
@@ -365,7 +368,7 @@ public class CharacterSelectActivity extends AppCompatActivity implements Respon
             playersReady++;
         }
         characterSelections.put(player, selection);
-        serverService.writeAll(NetworkConstants.PF_LOCK + selection);
+        serverService.writeAll(NetworkConstants.PREFIX_LOCK + selection);
         if (!selection.equals(CharacterSelectActivity.selection))
         {
             uiCharacterSelect.setButtonEnabled(selection, false);
@@ -378,7 +381,8 @@ public class CharacterSelectActivity extends AppCompatActivity implements Respon
         }
         // Include host when displaying connected players
         uiCharacterSelect.setStatus(playersReady + "/" + (numClients + 1) + " ready");
-        serverService.writeAll(NetworkConstants.PF_READY + playersReady + ":" + (numClients + 1));
+        serverService.writeAll(
+            NetworkConstants.PREFIX_READY + playersReady + ":" + (numClients + 1));
     }
 
     /**
@@ -389,7 +393,7 @@ public class CharacterSelectActivity extends AppCompatActivity implements Respon
     private void removePlayer(int player)
     {
         String character = characterSelections.get(player);
-        serverService.writeAll(NetworkConstants.PF_FREE + character);
+        serverService.writeAll(NetworkConstants.PREFIX_FREE + character);
         uiCharacterSelect.setButtonEnabled(character, true);
         characterSelections.remove(player);
     }

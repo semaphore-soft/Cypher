@@ -169,7 +169,7 @@ public class ConnectionLobbyActivity extends AppCompatActivity implements Respon
             for (PlayerID pid : playersList)
             {
                 serverService.writeAll(
-                    NetworkConstants.PF_PLAYER + pid.getPlayerName() + ":" + pid.getID());
+                    NetworkConstants.PREFIX_PLAYER + pid.getPlayerName() + ":" + pid.getID());
             }
         }
     }
@@ -223,15 +223,18 @@ public class ConnectionLobbyActivity extends AppCompatActivity implements Respon
             intent.putExtra("player", playerID);
             startActivity(intent);
         }
-        else if (msg.startsWith(NetworkConstants.PF_NAME))
+        else if (msg.startsWith(NetworkConstants.PREFIX_NAME))
         {
-            // add players on server
+            // Add players on server
+            // Ignore the attached prefix with substring to get the clients name
             addPlayer(msg.substring(5), ++playerID);
             serverService.addPlayerID(playerID, readFrom);
         }
-        else if (msg.startsWith(NetworkConstants.PF_PLAYER))
+        else if (msg.startsWith(NetworkConstants.PREFIX_PLAYER))
         {
-            // add players on client
+            // Add players on client
+            // Expect the name of the player,
+            // and the PlayerID assigned to them
             String args[] = msg.split(":");
             addPlayer(args[1], Integer.valueOf(args[2]));
             // Update client with their playerID
@@ -273,7 +276,7 @@ public class ConnectionLobbyActivity extends AppCompatActivity implements Respon
             for (PlayerID pid : playersList)
             {
                 serverService.writeAll(
-                    NetworkConstants.PF_PLAYER + pid.getPlayerName() + ":" + pid.getID());
+                    NetworkConstants.PREFIX_PLAYER + pid.getPlayerName() + ":" + pid.getID());
             }
         }
     }
@@ -319,7 +322,7 @@ public class ConnectionLobbyActivity extends AppCompatActivity implements Respon
             ClientService.LocalBinder binder = (ClientService.LocalBinder) iBinder;
             clientService = binder.getService();
             mClientBound = true;
-            clientService.write(NetworkConstants.PF_NAME + name);
+            clientService.write(NetworkConstants.PREFIX_NAME + name);
             uiConnectionLobby.setTextIP("Host IP is: " + clientService.getHostIP());
         }
 

@@ -147,7 +147,8 @@ public class PortalClientActivity extends ARActivity implements UIListener,
 
                 if (firstUnreservedMarker > -1)
                 {
-                    clientService.write("mark_request;" + firstUnreservedMarker);
+                    clientService.write(
+                        NetworkConstants.PREFIX_MARK_REQUEST + firstUnreservedMarker);
                 }
             }
         }
@@ -165,23 +166,26 @@ public class PortalClientActivity extends ARActivity implements UIListener,
         Toast.makeText(this, "Read: " + msg + " from <" + readFrom + ">", Toast.LENGTH_SHORT)
              .show();
 
-        if (msg.startsWith("reserve"))
+        if (msg.startsWith(NetworkConstants.PREFIX_RESERVE))
         {
-            String[] splitMsg = msg.split(";");
+            // Expect the MarkerID to be reserved
+            String[] splitMsg = msg.split(":");
 
             reservedMarkers.add(Integer.parseInt(splitMsg[1]));
         }
-        else if (msg.equals("wait"))
+        else if (msg.equals(NetworkConstants.GAME_WAIT))
         {
             uiPortalOverlay.overlayWaitingForHost();
         }
-        else if (msg.startsWith("attach"))
+        else if (msg.startsWith(NetworkConstants.PREFIX_ATTACH))
         {
-            String[] splitMsg = msg.split(";");
+            // Expect the PlayerID of player to be attached,
+            // and the MarkerID for the marker the player should be attached to.
+            String[] splitMsg = msg.split(":");
 
-            renderer.setPlayerMarker(Integer.parseInt(splitMsg[3]), Integer.parseInt(splitMsg[2]));
+            renderer.setPlayerMarker(Integer.parseInt(splitMsg[2]), Integer.parseInt(splitMsg[3]));
         }
-        else if (msg.equals("start"))
+        else if (msg.equals(NetworkConstants.GAME_START))
         {
             uiPortalOverlay.overlayWaitingForTurn();
         }
@@ -195,7 +199,9 @@ public class PortalClientActivity extends ARActivity implements UIListener,
         }
         else if (msg.startsWith("create_room"))
         {
-            String[] splitMsg = msg.split(";");
+            // Expect the RoomId of the room to create,
+            // and a list of wall descriptors
+            String[] splitMsg = msg.split(":");
 
             int arRoomId = Integer.parseInt(splitMsg[1]);
 
@@ -210,7 +216,9 @@ public class PortalClientActivity extends ARActivity implements UIListener,
         }
         else if (msg.startsWith("update_room_walls"))
         {
-            String[] splitMsg = msg.split(";");
+            // Expect the RoomID of the room to update,
+            // and a list of wall descriptors
+            String[] splitMsg = msg.split(":");
 
             int arRoomId = Integer.parseInt(splitMsg[1]);
 
@@ -225,7 +233,9 @@ public class PortalClientActivity extends ARActivity implements UIListener,
         }
         else if (msg.startsWith("update_room_alignment"))
         {
-            String[] splitMsg = msg.split(";");
+            // Expect the RoomId of the room to update,
+            // and the new alignment of the room
+            String[] splitMsg = msg.split(":");
 
             int   arRoomId      = Integer.parseInt(splitMsg[1]);
             short roomAlignment = Short.parseShort(splitMsg[2]);
@@ -234,7 +244,9 @@ public class PortalClientActivity extends ARActivity implements UIListener,
         }
         else if (msg.startsWith("update_room_residents"))
         {
-            String[] splitMsg = msg.split(";");
+            // Expect the RoomID of the room to update,
+            // and list of pairs(bool, string) of residents
+            String[] splitMsg = msg.split(":");
 
             int arRoomId = Integer.parseInt(splitMsg[1]);
 
@@ -255,7 +267,8 @@ public class PortalClientActivity extends ARActivity implements UIListener,
         }
         else if (msg.startsWith("show_action"))
         {
-            String[] splitMsg = msg.split(";");
+            // Expect arguments for show action function
+            String[] splitMsg = msg.split(":");
 
             renderer.showAction(Integer.parseInt(splitMsg[1]),
                                 Integer.parseInt(splitMsg[2]),

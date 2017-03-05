@@ -243,7 +243,7 @@ public class PortalActivity extends ARActivity implements PortalRenderer.NewMark
                     {
                         uiPortalOverlay.overlayAction();
 
-                        serverService.writeAll("start");
+                        serverService.writeAll(NetworkConstants.GAME_START);
                     }
                     break;
                 case "cmd_btnEndTurn":
@@ -338,17 +338,19 @@ public class PortalActivity extends ARActivity implements PortalRenderer.NewMark
         Toast.makeText(this, "Read: " + msg + " from <" + readFrom + ">", Toast.LENGTH_SHORT)
              .show();
 
-        if (msg.startsWith("mark_request"))
+        if (msg.startsWith(NetworkConstants.PREFIX_MARK_REQUEST))
         {
-            String[] splitMsg = msg.split(";");
+            // Expect MarkerID of a marker that the client wants to attach to
+            String[] splitMsg = msg.split(":");
 
             if (selectPlayerMarker(readFrom,
                                    playerCharacterMap.get(readFrom),
                                    Integer.parseInt(splitMsg[1])))
             {
-                serverService.writeToClient("wait", readFrom);
-                serverService.writeAll("reserve;" + splitMsg[1]);
-                serverService.writeAll("attach;" + splitMsg[1] + ";" + readFrom);
+                serverService.writeToClient(NetworkConstants.GAME_WAIT, readFrom);
+                serverService.writeAll(NetworkConstants.PREFIX_RESERVE + splitMsg[1]);
+                serverService.writeAll(
+                    NetworkConstants.PREFIX_ATTACH + readFrom + ":" + splitMsg[1]);
 
                 ++numClientsSelected;
 
