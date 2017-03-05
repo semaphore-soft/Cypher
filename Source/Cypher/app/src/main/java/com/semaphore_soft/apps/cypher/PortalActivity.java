@@ -816,7 +816,7 @@ public class PortalActivity extends ARActivity implements PortalRenderer.NewMark
 
     private boolean generateRoom(int mark)
     {
-        if (mark > -1)
+        if (mark > -1 && GameMaster.getMarkerAttachment(mark) == -1)
         {
             Room room =
                 GameMaster.generateRoom(this, CollectionManager.getNextID(model.getRooms()), mark);
