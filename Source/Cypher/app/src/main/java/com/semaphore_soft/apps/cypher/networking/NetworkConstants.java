@@ -29,17 +29,18 @@ public class NetworkConstants
 
     // Constants for read codes
     // Constants for game status updates
-    public static final String GAME_START          = "GAME_START";
-    public static final String GAME_UNREADY        = "GAME_UNREADY";
-    public static final String GAME_AR_START       = "GAME_AR_START";
-    public static final String GAME_UPDATE         = "GAME_UPDATE";
-    public static final String GAME_HEARTBEAT      = "GAME_HEARTBEAT";
-    public static final String GAME_KNIGHT         = "knight";
-    public static final String GAME_SOLDIER        = "soldier";
-    public static final String GAME_RANGER         = "ranger";
-    public static final String GAME_WIZARD         = "wizard";
-    public static final String GAME_TAKEN          = "GAME_TAKEN";
-    public static final String GAME_WAIT           = "GAME_WAIT";
+    public static final String GAME_START                   = "GAME_START";
+    public static final String GAME_UNREADY                 = "GAME_UNREADY";
+    public static final String GAME_AR_START                = "GAME_AR_START";
+    public static final String GAME_UPDATE                  = "GAME_UPDATE";
+    public static final String GAME_HEARTBEAT               = "GAME_HEARTBEAT";
+    public static final String GAME_KNIGHT                  = "knight";
+    public static final String GAME_SOLDIER                 = "soldier";
+    public static final String GAME_RANGER                  = "ranger";
+    public static final String GAME_WIZARD                  = "wizard";
+    public static final String GAME_TAKEN                   = "GAME_TAKEN";
+    public static final String GAME_WAIT                    = "GAME_WAIT";
+    public static final String GAME_TURN                    = "GAME_TURN";
     // Constants to use as prefixes to exchange information with other devices
     public static final String PREFIX_NAME                  = "NAME:";
     public static final String PREFIX_PLAYER                = "PLAYER:";
@@ -52,6 +53,7 @@ public class NetworkConstants
     public static final String PREFIX_CREATE_ROOM           = "CREATE_ROOM:";
     // Use a different delimiter, because of how residents are stored
     public static final String PREFIX_UPDATE_ROOM_RESIDENTS = "UPDATE_ROOM_RESIDENTS~";
+    public static final String PREFIX_SHOW_ACTION           = "SHOW_ACTION:";
 
     // Constants for status codes
     public static final String STATUS_SERVER_START   = "Server thread started";

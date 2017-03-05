@@ -5,6 +5,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.ServiceConnection;
 import android.os.Bundle;
+import android.os.Handler;
 import android.os.IBinder;
 import android.support.v4.content.LocalBroadcastManager;
 import android.support.v4.util.Pair;
@@ -42,6 +43,7 @@ public class PortalClientActivity extends ARActivity implements UIListener,
     private static ResponseReceiver responseReceiver;
     private static ClientService    clientService;
     private static boolean mClientBound = false;
+    private static Handler handler      = new Handler();
 
     private static int    playerId;
     private static String characterName;
@@ -84,6 +86,8 @@ public class PortalClientActivity extends ARActivity implements UIListener,
 
         playerId = getIntent().getExtras().getInt("player");
         characterName = getIntent().getStringExtra("character");
+
+        PortalRenderer.setHandler(handler);
 
         turn = false;
 
@@ -199,7 +203,7 @@ public class PortalClientActivity extends ARActivity implements UIListener,
         {
             uiPortalOverlay.overlayWaitingForTurn();
         }
-        else if (msg.equals("turn"))
+        else if (msg.equals(NetworkConstants.GAME_TURN))
         {
             uiPortalOverlay.overlayAction();
         }
@@ -256,7 +260,7 @@ public class PortalClientActivity extends ARActivity implements UIListener,
         {
             // Expect the RoomID of the room to update,
             // and list of pairs(bool, string) of residents
-            // ~id;flag,pose~id;flag,pose
+            // Formatted as: ~id;flag,pose~id;flag,pose
             // Use a different delimiter, because of how residents are stored
             String[] splitMsg = msg.split("~");
 
@@ -277,7 +281,7 @@ public class PortalClientActivity extends ARActivity implements UIListener,
 
             renderer.updateRoomResidents(arRoomId, residents);
         }
-        else if (msg.startsWith("show_action"))
+        else if (msg.startsWith(NetworkConstants.PREFIX_SHOW_ACTION))
         {
             // Expect arguments for show action function
             String[] splitMsg = msg.split(":");
@@ -287,7 +291,7 @@ public class PortalClientActivity extends ARActivity implements UIListener,
                                 Integer.parseInt(splitMsg[3]),
                                 Long.parseLong(splitMsg[4]),
                                 splitMsg[5],
-                                splitMsg[6],
+                                splitMsg[6].equals("") ? null : splitMsg[6],
                                 Boolean.parseBoolean(splitMsg[7]));
         }
     }
