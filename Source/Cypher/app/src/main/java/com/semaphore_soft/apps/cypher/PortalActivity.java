@@ -15,6 +15,7 @@ import android.widget.Toast;
 
 import com.semaphore_soft.apps.cypher.game.Actor;
 import com.semaphore_soft.apps.cypher.game.ActorController;
+import com.semaphore_soft.apps.cypher.game.Entity;
 import com.semaphore_soft.apps.cypher.game.GameController;
 import com.semaphore_soft.apps.cypher.game.GameMaster;
 import com.semaphore_soft.apps.cypher.game.Model;
@@ -434,6 +435,22 @@ public class PortalActivity extends ARActivity implements PortalRenderer.NewMark
 
     }
 
+    /**
+     * Get the reference ID of the first AR marker found by the {@link
+     * PortalRenderer} which is not already reserved by a game object, or
+     * {@code -1} if no unreserved markers are in view.
+     *
+     * @return int: The reference ID of the first AR marker found by the {@link
+     * PortalRenderer} which is not already reserved by a game object, or
+     * {@code -1} if no unreserved markers are in view.
+     *
+     * @see PortalRenderer
+     * @see PortalRenderer#getFirstMarkerExcluding(ArrayList)
+     * @see Actor
+     * @see Actor#getMarker()
+     * @see Room
+     * @see Room#getMarker()
+     */
     private int getFirstUnreservedMarker()
     {
         ArrayList<Integer> marksX = new ArrayList<>();
@@ -456,6 +473,25 @@ public class PortalActivity extends ARActivity implements PortalRenderer.NewMark
         return -1;
     }
 
+    /**
+     * Get the reference ID of the nearest visible AR marker to a given AR
+     * marker via the {@link PortalRenderer} which is not associated with an
+     * {@link Actor}, or {@code -1} if either the given marker is not visible
+     * or there are no other markers in view.
+     *
+     * @param mark0 int: The reference ID of the desired AR marker to get the
+     *              nearest marker to.
+     *
+     * @return int: The reference ID of the nearest visible AR marker to a
+     * given AR marker via the {@link PortalRenderer} which is not associated
+     * with an {@link Actor}, or {@code -1} if either the given marker is not
+     * visible or there are no other markers in view.
+     *
+     * @see PortalRenderer
+     * @see PortalRenderer#getNearestMarkerExcluding(int, ArrayList)
+     * @see Actor
+     * @see Actor#getMarker()
+     */
     private int getNearestNonPlayerMarker(final int mark0)
     {
         ArrayList<Integer> actorMarkers = new ArrayList<>();
@@ -474,6 +510,29 @@ public class PortalActivity extends ARActivity implements PortalRenderer.NewMark
         return -1;
     }
 
+    /**
+     * Get the reference ID of the nearest visible AR marker to a given AR
+     * marker via the {@link PortalRenderer} which is not associated with an
+     * {@link Actor} and is not in the list of AR marker reference IDs
+     * indicated as excluded, or {@code -1} if either the given marker is not
+     * visible or there are no other markers in view.
+     *
+     * @param mark0  int: The reference ID of the desired AR marker to get the
+     *               nearest marker to.
+     * @param marksX ArrayList: A list of marker reference IDs to exclude when
+     *               searching for the nearest marker to a given marker.
+     *
+     * @return int: the reference ID of the nearest visible AR marker to a
+     * given AR marker via the {@link PortalRenderer} which is not associated
+     * with an {@link Actor} and is not in the list of AR marker reference IDs
+     * indicated as excluded, or {@code -1} if either the given marker is not
+     * visible or there are no other markers in view.
+     *
+     * @see PortalRenderer
+     * @see PortalRenderer#getNearestMarkerExcluding(int, ArrayList)
+     * @see Actor
+     * @see Actor#getMarker()
+     */
     private int getNearestNonPlayerMarkerExcluding(final int mark0, final ArrayList<Integer> marksX)
     {
         for (Actor actor : model.getActors().values())
@@ -491,6 +550,37 @@ public class PortalActivity extends ARActivity implements PortalRenderer.NewMark
         return -1;
     }
 
+    /**
+     * Create an {@link Actor} with a given logical reference ID, using a given
+     * actor reference name, anchored to a given AR marker. If successful, add
+     * the {@link Actor} to the {@link Model} and update the {@link
+     * PortalRenderer} appropriately.
+     *
+     * @param playerId      int: The desired logical reference ID to be used
+     *                      for the created {@link Actor}.
+     * @param characterName String: The reference name to be used in creating
+     *                      a new {@link Actor}; will be used to pull in {@link
+     *                      Actor} stats, etc.
+     * @param mark          int: The reference ID of the AR marker to anchor
+     *                      the new {@link Actor} to.
+     *
+     * @return boolean:
+     * <ul>
+     * <li>{@code true}: The given marker reference ID is valid and the {@link
+     * Actor} is created.</li>
+     * <li>{@code false}: The given marker reference ID is not valid and the
+     * {@link Actor} is not created.</li>
+     * </ul>
+     *
+     * @see Actor
+     * @see Actor#Actor(int, String, int)
+     * @see GameStatLoader
+     * @see GameStatLoader#loadActorStats(Actor, String, ConcurrentHashMap, Context)
+     * @see Model
+     * @see Model#addActor(int, Actor)
+     * @see PortalRenderer
+     * @see PortalRenderer#setPlayerMarker(int, int)
+     */
     private boolean selectPlayerMarker(int playerId, String characterName, int mark)
     {
         if (mark > -1)
@@ -516,6 +606,31 @@ public class PortalActivity extends ARActivity implements PortalRenderer.NewMark
         }
     }
 
+    /**
+     * Create a {@link Room} to use as the starting {@link Room} for all player
+     * {@link Actor Actors} and place all player{@link Actor Actors} in that
+     * {@link Room}. Starting {@link Room} will have unlocked doors on all
+     * sides and no non-player {@link Actor Actors} or {@link Entity Entities}.
+     * The starting {@link Room} will be added to the {@link Model}, considered
+     * 'placed' and the {@link PortalRenderer} will be updated.
+     *
+     * @return boolean:
+     * <ul>
+     * <li>{@code true}: The given marker reference ID is valid and the
+     * starting{@link Room} is created.</li>
+     * <li>{@code false}: The given marker reference ID is not valid and the
+     * starting {@link Room} is not created.</li>
+     * </ul>
+     *
+     * @see Room
+     * @see Room#Room(int, int, boolean)
+     * @see Actor
+     * @see Entity
+     * @see Model
+     * @see PortalRenderer
+     * @see PortalRenderer#createRoom(int, String[])
+     * @see PortalRenderer#updateRoomResidents(int, ConcurrentHashMap)
+     */
     private boolean selectStartMarker()
     {
         int mark = getFirstUnreservedMarker();
@@ -913,105 +1028,6 @@ public class PortalActivity extends ARActivity implements PortalRenderer.NewMark
         }
 
         return res;
-    }
-
-    private void performPlayerSpecial(final Actor actor, final Special special)
-    {
-        Room             room    = model.getRooms().get(actor.getRoom());
-        ArrayList<Actor> targets = new ArrayList<>();
-
-        switch (special.getTargetingType())
-        {
-            case SINGLE_PLAYER:
-            {
-                targets = getActorsInRoom(room, true);
-                if (targets.size() < 1)
-                {
-                    Toast.makeText(getApplicationContext(),
-                                   "Nothing to use special on here",
-                                   Toast.LENGTH_SHORT).show();
-                }
-                else if (targets.size() == 1)
-                {
-                    actor.performSpecial(special, targets.get(0));
-                }
-                else
-                {
-                    Toast.makeText(getApplicationContext(),
-                                   "Multiple possible targets, not yet implemented",
-                                   Toast.LENGTH_SHORT).show();
-                }
-                break;
-            }
-            case SINGLE_NON_PLAYER:
-            {
-                targets = getActorsInRoom(room, false);
-                if (targets.size() < 1)
-                {
-                    Toast.makeText(getApplicationContext(),
-                                   "Nothing to use special on here",
-                                   Toast.LENGTH_SHORT).show();
-                }
-                else if (targets.size() == 1)
-                {
-                    if (!actor.performSpecial(special, targets.get(0)))
-                    {
-                        Toast.makeText(getApplicationContext(),
-                                       "Not enough SP",
-                                       Toast.LENGTH_SHORT).show();
-                    }
-                }
-                else
-                {
-                    Toast.makeText(getApplicationContext(),
-                                   "Multiple possible targets, not yet implemented",
-                                   Toast.LENGTH_SHORT).show();
-                }
-                break;
-            }
-            case AOE_PLAYER:
-            {
-                targets = getActorsInRoom(room, true);
-                if (targets.size() < 1)
-                {
-                    Toast.makeText(getApplicationContext(),
-                                   "Nothing to use special on here",
-                                   Toast.LENGTH_SHORT).show();
-                }
-                else
-                {
-                    if (!actor.performSpecial(special, targets))
-                    {
-                        Toast.makeText(getApplicationContext(),
-                                       "Not enough SP",
-                                       Toast.LENGTH_SHORT).show();
-                    }
-                }
-                break;
-            }
-            case AOE_NON_PLAYER:
-            {
-                targets = getActorsInRoom(room, false);
-                if (targets.size() < 1)
-                {
-                    Toast.makeText(getApplicationContext(),
-                                   "Nothing to use special on here",
-                                   Toast.LENGTH_SHORT).show();
-                }
-                else
-                {
-                    if (!actor.performSpecial(special, targets))
-                    {
-                        Toast.makeText(getApplicationContext(),
-                                       "Not enough SP",
-                                       Toast.LENGTH_SHORT).show();
-                    }
-                }
-                break;
-            }
-            default:
-                break;
-        }
     }
 
     @Override
