@@ -1384,6 +1384,7 @@ public class PortalActivity extends ARActivity implements PortalRenderer.NewMark
         }
         serverService.writeAll(
             NetworkConstants.PREFIX_CREATE_ROOM + roomID + ":" + clientWallDescriptors);
+        serverService.writeAll(NetworkConstants.PREFIX_RESERVE_ROOM + roomID);
     }
 
     /**
