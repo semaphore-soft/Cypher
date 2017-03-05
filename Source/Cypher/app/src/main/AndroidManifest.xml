@@ -64,6 +64,15 @@
                 <action android:name="android.intent.action.MAIN"/>
             </intent-filter>
         </activity>
+        <activity
+                android:name=".PortalClientActivity"
+                android:configChanges="keyboardHidden|orientation|screenSize"
+                android:label="Cypher"
+                android:theme="@android:style/Theme.Material.NoActionBar.Fullscreen">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+            </intent-filter>
+        </activity>
 
         <service
                 android:name=".networking.ServerService"
