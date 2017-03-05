@@ -1410,7 +1410,7 @@ public class GameMaster
      * @see com.semaphore_soft.apps.cypher.PortalRenderer
      * @see PortalActivity#postSpecialResult(int, int, int, int)
      */
-    public static String getSpecialType(final int id)
+    public static String getSpecialTypeDescriptor(final int id)
     {
         ArrayList<Effect.E_EFFECT> specialEffects = model.getSpecials().get(id).getEffects();
 
@@ -1425,5 +1425,27 @@ public class GameMaster
         }
 
         return "harm";
+    }
+
+    /**
+     * Get the {@link Special.E_TARGETING_TYPE} of a given {@link Special}
+     * ability.
+     *
+     * @param id int: The logical reference ID of the desired {@link Special}
+     *           ability.
+     *
+     * @return {@link Special.E_TARGETING_TYPE}: The {@link
+     * Special.E_TARGETING_TYPE type} of the given {@link Special} ability.
+     */
+    public static Special.E_TARGETING_TYPE getSpecialTargetingType(final int id)
+    {
+        Special special = model.getSpecials().get(id);
+
+        if (special != null)
+        {
+            return special.getTargetingType();
+        }
+
+        return Special.E_TARGETING_TYPE.SINGLE_NON_PLAYER;
     }
 }

@@ -259,9 +259,22 @@ public class PortalActivity extends ARActivity implements PortalRenderer.NewMark
                     }
                     break;
                 case "cmd_btnAttack":
-                    uiPortalOverlay.setEnemyTargets(GameMaster.getNonPlayerTargets(playerId));
-                    uiPortalOverlay.setSelectMode(UIPortalOverlay.E_SELECT_MODE.ATTACK_TARGET);
-                    uiPortalOverlay.overlayEnemyTargetSelect();
+                    ArrayList<Pair<String, String>> attackOptions = new ArrayList<>();
+
+                    for (int i : GameMaster.getNonPlayerTargetIds(playerId))
+                    {
+                        Actor target = GameMaster.getActor(i);
+                        if (target != null)
+                        {
+                            Pair<String, String> targetPair =
+                                new Pair<>(target.getDisplayName(),
+                                           "cmd_attack:" + i);
+
+                            attackOptions.add(targetPair);
+                        }
+                    }
+
+                    uiPortalOverlay.overlaySelect(attackOptions);
                     break;
                 case "cmd_btnDefend":
                     GameMaster.setActorState(playerId, Actor.E_STATE.DEFEND);
@@ -283,11 +296,21 @@ public class PortalActivity extends ARActivity implements PortalRenderer.NewMark
                     }
                     break;
                 case "cmd_btnSpecial":
-                    uiPortalOverlay.setEnemyTargets(GameMaster.getNonPlayerTargets(playerId));
-                    uiPortalOverlay.setPlayerTargets(GameMaster.getPlayerTargets(playerId));
-                    uiPortalOverlay.setSpecials(GameMaster.getSpecials(playerId));
-                    uiPortalOverlay.setSelectMode(UIPortalOverlay.E_SELECT_MODE.SPECIAL);
-                    uiPortalOverlay.overlaySpecialSelect();
+                    ArrayList<Pair<String, String>> specialOptions = new ArrayList<>();
+
+                    for (Special special : GameMaster.getSpecials(playerId).values())
+                    {
+                        Pair<String, String> specialPair =
+                            new Pair<>(special.getDisplayName(), "cmd_special:" + special.getId());
+
+                        specialOptions.add(specialPair);
+                    }
+
+                    uiPortalOverlay.overlaySelect(specialOptions);
+                    break;
+                case "cmd_btnCancel":
+                    uiPortalOverlay.overlayAction();
+                    break;
                 default:
                     break;
             }
@@ -295,32 +318,68 @@ public class PortalActivity extends ARActivity implements PortalRenderer.NewMark
         else
         {
             String[] splitCmd    = cmd.split("_");
-            String[] splitAction = splitCmd[1].split(";");
+            String[] splitAction = splitCmd[1].split(":");
 
-            String[] action1 = splitAction[0].split(":");
-
-            if (action1[0].equals("attack"))
+            if (splitAction[0].equals("attack"))
             {
-                int targetId = Integer.parseInt(action1[1]);
+                int targetId = Integer.parseInt(splitAction[1]);
                 attack(playerId, targetId);
             }
-            else if (action1[0].equals("special"))
+            else if (splitAction[0].equals("special"))
             {
-                int specialId = Integer.parseInt(action1[1]);
+                int specialId = Integer.parseInt(splitAction[1]);
 
-                if (splitAction.length == 1)
+                Special.E_TARGETING_TYPE specialType =
+                    GameMaster.getSpecialTargetingType(specialId);
+
+                if (splitAction.length < 3)
                 {
-                    performSpecial(playerId, specialId);
+                    if (specialType == Special.E_TARGETING_TYPE.AOE_PLAYER || specialType ==
+                                                                              Special.E_TARGETING_TYPE.AOE_NON_PLAYER)
+                    {
+                        performSpecial(playerId, specialId);
+                    }
+                    else
+                    {
+                        ArrayList<Pair<String, String>> targetOptions = new ArrayList<>();
+
+                        if (specialType == Special.E_TARGETING_TYPE.SINGLE_NON_PLAYER)
+                        {
+                            for (Actor target : GameMaster.getNonPlayerTargets(playerId).values())
+                            {
+                                if (target != null)
+                                {
+                                    Pair<String, String> targetPair =
+                                        new Pair<>(target.getDisplayName(),
+                                                   "cmd_special:" + specialId + ":" +
+                                                   target.getId());
+
+                                    targetOptions.add(targetPair);
+                                }
+                            }
+                        }
+                        else
+                        {
+                            for (Actor target : GameMaster.getPlayerTargets(playerId).values())
+                            {
+                                if (target != null)
+                                {
+                                    Pair<String, String> targetPair =
+                                        new Pair<>(target.getDisplayName(),
+                                                   "cmd_special:" + specialId + ":" +
+                                                   target.getId());
+
+                                    targetOptions.add(targetPair);
+                                }
+                            }
+                        }
+
+                        uiPortalOverlay.overlaySelect(targetOptions);
+                    }
                 }
                 else
                 {
-                    String[] action2 = splitAction[1].split(":");
-
-                    if (action2[0].equals("target"))
-                    {
-                        int targetId = Integer.parseInt(action2[1]);
-                        performSpecial(playerId, targetId, specialId);
-                    }
+                    performSpecial(playerId, Integer.parseInt(splitAction[2]), specialId);
                 }
             }
         }
@@ -462,7 +521,6 @@ public class PortalActivity extends ARActivity implements PortalRenderer.NewMark
                                           getApplicationContext());
             model.getActors().put(playerId, actor);
             renderer.setPlayerMarker(playerId, mark);
-
 
             return true;
         }
@@ -792,6 +850,8 @@ public class PortalActivity extends ARActivity implements PortalRenderer.NewMark
                                                            Actor.E_STATE.DEFEND ? "defend" : null) : null),
                                     true);
             }
+
+            uiPortalOverlay.overlayWaitingForTurn();
         }
     }
 
@@ -840,7 +900,7 @@ public class PortalActivity extends ARActivity implements PortalRenderer.NewMark
             Room  room   = GameMaster.getActorRoom(sourceId);
             Actor target = GameMaster.getActor(targetId);
 
-            String specialType = GameMaster.getSpecialType(specialId);
+            String specialType = GameMaster.getSpecialTypeDescriptor(specialId);
 
             if (room != null)
             {
@@ -853,6 +913,8 @@ public class PortalActivity extends ARActivity implements PortalRenderer.NewMark
                                                          Actor.E_STATE.DEFEND ? "defend" : null) : null),
                                     specialType.equals("harm"));
             }
+
+            uiPortalOverlay.overlayWaitingForTurn();
         }
     }
 
@@ -894,7 +956,6 @@ public class PortalActivity extends ARActivity implements PortalRenderer.NewMark
                 }
                 else
                 {
-                    //TODO display target selection
                     Toast.makeText(getApplicationContext(),
                                    "Multiple possible targets, not yet implemented",
                                    Toast.LENGTH_SHORT).show();
@@ -921,7 +982,6 @@ public class PortalActivity extends ARActivity implements PortalRenderer.NewMark
                 }
                 else
                 {
-                    //TODO display target selection
                     Toast.makeText(getApplicationContext(),
                                    "Multiple possible targets, not yet implemented",
                                    Toast.LENGTH_SHORT).show();
@@ -1085,6 +1145,12 @@ public class PortalActivity extends ARActivity implements PortalRenderer.NewMark
         runOnUiThread(uiUpdate);
     }
 
+    /**
+     * {@inheritDoc}
+     *
+     * @param actorId int: The logical reference ID of the {@link Actor}
+     *                performing the action which has finished.
+     */
     @Override
     public void onFinishedAction(final int actorId)
     {
@@ -1121,6 +1187,12 @@ public class PortalActivity extends ARActivity implements PortalRenderer.NewMark
         Logger.logD("exit trace");
     }
 
+    /**
+     * Called when a turn has ended.
+     *
+     * @param actorId int: The logical reference ID of the {@link Actor} which
+     *                just took a turn.
+     */
     private void postTurn(final int actorId)
     {
         Logger.logD("enter trace");
@@ -1138,6 +1210,7 @@ public class PortalActivity extends ARActivity implements PortalRenderer.NewMark
         if (turnId == playerId)
         {
             turn = true;
+            uiPortalOverlay.overlayAction();
         }
         else if (!GameMaster.getActorIsPlayer(turnId))
         {

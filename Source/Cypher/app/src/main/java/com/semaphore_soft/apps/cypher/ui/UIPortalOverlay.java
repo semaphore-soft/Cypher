@@ -1,21 +1,16 @@
 package com.semaphore_soft.apps.cypher.ui;
 
 import android.content.Context;
+import android.support.v4.util.Pair;
 import android.util.AttributeSet;
 import android.view.View;
 import android.widget.Button;
 import android.widget.ImageButton;
 import android.widget.LinearLayout;
-import android.widget.Toast;
 
 import com.semaphore_soft.apps.cypher.R;
-import com.semaphore_soft.apps.cypher.game.Actor;
-import com.semaphore_soft.apps.cypher.game.Item;
-import com.semaphore_soft.apps.cypher.game.Special;
-import com.semaphore_soft.apps.cypher.utils.Logger;
 
 import java.util.ArrayList;
-import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * Created by Scorple on 2/17/2017.
@@ -23,23 +18,6 @@ import java.util.concurrent.ConcurrentHashMap;
 
 public class UIPortalOverlay extends UIBase
 {
-    private ConcurrentHashMap<Integer, Actor>   enemyTargets;
-    private ConcurrentHashMap<Integer, Actor>   playerTargets;
-    private ConcurrentHashMap<Integer, Special> specials;
-    private ConcurrentHashMap<Integer, Item>    items;
-
-    public enum E_SELECT_MODE
-    {
-        NONE,
-        ATTACK_TARGET,
-        SPECIAL,
-        SPECIAL_TARGET_PLAYER,
-        SPECIAL_TARGET_ENEMY,
-        ITEM
-    }
-
-    private E_SELECT_MODE selectMode = E_SELECT_MODE.NONE;
-
     public UIPortalOverlay(Context context)
     {
         super(context);
@@ -172,32 +150,16 @@ public class UIPortalOverlay extends UIBase
         });
     }
 
-    public void setSelectMode(E_SELECT_MODE selectMode)
-    {
-        this.selectMode = selectMode;
-    }
-
-    public void setEnemyTargets(ConcurrentHashMap<Integer, Actor> enemyTargets)
-    {
-        this.enemyTargets = new ConcurrentHashMap<>();
-        this.enemyTargets = enemyTargets;
-    }
-
-    public void overlayEnemyTargetSelect()
-    {
-        overlayEnemyTargetSelect(-1);
-    }
-
-    public void overlayEnemyTargetSelect(final int mod)
+    public void overlaySelect(ArrayList<Pair<String, String>> options)
     {
         makeView(R.layout.overlay_select);
         LinearLayout      lloOptions = (LinearLayout) findViewById(R.id.lloOptions);
         ArrayList<String> names      = new ArrayList<>();
 
-        for (final int id : enemyTargets.keySet())
+        for (final Pair<String, String> option : options)
         {
             Button btnTarget = new Button(getContext());
-            String name      = getName(enemyTargets.get(id).getDisplayName(), 1, names);
+            String name      = getName(option.first, 1, names);
             names.add(name);
             LinearLayout.LayoutParams layoutParams =
                 new LinearLayout.LayoutParams(LayoutParams.WRAP_CONTENT,
@@ -210,28 +172,7 @@ public class UIPortalOverlay extends UIBase
                 @Override
                 public void onClick(View v)
                 {
-                    switch (selectMode)
-                    {
-                        case ATTACK_TARGET:
-                            notifyListener("cmd_attack:" + id);
-                            selectMode = E_SELECT_MODE.NONE;
-                            overlayAction();
-                            break;
-                        case SPECIAL_TARGET_ENEMY:
-                            notifyListener("cmd_special:" + mod + ";target:" + id);
-                            selectMode = E_SELECT_MODE.NONE;
-                            overlayAction();
-                            break;
-                        default:
-                            Toast.makeText(getContext(),
-                                           "enemy target select error",
-                                           Toast.LENGTH_SHORT).show();
-                            selectMode = E_SELECT_MODE.NONE;
-                            overlayAction();
-                            break;
-                    }
-                    selectMode = E_SELECT_MODE.NONE;
-                    overlayAction();
+                    notifyListener(option.second);
                 }
             });
             lloOptions.addView(btnTarget);
@@ -243,7 +184,7 @@ public class UIPortalOverlay extends UIBase
             @Override
             public void onClick(View v)
             {
-                overlayAction();
+                notifyListener("cmd_btnCancel");
             }
         });
     }
@@ -262,136 +203,5 @@ public class UIPortalOverlay extends UIBase
         {
             return originalName + " " + testNum;
         }
-    }
-
-    public void setPlayerTargets(ConcurrentHashMap<Integer, Actor> playerTargets)
-    {
-        this.playerTargets = new ConcurrentHashMap<>();
-        this.playerTargets = playerTargets;
-    }
-
-    public void overlayPlayerTargetSelect()
-    {
-        overlayPlayerTargetSelect(-1);
-    }
-
-    public void overlayPlayerTargetSelect(final int mod)
-    {
-        makeView(R.layout.overlay_select);
-        LinearLayout lloOptions = (LinearLayout) findViewById(R.id.lloOptions);
-
-        for (final int id : playerTargets.keySet())
-        {
-            Button btnTarget = new Button(getContext());
-            btnTarget.setText(playerTargets.get(id).getDisplayName());
-            btnTarget.setOnClickListener(new OnClickListener()
-            {
-                @Override
-                public void onClick(View v)
-                {
-                    switch (selectMode)
-                    {
-                        case SPECIAL_TARGET_PLAYER:
-                            notifyListener("cmd_special:" + mod + ";target:" + id);
-                            selectMode = E_SELECT_MODE.NONE;
-                            overlayAction();
-                            break;
-                        default:
-                            Toast.makeText(getContext(),
-                                           "player target select error",
-                                           Toast.LENGTH_SHORT).show();
-                            selectMode = E_SELECT_MODE.NONE;
-                            overlayAction();
-                            break;
-                    }
-                }
-            });
-            lloOptions.addView(btnTarget);
-            Logger.logI("added special option: " + playerTargets.get(id).getDisplayName(), 1);
-        }
-
-        Button btnCancel = (Button) findViewById(R.id.btnCancel);
-        btnCancel.setOnClickListener(new OnClickListener()
-        {
-            @Override
-            public void onClick(View v)
-            {
-                overlayAction();
-            }
-        });
-    }
-
-    public void setSpecials(ConcurrentHashMap<Integer, Special> specials)
-    {
-        this.specials = new ConcurrentHashMap<>();
-        this.specials = specials;
-    }
-
-    public void overlaySpecialSelect()
-    {
-        makeView(R.layout.overlay_select);
-        LinearLayout lloOptions = (LinearLayout) findViewById(R.id.lloOptions);
-
-        for (final int id : specials.keySet())
-        {
-            Button btnSpecial = new Button(getContext());
-            LinearLayout.LayoutParams layoutParams =
-                new LinearLayout.LayoutParams(LayoutParams.WRAP_CONTENT,
-                                              LayoutParams.WRAP_CONTENT);
-            layoutParams.setMargins(160, 160, 160, 160);
-            btnSpecial.setLayoutParams(layoutParams);
-            btnSpecial.setText(specials.get(id).getName());
-            btnSpecial.setOnClickListener(new OnClickListener()
-            {
-                @Override
-                public void onClick(View v)
-                {
-                    switch (specials.get(id).getTargetingType())
-                    {
-                        case SINGLE_PLAYER:
-                            selectMode = E_SELECT_MODE.SPECIAL_TARGET_PLAYER;
-                            overlayPlayerTargetSelect(id);
-                            break;
-                        case SINGLE_NON_PLAYER:
-                            selectMode = E_SELECT_MODE.SPECIAL_TARGET_ENEMY;
-                            overlayEnemyTargetSelect(id);
-                            break;
-                        case AOE_PLAYER:
-                            notifyListener("cmd_special:" + id);
-                            selectMode = E_SELECT_MODE.NONE;
-                            overlayAction();
-                            break;
-                        case AOE_NON_PLAYER:
-                            notifyListener("cmd_special:" + id);
-                            selectMode = E_SELECT_MODE.NONE;
-                            overlayAction();
-                            break;
-                        default:
-                            Toast.makeText(getContext(), "special select error", Toast.LENGTH_SHORT)
-                                 .show();
-                            selectMode = E_SELECT_MODE.NONE;
-                            overlayAction();
-                            break;
-                    }
-                }
-            });
-            lloOptions.addView(btnSpecial);
-        }
-
-        Button btnCancel = (Button) findViewById(R.id.btnCancel);
-        btnCancel.setOnClickListener(new OnClickListener()
-        {
-            @Override
-            public void onClick(View v)
-            {
-                overlayAction();
-            }
-        });
-    }
-
-    public void setItems(ConcurrentHashMap<Integer, Item> items)
-    {
-        items = new ConcurrentHashMap<>();
-        this.items = items;
     }
 }

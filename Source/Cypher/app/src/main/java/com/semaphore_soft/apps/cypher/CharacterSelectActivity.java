@@ -411,7 +411,6 @@ public class CharacterSelectActivity extends AppCompatActivity implements Respon
         handler.removeCallbacks(heartbeat);
 
         Intent intent = new Intent(getBaseContext(), PortalActivity.class);
-        intent.putExtra("player", playerID);
         intent.putExtra("character", selection);
         intent.putExtra("num_clients", numClients);
 
