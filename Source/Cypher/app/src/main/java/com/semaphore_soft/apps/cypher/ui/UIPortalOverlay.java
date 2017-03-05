@@ -103,7 +103,8 @@ public class UIPortalOverlay extends UIBase
 
     public void overlayWaitingForTurn()
     {
-
+        //TODO placeholder, revisit
+        makeView(R.layout.empty);
     }
 
     public void overlayAction()

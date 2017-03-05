@@ -5,9 +5,9 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.ServiceConnection;
 import android.os.Bundle;
-import android.os.Handler;
 import android.os.IBinder;
 import android.support.v4.content.LocalBroadcastManager;
+import android.support.v4.util.Pair;
 import android.widget.FrameLayout;
 import android.widget.Toast;
 
@@ -22,9 +22,10 @@ import org.artoolkit.ar.base.ARActivity;
 import org.artoolkit.ar.base.rendering.ARRenderer;
 
 import java.util.ArrayList;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
- * Created by rickm on 3/1/2017.
+ * @author scorple
  */
 
 public class PortalClientActivity extends ARActivity implements UIListener,
@@ -39,7 +40,6 @@ public class PortalClientActivity extends ARActivity implements UIListener,
     private static ResponseReceiver responseReceiver;
     private static ClientService    clientService;
     private static boolean mClientBound = false;
-    private static Handler handler      = new Handler();
 
     private static int    playerId;
     private static String characterName;
@@ -47,6 +47,10 @@ public class PortalClientActivity extends ARActivity implements UIListener,
     private static boolean turn;
 
     private static ArrayList<Integer> reservedMarkers;
+
+    private static ArrayList<String> playerTargets;
+    private static ArrayList<String> nonPlayerTargets;
+    private static ArrayList<String> special;
 
     /**
      * {@inheritDoc}
@@ -176,6 +180,78 @@ public class PortalClientActivity extends ARActivity implements UIListener,
             String[] splitMsg = msg.split(";");
 
             renderer.setPlayerMarker(Integer.parseInt(splitMsg[3]), Integer.parseInt(splitMsg[2]));
+        }
+        else if (msg.equals("start"))
+        {
+            uiPortalOverlay.overlayWaitingForTurn();
+        }
+        else if (msg.equals("turn"))
+        {
+            uiPortalOverlay.overlayAction();
+        }
+        else if (msg.equals("over"))
+        {
+            uiPortalOverlay.overlayWaitingForTurn();
+        }
+        else if (msg.startsWith("create_room"))
+        {
+            String[] splitMsg = msg.split(";");
+
+            int arRoomId = Integer.parseInt(splitMsg[1]);
+
+            String[] wallDescriptors = new String[4];
+
+            for (int i = 2; i < wallDescriptors.length + 2 && i < splitMsg.length; ++i)
+            {
+                wallDescriptors[i - 2] = splitMsg[i];
+            }
+
+            renderer.createRoom(arRoomId, wallDescriptors);
+        }
+        else if (msg.startsWith("update_room_walls"))
+        {
+            String[] splitMsg = msg.split(";");
+
+            int arRoomId = Integer.parseInt(splitMsg[1]);
+
+            String[] wallDescriptors = new String[4];
+
+            for (int i = 2; i < wallDescriptors.length + 2 && i < splitMsg.length; ++i)
+            {
+                wallDescriptors[i - 2] = splitMsg[i];
+            }
+
+            renderer.createRoom(arRoomId, wallDescriptors);
+        }
+        else if (msg.startsWith("update_room_alignment"))
+        {
+            String[] splitMsg = msg.split(";");
+
+            int   arRoomId      = Integer.parseInt(splitMsg[1]);
+            short roomAlignment = Short.parseShort(splitMsg[2]);
+
+            renderer.updateRoomAlignment(arRoomId, roomAlignment);
+        }
+        else if (msg.startsWith("update_room_residents"))
+        {
+            String[] splitMsg = msg.split(";");
+
+            int arRoomId = Integer.parseInt(splitMsg[1]);
+
+            ConcurrentHashMap<Integer, Pair<Boolean, String>> residents = new ConcurrentHashMap<>();
+
+            for (int i = 2; i < splitMsg.length; ++i)
+            {
+                String[] splitResident = splitMsg[i].split(":");
+                String[] splitPair     = splitResident[1].split(",");
+
+                Pair<Boolean, String> residentPair =
+                    new Pair<>(Boolean.parseBoolean(splitPair[0]), splitPair[1]);
+
+                residents.put(Integer.parseInt(splitResident[0]), residentPair);
+            }
+
+            renderer.updateRoomResidents(arRoomId, residents);
         }
         else if (msg.startsWith("show_action"))
         {

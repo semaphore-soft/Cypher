@@ -242,6 +242,8 @@ public class PortalActivity extends ARActivity implements PortalRenderer.NewMark
                     if (selectStartMarker())
                     {
                         uiPortalOverlay.overlayAction();
+
+                        serverService.writeAll("start");
                     }
                     break;
                 case "cmd_btnEndTurn":
