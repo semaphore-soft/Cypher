@@ -167,13 +167,13 @@ public class PortalClientActivity extends ARActivity implements UIListener,
     /**
      * {@inheritDoc}
      *
-     * @param msg      Message read from network
-     * @param readFrom Device that message was received from
+     * @param msg    Message read from network
+     * @param unused This is always 0
      */
     @Override
-    public void handleRead(String msg, int readFrom)
+    public void handleRead(String msg, int unused)
     {
-        Toast.makeText(this, "Read: " + msg + " from <" + readFrom + ">", Toast.LENGTH_SHORT)
+        Toast.makeText(this, "Read: " + msg + " from <" + unused + ">", Toast.LENGTH_SHORT)
              .show();
 
         if (msg.startsWith(NetworkConstants.PREFIX_RESERVE))
@@ -295,26 +295,26 @@ public class PortalClientActivity extends ARActivity implements UIListener,
     /**
      * {@inheritDoc}
      *
-     * @param msg      Status update
-     * @param readFrom Device that update was received from
+     * @param msg    Status update
+     * @param unused This is always 0
      */
     @Override
-    public void handleStatus(String msg, int readFrom)
+    public void handleStatus(String msg, int unused)
     {
-        Toast.makeText(this, "Status: " + msg + " from <" + readFrom + ">", Toast.LENGTH_SHORT)
+        Toast.makeText(this, "Status: " + msg + " from <" + unused + ">", Toast.LENGTH_SHORT)
              .show();
     }
 
     /**
      * {@inheritDoc}
      *
-     * @param msg      Error message
-     * @param readFrom Device that error was received from
+     * @param msg    Error message
+     * @param unused This is always 0
      */
     @Override
-    public void handleError(String msg, int readFrom)
+    public void handleError(String msg, int unused)
     {
-        Toast.makeText(this, "Error: " + msg + " from <" + readFrom + ">", Toast.LENGTH_SHORT)
+        Toast.makeText(this, "Error: " + msg + " from <" + unused + ">", Toast.LENGTH_SHORT)
              .show();
     }
 

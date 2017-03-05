@@ -35,7 +35,7 @@ public class ResponseReceiver extends BroadcastReceiver
         {
             // Message from other devices
             String msg  = intent.getStringExtra(NetworkConstants.MESSAGE);
-            int    from = intent.getIntExtra(NetworkConstants.INDEX, -1);
+            int    from = intent.getIntExtra(NetworkConstants.INDEX, 0);
             Logger.logI(msg + " - " + from);
             listener.handleRead(msg, from);
         }
@@ -43,7 +43,7 @@ public class ResponseReceiver extends BroadcastReceiver
         {
             // Thread status updates
             String msg  = intent.getStringExtra(NetworkConstants.MESSAGE);
-            int    from = intent.getIntExtra(NetworkConstants.INDEX, -1);
+            int    from = intent.getIntExtra(NetworkConstants.INDEX, 0);
             Logger.logI(msg + " - " + from);
             listener.handleStatus(msg, from);
         }
@@ -51,7 +51,7 @@ public class ResponseReceiver extends BroadcastReceiver
         {
             // Thread errors
             String msg  = intent.getStringExtra(NetworkConstants.MESSAGE);
-            int    from = intent.getIntExtra(NetworkConstants.INDEX, -1);
+            int    from = intent.getIntExtra(NetworkConstants.INDEX, 0);
             Logger.logI(msg + " - " + from);
             listener.handleError(msg, from);
         }
