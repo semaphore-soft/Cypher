@@ -116,6 +116,12 @@ public class PortalClientActivity extends ARActivity implements UIListener,
         }
     }
 
+    /**
+     * {@inheritDoc}
+     *
+     * @return
+     */
+    //pass our rendering program to the ar framework
     @Override
     protected ARRenderer supplyRenderer()
     {
@@ -127,6 +133,8 @@ public class PortalClientActivity extends ARActivity implements UIListener,
      *
      * @return
      */
+    //pass the the frame to draw the camera feed and
+    //the ar graphics within to the ar framework
     @Override
     protected FrameLayout supplyFrameLayout()
     {

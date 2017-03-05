@@ -41,7 +41,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import static com.semaphore_soft.apps.cypher.utils.CollectionManager.getNextID;
 
 /**
- * Created by rickm on 11/9/2016.
+ * @author scorple
  */
 
 public class PortalActivity extends ARActivity implements PortalRenderer.NewMarkerListener,
@@ -91,6 +91,11 @@ public class PortalActivity extends ARActivity implements PortalRenderer.NewMark
         }
     };
 
+    /**
+     * {@inheritDoc}
+     *
+     * @param savedInstanceState
+     */
     @Override
     public void onCreate(Bundle savedInstanceState)
     {
@@ -141,6 +146,9 @@ public class PortalActivity extends ARActivity implements PortalRenderer.NewMark
             (HashMap<Integer, String>) getIntent().getSerializableExtra("character_selection");
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     protected void onStart()
     {
@@ -151,6 +159,9 @@ public class PortalActivity extends ARActivity implements PortalRenderer.NewMark
         handler.postDelayed(heartbeat, NetworkConstants.HEARTBEAT_DELAY);
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public void onStop()
     {
@@ -164,6 +175,11 @@ public class PortalActivity extends ARActivity implements PortalRenderer.NewMark
         sendHeartbeat = false;
     }
 
+    /**
+     * {@inheritDoc}
+     *
+     * @return
+     */
     //pass our rendering program to the ar framework
     @Override
     protected ARRenderer supplyRenderer()
@@ -171,6 +187,11 @@ public class PortalActivity extends ARActivity implements PortalRenderer.NewMark
         return renderer;
     }
 
+    /**
+     * {@inheritDoc}
+     *
+     * @return
+     */
     //pass the the frame to draw the camera feed and
     //the ar graphics within to the ar framework
     @Override
@@ -970,6 +991,22 @@ public class PortalActivity extends ARActivity implements PortalRenderer.NewMark
         }
     }
 
+    /**
+     * Attempt to perform a {@link Special} ability originating from a given
+     * {@link Actor} without a specific target using the appropriate {@link
+     * GameMaster} method, then post the results using the result code provided
+     * by the {@link GameMaster} method.
+     *
+     * @param sourceId  int: The logical reference ID of the desired {@link
+     *                  Actor} from which {@link Special} ability originated.
+     * @param specialId int: The logical reference ID of the desired {@link
+     *                  Special} ability to attempt to perform.
+     *
+     * @see Special
+     * @see Actor
+     * @see GameMaster
+     * @see GameMaster#special(int, int)
+     */
     private void performSpecial(final int sourceId, final int specialId)
     {
         int res = GameMaster.special(sourceId, specialId);
@@ -977,6 +1014,26 @@ public class PortalActivity extends ARActivity implements PortalRenderer.NewMark
         postSpecialResult(sourceId, -1, specialId, res);
     }
 
+    /**
+     * Attempt to perform a {@link Special} ability originating from a given
+     * {@link Actor} and targeted at a given {@link Actor} using the
+     * appropriate {@link GameMaster} method, then post the results using the
+     * result code provided by the {@link GameMaster} method.
+     *
+     * @param sourceId  int: The logical reference ID of the desired {@link
+     *                  Actor} from which the {@link Special} ability
+     *                  originated.
+     * @param targetId  int: The logical reference ID of the desired {@link
+     *                  Actor} at which the {@link Special} ability is
+     *                  targeted.
+     * @param specialId int: The logical reference ID of the desired {@link
+     *                  Special} ability to attempt to perform.
+     *
+     * @see Special
+     * @see Actor
+     * @see GameMaster
+     * @see GameMaster#special(int, int, int)
+     */
     private void performSpecial(final int sourceId, final int targetId, final int specialId)
     {
         int res = GameMaster.special(sourceId, targetId, specialId);
@@ -984,6 +1041,32 @@ public class PortalActivity extends ARActivity implements PortalRenderer.NewMark
         postSpecialResult(sourceId, targetId, specialId, res);
     }
 
+    /**
+     * Post the results of attempting to perform a {@link Special} ability in a
+     * way which provides feedback to the user, e.g. a Toast with a message
+     * describing why the {@link Special} could not be performed, or an
+     * 'animation' in the {@link PortalRenderer}.
+     *
+     * @param sourceId  int: The logical reference ID of the desired {@link
+     *                  Actor} from which the {@link Special} ability
+     *                  originated.
+     * @param targetId  int: The logical reference ID of the desired {@link
+     *                  Actor} at which the {@link Special} ability is
+     *                  targeted, or {@code -1} if the {@link Special ability}
+     *                  does not have a specific target.
+     * @param specialId int: The logical reference ID of the desired {@link
+     *                  Special} ability which was attempted to be performed.
+     * @param res       int: A result code provided by the {@link GameMaster}
+     *                  when the {@link Special} ability is attempted.
+     *
+     * @see Special
+     * @see Actor
+     * @see GameMaster
+     * @see GameMaster#special(int, int)
+     * @see GameMaster#special(int, int, int)
+     * @see PortalRenderer
+     * @see PortalRenderer#showAction(int, int, int, long, String, String, boolean)
+     */
     private void postSpecialResult(final int sourceId,
                                    final int targetId,
                                    final int specialId,
@@ -1033,22 +1116,11 @@ public class PortalActivity extends ARActivity implements PortalRenderer.NewMark
         }
     }
 
-    private ArrayList<Actor> getActorsInRoom(final Room room, final boolean getPlayers)
-    {
-        ArrayList<Actor> res = new ArrayList<>();
-
-        for (int actorId : room.getResidentActors())
-        {
-            Actor actor = model.getActors().get(actorId);
-            if ((getPlayers && actor.isPlayer()) || (!getPlayers && !actor.isPlayer()))
-            {
-                res.add(actor);
-            }
-        }
-
-        return res;
-    }
-
+    /**
+     * {@inheritDoc}
+     *
+     * @param message String: The feedback message to be processed or given to
+     */
     @Override
     public void feedback(final String message)
     {
@@ -1064,6 +1136,16 @@ public class PortalActivity extends ARActivity implements PortalRenderer.NewMark
         runOnUiThread(uiUpdate);
     }
 
+    /**
+     * {@inheritDoc}
+     *
+     * @param sourceId int: The logical reference ID of the {@link Actor}
+     *                 performing the action
+     * @param targetId int: The logical reference ID of the {@link Actor}
+     *                 target of the action if applicable, -1 otherwise.
+     * @param action   String: Reference description of the action being
+     *                 performed.
+     */
     @Override
     public void onActorAction(final int sourceId, final int targetId, final String action)
     {
@@ -1093,6 +1175,14 @@ public class PortalActivity extends ARActivity implements PortalRenderer.NewMark
         Logger.logD("exit trace");
     }
 
+    /**
+     * {@inheritDoc}
+     *
+     * @param actorId int: The logical reference ID of the {@link Actor} which
+     *                has moved.
+     * @param roomId  int: The logical reference ID of the {@link Room} moved
+     *                to by the given {@link Actor}.
+     */
     @Override
     public void onActorMove(final int actorId, final int roomId)
     {
@@ -1136,6 +1226,12 @@ public class PortalActivity extends ARActivity implements PortalRenderer.NewMark
         Logger.logD("exit trace");
     }
 
+    /**
+     * {@inheritDoc}
+     *
+     * @param turnId int: The logical reference ID of the turn that has passed,
+     *               and also the {@link Actor} for which that turn was taken.
+     */
     @Override
     public void turnPassed(final int turnId)
     {
@@ -1146,6 +1242,9 @@ public class PortalActivity extends ARActivity implements PortalRenderer.NewMark
         Logger.logD("exit trace");
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public void onFinishedLoading()
     {
