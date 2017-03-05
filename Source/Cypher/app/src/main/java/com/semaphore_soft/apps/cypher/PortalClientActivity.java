@@ -11,6 +11,7 @@ import android.support.v4.util.Pair;
 import android.widget.FrameLayout;
 import android.widget.Toast;
 
+import com.semaphore_soft.apps.cypher.game.GameController;
 import com.semaphore_soft.apps.cypher.networking.ClientService;
 import com.semaphore_soft.apps.cypher.networking.NetworkConstants;
 import com.semaphore_soft.apps.cypher.networking.ResponseReceiver;
@@ -29,7 +30,8 @@ import java.util.concurrent.ConcurrentHashMap;
  */
 
 public class PortalClientActivity extends ARActivity implements UIListener,
-                                                                ResponseReceiver.Receiver
+                                                                ResponseReceiver.Receiver,
+                                                                GameController
 {
 
     private UIPortalActivity uiPortalActivity;
@@ -73,7 +75,7 @@ public class PortalClientActivity extends ARActivity implements UIListener,
 
         renderer = new PortalRenderer();
         renderer.setContext(this);
-        //PortalRenderer.setGameController(this);
+        PortalRenderer.setGameController(this);
 
         responseReceiver = new ResponseReceiver();
         responseReceiver.setListener(this);
@@ -183,7 +185,7 @@ public class PortalClientActivity extends ARActivity implements UIListener,
             // and the MarkerID for the marker the player should be attached to.
             String[] splitMsg = msg.split(":");
 
-            renderer.setPlayerMarker(Integer.parseInt(splitMsg[2]), Integer.parseInt(splitMsg[3]));
+            renderer.setPlayerMarker(Integer.parseInt(splitMsg[1]), Integer.parseInt(splitMsg[2]));
         }
         else if (msg.equals(NetworkConstants.GAME_START))
         {
@@ -197,9 +199,9 @@ public class PortalClientActivity extends ARActivity implements UIListener,
         {
             uiPortalOverlay.overlayWaitingForTurn();
         }
-        else if (msg.startsWith("create_room"))
+        else if (msg.startsWith(NetworkConstants.PREFIX_CREATE_ROOM))
         {
-            // Expect the RoomId of the room to create,
+            // Expect the MarkerID of the room to create,
             // and a list of wall descriptors
             String[] splitMsg = msg.split(":");
 
@@ -242,11 +244,13 @@ public class PortalClientActivity extends ARActivity implements UIListener,
 
             renderer.updateRoomAlignment(arRoomId, roomAlignment);
         }
-        else if (msg.startsWith("update_room_residents"))
+        else if (msg.startsWith(NetworkConstants.PREFIX_UPDATE_ROOM_RESIDENTS))
         {
             // Expect the RoomID of the room to update,
             // and list of pairs(bool, string) of residents
-            String[] splitMsg = msg.split(":");
+            // ~id;flag,pose~id;flag,pose
+            // Use a different delimiter, because of how residents are stored
+            String[] splitMsg = msg.split("~");
 
             int arRoomId = Integer.parseInt(splitMsg[1]);
 
@@ -344,4 +348,49 @@ public class PortalClientActivity extends ARActivity implements UIListener,
             mClientBound = false;
         }
     };
+
+    @Override
+    public void onFinishedLoading()
+    {
+        Runnable uiUpdate = new Runnable()
+        {
+            @Override
+            public void run()
+            {
+                uiPortalOverlay.overlayPlayerMarkerSelect();
+            }
+        };
+
+        runOnUiThread(uiUpdate);
+    }
+
+    @Override
+    public void onFinishedAction(int actorId)
+    {
+
+    }
+
+    @Override
+    public void feedback(String message)
+    {
+        // DO NOT USE
+    }
+
+    @Override
+    public void onActorAction(int sourceId, int targetId, String action)
+    {
+        // DO NOT USE
+    }
+
+    @Override
+    public void onActorMove(int actorId, int roomId)
+    {
+        // DO NOT USE
+    }
+
+    @Override
+    public void turnPassed(int turnId)
+    {
+        // DO NOT USE
+    }
 }

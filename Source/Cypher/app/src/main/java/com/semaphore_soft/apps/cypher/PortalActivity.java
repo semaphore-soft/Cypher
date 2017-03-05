@@ -540,7 +540,8 @@ public class PortalActivity extends ARActivity implements PortalRenderer.NewMark
                 }
             }
 
-            renderer.updateRoomResidents(room.getMarker(), getResidents(roomId));
+            ConcurrentHashMap<Integer, Pair<Boolean, String>> residents = getResidents(roomId);
+            renderer.updateRoomResidents(room.getMarker(), residents);
 
             model.getMap().init(roomId);
 
@@ -548,6 +549,24 @@ public class PortalActivity extends ARActivity implements PortalRenderer.NewMark
                            "Starting Room Established",
                            Toast.LENGTH_SHORT)
                  .show();
+
+            String clientWallDescriptors = "";
+            for (String str : wallDescriptors)
+            {
+                clientWallDescriptors = clientWallDescriptors.concat(str + ":");
+            }
+            serverService.writeAll(
+                NetworkConstants.PREFIX_CREATE_ROOM + mark + ":" + clientWallDescriptors);
+            String clientRoomResidents = "";
+            // Use a different delimiter, because of how residents are stored
+            for (Integer residentID : residents.keySet())
+            {
+                Pair<Boolean, String> pair = residents.get(residentID);
+                clientRoomResidents = clientRoomResidents.concat(
+                    residentID + ";" + pair.first + "," + pair.second + "~");
+            }
+            serverService.writeAll(
+                NetworkConstants.PREFIX_UPDATE_ROOM_RESIDENTS + mark + "~" + clientRoomResidents);
 
             return true;
         }

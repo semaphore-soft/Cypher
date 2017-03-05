@@ -41,14 +41,17 @@ public class NetworkConstants
     public static final String GAME_TAKEN          = "GAME_TAKEN";
     public static final String GAME_WAIT           = "GAME_WAIT";
     // Constants to use as prefixes to exchange information with other devices
-    public static final String PREFIX_NAME         = "NAME:";
-    public static final String PREFIX_PLAYER       = "PLAYER:";
-    public static final String PREFIX_LOCK         = "LOCK:";
-    public static final String PREFIX_FREE         = "FREE:";
-    public static final String PREFIX_READY        = "READY:";
-    public static final String PREFIX_MARK_REQUEST = "MARK_REQUEST:";
-    public static final String PREFIX_RESERVE      = "RESERVE:";
-    public static final String PREFIX_ATTACH       = "ATTACH:";
+    public static final String PREFIX_NAME                  = "NAME:";
+    public static final String PREFIX_PLAYER                = "PLAYER:";
+    public static final String PREFIX_LOCK                  = "LOCK:";
+    public static final String PREFIX_FREE                  = "FREE:";
+    public static final String PREFIX_READY                 = "READY:";
+    public static final String PREFIX_MARK_REQUEST          = "MARK_REQUEST:";
+    public static final String PREFIX_RESERVE               = "RESERVE:";
+    public static final String PREFIX_ATTACH                = "ATTACH:";
+    public static final String PREFIX_CREATE_ROOM           = "CREATE_ROOM:";
+    // Use a different delimiter, because of how residents are stored
+    public static final String PREFIX_UPDATE_ROOM_RESIDENTS = "UPDATE_ROOM_RESIDENTS~";
 
     // Constants for status codes
     public static final String STATUS_SERVER_START   = "Server thread started";
