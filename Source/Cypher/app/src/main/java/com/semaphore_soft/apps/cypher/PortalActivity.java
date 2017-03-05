@@ -295,6 +295,7 @@ public class PortalActivity extends ARActivity implements PortalRenderer.NewMark
                                    1000,
                                    "defend",
                                    null,
+                                   true,
                                    false);
                     }
 
@@ -991,6 +992,7 @@ public class PortalActivity extends ARActivity implements PortalRenderer.NewMark
                            1000,
                            "attack",
                            targetState,
+                           true,
                            true);
             }
 
@@ -1072,7 +1074,7 @@ public class PortalActivity extends ARActivity implements PortalRenderer.NewMark
      * @see GameMaster#special(int, int)
      * @see GameMaster#special(int, int, int)
      * @see PortalRenderer
-     * @see PortalRenderer#showAction(int, int, int, long, String, String, boolean)
+     * @see PortalRenderer#showAction(int, int, int, long, String, String, boolean, boolean)
      */
     private void postSpecialResult(final int sourceId,
                                    final int targetId,
@@ -1116,6 +1118,7 @@ public class PortalActivity extends ARActivity implements PortalRenderer.NewMark
                            "special:" + specialType,
                            ((target != null) ? (target.getState() ==
                                                 Actor.E_STATE.DEFEND ? "defend" : null) : null),
+                           true,
                            specialType.equals("harm"));
             }
 
@@ -1176,6 +1179,7 @@ public class PortalActivity extends ARActivity implements PortalRenderer.NewMark
                        action,
                        ((target != null) ? (target.getState() ==
                                             Actor.E_STATE.DEFEND ? "defend" : null) : null),
+                       false,
                        forwardAction);
         }
 
@@ -1344,7 +1348,7 @@ public class PortalActivity extends ARActivity implements PortalRenderer.NewMark
      * @param targetState
      * @param forward
      *
-     * @see PortalRenderer#showAction(int, int, int, long, String, String, boolean)
+     * @see PortalRenderer#showAction(int, int, int, long, String, String, boolean, boolean)
      */
     private void showAction(int arRoomId,
                             int playerId,
@@ -1352,6 +1356,7 @@ public class PortalActivity extends ARActivity implements PortalRenderer.NewMark
                             int length,
                             String actionType,
                             String targetState,
+                            boolean playerAction,
                             boolean forward)
     {
         renderer.showAction(arRoomId,
@@ -1360,10 +1365,11 @@ public class PortalActivity extends ARActivity implements PortalRenderer.NewMark
                             length,
                             actionType,
                             targetState,
+                            playerAction,
                             forward);
         serverService.writeAll(
             NetworkConstants.PREFIX_SHOW_ACTION + arRoomId + ":" + playerId + ":" + targetId + ":" +
-            length + ":" + actionType + ":" + targetState + ":" + forward);
+            length + ":" + actionType + ":" + targetState + ":" + playerAction + ":" + forward);
     }
 
     /**

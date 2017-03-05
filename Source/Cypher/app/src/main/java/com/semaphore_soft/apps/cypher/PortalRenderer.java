@@ -9,7 +9,6 @@ import android.support.v4.util.Pair;
 
 import com.semaphore_soft.apps.cypher.game.Actor;
 import com.semaphore_soft.apps.cypher.game.GameController;
-import com.semaphore_soft.apps.cypher.game.GameMaster;
 import com.semaphore_soft.apps.cypher.game.Room;
 import com.semaphore_soft.apps.cypher.opengl.ARDrawableGLES20;
 import com.semaphore_soft.apps.cypher.opengl.ARModelGLES20;
@@ -687,12 +686,13 @@ class PortalRenderer extends ARRendererGLES20
                     final long length,
                     final String actionType,
                     @Nullable final String targetState,
+                    final boolean playerAction,
                     final boolean forward)
     {
         ARRoom arRoom = arRooms.get(arRoomId);
         if (forward)
         {
-            if (GameMaster.getActorIsPlayer(sourceId))
+            if (playerAction)
             {
                 arRoom.setForwardPlayer(sourceId);
                 if (targetId > -1)

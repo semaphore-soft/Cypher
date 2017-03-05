@@ -336,7 +336,8 @@ public class PortalClientActivity extends ARActivity implements UIListener,
                                 Long.parseLong(splitMsg[4]),
                                 splitMsg[5],
                                 splitMsg[6].equals("") ? null : splitMsg[6],
-                                Boolean.parseBoolean(splitMsg[7]));
+                                Boolean.parseBoolean(splitMsg[7]),
+                                Boolean.parseBoolean(splitMsg[8]));
         }
     }
 
