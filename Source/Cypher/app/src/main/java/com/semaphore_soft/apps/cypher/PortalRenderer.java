@@ -610,6 +610,26 @@ class PortalRenderer extends ARRendererGLES20
         arRoom.setAlignment(side);
     }
 
+    /**
+     * Updates the representation of the resident {@link Actor Actors} of a
+     * given {@link ARRoom} given the {@link Actor Actor's} logical reference
+     * IDs, player or non- player flag, and their reference name and pose
+     * delimited by a {@code :}.
+     *
+     * @param arRoomId  int: The reference ID of the AR marker the desired
+     *                  {@link ARRoom} is anchored to. Should match the marker
+     *                  reference ID of exactly one {@link Room}.
+     * @param residents ConcurrentHashMap: A map associating the logical
+     *                  reference IDs of the resident {@link Actor Actors} of
+     *                  the desired {@link Room} with a Pair consisting of
+     *                  their player or non-player flag and a string consisting
+     *                  of their reference name and pose delimited by a {@code
+     *                  :}.
+     *
+     * @see ARRoom
+     * @see Room
+     * @see Actor
+     */
     void updateRoomResidents(final int arRoomId,
                              final ConcurrentHashMap<Integer, Pair<Boolean, String>> residents)
     {

@@ -12,7 +12,10 @@ import android.support.v4.util.Pair;
 import android.widget.FrameLayout;
 import android.widget.Toast;
 
+import com.semaphore_soft.apps.cypher.game.Actor;
 import com.semaphore_soft.apps.cypher.game.GameController;
+import com.semaphore_soft.apps.cypher.game.Room;
+import com.semaphore_soft.apps.cypher.game.Special;
 import com.semaphore_soft.apps.cypher.networking.ClientService;
 import com.semaphore_soft.apps.cypher.networking.NetworkConstants;
 import com.semaphore_soft.apps.cypher.networking.ResponseReceiver;
@@ -24,6 +27,7 @@ import org.artoolkit.ar.base.ARActivity;
 import org.artoolkit.ar.base.rendering.ARRenderer;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
@@ -50,11 +54,15 @@ public class PortalClientActivity extends ARActivity implements UIListener,
 
     private static boolean turn;
 
-    private static ArrayList<Integer> reservedMarkers;
+    private static int playerRoomMarker;
 
-    private static ArrayList<String> playerTargets;
-    private static ArrayList<String> nonPlayerTargets;
-    private static ArrayList<String> special;
+    private static ArrayList<Integer> reservedMarkers;
+    private static ArrayList<Integer> playerMarkers;
+    private static ArrayList<Integer> placedRoomMarkers;
+
+    private static HashMap<Integer, String>                                 playerTargets;
+    private static HashMap<Integer, String>                                 nonPlayerTargets;
+    private static HashMap<Integer, Pair<String, Special.E_TARGETING_TYPE>> special;
 
     /**
      * {@inheritDoc}
@@ -92,6 +100,8 @@ public class PortalClientActivity extends ARActivity implements UIListener,
         turn = false;
 
         reservedMarkers = new ArrayList<>();
+        playerMarkers = new ArrayList<>();
+        placedRoomMarkers = new ArrayList<>();
     }
 
     /**
@@ -165,6 +175,21 @@ public class PortalClientActivity extends ARActivity implements UIListener,
                         NetworkConstants.PREFIX_MARK_REQUEST + firstUnreservedMarker);
                 }
             }
+            case "cmd_btnEndTurn":
+                moveActor();
+                break;
+            case "cmd_btnGenerateRoom":
+                generateRoom();
+                break;
+            case "cmd_btnOpenDoor":
+                openDoor();
+                break;
+            case "cmd_btnAttack":
+                break;
+            case "cmd_btnDefend":
+                break;
+            case "cmd_btnSpecial":
+                break;
         }
     }
 
@@ -180,12 +205,32 @@ public class PortalClientActivity extends ARActivity implements UIListener,
         Toast.makeText(this, "Read: " + msg + " from <" + unused + ">", Toast.LENGTH_SHORT)
              .show();
 
-        if (msg.startsWith(NetworkConstants.PREFIX_RESERVE))
+        if (msg.startsWith(NetworkConstants.PREFIX_ASSIGN_MARK))
+        {
+            // Expect the MarkerID to be assigned
+            String[] splitMsg = msg.split(":");
+
+            playerRoomMarker = Integer.parseInt(splitMsg[1]);
+        }
+        else if (msg.startsWith(NetworkConstants.PREFIX_RESERVE_PLAYER))
         {
             // Expect the MarkerID to be reserved
             String[] splitMsg = msg.split(":");
 
-            reservedMarkers.add(Integer.parseInt(splitMsg[1]));
+            int mark = Integer.parseInt(splitMsg[1]);
+
+            playerMarkers.add(mark);
+            reservedMarkers.add(mark);
+        }
+        else if (msg.startsWith(NetworkConstants.PREFIX_RESERVE_ROOM))
+        {
+            // Expect the MarkerID to be reserved
+            String[] splitMsg = msg.split(":");
+
+            int mark = Integer.parseInt(splitMsg[1]);
+
+            placedRoomMarkers.add(mark);
+            reservedMarkers.add(mark);
         }
         else if (msg.equals(NetworkConstants.GAME_WAIT))
         {
@@ -341,6 +386,141 @@ public class PortalClientActivity extends ARActivity implements UIListener,
         }
 
         return -1;
+    }
+
+    /**
+     * Get the reference ID of the nearest visible AR marker to a given AR
+     * marker via the {@link PortalRenderer} which is not associated with an
+     * {@link Actor}, or {@code -1} if either the given marker is not visible
+     * or there are no other markers in view.
+     *
+     * @param mark0 int: The reference ID of the desired AR marker to get the
+     *              nearest marker to.
+     *
+     * @return int: The reference ID of the nearest visible AR marker to a
+     * given AR marker via the {@link PortalRenderer} which is not associated
+     * with an {@link Actor}, or {@code -1} if either the given marker is not
+     * visible or there are no other markers in view.
+     *
+     * @see PortalRenderer
+     * @see PortalRenderer#getNearestMarkerExcluding(int, ArrayList)
+     * @see Actor
+     * @see Actor#getMarker()
+     */
+    private int getNearestNonPlayerMarker(final int mark0)
+    {
+        int foundMarker = renderer.getNearestMarkerExcluding(mark0, playerMarkers);
+
+        if (foundMarker > -1)
+        {
+            return foundMarker;
+        }
+
+        return -1;
+    }
+
+    /**
+     * Get the reference ID of the nearest visible AR marker to a given AR
+     * marker via the {@link PortalRenderer} which is not associated with an
+     * {@link Actor} and is not in the list of AR marker reference IDs
+     * indicated as excluded, or {@code -1} if either the given marker is not
+     * visible or there are no other markers in view.
+     *
+     * @param mark0  int: The reference ID of the desired AR marker to get the
+     *               nearest marker to.
+     * @param marksX ArrayList: A list of marker reference IDs to exclude when
+     *               searching for the nearest marker to a given marker.
+     *
+     * @return int: the reference ID of the nearest visible AR marker to a
+     * given AR marker via the {@link PortalRenderer} which is not associated
+     * with an {@link Actor} and is not in the list of AR marker reference IDs
+     * indicated as excluded, or {@code -1} if either the given marker is not
+     * visible or there are no other markers in view.
+     *
+     * @see PortalRenderer
+     * @see PortalRenderer#getNearestMarkerExcluding(int, ArrayList)
+     * @see Actor
+     * @see Actor#getMarker()
+     */
+    private int getNearestNonPlayerMarkerExcluding(final int mark0, final ArrayList<Integer> marksX)
+    {
+        for (int i : playerMarkers)
+        {
+            marksX.add(i);
+        }
+
+        int foundMarker = renderer.getNearestMarkerExcluding(mark0, marksX);
+
+        if (foundMarker > -1)
+        {
+            return foundMarker;
+        }
+
+        return -1;
+    }
+
+    private void moveActor()
+    {
+        int nearestMarkerId =
+            getNearestNonPlayerMarker(playerRoomMarker);
+
+        if (nearestMarkerId > -1)
+        {
+            clientService.write(NetworkConstants.PREFIX_MOVE_REQUEST + nearestMarkerId);
+        }
+    }
+
+    private void generateRoom()
+    {
+        int firstUnreservedMarker = getFirstUnreservedMarker();
+
+        if (firstUnreservedMarker > -1)
+        {
+            clientService.write(
+                NetworkConstants.PREFIX_GENERATE_ROOM_REQUEST + firstUnreservedMarker);
+        }
+    }
+
+    private static short getWallFromAngle(final float angle)
+    {
+        if (angle > 315 || angle <= 45)
+        {
+            return Room.WALL_TOP;
+        }
+        else if (angle > 45 && angle <= 135)
+        {
+            return Room.WALL_RIGHT;
+        }
+        else if (angle > 135 && angle <= 225)
+        {
+            return Room.WALL_BOTTOM;
+        }
+        else
+        {
+            return Room.WALL_LEFT;
+        }
+    }
+
+    private void openDoor()
+    {
+        int nearestMarkerID =
+            getNearestNonPlayerMarkerExcluding(playerRoomMarker,
+                                               placedRoomMarkers);
+
+        if (nearestMarkerID > -1)
+        {
+            float angle0 =
+                renderer.getAngleBetweenMarkers(playerRoomMarker,
+                                                nearestMarkerID);
+            float angle1 = renderer.getAngleBetweenMarkers(nearestMarkerID,
+                                                           playerRoomMarker);
+
+            short sideOfStartRoom = getWallFromAngle(angle0);
+            short sideOfEndRoom   = getWallFromAngle(angle1);
+
+            clientService.write(NetworkConstants.PREFIX_OPEN_DOOR_REQUEST + nearestMarkerID + "," +
+                                sideOfStartRoom + "," + sideOfEndRoom);
+        }
     }
 
     private ServiceConnection mClientConnection = new ServiceConnection()

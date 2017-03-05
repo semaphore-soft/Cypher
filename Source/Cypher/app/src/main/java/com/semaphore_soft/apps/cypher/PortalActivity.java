@@ -225,7 +225,7 @@ public class PortalActivity extends ARActivity implements PortalRenderer.NewMark
                              .show();
 
                         serverService.writeAll(
-                            NetworkConstants.PREFIX_RESERVE + firstUnreservedMarker);
+                            NetworkConstants.PREFIX_RESERVE_PLAYER + firstUnreservedMarker);
                         serverService.writeAll(NetworkConstants.PREFIX_ATTACH + playerId + ":" +
                                                firstUnreservedMarker);
 
@@ -253,7 +253,7 @@ public class PortalActivity extends ARActivity implements PortalRenderer.NewMark
                     moveActor(playerId);
                     break;
                 case "cmd_btnGenerateRoom":
-                    generateRoom();
+                    generateRoom(getFirstUnreservedMarker());
                     break;
                 case "cmd_btnOpenDoor":
                     if (openDoor())
@@ -407,12 +407,15 @@ public class PortalActivity extends ARActivity implements PortalRenderer.NewMark
             // Expect MarkerID of a marker that the client wants to attach to
             String[] splitMsg = msg.split(":");
 
+            int mark = Integer.parseInt(splitMsg[1]);
+
             if (selectPlayerMarker(readFrom,
                                    playerCharacterMap.get(readFrom),
-                                   Integer.parseInt(splitMsg[1])))
+                                   mark))
             {
                 serverService.writeToClient(NetworkConstants.GAME_WAIT, readFrom);
-                serverService.writeAll(NetworkConstants.PREFIX_RESERVE + splitMsg[1]);
+                serverService.writeToClient(NetworkConstants.PREFIX_ASSIGN_MARK + mark, readFrom);
+                serverService.writeAll(NetworkConstants.PREFIX_RESERVE_PLAYER + splitMsg[1]);
                 serverService.writeAll(
                     NetworkConstants.PREFIX_ATTACH + readFrom + ":" + splitMsg[1]);
 
@@ -422,6 +425,21 @@ public class PortalActivity extends ARActivity implements PortalRenderer.NewMark
                 {
                     uiPortalOverlay.overlayStartMarkerSelect();
                 }
+            }
+        }
+        else if (msg.startsWith(NetworkConstants.PREFIX_GENERATE_ROOM_REQUEST))
+        {
+            // Expect MarkerID of a marker that the client wants generate a
+            // room on
+            String[] splitMsg = msg.split(":");
+
+            int mark = Integer.parseInt(splitMsg[1]);
+
+            if (generateRoom(mark))
+            {
+                int      roomId          = GameMaster.getRoomIdByMarkerId(mark);
+                String[] wallDescriptors = getWallDescriptors(roomId);
+                createRoom(roomId, wallDescriptors);
             }
         }
     }
@@ -796,9 +814,8 @@ public class PortalActivity extends ARActivity implements PortalRenderer.NewMark
         }
     }
 
-    private boolean generateRoom()
+    private boolean generateRoom(int mark)
     {
-        int mark = getFirstUnreservedMarker();
         if (mark > -1)
         {
             Room room =
@@ -1096,9 +1113,9 @@ public class PortalActivity extends ARActivity implements PortalRenderer.NewMark
                            sourceId,
                            targetId,
                            1000,
-                                    "special:" + specialType,
+                           "special:" + specialType,
                            ((target != null) ? (target.getState() ==
-                                                         Actor.E_STATE.DEFEND ? "defend" : null) : null),
+                                                Actor.E_STATE.DEFEND ? "defend" : null) : null),
                            specialType.equals("harm"));
             }
 
@@ -1158,7 +1175,7 @@ public class PortalActivity extends ARActivity implements PortalRenderer.NewMark
                        1000,
                        action,
                        ((target != null) ? (target.getState() ==
-                                                     Actor.E_STATE.DEFEND ? "defend" : null) : null),
+                                            Actor.E_STATE.DEFEND ? "defend" : null) : null),
                        forwardAction);
         }
 
