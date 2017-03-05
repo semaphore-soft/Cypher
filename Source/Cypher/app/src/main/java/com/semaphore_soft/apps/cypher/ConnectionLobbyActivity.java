@@ -212,7 +212,6 @@ public class ConnectionLobbyActivity extends AppCompatActivity implements Respon
     @Override
     public void handleRead(String msg, int readFrom)
     {
-        Toast.makeText(this, "Read: " + msg, Toast.LENGTH_SHORT).show();
         if (msg.equals(NetworkConstants.GAME_START))
         {
             LocalBroadcastManager.getInstance(ConnectionLobbyActivity.this)

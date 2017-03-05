@@ -182,7 +182,6 @@ public class CharacterSelectActivity extends AppCompatActivity implements Respon
     @Override
     public void handleRead(String msg, int readFrom)
     {
-        Toast.makeText(this, "Read: " + msg, Toast.LENGTH_SHORT).show();
         if (msg.equals(NetworkConstants.GAME_KNIGHT) || msg.equals(NetworkConstants.GAME_SOLDIER) ||
             msg.equals(NetworkConstants.GAME_RANGER) || msg.equals(NetworkConstants.GAME_WIZARD))
         {
@@ -419,6 +418,9 @@ public class CharacterSelectActivity extends AppCompatActivity implements Respon
         startActivity(intent);
     }
 
+    /**
+     * Starts {@link PortalClientActivity}.
+     */
     private void startARClient()
     {
         Toast.makeText(CharacterSelectActivity.this, "Starting AR Activity", Toast.LENGTH_SHORT)

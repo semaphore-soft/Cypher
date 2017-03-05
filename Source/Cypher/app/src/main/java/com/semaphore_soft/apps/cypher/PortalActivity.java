@@ -400,9 +400,6 @@ public class PortalActivity extends ARActivity implements PortalRenderer.NewMark
     @Override
     public void handleRead(final String msg, final int readFrom)
     {
-        Toast.makeText(this, "Read: " + msg + " from <" + readFrom + ">", Toast.LENGTH_SHORT)
-             .show();
-
         if (msg.startsWith(NetworkConstants.PREFIX_MARK_REQUEST))
         {
             // Expect MarkerID of a marker that the client wants to attach to

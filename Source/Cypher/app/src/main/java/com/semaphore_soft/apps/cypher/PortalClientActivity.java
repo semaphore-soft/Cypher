@@ -201,9 +201,6 @@ public class PortalClientActivity extends ARActivity implements UIListener,
     @Override
     public void handleRead(String msg, int unused)
     {
-        Toast.makeText(this, "Read: " + msg + " from <" + unused + ">", Toast.LENGTH_SHORT)
-             .show();
-
         if (msg.startsWith(NetworkConstants.PREFIX_ASSIGN_MARK))
         {
             // Expect the MarkerID to be assigned
