@@ -5,6 +5,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.ServiceConnection;
 import android.os.Bundle;
+import android.os.Handler;
 import android.os.IBinder;
 import android.support.v4.content.LocalBroadcastManager;
 import android.support.v4.util.Pair;
@@ -46,7 +47,7 @@ public class PortalClientActivity extends ARActivity implements UIListener,
     private static ResponseReceiver responseReceiver;
     private static ClientService    clientService;
     private static boolean mClientBound = false;
-    //private static Handler handler      = new Handler();
+    private static Handler handler      = new Handler();
 
     private static int    playerId;
     private static String characterName;
@@ -94,7 +95,7 @@ public class PortalClientActivity extends ARActivity implements UIListener,
         playerId = getIntent().getExtras().getInt("player");
         characterName = getIntent().getStringExtra("character");
 
-        //PortalRenderer.setHandler(handler);
+        PortalRenderer.setHandler(handler);
 
         turn = false;
 

@@ -9,9 +9,12 @@ import android.support.v4.util.Pair;
 
 import com.semaphore_soft.apps.cypher.game.Actor;
 import com.semaphore_soft.apps.cypher.game.GameController;
+import com.semaphore_soft.apps.cypher.game.GameMaster;
 import com.semaphore_soft.apps.cypher.game.Room;
+import com.semaphore_soft.apps.cypher.game.Special;
 import com.semaphore_soft.apps.cypher.opengl.ARDrawableGLES20;
 import com.semaphore_soft.apps.cypher.opengl.ARModelGLES20;
+import com.semaphore_soft.apps.cypher.opengl.ARPoseModel;
 import com.semaphore_soft.apps.cypher.opengl.ARRoom;
 import com.semaphore_soft.apps.cypher.opengl.ModelLoader;
 import com.semaphore_soft.apps.cypher.opengl.shader.DynamicShaderProgram;
@@ -680,6 +683,67 @@ class PortalRenderer extends ARRendererGLES20
         Logger.logD("enter trace");
     }
 
+    /**
+     * Provides a presentation of {@link Actor} action by updating the pose of
+     * an action source {@link Actor} and a target {@link Actor}, if
+     * applicable, in a given {@link ARRoom}. The action poses will expire
+     * after {@code length} and, if present, a Handler will be used to call
+     * back to this {@link PortalRenderer PortalRenderer's} associated {@link
+     * GameController}.
+     *
+     * @param arRoomId     int: The reference ID of the AR marker the desired
+     *                     {@link ARRoom} in which the action is taking place
+     *                     is anchored to. Should match the marker reference ID
+     *                     of exactly one {@link Room}.
+     * @param sourceId     int: The logical reference ID of the source {@link
+     *                     Actor} of the action being shown.
+     * @param targetId     int: The logical reference ID of the target {@link
+     *                     Actor} at which the action being shown is directed,
+     *                     or {@code -1} if the action does not have a specific
+     *                     target.
+     * @param length       int: The duration in milliseconds to present the
+     *                     desired action.
+     * @param actionType   String: A description of the action being shown,
+     *                     e.g. {@code attack}, {@code defend},
+     *                     {@code special:hurt}.
+     *                     <p>
+     *                     Note: {@link Special} actions must include a
+     *                     description of the special type ({@code hurt} or
+     *                     {@code help}, see {@link
+     *                     GameMaster#getSpecialTypeDescriptor(int)})
+     *                     delimited by a {@code :}.
+     * @param targetState  String: A description of the state of the target
+     *                     {@link Actor} of the desired action, or {@code null}
+     *                     if the action being shown does not have a specific
+     *                     target {@link Actor}.
+     * @param playerAction boolean: A flag indicating whether the source {@link
+     *                     Actor} of the action being shown is a player
+     *                     controlled {@link Actor}.
+     *                     <ul>
+     *                     <li>true: The source {@link Actor} is considered to
+     *                     be player controlled.</li>
+     *                     <li>false: The source {@link Actor} is not
+     *                     considered to be player controlled.</li>
+     *                     </ul>
+     * @param forward      boolean: A flag indicating whether the action
+     *                     requires its source and target (if applicable){@link
+     *                     Actor Actors} in the 'forward' position - closer to
+     *                     room center, directly opposite one another.
+     *                     <ul>
+     *                     <li>true: The action requires its source and target
+     *                     (if applicable) {@link Actor Actors} in the
+     *                     'forward' position.</li>
+     *                     <li>false: The action DOES NOT require its source
+     *                     and target (if applicable) {@link Actor Actors} in
+     *                     the 'forward' position.</li>
+     *                     </ul>
+     *
+     * @see Actor
+     * @see ARRoom
+     * @see ARPoseModel
+     * @see GameMaster#getSpecialTypeDescriptor(int)
+     * @see PortalActivity#showAction(int, int, int, int, String, String, boolean, boolean)
+     */
     void showAction(final int arRoomId,
                     final int sourceId,
                     final int targetId,
