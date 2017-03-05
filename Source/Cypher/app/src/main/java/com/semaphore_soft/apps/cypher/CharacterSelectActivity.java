@@ -414,8 +414,7 @@ public class CharacterSelectActivity extends AppCompatActivity implements Respon
         intent.putExtra("character", selection);
         intent.putExtra("num_clients", numClients);
 
-        intent.putExtra("player_ids", characterSelections.keySet().toArray());
-        intent.putExtra("player_characters", (String[]) characterSelections.values().toArray());
+        intent.putExtra("character_selection", characterSelections);
 
         startActivity(intent);
     }

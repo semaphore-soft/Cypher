@@ -136,29 +136,8 @@ public class PortalActivity extends ARActivity implements PortalRenderer.NewMark
 
         numClients = getIntent().getExtras().getInt("num_clients", 0);
 
-        int[]    playerIds        = getIntent().getIntArrayExtra("player_ids");
-        String[] playerCharacters = getIntent().getStringArrayExtra("player_characters");
-
-        if (playerIds != null && playerCharacters != null)
-        {
-            if (playerIds.length != playerCharacters.length)
-            {
-                Toast.makeText(this,
-                               "player_ids length != player_characters length, abort",
-                               Toast.LENGTH_SHORT).show();
-
-                Intent intent = new Intent();
-                intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NEW_TASK |
-                                Intent.FLAG_ACTIVITY_CLEAR_TASK);
-                startActivity(intent);
-                finish();
-            }
-
-            for (int i = 0; i < playerIds.length; ++i)
-            {
-                playerCharacterMap.put(playerIds[i], playerCharacters[i]);
-            }
-        }
+        playerCharacterMap =
+            (HashMap<Integer, String>) getIntent().getSerializableExtra("character_selection");
     }
 
     @Override
