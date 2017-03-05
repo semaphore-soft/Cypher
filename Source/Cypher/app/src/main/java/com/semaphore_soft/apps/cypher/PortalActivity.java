@@ -604,7 +604,7 @@ public class PortalActivity extends ARActivity implements PortalRenderer.NewMark
      */
     private boolean selectPlayerMarker(int playerId, String characterName, int mark)
     {
-        if (mark > -1)
+        if (mark > -1 && GameMaster.getMarkerAttachment(mark) == -1)
         {
             Actor actor = new Actor(playerId, characterName, mark);
             GameStatLoader.loadActorStats(actor,
