@@ -459,13 +459,14 @@ public class PortalActivity extends ARActivity implements PortalRenderer.NewMark
 
             int res =
                 GameMaster.openDoor(GameMaster.getActorRoomId(readFrom),
-                                    Integer.parseInt(splitMsg[2]),
-                                    Short.parseShort(splitMsg[3]),
-                                    Short.parseShort(splitMsg[4]));
+                                    Integer.parseInt(splitMsg[1]),
+                                    Short.parseShort(splitMsg[2]),
+                                    Short.parseShort(splitMsg[3]));
 
             if (res >= 0)
             {
                 postOpenDoorResult(Integer.getInteger(splitMsg[2]), res);
+                serverService.writeAll(NetworkConstants.PREFIX_RESERVE_ROOM + splitMsg[2]);
             }
         }
     }
@@ -711,6 +712,7 @@ public class PortalActivity extends ARActivity implements PortalRenderer.NewMark
             String[] wallDescriptors = getWallDescriptors(roomId);
 
             createRoom(mark, wallDescriptors);
+            serverService.writeAll(NetworkConstants.PREFIX_RESERVE_ROOM + mark);
 
             //place every player actor in that room
             for (Actor actor : model.getActors().values())
@@ -920,6 +922,7 @@ public class PortalActivity extends ARActivity implements PortalRenderer.NewMark
                 if (res >= 0)
                 {
                     postOpenDoorResult(endRoomId, res);
+                    serverService.writeAll(NetworkConstants.PREFIX_RESERVE_ROOM + endRoomId);
 
                     return true;
                 }
@@ -1415,7 +1418,7 @@ public class PortalActivity extends ARActivity implements PortalRenderer.NewMark
         }
         serverService.writeAll(
             NetworkConstants.PREFIX_CREATE_ROOM + roomID + ":" + clientWallDescriptors);
-        serverService.writeAll(NetworkConstants.PREFIX_RESERVE_ROOM + roomID);
+        //        serverService.writeAll(NetworkConstants.PREFIX_RESERVE_ROOM + roomID);
     }
 
     /**
