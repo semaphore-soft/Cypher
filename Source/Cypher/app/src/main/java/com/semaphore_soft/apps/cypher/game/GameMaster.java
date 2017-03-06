@@ -1448,4 +1448,20 @@ public class GameMaster
 
         return Special.E_TARGETING_TYPE.SINGLE_NON_PLAYER;
     }
+
+    @NonNull
+    public static ArrayList<Integer> getPlayerActorIds()
+    {
+        ArrayList<Integer> playerActorIds = new ArrayList<>();
+
+        for (Actor actor : model.getActors().values())
+        {
+            if (actor.isPlayer())
+            {
+                playerActorIds.add(actor.getId());
+            }
+        }
+
+        return playerActorIds;
+    }
 }

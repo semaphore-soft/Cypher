@@ -60,9 +60,9 @@ public class PortalClientActivity extends ARActivity implements UIListener,
     private static ArrayList<Integer> playerMarkers;
     private static ArrayList<Integer> placedRoomMarkers;
 
-    private static HashMap<Integer, String>                                 playerTargets;
     private static HashMap<Integer, String>                                 nonPlayerTargets;
-    private static HashMap<Integer, Pair<String, Special.E_TARGETING_TYPE>> special;
+    private static HashMap<Integer, String>                                 playerTargets;
+    private static HashMap<Integer, Pair<String, Special.E_TARGETING_TYPE>> specials;
 
     /**
      * {@inheritDoc}
@@ -102,6 +102,10 @@ public class PortalClientActivity extends ARActivity implements UIListener,
         reservedMarkers = new ArrayList<>();
         playerMarkers = new ArrayList<>();
         placedRoomMarkers = new ArrayList<>();
+
+        nonPlayerTargets = new HashMap<>();
+        playerTargets = new HashMap<>();
+        specials = new HashMap<>();
     }
 
     /**
@@ -163,10 +167,12 @@ public class PortalClientActivity extends ARActivity implements UIListener,
     @Override
     public void onCommand(String cmd)
     {
-        switch (cmd)
+        if (cmd.startsWith("cmd_btn"))
         {
-            case "cmd_btnPlayerMarkerSelect":
-                int firstUnreservedMarker = getFirstUnreservedMarker();
+            switch (cmd)
+            {
+                case "cmd_btnPlayerMarkerSelect":
+                    int firstUnreservedMarker = getFirstUnreservedMarker();
 
                 if (firstUnreservedMarker > -1)
                 {
@@ -189,6 +195,111 @@ public class PortalClientActivity extends ARActivity implements UIListener,
                 break;
             case "cmd_btnSpecial":
                 break;
+                    if (firstUnreservedMarker > -1)
+                    {
+                        clientService.write(
+                            NetworkConstants.PREFIX_MARK_REQUEST + firstUnreservedMarker);
+                    }
+                }
+                case "cmd_btnEndTurn":
+                    moveActor();
+                    break;
+                case "cmd_btnGenerateRoom":
+                    generateRoom();
+                    break;
+                case "cmd_btnOpenDoor":
+                    openDoor();
+                    break;
+                case "cmd_btnAttack":
+                    ArrayList<Pair<String, String>> attackOptions = new ArrayList<>();
+
+                    for (int i : nonPlayerTargets.keySet())
+                    {
+                        String               targetName = nonPlayerTargets.get(i);
+                        Pair<String, String> targetPair = new Pair<>(targetName, "cmd_attack:" + i);
+                        attackOptions.add(targetPair);
+                    }
+
+                    uiPortalOverlay.overlaySelect(attackOptions);
+                    break;
+                case "cmd_btnDefend":
+                    clientService.write(NetworkConstants.PREFIX_ACTION_REQUEST + "cmd_defend");
+                    break;
+                case "cmd_btnSpecial":
+                    ArrayList<Pair<String, String>> specialOptions = new ArrayList<>();
+
+                    for (int i : specials.keySet())
+                    {
+                        Pair<String, Special.E_TARGETING_TYPE> specialDescriptionPair =
+                            specials.get(i);
+                        String specialName =
+                            specialDescriptionPair.first;
+                        Pair<String, String> specialOptionPair =
+                            new Pair<>(specialName, "cmd_special:" + i);
+                        specialOptions.add(specialOptionPair);
+                    }
+
+                    uiPortalOverlay.overlaySelect(specialOptions);
+                    break;
+            }
+        }
+        else
+        {
+            String[] splitCmd    = cmd.split("_");
+            String[] splitAction = splitCmd[1].split(":");
+
+            if (splitAction[0].equals("special"))
+            {
+                int specialId = Integer.parseInt(splitAction[1]);
+
+                Special.E_TARGETING_TYPE specialType = specials.get(specialId).second;
+
+                if (splitAction.length < 3)
+                {
+                    if (specialType != Special.E_TARGETING_TYPE.AOE_PLAYER && specialType !=
+                                                                              Special.E_TARGETING_TYPE.AOE_NON_PLAYER)
+                    {
+                        ArrayList<Pair<String, String>> targetOptions = new ArrayList<>();
+
+                        if (specialType == Special.E_TARGETING_TYPE.SINGLE_NON_PLAYER)
+                        {
+                            for (int i : nonPlayerTargets.keySet())
+                            {
+                                Pair<String, String> targetPair =
+                                    new Pair<>(nonPlayerTargets.get(i),
+                                               "cmd_special:" + specialId + ":" + i);
+
+                                targetOptions.add(targetPair);
+                            }
+                        }
+                        else
+                        {
+                            for (int i : playerTargets.keySet())
+                            {
+                                Pair<String, String> targetPair =
+                                    new Pair<>(playerTargets.get(i),
+                                               "cmd_special:" + specialId + ":" + i);
+
+                                targetOptions.add(targetPair);
+                            }
+                        }
+
+                        uiPortalOverlay.overlaySelect(targetOptions);
+                    }
+                    else
+                    {
+                        clientService.write(NetworkConstants.PREFIX_ACTION_REQUEST + cmd);
+                    }
+                }
+                else
+                {
+                    clientService.write(NetworkConstants.PREFIX_ACTION_REQUEST + cmd);
+                }
+            }
+            else
+            {
+                clientService.write(NetworkConstants.PREFIX_ACTION_REQUEST + cmd);
+            }
         }
     }
 
@@ -335,6 +446,54 @@ public class PortalClientActivity extends ARActivity implements UIListener,
                                 splitMsg[6].equals("") ? null : splitMsg[6],
                                 Boolean.parseBoolean(splitMsg[7]),
                                 Boolean.parseBoolean(splitMsg[8]));
+        }
+        else if (msg.startsWith(NetworkConstants.PREFIX_UPDATE_NON_PLAYER_TARGETS))
+        {
+            nonPlayerTargets.clear();
+
+            String[] splitMsg             = msg.split(":");
+            String[] nonPlayerTargetPairs = splitMsg[1].split(",");
+
+            for (String nonPlayerTargetPair : nonPlayerTargetPairs)
+            {
+                String[] splitNonPlayerTargetPair = nonPlayerTargetPair.split("\\.");
+
+                nonPlayerTargets.put(Integer.parseInt(splitNonPlayerTargetPair[0]),
+                                     splitNonPlayerTargetPair[1]);
+            }
+        }
+        else if (msg.startsWith(NetworkConstants.PREFIX_UPDATE_PLAYER_TARGETS))
+        {
+            playerTargets.clear();
+
+            String[] splitMsg          = msg.split(":");
+            String[] playerTargetPairs = splitMsg[1].split(",");
+
+            for (String playerTargetPair : playerTargetPairs)
+            {
+                String[] splitPlayerTargetPair = playerTargetPair.split("\\.");
+
+                playerTargets.put(Integer.parseInt(splitPlayerTargetPair[0]),
+                                  splitPlayerTargetPair[1]);
+            }
+        }
+        else if (msg.startsWith(NetworkConstants.PREFIX_UPDATE_PLAYER_SPECIALS))
+        {
+            specials.clear();
+
+            String[] splitMsg      = msg.split(":");
+            String[] specialTriads = splitMsg[1].split(",");
+
+            for (String specialTriad : specialTriads)
+            {
+                String[] splitSpecialTriad = specialTriad.split("\\.");
+
+                Pair<String, Special.E_TARGETING_TYPE> specialNameTargetingPair =
+                    new Pair<>(splitSpecialTriad[1],
+                               Special.E_TARGETING_TYPE.valueOf(splitSpecialTriad[2]));
+
+                specials.put(Integer.parseInt(splitSpecialTriad[0]), specialNameTargetingPair);
+            }
         }
     }
 
