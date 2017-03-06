@@ -174,33 +174,12 @@ public class PortalClientActivity extends ARActivity implements UIListener,
                 case "cmd_btnPlayerMarkerSelect":
                     int firstUnreservedMarker = getFirstUnreservedMarker();
 
-                if (firstUnreservedMarker > -1)
-                {
-                    clientService.write(
-                        NetworkConstants.PREFIX_MARK_REQUEST + firstUnreservedMarker);
-                }
-                break;
-            case "cmd_btnEndTurn":
-                moveActor();
-                break;
-            case "cmd_btnGenerateRoom":
-                generateRoom();
-                break;
-            case "cmd_btnOpenDoor":
-                openDoor();
-                break;
-            case "cmd_btnAttack":
-                break;
-            case "cmd_btnDefend":
-                break;
-            case "cmd_btnSpecial":
-                break;
                     if (firstUnreservedMarker > -1)
                     {
                         clientService.write(
                             NetworkConstants.PREFIX_MARK_REQUEST + firstUnreservedMarker);
                     }
-                }
+                    break;
                 case "cmd_btnEndTurn":
                     moveActor();
                     break;

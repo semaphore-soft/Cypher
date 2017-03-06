@@ -462,6 +462,7 @@ public class PortalActivity extends ARActivity implements PortalRenderer.NewMark
                 postOpenDoorResult(Integer.getInteger(splitMsg[2]), res);
                 serverService.writeAll(NetworkConstants.PREFIX_RESERVE_ROOM + splitMsg[2]);
             }
+        }
         else if (msg.startsWith(NetworkConstants.PREFIX_ACTION_REQUEST))
         {
             String[] splitMsg = msg.split(";");
