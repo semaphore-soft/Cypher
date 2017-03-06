@@ -250,7 +250,9 @@ public class PortalActivity extends ARActivity implements PortalRenderer.NewMark
                     }
                     break;
                 case "cmd_btnEndTurn":
-                    moveActor(playerId, -1);
+                    int newRoomMark =
+                        getNearestNonPlayerMarker(GameMaster.getActorMakerId(playerId));
+                    moveActor(playerId, newRoomMark);
                     break;
                 case "cmd_btnGenerateRoom":
                     generateRoom(getFirstUnreservedMarker());
@@ -725,11 +727,13 @@ public class PortalActivity extends ARActivity implements PortalRenderer.NewMark
     }
 
     /**
-     * Move an {@link Actor} to a {@link Room}.
+     * Attempt to move a given {@link Actor} to a {@link Room} anchored to a
+     * given AR marker reference ID.
      *
-     * @param actorId          Id of the {@link Actor} to move
-     * @param proposedMarkerId MarkerId of the room to move to.
-     *                         If negative a new valid marker id will be used
+     * @param actorId          int: Logical reference ID of the desired {@link
+     *                         Actor} to move
+     * @param proposedMarkerId int: Reference ID of the AR marker to which the
+     *                         desired {@link Room} should be anchored.
      *
      * @see PortalActivity#getNearestNonPlayerMarker(int)
      * @see PortalActivity#postMoveResult(int, int, int, int)
@@ -737,18 +741,12 @@ public class PortalActivity extends ARActivity implements PortalRenderer.NewMark
      */
     private void moveActor(final int actorId, final int proposedMarkerId)
     {
-        int nearestMarkerId = proposedMarkerId;
-        if (nearestMarkerId < 0)
+        if (proposedMarkerId > -1)
         {
-            nearestMarkerId =
-                getNearestNonPlayerMarker(GameMaster.getActorMakerId(actorId));
-        }
-        if (nearestMarkerId > -1)
-        {
-            if (GameMaster.getMarkerAttachment(nearestMarkerId) == 1)
+            if (GameMaster.getMarkerAttachment(proposedMarkerId) == 1)
             {
                 int startRoomId = GameMaster.getActorRoomId(actorId);
-                int endRoomId   = GameMaster.getIdByMarker(nearestMarkerId);
+                int endRoomId   = GameMaster.getIdByMarker(proposedMarkerId);
 
                 int res = GameMaster.moveActor(actorId, endRoomId);
 
