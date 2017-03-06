@@ -250,7 +250,7 @@ public class PortalActivity extends ARActivity implements PortalRenderer.NewMark
                     }
                     break;
                 case "cmd_btnEndTurn":
-                    moveActor(playerId, -1);
+                    moveActor(playerId);
                     break;
                 case "cmd_btnGenerateRoom":
                     generateRoom(getFirstUnreservedMarker());
@@ -432,12 +432,7 @@ public class PortalActivity extends ARActivity implements PortalRenderer.NewMark
 
             int mark = Integer.parseInt(splitMsg[1]);
 
-            if (generateRoom(mark))
-            {
-                int      roomId          = GameMaster.getRoomIdByMarkerId(mark);
-                String[] wallDescriptors = getWallDescriptors(roomId);
-                createRoom(roomId, wallDescriptors);
-            }
+            generateRoom(mark);
         }
         else if (msg.startsWith(NetworkConstants.PREFIX_MOVE_REQUEST))
         {
@@ -445,7 +440,33 @@ public class PortalActivity extends ARActivity implements PortalRenderer.NewMark
             String[] splitMsg = msg.split(":");
 
             int mark = Integer.parseInt(splitMsg[1]);
-            moveActor(readFrom, mark);
+            if (GameMaster.getMarkerAttachment(mark) == 1)
+            {
+                int startRoomId = GameMaster.getActorRoomId(readFrom);
+                int endRoomId   = GameMaster.getIdByMarker(mark);
+
+                int res = GameMaster.moveActor(readFrom, endRoomId);
+
+                postMoveResult(readFrom, startRoomId, endRoomId, res);
+            }
+        }
+        else if (msg.startsWith(NetworkConstants.PREFIX_OPEN_DOOR_REQUEST))
+        {
+            // Expect nearestMarkerID,
+            // sideOfStartRoom,
+            // sideOfEndRoom
+            String[] splitMsg = msg.split(":");
+
+            int res =
+                GameMaster.openDoor(GameMaster.getActorRoomId(readFrom),
+                                    Integer.parseInt(splitMsg[2]),
+                                    Short.parseShort(splitMsg[3]),
+                                    Short.parseShort(splitMsg[4]));
+
+            if (res >= 0)
+            {
+                postOpenDoorResult(Integer.getInteger(splitMsg[2]), res);
+            }
         }
     }
 
@@ -724,25 +745,10 @@ public class PortalActivity extends ARActivity implements PortalRenderer.NewMark
         }
     }
 
-    /**
-     * Move an {@link Actor} to a {@link Room}.
-     *
-     * @param actorId          Id of the {@link Actor} to move
-     * @param proposedMarkerId MarkerId of the room to move to.
-     *                         If negative a new valid marker id will be used
-     *
-     * @see PortalActivity#getNearestNonPlayerMarker(int)
-     * @see PortalActivity#postMoveResult(int, int, int, int)
-     * @see GameMaster#moveActor(int, int)
-     */
-    private void moveActor(final int actorId, final int proposedMarkerId)
+    private void moveActor(final int actorId)
     {
-        int nearestMarkerId = proposedMarkerId;
-        if (nearestMarkerId < 0)
-        {
-            nearestMarkerId =
-                getNearestNonPlayerMarker(GameMaster.getActorMakerId(actorId));
-        }
+        int nearestMarkerId =
+            getNearestNonPlayerMarker(GameMaster.getActorMakerId(actorId));
         if (nearestMarkerId > -1)
         {
             if (GameMaster.getMarkerAttachment(nearestMarkerId) == 1)

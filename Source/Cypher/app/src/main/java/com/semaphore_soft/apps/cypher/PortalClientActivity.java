@@ -166,7 +166,6 @@ public class PortalClientActivity extends ARActivity implements UIListener,
         switch (cmd)
         {
             case "cmd_btnPlayerMarkerSelect":
-            {
                 int firstUnreservedMarker = getFirstUnreservedMarker();
 
                 if (firstUnreservedMarker > -1)
@@ -174,7 +173,7 @@ public class PortalClientActivity extends ARActivity implements UIListener,
                     clientService.write(
                         NetworkConstants.PREFIX_MARK_REQUEST + firstUnreservedMarker);
                 }
-            }
+                break;
             case "cmd_btnEndTurn":
                 moveActor();
                 break;
@@ -523,8 +522,15 @@ public class PortalClientActivity extends ARActivity implements UIListener,
             short sideOfStartRoom = getWallFromAngle(angle0);
             short sideOfEndRoom   = getWallFromAngle(angle1);
 
-            clientService.write(NetworkConstants.PREFIX_OPEN_DOOR_REQUEST + nearestMarkerID + "," +
-                                sideOfStartRoom + "," + sideOfEndRoom);
+            clientService.write(NetworkConstants.PREFIX_OPEN_DOOR_REQUEST + nearestMarkerID + ":" +
+                                sideOfStartRoom + ":" + sideOfEndRoom);
+        }
+        else
+        {
+            Toast.makeText(getApplicationContext(),
+                           "Couldn't Find Valid Marker",
+                           Toast.LENGTH_SHORT)
+                 .show();
         }
     }
 
