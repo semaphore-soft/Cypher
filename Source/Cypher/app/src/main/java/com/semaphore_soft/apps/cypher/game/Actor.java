@@ -421,7 +421,7 @@ public class Actor
      * @see #performSpecial(Special, Actor)
      * @see #performSpecial(Special, ArrayList)
      */
-    ConcurrentHashMap<Integer, Special> getSpecials()
+    public ConcurrentHashMap<Integer, Special> getSpecials()
     {
         return specials;
     }

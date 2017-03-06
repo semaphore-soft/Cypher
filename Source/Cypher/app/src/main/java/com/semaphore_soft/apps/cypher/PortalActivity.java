@@ -449,6 +449,64 @@ public class PortalActivity extends ARActivity implements PortalRenderer.NewMark
             int mark = Integer.parseInt(splitMsg[1]);
             moveActor(readFrom, mark);
         }
+        else if (msg.startsWith(NetworkConstants.PREFIX_ACTION_REQUEST))
+        {
+            String[] splitMsg = msg.split(";");
+
+            String[] splitCmd    = splitMsg[1].split("_");
+            String[] splitAction = splitCmd[1].split(":");
+
+            switch (splitAction[0])
+            {
+                case "attack":
+                    int targetId = Integer.parseInt(splitAction[1]);
+                    attack(readFrom, targetId);
+                    break;
+                case "defend":
+                    GameMaster.setActorState(readFrom, Actor.E_STATE.DEFEND);
+                    Room room = GameMaster.getActorRoom(readFrom);
+
+                    Toast.makeText(getApplicationContext(),
+                                   "Success",
+                                   Toast.LENGTH_SHORT).show();
+
+                    if (room != null)
+                    {
+                        showAction(room.getMarker(),
+                                   readFrom,
+                                   -1,
+                                   1000,
+                                   "defend",
+                                   null,
+                                   true,
+                                   false);
+                    }
+
+                    serverService.writeToClient(NetworkConstants.GAME_TURN_OVER, readFrom);
+                    break;
+                case "special":
+                    int specialId = Integer.parseInt(splitAction[1]);
+
+                    Special.E_TARGETING_TYPE specialType =
+                        GameMaster.getSpecialTargetingType(specialId);
+
+                    if (splitAction.length < 3)
+                    {
+                        if (specialType == Special.E_TARGETING_TYPE.AOE_PLAYER || specialType ==
+                                                                                  Special.E_TARGETING_TYPE.AOE_NON_PLAYER)
+                        {
+                            performSpecial(readFrom, specialId);
+                        }
+                    }
+                    else
+                    {
+                        performSpecial(readFrom, Integer.parseInt(splitAction[2]), specialId);
+                    }
+                    break;
+                default:
+                    break;
+            }
+        }
     }
 
     /**
@@ -641,6 +699,22 @@ public class PortalActivity extends ARActivity implements PortalRenderer.NewMark
             model.getActors().put(playerId, actor);
             renderer.setPlayerMarker(playerId, mark);
 
+            if (PortalActivity.playerId != playerId)
+            {
+                String playerSpecials = "";
+
+                for (Special special : actor.getSpecials().values())
+                {
+                    playerSpecials += "," + special.getId() + "." + special.getDisplayName() + "." +
+                                      special.getTargetingType().name();
+                }
+
+                playerSpecials = playerSpecials.substring(1);
+
+                serverService.writeToClient(
+                    NetworkConstants.PREFIX_UPDATE_PLAYER_SPECIALS + playerSpecials, playerId);
+            }
+
             return true;
         }
         else
@@ -804,6 +878,42 @@ public class PortalActivity extends ARActivity implements PortalRenderer.NewMark
                 if (room != null)
                 {
                     updateRoomResidents(room.getMarker(), getResidents(startRoomId));
+
+                    ArrayList<Integer> playerActorIds = GameMaster.getPlayerActorIds();
+
+                    for (int i : playerActorIds)
+                    {
+                        if (i != playerId)
+                        {
+                            String nonPlayerTargets = "";
+
+                            for (Actor actor : GameMaster.getNonPlayerTargets(i).values())
+                            {
+                                nonPlayerTargets +=
+                                    "," + actor.getId() + "." + actor.getDisplayName();
+                            }
+
+                            nonPlayerTargets = nonPlayerTargets.substring(1);
+
+                            serverService.writeToClient(
+                                NetworkConstants.PREFIX_UPDATE_NON_PLAYER_TARGETS +
+                                nonPlayerTargets, i);
+
+                            String playerTargets = "";
+
+                            for (Actor actor : GameMaster.getPlayerTargets(i).values())
+                            {
+                                playerTargets +=
+                                    "," + actor.getId() + "." + actor.getDisplayName();
+                            }
+
+                            playerTargets = playerTargets.substring(1);
+
+                            serverService.writeToClient(
+                                NetworkConstants.PREFIX_UPDATE_PLAYER_TARGETS +
+                                playerTargets, i);
+                        }
+                    }
                 }
             }
             if (endRoomId > -1)
@@ -1013,7 +1123,14 @@ public class PortalActivity extends ARActivity implements PortalRenderer.NewMark
                            true);
             }
 
-            uiPortalOverlay.overlayWaitingForTurn();
+            if (attackerId == playerId)
+            {
+                uiPortalOverlay.overlayWaitingForTurn();
+            }
+            else
+            {
+                serverService.writeToClient(NetworkConstants.GAME_TURN_OVER, attackerId);
+            }
         }
     }
 
@@ -1139,7 +1256,14 @@ public class PortalActivity extends ARActivity implements PortalRenderer.NewMark
                            specialType.equals("harm"));
             }
 
-            uiPortalOverlay.overlayWaitingForTurn();
+            if (sourceId == playerId)
+            {
+                uiPortalOverlay.overlayWaitingForTurn();
+            }
+            else
+            {
+                serverService.writeToClient(NetworkConstants.GAME_TURN_OVER, sourceId);
+            }
         }
     }
 
