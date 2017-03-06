@@ -58,6 +58,7 @@ public class PortalClientActivity extends ARActivity implements UIListener,
 
     private static ArrayList<Integer> reservedMarkers;
     private static ArrayList<Integer> playerMarkers;
+    private static ArrayList<Integer> roomMarkers;
     private static ArrayList<Integer> placedRoomMarkers;
 
     private static HashMap<Integer, String>                                 nonPlayerTargets;
@@ -101,6 +102,7 @@ public class PortalClientActivity extends ARActivity implements UIListener,
 
         reservedMarkers = new ArrayList<>();
         playerMarkers = new ArrayList<>();
+        roomMarkers = new ArrayList<>();
         placedRoomMarkers = new ArrayList<>();
 
         nonPlayerTargets = new HashMap<>();
@@ -308,7 +310,7 @@ public class PortalClientActivity extends ARActivity implements UIListener,
             playerMarkers.add(mark);
             reservedMarkers.add(mark);
         }
-        else if (msg.startsWith(NetworkConstants.PREFIX_RESERVE_ROOM))
+        else if (msg.startsWith(NetworkConstants.PREFIX_PLACE_ROOM))
         {
             // Expect the MarkerID to be reserved
             String[] splitMsg = msg.split(":");
@@ -316,6 +318,15 @@ public class PortalClientActivity extends ARActivity implements UIListener,
             int mark = Integer.parseInt(splitMsg[1]);
 
             placedRoomMarkers.add(mark);
+            reservedMarkers.add(mark);
+        }
+        else if (msg.startsWith(NetworkConstants.PREFIX_RESERVE_ROOM_MARKER))
+        {
+            String[] splitMsg = msg.split(":");
+
+            int mark = Integer.parseInt(splitMsg[1]);
+
+            roomMarkers.add(mark);
             reservedMarkers.add(mark);
         }
         else if (msg.equals(NetworkConstants.GAME_WAIT))

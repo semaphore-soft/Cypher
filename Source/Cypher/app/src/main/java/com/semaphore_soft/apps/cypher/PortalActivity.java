@@ -451,16 +451,19 @@ public class PortalActivity extends ARActivity implements PortalRenderer.NewMark
             // sideOfEndRoom
             String[] splitMsg = msg.split(":");
 
+            int startRoomId = GameMaster.getActorRoomId(readFrom);
+            int endRoomId   = GameMaster.getRoomIdByMarkerId(Integer.parseInt(splitMsg[1]));
+
             int res =
-                GameMaster.openDoor(GameMaster.getActorRoomId(readFrom),
-                                    Integer.parseInt(splitMsg[1]),
+                GameMaster.openDoor(startRoomId,
+                                    endRoomId,
                                     Short.parseShort(splitMsg[2]),
                                     Short.parseShort(splitMsg[3]));
 
             if (res >= 0)
             {
-                postOpenDoorResult(Integer.getInteger(splitMsg[2]), res);
-                serverService.writeAll(NetworkConstants.PREFIX_RESERVE_ROOM + splitMsg[2]);
+                postOpenDoorResult(endRoomId, res);
+                serverService.writeAll(NetworkConstants.PREFIX_PLACE_ROOM + splitMsg[1]);
             }
         }
         else if (msg.startsWith(NetworkConstants.PREFIX_ACTION_REQUEST))
@@ -780,7 +783,7 @@ public class PortalActivity extends ARActivity implements PortalRenderer.NewMark
             String[] wallDescriptors = getWallDescriptors(roomId);
 
             createRoom(mark, wallDescriptors);
-            serverService.writeAll(NetworkConstants.PREFIX_RESERVE_ROOM + mark);
+            serverService.writeAll(NetworkConstants.PREFIX_PLACE_ROOM + mark);
 
             //place every player actor in that room
             for (Actor actor : model.getActors().values())
@@ -1037,7 +1040,7 @@ public class PortalActivity extends ARActivity implements PortalRenderer.NewMark
                 if (res >= 0)
                 {
                     postOpenDoorResult(endRoomId, res);
-                    serverService.writeAll(NetworkConstants.PREFIX_RESERVE_ROOM + endRoomId);
+                    serverService.writeAll(NetworkConstants.PREFIX_PLACE_ROOM + nearestMarkerID);
 
                     return true;
                 }
@@ -1547,7 +1550,7 @@ public class PortalActivity extends ARActivity implements PortalRenderer.NewMark
         }
         serverService.writeAll(
             NetworkConstants.PREFIX_CREATE_ROOM + roomID + ":" + clientWallDescriptors);
-        //        serverService.writeAll(NetworkConstants.PREFIX_RESERVE_ROOM + roomID);
+        serverService.writeAll(NetworkConstants.PREFIX_RESERVE_ROOM_MARKER + roomID);
     }
 
     /**

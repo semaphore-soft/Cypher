@@ -44,20 +44,21 @@ public class NetworkConstants
     public static final String GAME_TURN_OVER                   = "TURN_OVER";
     // Constants to use as prefixes to exchange information with other devices
     public static final String PREFIX_NAME                      = "NAME:";
-    public static final String PREFIX_PLAYER                    = "PLAYER:";
-    public static final String PREFIX_LOCK                      = "LOCK:";
-    public static final String PREFIX_FREE                      = "FREE:";
-    public static final String PREFIX_READY                     = "READY:";
-    public static final String PREFIX_MARK_REQUEST              = "MARK_REQUEST:";
-    public static final String PREFIX_ASSIGN_MARK               = "ASSIGN_MARK:";
-    public static final String PREFIX_RESERVE_PLAYER            = "RESERVE_PLAYER:";
-    public static final String PREFIX_RESERVE_ROOM              = "RESERVE_ROOM:";
-    public static final String PREFIX_ATTACH                    = "ATTACH:";
-    public static final String PREFIX_CREATE_ROOM               = "CREATE_ROOM:";
-    public static final String PREFIX_MOVE_REQUEST              = "MOVE_REQUEST:";
-    public static final String PREFIX_GENERATE_ROOM_REQUEST     = "GENERATE_ROOM_REQUEST:";
-    public static final String PREFIX_OPEN_DOOR_REQUEST         = "OPEN_DOOR_REQUEST:";
-    public static final String PREFIX_ACTION_REQUEST            = "ACTION_REQUEST;";
+    public static final String PREFIX_PLAYER                = "PLAYER:";
+    public static final String PREFIX_LOCK                  = "LOCK:";
+    public static final String PREFIX_FREE                  = "FREE:";
+    public static final String PREFIX_READY                 = "READY:";
+    public static final String PREFIX_MARK_REQUEST          = "MARK_REQUEST:";
+    public static final String PREFIX_ASSIGN_MARK           = "ASSIGN_MARK:";
+    public static final String PREFIX_RESERVE_PLAYER        = "RESERVE_PLAYER:";
+    public static final String PREFIX_RESERVE_ROOM_MARKER   = "RESERVE_ROOM:";
+    public static final String PREFIX_PLACE_ROOM            = "PLACE_ROOM:";
+    public static final String PREFIX_ATTACH                = "ATTACH:";
+    public static final String PREFIX_CREATE_ROOM           = "CREATE_ROOM:";
+    public static final String PREFIX_MOVE_REQUEST          = "MOVE_REQUEST:";
+    public static final String PREFIX_GENERATE_ROOM_REQUEST = "GENERATE_ROOM_REQUEST:";
+    public static final String PREFIX_OPEN_DOOR_REQUEST     = "OPEN_DOOR_REQUEST:";
+    public static final String PREFIX_ACTION_REQUEST        = "ACTION_REQUEST;";
     // Use a different delimiter, because of how residents are stored
     public static final String PREFIX_UPDATE_ROOM_RESIDENTS     = "UPDATE_ROOM_RESIDENTS~";
     public static final String PREFIX_SHOW_ACTION               = "SHOW_ACTION:";
