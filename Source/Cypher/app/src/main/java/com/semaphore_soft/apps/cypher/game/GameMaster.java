@@ -570,7 +570,7 @@ public class GameMaster
      * </ul>
      *
      * @see Room
-     * @see PortalActivity#moveActor(int)
+     * @see PortalActivity#moveActor(int, int)
      * @see PortalActivity#onActorMove(int, int)
      */
     public static int moveActor(final int actorId, final int endRoomId)

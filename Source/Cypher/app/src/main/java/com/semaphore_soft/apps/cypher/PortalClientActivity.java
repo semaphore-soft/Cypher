@@ -249,7 +249,7 @@ public class PortalClientActivity extends ARActivity implements UIListener,
         {
             uiPortalOverlay.overlayAction();
         }
-        else if (msg.equals("over"))
+        else if (msg.equals(NetworkConstants.GAME_TURN_OVER))
         {
             uiPortalOverlay.overlayWaitingForTurn();
         }
@@ -465,6 +465,13 @@ public class PortalClientActivity extends ARActivity implements UIListener,
         if (nearestMarkerId > -1)
         {
             clientService.write(NetworkConstants.PREFIX_MOVE_REQUEST + nearestMarkerId);
+        }
+        else
+        {
+            Toast.makeText(getApplicationContext(),
+                           "Couldn't Find Valid Room",
+                           Toast.LENGTH_SHORT)
+                 .show();
         }
     }
 

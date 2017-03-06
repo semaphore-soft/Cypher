@@ -250,7 +250,7 @@ public class PortalActivity extends ARActivity implements PortalRenderer.NewMark
                     }
                     break;
                 case "cmd_btnEndTurn":
-                    moveActor(playerId);
+                    moveActor(playerId, -1);
                     break;
                 case "cmd_btnGenerateRoom":
                     generateRoom(getFirstUnreservedMarker());
@@ -427,8 +427,7 @@ public class PortalActivity extends ARActivity implements PortalRenderer.NewMark
         }
         else if (msg.startsWith(NetworkConstants.PREFIX_GENERATE_ROOM_REQUEST))
         {
-            // Expect MarkerID of a marker that the client wants generate a
-            // room on
+            // Expect MarkerID of a marker that the client wants generate a room on
             String[] splitMsg = msg.split(":");
 
             int mark = Integer.parseInt(splitMsg[1]);
@@ -439,6 +438,14 @@ public class PortalActivity extends ARActivity implements PortalRenderer.NewMark
                 String[] wallDescriptors = getWallDescriptors(roomId);
                 createRoom(roomId, wallDescriptors);
             }
+        }
+        else if (msg.startsWith(NetworkConstants.PREFIX_MOVE_REQUEST))
+        {
+            // Expect MarkerID of the room that the client wants to move to
+            String[] splitMsg = msg.split(":");
+
+            int mark = Integer.parseInt(splitMsg[1]);
+            moveActor(readFrom, mark);
         }
     }
 
@@ -717,10 +724,25 @@ public class PortalActivity extends ARActivity implements PortalRenderer.NewMark
         }
     }
 
-    private void moveActor(final int actorId)
+    /**
+     * Move an {@link Actor} to a {@link Room}.
+     *
+     * @param actorId          Id of the {@link Actor} to move
+     * @param proposedMarkerId MarkerId of the room to move to.
+     *                         If negative a new valid marker id will be used
+     *
+     * @see PortalActivity#getNearestNonPlayerMarker(int)
+     * @see PortalActivity#postMoveResult(int, int, int, int)
+     * @see GameMaster#moveActor(int, int)
+     */
+    private void moveActor(final int actorId, final int proposedMarkerId)
     {
-        int nearestMarkerId =
-            getNearestNonPlayerMarker(GameMaster.getActorMakerId(actorId));
+        int nearestMarkerId = proposedMarkerId;
+        if (nearestMarkerId < 0)
+        {
+            nearestMarkerId =
+                getNearestNonPlayerMarker(GameMaster.getActorMakerId(actorId));
+        }
         if (nearestMarkerId > -1)
         {
             if (GameMaster.getMarkerAttachment(nearestMarkerId) == 1)
