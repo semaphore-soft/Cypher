@@ -202,16 +202,18 @@ public class CharacterSelectActivity extends AppCompatActivity implements Respon
         }
         else if (msg.startsWith(NetworkConstants.PREFIX_LOCK))
         {
-            // Use substring to ignore prefix and get the selection
-            String sel = msg.substring(5);
-            if (!sel.equals(selection))
+            // Expect character to disable
+            String[] splitMsg = msg.split(":");
+            if (!splitMsg[1].equals(selection))
             {
-                uiCharacterSelect.setButtonEnabled(sel, false);
+                uiCharacterSelect.setButtonEnabled(splitMsg[1], false);
             }
         }
         else if (msg.startsWith(NetworkConstants.PREFIX_FREE))
         {
-            uiCharacterSelect.setButtonEnabled(msg.substring(5), true);
+            // Expect character to enable
+            String[] splitMsg = msg.split(":");
+            uiCharacterSelect.setButtonEnabled(splitMsg[1], true);
         }
         else if (msg.equals(NetworkConstants.GAME_TAKEN))
         {

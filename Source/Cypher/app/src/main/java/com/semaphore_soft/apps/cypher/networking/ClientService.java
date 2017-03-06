@@ -114,7 +114,9 @@ public class ClientService extends Service
     {
         // Format ip address from client thread
         String   str = clientThread.getSocketAddress();
+        // Remove port from address
         String[] ip  = str.split(":");
+        // Remove leading '/'
         return ip[0].substring(1);
     }
 

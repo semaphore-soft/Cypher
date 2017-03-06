@@ -225,8 +225,9 @@ public class ConnectionLobbyActivity extends AppCompatActivity implements Respon
         else if (msg.startsWith(NetworkConstants.PREFIX_NAME))
         {
             // Add players on server
-            // Ignore the attached prefix with substring to get the clients name
-            addPlayer(msg.substring(5), ++playerID);
+            // Expect the name of the player
+            String[] splitMsg = msg.split(":");
+            addPlayer(splitMsg[1], ++playerID);
             serverService.addPlayerID(playerID, readFrom);
         }
         else if (msg.startsWith(NetworkConstants.PREFIX_PLAYER))
