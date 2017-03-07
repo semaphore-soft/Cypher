@@ -451,48 +451,60 @@ public class PortalClientActivity extends ARActivity implements UIListener,
         {
             nonPlayerTargets.clear();
 
-            String[] splitMsg             = msg.split(":");
-            String[] nonPlayerTargetPairs = splitMsg[1].split(",");
+            String[] splitMsg = msg.split(":");
 
-            for (String nonPlayerTargetPair : nonPlayerTargetPairs)
+            if (splitMsg.length > 1)
             {
-                String[] splitNonPlayerTargetPair = nonPlayerTargetPair.split("\\.");
+                String[] nonPlayerTargetPairs = splitMsg[1].split(",");
 
-                nonPlayerTargets.put(Integer.parseInt(splitNonPlayerTargetPair[0]),
-                                     splitNonPlayerTargetPair[1]);
+                for (String nonPlayerTargetPair : nonPlayerTargetPairs)
+                {
+                    String[] splitNonPlayerTargetPair = nonPlayerTargetPair.split("\\.");
+
+                    nonPlayerTargets.put(Integer.parseInt(splitNonPlayerTargetPair[0]),
+                                         splitNonPlayerTargetPair[1]);
+                }
             }
         }
         else if (msg.startsWith(NetworkConstants.PREFIX_UPDATE_PLAYER_TARGETS))
         {
             playerTargets.clear();
 
-            String[] splitMsg          = msg.split(":");
-            String[] playerTargetPairs = splitMsg[1].split(",");
+            String[] splitMsg = msg.split(":");
 
-            for (String playerTargetPair : playerTargetPairs)
+            if (splitMsg.length > 1)
             {
-                String[] splitPlayerTargetPair = playerTargetPair.split("\\.");
+                String[] playerTargetPairs = splitMsg[1].split(",");
 
-                playerTargets.put(Integer.parseInt(splitPlayerTargetPair[0]),
-                                  splitPlayerTargetPair[1]);
+                for (String playerTargetPair : playerTargetPairs)
+                {
+                    String[] splitPlayerTargetPair = playerTargetPair.split("\\.");
+
+                    playerTargets.put(Integer.parseInt(splitPlayerTargetPair[0]),
+                                      splitPlayerTargetPair[1]);
+                }
             }
         }
         else if (msg.startsWith(NetworkConstants.PREFIX_UPDATE_PLAYER_SPECIALS))
         {
             specials.clear();
 
-            String[] splitMsg      = msg.split(":");
-            String[] specialTriads = splitMsg[1].split(",");
+            String[] splitMsg = msg.split(":");
 
-            for (String specialTriad : specialTriads)
+            if (splitMsg.length > 1)
             {
-                String[] splitSpecialTriad = specialTriad.split("\\.");
+                String[] specialTriads = splitMsg[1].split(",");
 
-                Pair<String, Special.E_TARGETING_TYPE> specialNameTargetingPair =
-                    new Pair<>(splitSpecialTriad[1],
-                               Special.E_TARGETING_TYPE.valueOf(splitSpecialTriad[2]));
+                for (String specialTriad : specialTriads)
+                {
+                    String[] splitSpecialTriad = specialTriad.split("\\.");
 
-                specials.put(Integer.parseInt(splitSpecialTriad[0]), specialNameTargetingPair);
+                    Pair<String, Special.E_TARGETING_TYPE> specialNameTargetingPair =
+                        new Pair<>(splitSpecialTriad[1],
+                                   Special.E_TARGETING_TYPE.valueOf(splitSpecialTriad[2]));
+
+                    specials.put(Integer.parseInt(splitSpecialTriad[0]), specialNameTargetingPair);
+                }
             }
         }
     }
