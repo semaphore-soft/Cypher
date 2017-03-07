@@ -726,10 +726,12 @@ public class PortalActivity extends ARActivity implements PortalRenderer.NewMark
                                       special.getTargetingType().name();
                 }
 
-                playerSpecials = playerSpecials.substring(1);
-
-                serverService.writeToClient(
-                    NetworkConstants.PREFIX_UPDATE_PLAYER_SPECIALS + playerSpecials, playerId);
+                if (!playerSpecials.equals(""))
+                {
+                    playerSpecials = playerSpecials.substring(1);
+                    serverService.writeToClient(
+                        NetworkConstants.PREFIX_UPDATE_PLAYER_SPECIALS + playerSpecials, playerId);
+                }
             }
 
             return true;

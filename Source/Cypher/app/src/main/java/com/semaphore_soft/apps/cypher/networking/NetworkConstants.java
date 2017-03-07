@@ -66,7 +66,7 @@ public class NetworkConstants
     public static final String PREFIX_UPDATE_ROOM_ALIGNMENT     = "UPDATE_ROOM_ALIGNMENT:";
     public static final String PREFIX_UPDATE_NON_PLAYER_TARGETS = "UPDATE_NON_PLAYER_TARGETS:";
     public static final String PREFIX_UPDATE_PLAYER_TARGETS     = "UPDATE_PLAYER_TARGETS:";
-    public static final String PREFIX_UPDATE_PLAYER_SPECIALS    = "UPDATE_PLAYER_SPECIALS";
+    public static final String PREFIX_UPDATE_PLAYER_SPECIALS    = "UPDATE_PLAYER_SPECIALS:";
 
     // Constants for status codes
     public static final String STATUS_SERVER_START   = "Server thread started";
