@@ -222,6 +222,9 @@ public class PortalClientActivity extends ARActivity implements UIListener,
 
                     uiPortalOverlay.overlaySelect(specialOptions);
                     break;
+                case "cmd_btnCancel":
+                    uiPortalOverlay.overlayAction();
+                    break;
             }
         }
         else
