@@ -1742,7 +1742,10 @@ public class PortalActivity extends ARActivity implements PortalRenderer.NewMark
                         "," + actor.getId() + "." + actor.getDisplayName();
                 }
 
-                nonPlayerTargets = nonPlayerTargets.substring(1);
+                if (!nonPlayerTargets.equals(""))
+                {
+                    nonPlayerTargets = nonPlayerTargets.substring(1);
+                }
 
                 serverService.writeToClient(
                     NetworkConstants.PREFIX_UPDATE_NON_PLAYER_TARGETS +
@@ -1756,7 +1759,10 @@ public class PortalActivity extends ARActivity implements PortalRenderer.NewMark
                         "," + actor.getId() + "." + actor.getDisplayName();
                 }
 
-                playerTargets = playerTargets.substring(1);
+                if (!playerTargets.equals(""))
+                {
+                    playerTargets = playerTargets.substring(1);
+                }
 
                 serverService.writeToClient(
                     NetworkConstants.PREFIX_UPDATE_PLAYER_TARGETS +
