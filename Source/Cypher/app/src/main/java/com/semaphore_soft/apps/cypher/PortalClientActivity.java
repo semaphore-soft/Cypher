@@ -54,6 +54,7 @@ public class PortalClientActivity extends ARActivity implements UIListener,
 
     private static boolean turn;
 
+    private static int playerMarker;
     private static int playerRoomMarker;
 
     private static ArrayList<Integer> reservedMarkers;
@@ -299,6 +300,12 @@ public class PortalClientActivity extends ARActivity implements UIListener,
         if (msg.startsWith(NetworkConstants.PREFIX_ASSIGN_MARK))
         {
             // Expect the MarkerID to be assigned
+            String[] splitMsg = msg.split(":");
+
+            playerMarker = Integer.parseInt(splitMsg[1]);
+        }
+        else if (msg.startsWith(NetworkConstants.PREFIX_ASSIGN_ROOM_MARK))
+        {
             String[] splitMsg = msg.split(":");
 
             playerRoomMarker = Integer.parseInt(splitMsg[1]);

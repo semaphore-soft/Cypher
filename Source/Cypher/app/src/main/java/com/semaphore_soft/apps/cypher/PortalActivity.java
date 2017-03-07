@@ -786,6 +786,7 @@ public class PortalActivity extends ARActivity implements PortalRenderer.NewMark
 
             createRoom(mark, wallDescriptors);
             serverService.writeAll(NetworkConstants.PREFIX_PLACE_ROOM + mark);
+            serverService.writeAll(NetworkConstants.PREFIX_ASSIGN_ROOM_MARK + mark);
 
             //place every player actor in that room
             for (Actor actor : model.getActors().values())
@@ -899,41 +900,7 @@ public class PortalActivity extends ARActivity implements PortalRenderer.NewMark
                 {
                     updateRoomResidents(room.getMarker(), getResidents(startRoomId));
 
-                    ArrayList<Integer> playerActorIds = GameMaster.getPlayerActorIds();
-
-                    for (int i : playerActorIds)
-                    {
-                        if (i != playerId)
-                        {
-                            String nonPlayerTargets = "";
-
-                            for (Actor actor : GameMaster.getNonPlayerTargets(i).values())
-                            {
-                                nonPlayerTargets +=
-                                    "," + actor.getId() + "." + actor.getDisplayName();
-                            }
-
-                            nonPlayerTargets = nonPlayerTargets.substring(1);
-
-                            serverService.writeToClient(
-                                NetworkConstants.PREFIX_UPDATE_NON_PLAYER_TARGETS +
-                                nonPlayerTargets, i);
-
-                            String playerTargets = "";
-
-                            for (Actor actor : GameMaster.getPlayerTargets(i).values())
-                            {
-                                playerTargets +=
-                                    "," + actor.getId() + "." + actor.getDisplayName();
-                            }
-
-                            playerTargets = playerTargets.substring(1);
-
-                            serverService.writeToClient(
-                                NetworkConstants.PREFIX_UPDATE_PLAYER_TARGETS +
-                                playerTargets, i);
-                        }
-                    }
+                    updateClientTargets();
                 }
             }
             if (endRoomId > -1)
@@ -958,6 +925,9 @@ public class PortalActivity extends ARActivity implements PortalRenderer.NewMark
                 {
                     updateRoomResidents(room.getMarker(), getResidents(endRoomId));
                 }
+
+                serverService.writeToClient(NetworkConstants.PREFIX_ASSIGN_ROOM_MARK +
+                                            GameMaster.getRoomMarkerId(endRoomId), actorId);
             }
         }
     }
@@ -1378,6 +1348,8 @@ public class PortalActivity extends ARActivity implements PortalRenderer.NewMark
             updateRoomResidents(room.getMarker(), getResidents(room.getId()));
         }
 
+        updateClientTargets();
+
         if (GameMaster.getPlayersInRoom(roomId) > 0)
         {
             Runnable turnDelayer = new Runnable()
@@ -1455,6 +1427,8 @@ public class PortalActivity extends ARActivity implements PortalRenderer.NewMark
         {
             updateRoomResidents(room.getMarker(), getResidents(room.getId()));
         }
+
+        updateClientTargets();
 
         if (turn)
         {
@@ -1750,6 +1724,45 @@ public class PortalActivity extends ARActivity implements PortalRenderer.NewMark
         }
 
         return res;
+    }
+
+    private void updateClientTargets()
+    {
+        ArrayList<Integer> playerActorIds = GameMaster.getPlayerActorIds();
+
+        for (int i : playerActorIds)
+        {
+            if (i != playerId)
+            {
+                String nonPlayerTargets = "";
+
+                for (Actor actor : GameMaster.getNonPlayerTargets(i).values())
+                {
+                    nonPlayerTargets +=
+                        "," + actor.getId() + "." + actor.getDisplayName();
+                }
+
+                nonPlayerTargets = nonPlayerTargets.substring(1);
+
+                serverService.writeToClient(
+                    NetworkConstants.PREFIX_UPDATE_NON_PLAYER_TARGETS +
+                    nonPlayerTargets, i);
+
+                String playerTargets = "";
+
+                for (Actor actor : GameMaster.getPlayerTargets(i).values())
+                {
+                    playerTargets +=
+                        "," + actor.getId() + "." + actor.getDisplayName();
+                }
+
+                playerTargets = playerTargets.substring(1);
+
+                serverService.writeToClient(
+                    NetworkConstants.PREFIX_UPDATE_PLAYER_TARGETS +
+                    playerTargets, i);
+            }
+        }
     }
 
     // Defines callbacks for service binding, passed to bindService()
