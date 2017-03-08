@@ -395,7 +395,7 @@ public class PortalClientActivity extends ARActivity implements UIListener,
                 wallDescriptors[i - 2] = splitMsg[i];
             }
 
-            renderer.createRoom(arRoomId, wallDescriptors);
+            renderer.updateRoomWalls(arRoomId, wallDescriptors);
         }
         else if (msg.startsWith(NetworkConstants.PREFIX_UPDATE_ROOM_ALIGNMENT))
         {
@@ -630,7 +630,7 @@ public class PortalClientActivity extends ARActivity implements UIListener,
     private void moveActor()
     {
         int nearestMarkerId =
-            getNearestNonPlayerMarker(playerRoomMarker);
+            getNearestNonPlayerMarker(playerMarker);
 
         if (nearestMarkerId > -1)
         {
