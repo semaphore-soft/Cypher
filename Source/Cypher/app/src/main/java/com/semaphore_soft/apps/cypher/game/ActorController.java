@@ -296,6 +296,8 @@ public class ActorController
             if (!usedSpecial)
             {
                 Logger.logD("actor <" + actorId + "> failed to use special");
+
+                gameController.turnPassed(actorId);
             }
         }
         else if (moveTickets != 0 &&
@@ -318,8 +320,8 @@ public class ActorController
 
             Logger.logI(
                 "actor " + actorId + ":" + actor.getName() + " was unable to act");
-        }
 
-        gameController.turnPassed(actorId);
+            gameController.turnPassed(actorId);
+        }
     }
 }

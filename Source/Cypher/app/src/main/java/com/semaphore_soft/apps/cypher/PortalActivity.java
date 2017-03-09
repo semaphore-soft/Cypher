@@ -1374,7 +1374,7 @@ public class PortalActivity extends ARActivity implements PortalRenderer.NewMark
     /**
      * {@inheritDoc}
      *
-     * @param turnId int: The logical reference ID of the turn that has passed,
+     * @param turnId int: The logical reference ID of the turn that was passed,
      *               and also the {@link Actor} for which that turn was taken.
      */
     @Override
@@ -1383,6 +1383,8 @@ public class PortalActivity extends ARActivity implements PortalRenderer.NewMark
         Logger.logD("enter trace");
 
         Logger.logD("ended non-player turn " + turnId);
+
+        postTurn(turnId);
 
         Logger.logD("exit trace");
     }
