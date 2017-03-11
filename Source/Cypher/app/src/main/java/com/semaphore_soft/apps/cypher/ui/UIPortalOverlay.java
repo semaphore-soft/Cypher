@@ -3,10 +3,14 @@ package com.semaphore_soft.apps.cypher.ui;
 import android.content.Context;
 import android.support.v4.util.Pair;
 import android.util.AttributeSet;
+import android.util.TypedValue;
 import android.view.View;
 import android.widget.Button;
 import android.widget.ImageButton;
+import android.widget.ImageView;
 import android.widget.LinearLayout;
+import android.widget.RelativeLayout;
+import android.widget.TextView;
 
 import com.semaphore_soft.apps.cypher.R;
 
@@ -79,13 +83,21 @@ public class UIPortalOverlay extends UIBase
         makeView(R.layout.overlay_waiting_for_host);
     }
 
-    public void overlayWaitingForTurn()
+    public void overlayWaitingForTurn(final int healthMax,
+                                      final int healthCurrent,
+                                      final int energyMax,
+                                      final int energyCurrent)
     {
-        //TODO placeholder, revisit
-        makeView(R.layout.empty);
+        makeView(R.layout.overlay_waiting_for_turn);
+
+        setHealth(healthMax, healthCurrent);
+        setEnergy(energyMax, energyCurrent);
     }
 
-    public void overlayAction()
+    public void overlayAction(final int healthMax,
+                              final int healthCurrent,
+                              final int energyMax,
+                              final int energyCurrent)
     {
         makeView(R.layout.overlay_action);
 
@@ -109,7 +121,7 @@ public class UIPortalOverlay extends UIBase
             }
         });
 
-        Button btnOpenDoor = (Button) findViewById(R.id.btnOpenDoor);
+        ImageButton btnOpenDoor = (ImageButton) findViewById(R.id.btnOpenDoor);
         btnOpenDoor.setOnClickListener(new OnClickListener()
         {
             @Override
@@ -148,6 +160,9 @@ public class UIPortalOverlay extends UIBase
                 notifyListener("cmd_btnSpecial");
             }
         });
+
+        setHealth(healthMax, healthCurrent);
+        setEnergy(energyMax, energyCurrent);
     }
 
     public void overlaySelect(ArrayList<Pair<String, String>> options)
@@ -202,6 +217,65 @@ public class UIPortalOverlay extends UIBase
         else
         {
             return originalName + " " + testNum;
+        }
+    }
+
+    public void setHealth(final int healthMax, final int healthCurrent)
+    {
+        ImageView imgHealth = (ImageView) findViewById(R.id.imgHealth);
+        TextView  lblHealth = (TextView) findViewById(R.id.lblHealth);
+
+        if (imgHealth != null && lblHealth != null)
+        {
+            float healthBarLength = 50f;
+
+            healthBarLength += ((float) healthCurrent / (float) healthMax) * 150f;
+
+            RelativeLayout.LayoutParams layoutParams = new RelativeLayout.LayoutParams(
+                (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP,
+                                                healthBarLength,
+                                                getResources().getDisplayMetrics()),
+                (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP,
+                                                24,
+                                                getResources().getDisplayMetrics()));
+
+            imgHealth.setLayoutParams(layoutParams);
+
+            //imgHealth.getLayoutParams().width = (int) healthBarLength;
+
+            imgHealth.requestLayout();
+            lblHealth.setText("" + healthCurrent);
+            //lblHealth.requestLayout();
+        }
+    }
+
+    public void setEnergy(final int energyMax, final int energyCurrent)
+    {
+        ImageView imgEnergy = (ImageView) findViewById(R.id.imgEnergy);
+        TextView  lblEnergy = (TextView) findViewById(R.id.lblEnergy);
+
+        if (imgEnergy != null && lblEnergy != null)
+        {
+            float energyBarLength = 50f;
+
+            energyBarLength += ((float) energyCurrent / (float) energyMax) * 150f;
+
+            RelativeLayout.LayoutParams layoutParams = new RelativeLayout.LayoutParams(
+                (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP,
+                                                energyBarLength,
+                                                getResources().getDisplayMetrics()),
+                (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP,
+                                                24,
+                                                getResources().getDisplayMetrics()));
+            layoutParams.addRule(RelativeLayout.BELOW, R.id.imgHealth);
+
+            imgEnergy.setLayoutParams(layoutParams);
+
+            //imgEnergy.getLayoutParams().width = (int) energyBarLength;
+
+            imgEnergy.requestLayout();
+            lblEnergy.setText("" + energyCurrent);
+            //lblEnergy.requestLayout();
         }
     }
 }

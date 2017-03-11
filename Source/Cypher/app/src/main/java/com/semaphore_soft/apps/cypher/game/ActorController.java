@@ -19,41 +19,6 @@ import java.util.concurrent.ConcurrentHashMap;
  */
 public class ActorController
 {
-    private static Model          model;
-    private static GameController gameController;
-
-    /**
-     * Set the {@link Model} to consult for information about game state to
-     * make an informed decision about what action an {@link Actor} will take.
-     *
-     * @param model {@link Model}: The game state model to consult for
-     *              information used in deciding what action an {@link Actor}
-     *              will take.
-     *
-     * @see Model
-     * @see Actor
-     */
-    public static void setModel(Model model)
-    {
-        ActorController.model = model;
-    }
-
-    /**
-     * Set the {@link GameController} to report the action taken by a
-     * non-player {@link Actor} to.
-     *
-     * @param gameController {@link GameController}: The {@link GameController}
-     *                       to report the action taken by a non-player {@link
-     *                       Actor} to.
-     *
-     * @see GameController
-     * @see Actor
-     */
-    public static void setGameController(GameController gameController)
-    {
-        ActorController.gameController = gameController;
-    }
-
     /**
      * Given a non-player {@link Actor} ID, decide what action that {@link
      * Actor} will take and take that action via necessary calls to {@link
@@ -76,9 +41,11 @@ public class ActorController
      * @see GameMaster
      * @see GameController
      */
-    public static void takeTurn(int actorId)
+    public static void takeTurn(final GameController gameController,
+                                final Model model,
+                                final int actorId)
     {
-        Actor actor = GameMaster.getActor(actorId);
+        Actor actor = GameMaster.getActor(model, actorId);
 
         Logger.logI("taking turn for actor " + actor.getName());
 
@@ -86,9 +53,9 @@ public class ActorController
         int defendTickets  = 0;
         int specialTickets = 0;
         ArrayList<Integer> playerTargets =
-            GameMaster.getPlayerTargetIds(actorId);
+            GameMaster.getPlayerTargetIds(model, actorId);
         ArrayList<Integer> nonPlayerTargets =
-            GameMaster.getNonPlayerTargetIds(actorId);
+            GameMaster.getNonPlayerTargetIds(model, actorId);
         ConcurrentHashMap<Integer, Special> actorSpecials = actor.getSpecials();
         if (playerTargets.size() > 0)
         {
@@ -113,7 +80,7 @@ public class ActorController
         }
 
         int                moveTickets    = 0;
-        Room               room           = GameMaster.getActorRoom(actorId);
+        Room               room           = GameMaster.getActorRoom(model, actorId);
         ArrayList<Integer> validMoveRooms = new ArrayList<>();
         if (room != null && room.isPlaced())
         {
@@ -123,7 +90,7 @@ public class ActorController
                 boolean foundValidMove = false;
                 for (int roomId : adjacentRooms)
                 {
-                    if (GameMaster.getValidPath(actor.getRoom(), roomId) == 0)
+                    if (GameMaster.getValidPath(model, actor.getRoom(), roomId) == 0)
                     {
                         validMoveRooms.add(roomId);
                         foundValidMove = true;
@@ -155,19 +122,21 @@ public class ActorController
         {
             Collections.shuffle(playerTargets);
 
-            GameMaster.attack(actorId, playerTargets.get(0));
+            GameMaster.attack(model, actorId, playerTargets.get(0));
 
             Logger.logI("actor " + actor.getName() + " attacked " +
-                        GameMaster.getActor(playerTargets.get(0)).getName());
+                        GameMaster.getActor(model, playerTargets.get(0)).getName());
 
-            gameController.feedback(GameMaster.getActor(actorId).getDisplayName() + " attacked " +
-                                    GameMaster.getActor(playerTargets.get(0)).getDisplayName());
+            gameController.feedback(
+                GameMaster.getActor(model, actorId).getDisplayName() + " attacked " +
+                GameMaster.getActor(model, playerTargets.get(0)).getDisplayName());
 
             gameController.onActorAction(actorId, playerTargets.get(0), "attack");
         }
         else if (defendTickets != 0 && ticket <= attackTickets + defendTickets)
         {
-            gameController.feedback(GameMaster.getActor(actorId).getDisplayName() + " defended ");
+            gameController.feedback(
+                GameMaster.getActor(model, actorId).getDisplayName() + " defended ");
 
             gameController.onActorAction(actorId, -1, "defend");
         }
@@ -196,17 +165,19 @@ public class ActorController
                                 Collections.shuffle(nonPlayerTargets);
 
                                 actor.performSpecial(special,
-                                                     GameMaster.getActor(playerTargets.get(0)));
+                                                     GameMaster.getActor(model,
+                                                                         playerTargets.get(0)));
 
                                 Logger.logI(
                                     "actor " + actor.getName() + " used " + special.getName() +
                                     " on " +
-                                    GameMaster.getActor(nonPlayerTargets.get(0)).getName());
+                                    GameMaster.getActor(model, nonPlayerTargets.get(0)).getName());
 
                                 gameController.feedback(actor.getDisplayName() + " used special " +
                                                         special.getDisplayName() +
                                                         " on " +
-                                                        GameMaster.getActor(nonPlayerTargets.get(0))
+                                                        GameMaster.getActor(model,
+                                                                            nonPlayerTargets.get(0))
                                                                   .getDisplayName());
 
                                 gameController.onActorAction(actorId,
@@ -220,16 +191,17 @@ public class ActorController
                             Collections.shuffle(playerTargets);
 
                             actor.performSpecial(special,
-                                                 GameMaster.getActor(playerTargets.get(0)));
+                                                 GameMaster.getActor(model, playerTargets.get(0)));
 
                             Logger.logI(
                                 "actor " + actor.getName() + " used " + special.getName() +
-                                " on " + GameMaster.getActor(playerTargets.get(0)).getName());
+                                " on " +
+                                GameMaster.getActor(model, playerTargets.get(0)).getName());
 
                             gameController.feedback(actor.getDisplayName() + " used special " +
                                                     special.getDisplayName() +
                                                     " on " +
-                                                    GameMaster.getActor(playerTargets.get(0))
+                                                    GameMaster.getActor(model, playerTargets.get(0))
                                                               .getDisplayName());
 
                             gameController.onActorAction(actorId,
@@ -244,7 +216,7 @@ public class ActorController
                                 ArrayList<Actor> nonPlayerTargetActors = new ArrayList<>();
                                 for (int i : nonPlayerTargets)
                                 {
-                                    nonPlayerTargetActors.add(GameMaster.getActor(i));
+                                    nonPlayerTargetActors.add(GameMaster.getActor(model, i));
                                 }
 
                                 actor.performSpecial(special, nonPlayerTargetActors);
@@ -266,7 +238,7 @@ public class ActorController
                             ArrayList<Actor> playerTargetActors = new ArrayList<>();
                             for (int i : playerTargets)
                             {
-                                playerTargetActors.add(GameMaster.getActor(i));
+                                playerTargetActors.add(GameMaster.getActor(model, i));
                             }
 
                             actor.performSpecial(special, playerTargetActors);

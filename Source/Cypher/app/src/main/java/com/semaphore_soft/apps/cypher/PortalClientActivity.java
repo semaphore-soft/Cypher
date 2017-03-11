@@ -224,7 +224,8 @@ public class PortalClientActivity extends ARActivity implements UIListener,
                     uiPortalOverlay.overlaySelect(specialOptions);
                     break;
                 case "cmd_btnCancel":
-                    uiPortalOverlay.overlayAction();
+                    //TODO
+                    uiPortalOverlay.overlayAction(1, 0, 1, 0);
                     break;
             }
         }
@@ -353,15 +354,18 @@ public class PortalClientActivity extends ARActivity implements UIListener,
         }
         else if (msg.equals(NetworkConstants.GAME_START))
         {
-            uiPortalOverlay.overlayWaitingForTurn();
+            //TODO
+            uiPortalOverlay.overlayWaitingForTurn(1, 0, 1, 0);
         }
         else if (msg.equals(NetworkConstants.GAME_TURN))
         {
-            uiPortalOverlay.overlayAction();
+            //TODO
+            uiPortalOverlay.overlayAction(1, 0, 1, 0);
         }
         else if (msg.equals(NetworkConstants.GAME_TURN_OVER))
         {
-            uiPortalOverlay.overlayWaitingForTurn();
+            //TODO
+            uiPortalOverlay.overlayWaitingForTurn(1, 0, 1, 0);
         }
         else if (msg.startsWith(NetworkConstants.PREFIX_CREATE_ROOM))
         {

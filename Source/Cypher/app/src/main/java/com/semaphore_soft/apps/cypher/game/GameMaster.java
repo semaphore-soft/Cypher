@@ -28,19 +28,6 @@ import java.util.concurrent.ConcurrentHashMap;
  */
 public class GameMaster
 {
-    private static Model model;
-
-    /**
-     * Set the {@link Model} which describes the game state.
-     *
-     * @param model {@link Model}: The {@link Model} which describes game
-     *              state.
-     */
-    public static void setModel(final Model model)
-    {
-        GameMaster.model = model;
-    }
-
     /**
      * Creates a new {@link Room} with the next available logical reference ID
      * and not associated with an AR marker, and add it to the {@link Model}.
@@ -61,9 +48,9 @@ public class GameMaster
      * @see Actor
      * @see Model
      */
-    public static Room generateRoom(final Context context)
+    public static Room generateRoom(final Context context, final Model model)
     {
-        return generateRoom(context, CollectionManager.getNextID(model.getRooms()));
+        return generateRoom(context, model, CollectionManager.getNextID(model.getRooms()));
     }
 
     /**
@@ -88,9 +75,9 @@ public class GameMaster
      * @see Actor
      * @see Model
      */
-    public static Room generateRoom(final Context context, final int id)
+    public static Room generateRoom(final Context context, final Model model, final int id)
     {
-        return generateRoom(context, id, -1);
+        return generateRoom(context, model, id, -1);
     }
 
     /**
@@ -113,7 +100,10 @@ public class GameMaster
      * @see Actor
      * @see Model
      */
-    public static Room generateRoom(final Context context, final int id, final int mark)
+    public static Room generateRoom(final Context context,
+                                    final Model model,
+                                    final int id,
+                                    final int mark)
     {
         Log.d("GameMaster", "Generating room with id " + id + " at mark " + mark);
 
@@ -180,7 +170,7 @@ public class GameMaster
      * @see Model
      */
     @Nullable
-    public static Room getRoom(final int id)
+    public static Room getRoom(final Model model, final int id)
     {
         return model.getRooms().get(id);
     }
@@ -202,7 +192,7 @@ public class GameMaster
      * @see Room
      * @see com.semaphore_soft.apps.cypher.PortalRenderer
      */
-    public static int getRoomMarkerId(final int id)
+    public static int getRoomMarkerId(final Model model, final int id)
     {
         return model.getRooms().get(id).getMarker();
     }
@@ -226,7 +216,7 @@ public class GameMaster
      * @see Room
      * @see com.semaphore_soft.apps.cypher.PortalRenderer
      */
-    public static int getRoomIdByMarkerId(final int markerId)
+    public static int getRoomIdByMarkerId(final Model model, final int markerId)
     {
         for (Room room : model.getRooms().values())
         {
@@ -252,7 +242,7 @@ public class GameMaster
      * @see Map
      */
     @NonNull
-    public static ArrayList<Integer> getPlacedRoomMarkerIds()
+    public static ArrayList<Integer> getPlacedRoomMarkerIds(final Model model)
     {
         ArrayList<Integer> placedRoomMarkers = new ArrayList<>();
         for (Room room : model.getRooms().values())
@@ -280,7 +270,7 @@ public class GameMaster
      * @see Map#getAdjacentRooms(int)
      */
     @NonNull
-    public static ArrayList<Integer> getAdjacentRoomIds(final int startRoomId)
+    public static ArrayList<Integer> getAdjacentRoomIds(final Model model, final int startRoomId)
     {
         return model.getMap().getAdjacentRooms(startRoomId);
     }
@@ -301,7 +291,9 @@ public class GameMaster
      * @see Map
      * @see Map#getWallsBetweenAdjacentRooms(int, int)
      */
-    public static short getSideOfRoomFrom(final int startRoomId, final int endRoomId)
+    public static short getSideOfRoomFrom(final Model model,
+                                          final int startRoomId,
+                                          final int endRoomId)
     {
         return model.getMap().getWallsBetweenAdjacentRooms(startRoomId, endRoomId).second;
     }
@@ -318,7 +310,7 @@ public class GameMaster
      * @see Room
      * @see Actor
      */
-    public static int getPlayersInRoom(final int roomId)
+    public static int getPlayersInRoom(final Model model, final int roomId)
     {
         int  res  = 0;
         Room room = model.getRooms().get(roomId);
@@ -350,7 +342,7 @@ public class GameMaster
      * @see Room
      * @see Actor
      */
-    public static int getEnemiesInRoom(final int roomId)
+    public static int getEnemiesInRoom(final Model model, final int roomId)
     {
         int  res  = 0;
         Room room = model.getRooms().get(roomId);
@@ -384,7 +376,7 @@ public class GameMaster
      * @see Model
      */
     @Nullable
-    public static Actor getActor(final int id)
+    public static Actor getActor(final Model model, final int id)
     {
         return model.getActors().get(id);
     }
@@ -406,7 +398,7 @@ public class GameMaster
      * @see Actor
      * @see com.semaphore_soft.apps.cypher.PortalRenderer
      */
-    public static int getActorMakerId(final int id)
+    public static int getActorMakerId(final Model model, final int id)
     {
         return model.getActors().get(id).getMarker();
     }
@@ -427,7 +419,7 @@ public class GameMaster
      * @see Actor
      * @see Room
      */
-    public static int getActorRoomId(final int id)
+    public static int getActorRoomId(final Model model, final int id)
     {
         return model.getActors().get(id).getRoom();
     }
@@ -445,7 +437,7 @@ public class GameMaster
      * @see Room
      */
     @Nullable
-    public static Room getActorRoom(final int id)
+    public static Room getActorRoom(final Model model, final int id)
     {
         return model.getRooms().get(model.getActors().get(id).getRoom());
     }
@@ -465,7 +457,7 @@ public class GameMaster
      *
      * @see Actor
      */
-    public static boolean getActorIsPlayer(final int id)
+    public static boolean getActorIsPlayer(final Model model, final int id)
     {
         return model.getActors().get(id).isPlayer();
     }
@@ -487,7 +479,7 @@ public class GameMaster
      * @see Actor
      * @see Room
      */
-    public static int getMarkerAttachment(final int markId)
+    public static int getMarkerAttachment(final Model model, final int markId)
     {
         for (Actor actor : model.getActors().values())
         {
@@ -525,7 +517,7 @@ public class GameMaster
      * @see Actor
      * @see Room
      */
-    public static int getIdByMarker(final int markId)
+    public static int getIdByMarker(final Model model, final int markId)
     {
         for (Actor actor : model.getActors().values())
         {
@@ -573,7 +565,7 @@ public class GameMaster
      * @see PortalActivity#moveActor(int, int)
      * @see PortalActivity#onActorMove(int, int)
      */
-    public static int moveActor(final int actorId, final int endRoomId)
+    public static int moveActor(final Model model, final int actorId, final int endRoomId)
     {
         Actor actor   = model.getActors().get(actorId);
         Room  endRoom = model.getRooms().get(endRoomId);
@@ -596,7 +588,7 @@ public class GameMaster
             return 1;
         }
 
-        int pathRes = getValidPath(actor.getRoom(), endRoomId);
+        int pathRes = getValidPath(model, actor.getRoom(), endRoomId);
 
         switch (pathRes)
         {
@@ -643,11 +635,11 @@ public class GameMaster
      * </ul>
      *
      * @see Room
-     * @see #moveActor(int, int)
-     * @see ActorController#takeTurn(int)
+     * @see #moveActor(Model, int, int)
+     * @see ActorController#takeTurn(GameController, Model, int)
      * @see Room.E_WALL_TYPE
      */
-    public static int getValidPath(final int startRoomId, final int endRoomId)
+    public static int getValidPath(final Model model, final int startRoomId, final int endRoomId)
     {
         Map map = model.getMap();
 
@@ -703,12 +695,12 @@ public class GameMaster
      *
      * @see Room
      * @see Map
-     * @see #getValidAdjacency(int, int, short, short)
-     * @see #getValidAdjacencyProposedRoom(int, int, short, int, int)
+     * @see #getValidAdjacency(Model, int, int, short, short)
+     * @see #getValidAdjacencyProposedRoom(Model, int, int, short, int, int)
      * @see PortalActivity#openDoor()
      * @see Room.E_WALL_TYPE
      */
-    public static int openDoor(final int startRoomId,
+    public static int openDoor(final Model model, final int startRoomId,
                                final int endRoomId,
                                final short sideOfStartRoom,
                                final short sideOfEndRoom)
@@ -724,7 +716,8 @@ public class GameMaster
         }
 
         {
-            if (getValidAdjacency(startRoomId, endRoomId, sideOfStartRoom, sideOfEndRoom) == 0)
+            if (getValidAdjacency(model, startRoomId, endRoomId, sideOfStartRoom, sideOfEndRoom) ==
+                0)
             {
                 endRoom.setPlaced(true);
 
@@ -793,11 +786,11 @@ public class GameMaster
      *
      * @see Room
      * @see Map
-     * @see #getValidAdjacencyProposedRoom(int, int, short, int, int)
-     * @see #openDoor(int, int, short, short)
+     * @see #getValidAdjacencyProposedRoom(Model, int, int, short, int, int)
+     * @see #openDoor(Model, int, int, short, short)
      * @see Room.E_WALL_TYPE
      */
-    private static int getValidAdjacency(final int startRoomId,
+    private static int getValidAdjacency(final Model model, final int startRoomId,
                                          final int endRoomId,
                                          final short sideOfStartRoom,
                                          final short sideOfEndRoom)
@@ -825,7 +818,7 @@ public class GameMaster
 
             if (testRoomId > -1 && testRoomId != startRoomId)
             {
-                if (getValidAdjacencyProposedRoom(proposedEndRoomPosition.first,
+                if (getValidAdjacencyProposedRoom(model, proposedEndRoomPosition.first,
                                                   proposedEndRoomPosition.second,
                                                   proposedEndRoomRotation,
                                                   testRoomId,
@@ -870,11 +863,12 @@ public class GameMaster
      *
      * @see Room
      * @see Map
-     * @see #getValidAdjacency(int, int, short, short)
-     * @see #openDoor(int, int, short, short)
+     * @see #getValidAdjacency(Model, int, int, short, short)
+     * @see #openDoor(Model, int, int, short, short)
      * @see Room.E_WALL_TYPE
      */
-    private static int getValidAdjacencyProposedRoom(final int proposedRoomPositionX,
+    private static int getValidAdjacencyProposedRoom(final Model model,
+                                                     final int proposedRoomPositionX,
                                                      final int proposedRoomPositionY,
                                                      final short proposedRoomRotation,
                                                      final int testRoomId,
@@ -944,7 +938,8 @@ public class GameMaster
      * @see Room
      */
     @NonNull
-    public static ConcurrentHashMap<Integer, Actor> getPlayerTargets(final int actorId)
+    public static ConcurrentHashMap<Integer, Actor> getPlayerTargets(final Model model,
+                                                                     final int actorId)
     {
         Actor                             actor   = model.getActors().get(actorId);
         Room                              room    = model.getRooms().get(actor.getRoom());
@@ -984,7 +979,8 @@ public class GameMaster
      * @see Room
      */
     @NonNull
-    public static ConcurrentHashMap<Integer, Actor> getNonPlayerTargets(final int actorId)
+    public static ConcurrentHashMap<Integer, Actor> getNonPlayerTargets(final Model model,
+                                                                        final int actorId)
     {
         Actor                             actor   = model.getActors().get(actorId);
         Room                              room    = model.getRooms().get(actor.getRoom());
@@ -1024,7 +1020,7 @@ public class GameMaster
      * @see Room
      */
     @NonNull
-    public static ArrayList<Integer> getPlayerTargetIds(final int actorId)
+    public static ArrayList<Integer> getPlayerTargetIds(final Model model, final int actorId)
     {
         Actor              actor   = model.getActors().get(actorId);
         Room               room    = model.getRooms().get(actor.getRoom());
@@ -1068,7 +1064,7 @@ public class GameMaster
      * @see Room
      */
     @NonNull
-    public static ArrayList<Integer> getNonPlayerTargetIds(final int actorId)
+    public static ArrayList<Integer> getNonPlayerTargetIds(final Model model, final int actorId)
     {
         Actor              actor   = model.getActors().get(actorId);
         Room               room    = model.getRooms().get(actor.getRoom());
@@ -1108,7 +1104,8 @@ public class GameMaster
      * @see Actor#getSpecials()
      * @see Special
      */
-    public static ConcurrentHashMap<Integer, Special> getSpecials(final int actorId)
+    public static ConcurrentHashMap<Integer, Special> getSpecials(final Model model,
+                                                                  final int actorId)
     {
         Logger.logI("looking for specials for actor: " + actorId, 1);
         Actor actor = model.getActors().get(actorId);
@@ -1132,7 +1129,7 @@ public class GameMaster
      * @see Actor.E_STATE
      * @see Actor#setState(Actor.E_STATE)
      */
-    public static void setActorState(final int id, final Actor.E_STATE state)
+    public static void setActorState(final Model model, final int id, final Actor.E_STATE state)
     {
         model.getActors().get(id).setState(state);
     }
@@ -1160,7 +1157,7 @@ public class GameMaster
      * @see Actor#receiveAttack(int)
      * @see PortalActivity#postAttackResults(int, int, int)
      */
-    public static int attack(final int attackerId, final int defenderId)
+    public static int attack(final Model model, final int attackerId, final int defenderId)
     {
         Actor attacker = model.getActors().get(attackerId);
         Actor defender = model.getActors().get(defenderId);
@@ -1188,9 +1185,9 @@ public class GameMaster
      * @see Room
      * @see Model
      */
-    public static void removeActor(final int actorId)
+    public static void removeActor(final Model model, final int actorId)
     {
-        Room room = getActorRoom(actorId);
+        Room room = getActorRoom(model, actorId);
         if (room != null)
         {
             room.removeActor(actorId);
@@ -1209,7 +1206,7 @@ public class GameMaster
      * @see Room
      * @see Model
      */
-    public static void removeDeadActors()
+    public static void removeDeadActors(final Model model)
     {
         Logger.logD("enter trace");
 
@@ -1265,7 +1262,7 @@ public class GameMaster
      * @see PortalActivity#postSpecialResult(int, int, int, int)
      * @see Special
      */
-    public static int special(final int sourceId, final int specialId)
+    public static int special(final Model model, final int sourceId, final int specialId)
     {
         Actor            source  = model.getActors().get(sourceId);
         Special          special = model.getSpecials().get(specialId);
@@ -1357,7 +1354,10 @@ public class GameMaster
      * @see PortalActivity#postSpecialResult(int, int, int, int)
      * @see Special
      */
-    public static int special(final int sourceId, final int targetId, final int specialId)
+    public static int special(final Model model,
+                              final int sourceId,
+                              final int targetId,
+                              final int specialId)
     {
         Actor   source  = model.getActors().get(sourceId);
         Actor   target  = model.getActors().get(targetId);
@@ -1410,7 +1410,7 @@ public class GameMaster
      * @see com.semaphore_soft.apps.cypher.PortalRenderer
      * @see PortalActivity#postSpecialResult(int, int, int, int)
      */
-    public static String getSpecialTypeDescriptor(final int id)
+    public static String getSpecialTypeDescriptor(final Model model, final int id)
     {
         ArrayList<Effect.E_EFFECT> specialEffects = model.getSpecials().get(id).getEffects();
 
@@ -1437,7 +1437,7 @@ public class GameMaster
      * @return {@link Special.E_TARGETING_TYPE}: The {@link
      * Special.E_TARGETING_TYPE type} of the given {@link Special} ability.
      */
-    public static Special.E_TARGETING_TYPE getSpecialTargetingType(final int id)
+    public static Special.E_TARGETING_TYPE getSpecialTargetingType(final Model model, final int id)
     {
         Special special = model.getSpecials().get(id);
 
@@ -1450,7 +1450,7 @@ public class GameMaster
     }
 
     @NonNull
-    public static ArrayList<Integer> getPlayerActorIds()
+    public static ArrayList<Integer> getPlayerActorIds(final Model model)
     {
         ArrayList<Integer> playerActorIds = new ArrayList<>();
 

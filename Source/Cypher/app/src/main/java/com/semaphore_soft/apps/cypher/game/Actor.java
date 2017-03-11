@@ -516,7 +516,7 @@ public class Actor
      * @see #performSpecial(Special, Actor)
      * @see #performSpecial(Special, ArrayList)
      */
-    int getSpecialCurrent()
+    public int getSpecialCurrent()
     {
         return specialCurrent;
     }
