@@ -13,17 +13,28 @@ import java.net.Socket;
  * Class to hold client thread and helper methods.
  *
  * @author Evan
- *
  * @see ClientService
  * @see ClientThread
  */
 
 public class Client
 {
+    private static Boolean reconnect = true;
     private ClientService clientService;
 
     public Client()
     {
+    }
+
+    /**
+     * Sets whether of not the {@link Server.ClientHandler ServerThread} should try to reconnect
+     * to a client if it disconnects.
+     *
+     * @param bool Whether or not to attempt to reconnect to a client
+     */
+    public static void setReconnect(Boolean bool)
+    {
+        reconnect = bool;
     }
 
     /**
@@ -146,7 +157,10 @@ public class Client
                 clientService.threadError(NetworkConstants.ERROR_DISCONNECT_CLIENT);
                 e.printStackTrace();
                 running = false;
-                reconnectSocket();
+                if (reconnect)
+                {
+                    reconnectSocket();
+                }
             }
             return null;
         }

@@ -79,7 +79,7 @@ public class NetworkConstants
     public static final String ERROR_SERVER_START      = "Failed to start server";
     public static final String ERROR_WRITE             = "Error writing to socket";
     public static final String ERROR_DISCONNECT_CLIENT = "Socket has been disconnected";
-    public static final String ERROR_DISCONNECT_SERVER = "Client had been disconnected";
+    public static final String ERROR_DISCONNECT_SERVER = "Client has been disconnected";
 
     // Port should be between 49152-65535
     public static final int SERVER_PORT     = 58008;

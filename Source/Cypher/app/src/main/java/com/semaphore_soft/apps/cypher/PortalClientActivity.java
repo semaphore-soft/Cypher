@@ -16,6 +16,7 @@ import com.semaphore_soft.apps.cypher.game.Actor;
 import com.semaphore_soft.apps.cypher.game.GameController;
 import com.semaphore_soft.apps.cypher.game.Room;
 import com.semaphore_soft.apps.cypher.game.Special;
+import com.semaphore_soft.apps.cypher.networking.Client;
 import com.semaphore_soft.apps.cypher.networking.ClientService;
 import com.semaphore_soft.apps.cypher.networking.NetworkConstants;
 import com.semaphore_soft.apps.cypher.networking.ResponseReceiver;
@@ -121,6 +122,8 @@ public class PortalClientActivity extends ARActivity implements UIListener,
         // Bind to ClientService
         Intent intent = new Intent(this, ClientService.class);
         bindService(intent, mClientConnection, Context.BIND_AUTO_CREATE);
+        // Make sure we are able to reconnect if we were in the background
+        Client.setReconnect(true);
     }
 
     /**
@@ -130,6 +133,8 @@ public class PortalClientActivity extends ARActivity implements UIListener,
     public void onStop()
     {
         super.onStop();
+        // Don't reconnect while we are in the background
+        Client.setReconnect(false);
         if (mClientBound)
         {
             unbindService(mClientConnection);

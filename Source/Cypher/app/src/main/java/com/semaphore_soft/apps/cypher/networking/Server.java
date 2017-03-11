@@ -17,7 +17,6 @@ import java.util.HashMap;
  * Class to hold server threads and helper methods
  *
  * @author Evan
- *
  * @see ServerService
  * @see AcceptorThread
  * @see ClientHandler
@@ -29,6 +28,7 @@ public class Server
     private static HashMap<Integer, Integer>       indexToID    = new HashMap<>();
     private static HashMap<Integer, ClientHandler> idToSocket   = new HashMap<>();
     private static Boolean                         accepting    = false;
+    private static Boolean                         reconnect    = true;
     private static ServerSocket                    serverSocket = null;
     private        int                             maxPlayers   = 4;
     private ServerService serverService;
@@ -48,6 +48,16 @@ public class Server
         accepting = bool;
     }
 
+    /**
+     * Sets whether of not the {@link ClientHandler ServerThread} should try to reconnect
+     * to a client if it disconnects.
+     *
+     * @param bool Whether or not to attempt to reconnect to a client
+     */
+    public static void setReconnect(Boolean bool)
+    {
+        reconnect = bool;
+    }
 
     /**
      * Map the {@code playerID} to a {@link ClientHandler} at {@code index}
@@ -95,7 +105,7 @@ public class Server
      * Write a message to a specific client.
      *
      * @param str Message to write.
-     * @param id The playerID of the specific client to connect to.
+     * @param id  The playerID of the specific client to connect to.
      *
      * @see ServerService#writeToClient(String, int)
      */
@@ -254,7 +264,8 @@ public class Server
             catch (IOException e)
             {
                 e.printStackTrace();
-                serverService.threadError(NetworkConstants.ERROR_WRITE, getClientID(clients.indexOf(this)));
+                serverService.threadError(NetworkConstants.ERROR_WRITE,
+                                          getClientID(clients.indexOf(this)));
             }
         }
 
@@ -286,7 +297,10 @@ public class Server
                                           getClientID(clients.indexOf(this)));
                 e.printStackTrace();
                 running = false;
-                reconnectSocket();
+                if (reconnect)
+                {
+                    reconnectSocket();
+                }
             }
             return null;
         }

@@ -23,6 +23,7 @@ import com.semaphore_soft.apps.cypher.game.Room;
 import com.semaphore_soft.apps.cypher.game.Special;
 import com.semaphore_soft.apps.cypher.networking.NetworkConstants;
 import com.semaphore_soft.apps.cypher.networking.ResponseReceiver;
+import com.semaphore_soft.apps.cypher.networking.Server;
 import com.semaphore_soft.apps.cypher.networking.ServerService;
 import com.semaphore_soft.apps.cypher.ui.UIListener;
 import com.semaphore_soft.apps.cypher.ui.UIPortalActivity;
@@ -102,7 +103,7 @@ public class PortalActivity extends ARActivity implements PortalRenderer.NewMark
         super.onCreate(savedInstanceState); //Calls ARActivity's actor, abstract class of ARBaseLib
         setContentView(R.layout.empty);
 
-        //setup ui
+        // Setup ui
         uiPortalActivity = new UIPortalActivity(this);
         ((FrameLayout) this.findViewById(R.id.empty)).addView(uiPortalActivity);
         uiPortalActivity.setUIListener(this);
@@ -111,12 +112,12 @@ public class PortalActivity extends ARActivity implements PortalRenderer.NewMark
         ((FrameLayout) this.findViewById(R.id.overlay_frame)).addView(uiPortalOverlay);
         uiPortalOverlay.setUIListener(this);
 
-        //setup ar 3d graphics
+        // Setup AR 3d graphics
         renderer = new PortalRenderer();
         renderer.setContext(this);
         PortalRenderer.setGameController(this);
 
-        //setup broadcast networking service broadcast receiver
+        // Setup broadcast networking service broadcast receiver
         responseReceiver = new ResponseReceiver();
         responseReceiver.setListener(this);
         LocalBroadcastManager.getInstance(this)
@@ -157,6 +158,8 @@ public class PortalActivity extends ARActivity implements PortalRenderer.NewMark
         Intent intent = new Intent(this, ServerService.class);
         bindService(intent, mServerConnection, Context.BIND_AUTO_CREATE);
         handler.postDelayed(heartbeat, NetworkConstants.HEARTBEAT_DELAY);
+        // Make sure we are able to reconnect if we were in the background
+        Server.setReconnect(true);
     }
 
     /**
@@ -166,7 +169,9 @@ public class PortalActivity extends ARActivity implements PortalRenderer.NewMark
     public void onStop()
     {
         super.onStop();
-        // Unbind from the services
+        // Don't reconnect while we are in the background
+        Server.setReconnect(false);
+        // Unbind from the service
         if (mServerBound)
         {
             unbindService(mServerConnection);
