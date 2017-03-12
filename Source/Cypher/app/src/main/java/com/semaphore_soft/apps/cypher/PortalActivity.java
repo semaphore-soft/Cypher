@@ -1169,13 +1169,38 @@ public class PortalActivity extends ARActivity implements PortalRenderer.NewMark
                            true);
             }
 
+            //TODO client case
             if (attackerId == playerId)
             {
                 Actor actor = GameMaster.getActor(model, playerId);
 
                 if (actor != null)
                 {
-                    uiPortalOverlay.setHealth(actor.getHealthMaximum(), actor.getHealthCurrent());
+                    uiPortalOverlay.overlayWaitingForTurn(actor.getHealthMaximum(),
+                                                          actor.getHealthCurrent(),
+                                                          actor.getSpecialMaximum(),
+                                                          actor.getSpecialCurrent());
+                }
+                else
+                {
+                    uiPortalOverlay.setHealth(1, 0);
+                }
+            }
+            else
+            {
+                serverService.writeToClient(NetworkConstants.GAME_TURN_OVER, attackerId);
+            }
+
+            if (defenderId == playerId)
+            {
+                Actor actor = GameMaster.getActor(model, playerId);
+
+                if (actor != null)
+                {
+                    uiPortalOverlay.overlayWaitingForTurn(actor.getHealthMaximum(),
+                                                          actor.getHealthCurrent(),
+                                                          actor.getSpecialMaximum(),
+                                                          actor.getSpecialCurrent());
                 }
                 else
                 {
@@ -1318,7 +1343,31 @@ public class PortalActivity extends ARActivity implements PortalRenderer.NewMark
 
                 if (actor != null)
                 {
-                    uiPortalOverlay.setEnergy(actor.getSpecialMaximum(), actor.getSpecialCurrent());
+                    uiPortalOverlay.overlayWaitingForTurn(actor.getHealthMaximum(),
+                                                          actor.getHealthCurrent(),
+                                                          actor.getSpecialMaximum(),
+                                                          actor.getSpecialCurrent());
+                }
+                else
+                {
+                    uiPortalOverlay.setEnergy(1, 0);
+                }
+            }
+            else
+            {
+                serverService.writeToClient(NetworkConstants.GAME_TURN_OVER, sourceId);
+            }
+
+            if (targetId == playerId)
+            {
+                Actor actor = GameMaster.getActor(model, playerId);
+
+                if (actor != null)
+                {
+                    uiPortalOverlay.overlayWaitingForTurn(actor.getHealthMaximum(),
+                                                          actor.getHealthCurrent(),
+                                                          actor.getSpecialMaximum(),
+                                                          actor.getSpecialCurrent());
                 }
                 else
                 {

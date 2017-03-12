@@ -3,7 +3,6 @@ package com.semaphore_soft.apps.cypher.ui;
 import android.content.Context;
 import android.support.v4.util.Pair;
 import android.util.AttributeSet;
-import android.util.TypedValue;
 import android.view.View;
 import android.widget.Button;
 import android.widget.ImageButton;
@@ -13,6 +12,7 @@ import android.widget.RelativeLayout;
 import android.widget.TextView;
 
 import com.semaphore_soft.apps.cypher.R;
+import com.semaphore_soft.apps.cypher.utils.Logger;
 
 import java.util.ArrayList;
 
@@ -227,25 +227,26 @@ public class UIPortalOverlay extends UIBase
 
         if (imgHealth != null && lblHealth != null)
         {
-            float healthBarLength = 50f;
+            float healthBarLength = getResources().getDimension(R.dimen.bar_length_min);
 
-            healthBarLength += ((float) healthCurrent / (float) healthMax) * 150f;
+            Logger.logI("health bar min length is <" + healthBarLength + ">");
+
+            healthBarLength += ((float) healthCurrent / (float) healthMax) *
+                               (getResources().getDimension(R.dimen.bar_length_max) -
+                                getResources().getDimension(R.dimen.bar_length_min));
+
+            Logger.logI("health bar final length is is <" + healthBarLength + ">");
 
             RelativeLayout.LayoutParams layoutParams = new RelativeLayout.LayoutParams(
-                (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP,
-                                                healthBarLength,
-                                                getResources().getDisplayMetrics()),
-                (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP,
-                                                24,
-                                                getResources().getDisplayMetrics()));
+                (int) healthBarLength,
+                (int) getResources().getDimension(R.dimen.bar_height));
+
+            layoutParams.bottomMargin = (int) getResources().getDimension(R.dimen.bar_margin);
 
             imgHealth.setLayoutParams(layoutParams);
 
-            //imgHealth.getLayoutParams().width = (int) healthBarLength;
-
             imgHealth.requestLayout();
             lblHealth.setText("" + healthCurrent);
-            //lblHealth.requestLayout();
         }
     }
 
@@ -256,26 +257,26 @@ public class UIPortalOverlay extends UIBase
 
         if (imgEnergy != null && lblEnergy != null)
         {
-            float energyBarLength = 50f;
+            float energyBarLength = getResources().getDimension(R.dimen.bar_length_min);
 
-            energyBarLength += ((float) energyCurrent / (float) energyMax) * 150f;
+            Logger.logI("energy bar min length is <" + energyBarLength + ">");
+
+            energyBarLength += ((float) energyCurrent / (float) energyMax) *
+                               (getResources().getDimension(R.dimen.bar_length_max) -
+                                getResources().getDimension(R.dimen.bar_length_min));
+
+            Logger.logI("energy bar final length is <" + energyBarLength + ">");
 
             RelativeLayout.LayoutParams layoutParams = new RelativeLayout.LayoutParams(
-                (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP,
-                                                energyBarLength,
-                                                getResources().getDisplayMetrics()),
-                (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP,
-                                                24,
-                                                getResources().getDisplayMetrics()));
+                (int) energyBarLength,
+                (int) getResources().getDimension(R.dimen.bar_height));
+
             layoutParams.addRule(RelativeLayout.BELOW, R.id.imgHealth);
 
             imgEnergy.setLayoutParams(layoutParams);
 
-            //imgEnergy.getLayoutParams().width = (int) energyBarLength;
-
             imgEnergy.requestLayout();
             lblEnergy.setText("" + energyCurrent);
-            //lblEnergy.requestLayout();
         }
     }
 }

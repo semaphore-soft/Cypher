@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <RelativeLayout
+            android:layout_width="400dp"
+            android:layout_height="200dp"
+            android:layout_marginStart="50dp"
+            android:layout_marginTop="10dp">
+
+        <ImageView
+                android:layout_width="@dimen/bar_length_max"
+                android:layout_height="@dimen/bar_height"
+                android:layout_marginTop="@dimen/bar_back_offset"
+                android:layout_marginStart="@dimen/bar_back_offset"
+                android:layout_alignTop="@+id/imgHealth"
+                app:srcCompat="@android:color/white"
+                android:src="@android:color/white"/>
+
+        <ImageView
+                android:layout_width="@dimen/bar_length_min"
+                android:layout_height="@dimen/bar_height"
+                android:layout_marginBottom="@dimen/bar_margin"
+                app:srcCompat="@android:color/holo_blue_light"
+                android:src="@android:color/holo_blue_light"
+                android:id="@+id/imgHealth"/>
+
+        <ImageView
+                android:layout_width="@dimen/bar_length_max"
+                android:layout_height="@dimen/bar_height"
+                android:layout_marginTop="@dimen/bar_back_offset"
+                android:layout_marginStart="@dimen/bar_back_offset"
+                android:layout_alignTop="@+id/imgEnergy"
+                app:srcCompat="@android:color/white"
+                android:src="@android:color/white"/>
+
+        <ImageView
+                android:layout_width="@dimen/bar_length_min"
+                android:layout_height="@dimen/bar_height"
+                app:srcCompat="@android:color/holo_red_dark"
+                android:src="@android:color/holo_red_dark"
+                android:id="@+id/imgEnergy"
+                android:layout_below="@id/imgHealth"/>
+
+        <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="0"
+                android:id="@+id/lblHealth"
+                android:textAppearance="@android:style/TextAppearance.Material.Small"
+                android:layout_alignEnd="@id/imgHealth"
+                android:layout_marginEnd="5dp"/>
+
+        <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="0"
+                android:id="@+id/lblEnergy"
+                android:textAppearance="@android:style/TextAppearance.Material.Small"
+                android:layout_alignTop="@id/imgEnergy"
+                android:layout_alignEnd="@id/imgEnergy"
+                android:layout_marginEnd="5dp"/>
+    </RelativeLayout>
+
+    <ImageView
+            android:layout_width="100dp"
+            android:layout_height="100dp"
+            app:srcCompat="@drawable/hud_sepia_portrait"
+            android:src="@drawable/hud_sepia_portrait"
+            android:scaleType="centerInside"
+            android:background="?android:selectableItemBackground"
+            android:id="@+id/imgPortrait"/>
+
+</RelativeLayout>

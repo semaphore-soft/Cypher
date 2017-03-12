@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
-        xmlns:app="http://schemas.android.com/apk/res-auto"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent">
+                xmlns:app="http://schemas.android.com/apk/res-auto"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent">
 
     <Button
             android:text="End Turn"
@@ -10,7 +10,7 @@
             android:layout_height="wrap_content"
             android:id="@+id/btnEndTurn"
             android:layout_centerVertical="true"
-            android:layout_alignParentStart="true" />
+            android:layout_alignParentStart="true"/>
 
     <Button
             android:text="Generate\nRoom"
@@ -18,7 +18,7 @@
             android:layout_height="wrap_content"
             android:id="@+id/btnGenerateRoom"
             android:layout_below="@+id/btnEndTurn"
-            android:layout_alignParentStart="true" />
+            android:layout_alignParentStart="true"/>
 
 
     <ImageButton
@@ -30,7 +30,7 @@
             android:scaleType="centerInside"
             android:background="?android:selectableItemBackground"
             android:layout_alignParentBottom="true"
-            android:layout_alignParentStart="true" />
+            android:layout_alignParentStart="true"/>
 
     <ImageButton
             android:layout_width="80dp"
@@ -41,7 +41,7 @@
             android:scaleType="centerInside"
             android:background="?android:selectableItemBackground"
             android:layout_alignParentTop="true"
-            android:layout_alignParentEnd="true" />
+            android:layout_alignParentEnd="true"/>
 
     <ImageButton
             android:layout_width="80dp"
@@ -52,7 +52,7 @@
             android:scaleType="centerInside"
             android:background="?android:selectableItemBackground"
             android:layout_centerVertical="true"
-            android:layout_alignParentEnd="true" />
+            android:layout_alignParentEnd="true"/>
 
     <ImageButton
             android:layout_width="80dp"
@@ -63,56 +63,9 @@
             android:scaleType="centerInside"
             android:background="?android:selectableItemBackground"
             android:layout_alignParentBottom="true"
-            android:layout_alignParentEnd="true" />
+            android:layout_alignParentEnd="true"/>
 
-    <RelativeLayout
-            android:layout_width="400dp"
-            android:layout_height="200dp"
-            android:layout_marginStart="50dp"
-            android:layout_marginTop="10dp">
-
-        <ImageView
-                android:layout_width="200dp"
-                android:layout_height="24dp"
-                app:srcCompat="@android:color/holo_blue_light"
-                android:src="@android:color/holo_blue_light"
-                android:id="@+id/imgHealth" />
-
-        <ImageView
-                android:layout_width="125dp"
-                android:layout_height="24dp"
-                app:srcCompat="@android:color/holo_red_dark"
-                android:src="@android:color/holo_red_dark"
-                android:id="@+id/imgEnergy"
-                android:layout_below="@id/imgHealth" />
-
-        <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="100"
-                android:id="@+id/lblHealth"
-                android:textAppearance="@android:style/TextAppearance.Material.Medium"
-                android:layout_alignEnd="@id/imgHealth"
-                android:layout_marginEnd="5dp" />
-
-        <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="50"
-                android:id="@+id/lblEnergy"
-                android:textAppearance="@android:style/TextAppearance.Material.Medium"
-                android:layout_alignTop="@id/imgEnergy"
-                android:layout_alignEnd="@id/imgEnergy"
-                android:layout_marginEnd="5dp" />
-    </RelativeLayout>
-
-    <ImageView
-            android:layout_width="100dp"
-            android:layout_height="100dp"
-            app:srcCompat="@drawable/hud_sepia_portrait"
-            android:src="@drawable/hud_sepia_portrait"
-            android:scaleType="centerInside"
-            android:background="?android:selectableItemBackground"
-            android:id="@+id/imgPortrait" />
+    <include
+            layout="@layout/overlay_character_info"/>
 
 </RelativeLayout>
