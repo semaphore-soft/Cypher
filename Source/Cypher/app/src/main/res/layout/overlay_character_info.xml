@@ -23,8 +23,8 @@
                 android:layout_width="@dimen/bar_length_min"
                 android:layout_height="@dimen/bar_height"
                 android:layout_marginBottom="@dimen/bar_margin"
-                app:srcCompat="@android:color/holo_blue_light"
-                android:src="@android:color/holo_blue_light"
+                app:srcCompat="@color/healthPrimary"
+                android:src="@color/healthPrimary"
                 android:id="@+id/imgHealth"/>
 
         <ImageView
@@ -39,8 +39,8 @@
         <ImageView
                 android:layout_width="@dimen/bar_length_min"
                 android:layout_height="@dimen/bar_height"
-                app:srcCompat="@android:color/holo_red_dark"
-                android:src="@android:color/holo_red_dark"
+                app:srcCompat="@color/energyPrimary"
+                android:src="@color/energyPrimary"
                 android:id="@+id/imgEnergy"
                 android:layout_below="@id/imgHealth"/>
 
