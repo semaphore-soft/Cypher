@@ -3,4 +3,10 @@
     <color name="colorPrimary">#3F51B5</color>
     <color name="colorPrimaryDark">#303F9F</color>
     <color name="colorAccent">#FF4081</color>
+
+    <color name="healthPrimary">#00adee</color>
+    <color name="healthSecondary">#FFFFFF</color>
+
+    <color name="energyPrimary">#9e1f63</color>
+    <color name="energySecondary">#FFFFFF</color>
 </resources>
