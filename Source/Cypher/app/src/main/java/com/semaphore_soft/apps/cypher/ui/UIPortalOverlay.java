@@ -22,6 +22,12 @@ import java.util.ArrayList;
 
 public class UIPortalOverlay extends UIBase
 {
+    private int healthMax;
+    private int energyMax;
+
+    private float healthBarMaxLength;
+    private float energyBarMaxLength;
+
     public UIPortalOverlay(Context context)
     {
         super(context);
@@ -90,8 +96,10 @@ public class UIPortalOverlay extends UIBase
     {
         makeView(R.layout.overlay_waiting_for_turn);
 
-        setHealth(healthMax, healthCurrent);
-        setEnergy(energyMax, energyCurrent);
+        setupHealthAndEnergyBars(healthMax, energyMax);
+
+        setHealth(healthCurrent);
+        setEnergy(energyCurrent);
     }
 
     public void overlayAction(final int healthMax,
@@ -161,8 +169,10 @@ public class UIPortalOverlay extends UIBase
             }
         });
 
-        setHealth(healthMax, healthCurrent);
-        setEnergy(energyMax, energyCurrent);
+        setupHealthAndEnergyBars(healthMax, energyMax);
+
+        setHealth(healthCurrent);
+        setEnergy(energyCurrent);
     }
 
     public void overlaySelect(ArrayList<Pair<String, String>> options)
@@ -220,7 +230,60 @@ public class UIPortalOverlay extends UIBase
         }
     }
 
-    public void setHealth(final int healthMax, final int healthCurrent)
+    private void setupHealthAndEnergyBars(final int healthMax, final int energyMax)
+    {
+        this.healthMax = healthMax;
+        this.energyMax = energyMax;
+
+        if (healthMax > energyMax)
+        {
+            healthBarMaxLength = getResources().getDimension(R.dimen.bar_length_max);
+            energyBarMaxLength = getResources().getDimension(R.dimen.bar_length_min) +
+                                 ((getResources().getDimension(R.dimen.bar_length_max) -
+                                   getResources().getDimension(R.dimen.bar_length_min)) *
+                                  ((float) energyMax / (float) healthMax));
+        }
+        else
+        {
+            energyBarMaxLength = getResources().getDimension(R.dimen.bar_length_max);
+            healthBarMaxLength = getResources().getDimension(R.dimen.bar_length_min) +
+                                 ((getResources().getDimension(R.dimen.bar_length_max) -
+                                   getResources().getDimension(R.dimen.bar_length_min)) *
+                                  ((float) healthMax / (float) energyMax));
+        }
+
+        RelativeLayout.LayoutParams healthBarBackLayoutParams =
+            new RelativeLayout.LayoutParams((int) healthBarMaxLength,
+                                            (int) getResources().getDimension(R.dimen.bar_height));
+
+        healthBarBackLayoutParams.topMargin =
+            (int) getResources().getDimension(R.dimen.bar_back_offset);
+        healthBarBackLayoutParams.leftMargin =
+            (int) getResources().getDimension(R.dimen.bar_back_offset);
+
+        healthBarBackLayoutParams.addRule(RelativeLayout.ALIGN_TOP, R.id.imgHealth);
+
+        ImageView imgHealthBack = (ImageView) findViewById(R.id.imgHealthBack);
+        imgHealthBack.setLayoutParams(healthBarBackLayoutParams);
+        imgHealthBack.requestLayout();
+
+        RelativeLayout.LayoutParams energyBarBackLayoutParams =
+            new RelativeLayout.LayoutParams((int) energyBarMaxLength,
+                                            (int) getResources().getDimension(R.dimen.bar_height));
+
+        energyBarBackLayoutParams.topMargin =
+            (int) getResources().getDimension(R.dimen.bar_back_offset);
+        energyBarBackLayoutParams.leftMargin =
+            (int) getResources().getDimension(R.dimen.bar_back_offset);
+
+        energyBarBackLayoutParams.addRule(RelativeLayout.ALIGN_TOP, R.id.imgEnergy);
+
+        ImageView imgEnergyBack = (ImageView) findViewById(R.id.imgEnergyBack);
+        imgEnergyBack.setLayoutParams(energyBarBackLayoutParams);
+        imgEnergyBack.requestLayout();
+    }
+
+    public void setHealth(final int healthCurrent)
     {
         ImageView imgHealth = (ImageView) findViewById(R.id.imgHealth);
         TextView  lblHealth = (TextView) findViewById(R.id.lblHealth);
@@ -232,7 +295,7 @@ public class UIPortalOverlay extends UIBase
             Logger.logI("health bar min length is <" + healthBarLength + ">");
 
             healthBarLength += ((float) healthCurrent / (float) healthMax) *
-                               (getResources().getDimension(R.dimen.bar_length_max) -
+                               (healthBarMaxLength -
                                 getResources().getDimension(R.dimen.bar_length_min));
 
             Logger.logI("health bar final length is is <" + healthBarLength + ">");
@@ -250,7 +313,7 @@ public class UIPortalOverlay extends UIBase
         }
     }
 
-    public void setEnergy(final int energyMax, final int energyCurrent)
+    public void setEnergy(final int energyCurrent)
     {
         ImageView imgEnergy = (ImageView) findViewById(R.id.imgEnergy);
         TextView  lblEnergy = (TextView) findViewById(R.id.lblEnergy);
@@ -262,7 +325,7 @@ public class UIPortalOverlay extends UIBase
             Logger.logI("energy bar min length is <" + energyBarLength + ">");
 
             energyBarLength += ((float) energyCurrent / (float) energyMax) *
-                               (getResources().getDimension(R.dimen.bar_length_max) -
+                               (energyBarMaxLength -
                                 getResources().getDimension(R.dimen.bar_length_min));
 
             Logger.logI("energy bar final length is <" + energyBarLength + ">");

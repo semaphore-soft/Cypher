@@ -1183,7 +1183,7 @@ public class PortalActivity extends ARActivity implements PortalRenderer.NewMark
                 }
                 else
                 {
-                    uiPortalOverlay.setHealth(1, 0);
+                    uiPortalOverlay.setHealth(0);
                 }
             }
             else
@@ -1204,7 +1204,7 @@ public class PortalActivity extends ARActivity implements PortalRenderer.NewMark
                 }
                 else
                 {
-                    uiPortalOverlay.setHealth(1, 0);
+                    uiPortalOverlay.setHealth(0);
                 }
             }
             else
@@ -1350,7 +1350,7 @@ public class PortalActivity extends ARActivity implements PortalRenderer.NewMark
                 }
                 else
                 {
-                    uiPortalOverlay.setEnergy(1, 0);
+                    uiPortalOverlay.setEnergy(0);
                 }
             }
             else
@@ -1371,7 +1371,7 @@ public class PortalActivity extends ARActivity implements PortalRenderer.NewMark
                 }
                 else
                 {
-                    uiPortalOverlay.setEnergy(1, 0);
+                    uiPortalOverlay.setEnergy(0);
                 }
             }
             else
@@ -1445,11 +1445,11 @@ public class PortalActivity extends ARActivity implements PortalRenderer.NewMark
 
             if (actor != null)
             {
-                uiPortalOverlay.setHealth(actor.getHealthMaximum(), actor.getHealthCurrent());
+                uiPortalOverlay.setHealth(actor.getHealthCurrent());
             }
             else
             {
-                uiPortalOverlay.setHealth(1, 0);
+                uiPortalOverlay.setHealth(0);
             }
         }
 

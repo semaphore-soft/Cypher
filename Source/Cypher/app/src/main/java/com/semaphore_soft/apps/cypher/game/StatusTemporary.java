@@ -1,5 +1,7 @@
 package com.semaphore_soft.apps.cypher.game;
 
+import com.semaphore_soft.apps.cypher.utils.Logger;
+
 /**
  * Created by rickm on 1/31/2017.
  */
@@ -21,6 +23,8 @@ public class StatusTemporary extends Status
 
     public boolean tick()
     {
-        return (--duration <= 0);
+        --duration;
+        Logger.logI("status " + id + " duration is " + duration);
+        return (duration <= 0);
     }
 }

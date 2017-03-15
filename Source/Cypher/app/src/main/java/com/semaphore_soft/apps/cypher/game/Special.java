@@ -79,6 +79,11 @@ public class Special
         return effects;
     }
 
+    public void incrementDuration()
+    {
+        ++duration;
+    }
+
     public void applySpecial(int specialRating, Actor actor)
     {
         for (Effect.E_EFFECT effect : effects)

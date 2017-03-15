@@ -17,7 +17,8 @@
                 android:layout_marginStart="@dimen/bar_back_offset"
                 android:layout_alignTop="@+id/imgHealth"
                 app:srcCompat="@color/healthSecondary"
-                android:src="@color/healthSecondary"/>
+                android:src="@color/healthSecondary"
+                android:id="@+id/imgHealthBack"/>
 
         <ImageView
                 android:layout_width="@dimen/bar_length_min"
@@ -34,7 +35,8 @@
                 android:layout_marginStart="@dimen/bar_back_offset"
                 android:layout_alignTop="@+id/imgEnergy"
                 app:srcCompat="@color/energySecondary"
-                android:src="@color/energySecondary"/>
+                android:src="@color/energySecondary"
+                android:id="@+id/imgEnergyBack"/>
 
         <ImageView
                 android:layout_width="@dimen/bar_length_min"
