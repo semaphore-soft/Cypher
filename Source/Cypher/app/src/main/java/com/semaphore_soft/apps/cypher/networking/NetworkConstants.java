@@ -29,26 +29,27 @@ public class NetworkConstants
 
     // Constants for read codes
     // Constants for game status updates
-    public static final String GAME_START                       = "GAME_START";
     public static final String GAME_UNREADY                     = "GAME_UNREADY";
     public static final String GAME_AR_START                    = "GAME_AR_START";
     public static final String GAME_UPDATE                      = "GAME_UPDATE";
-    public static final String GAME_HEARTBEAT                   = "GAME_HEARTBEAT";
-    public static final String GAME_KNIGHT                      = "knight";
-    public static final String GAME_SOLDIER                     = "soldier";
-    public static final String GAME_RANGER                      = "ranger";
-    public static final String GAME_WIZARD                      = "wizard";
-    public static final String GAME_TAKEN                       = "GAME_TAKEN";
-    public static final String GAME_WAIT                        = "GAME_WAIT";
-    public static final String GAME_TURN                        = "GAME_TURN";
-    public static final String GAME_TURN_OVER                   = "TURN_OVER";
+    public static final String GAME_HEARTBEAT      = "GAME_HEARTBEAT";
+    public static final String GAME_KNIGHT         = "knight";
+    public static final String GAME_SOLDIER        = "soldier";
+    public static final String GAME_RANGER         = "ranger";
+    public static final String GAME_WIZARD         = "wizard";
+    public static final String GAME_TAKEN          = "GAME_TAKEN";
+    public static final String GAME_WAIT           = "GAME_WAIT";
+    public static final String PREFIX_START        = "GAME_START:";
+    public static final String PREFIX_TURN         = "TURN:";
+    public static final String PREFIX_TURN_OVER    = "TURN_OVER:";
+    public static final String PREFIX_HEALTH       = "HEALTH:";
     // Constants to use as prefixes to exchange information with other devices
-    public static final String PREFIX_NAME                      = "NAME:";
-    public static final String PREFIX_PLAYER                    = "PLAYER:";
-    public static final String PREFIX_LOCK                      = "LOCK:";
-    public static final String PREFIX_FREE                      = "FREE:";
-    public static final String PREFIX_READY                     = "READY:";
-    public static final String PREFIX_MARK_REQUEST              = "MARK_REQUEST:";
+    public static final String PREFIX_NAME         = "NAME:";
+    public static final String PREFIX_PLAYER       = "PLAYER:";
+    public static final String PREFIX_LOCK         = "LOCK:";
+    public static final String PREFIX_FREE         = "FREE:";
+    public static final String PREFIX_READY        = "READY:";
+    public static final String PREFIX_MARK_REQUEST = "MARK_REQUEST:";
     public static final String PREFIX_ASSIGN_MARK               = "ASSIGN_MARK:";
     public static final String PREFIX_ASSIGN_ROOM_MARK          = "ROOM_MARK:";
     public static final String PREFIX_RESERVE_PLAYER            = "RESERVE_PLAYER:";

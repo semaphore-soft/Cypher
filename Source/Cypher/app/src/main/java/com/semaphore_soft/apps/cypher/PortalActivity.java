@@ -253,7 +253,33 @@ public class PortalActivity extends ARActivity implements PortalRenderer.NewMark
                             uiPortalOverlay.overlayAction(1, 0, 1, 0);
                         }
 
-                        serverService.writeAll(NetworkConstants.GAME_START);
+                        for (int id : GameMaster.getPlayerActorIds(model))
+                        {
+                            if (id != playerId)
+                            {
+                                Actor clientActor = GameMaster.getActor(model, id);
+                                if (clientActor != null)
+                                {
+                                    serverService.writeToClient(NetworkConstants.PREFIX_START +
+                                                                clientActor.getHealthMaximum() +
+                                                                ":" +
+                                                                clientActor.getHealthCurrent() +
+                                                                ":" +
+                                                                clientActor.getSpecialMaximum() +
+                                                                ":" +
+                                                                clientActor.getSpecialCurrent(),
+                                                                id);
+                                }
+                                else
+                                {
+                                    serverService.writeToClient(
+                                        NetworkConstants.PREFIX_START + 1 + ":" + 0 + ":" + 1 +
+                                        ":" + 0, id);
+                                }
+                            }
+                        }
+
+                        serverService.writeAll(NetworkConstants.PREFIX_START);
                     }
                     break;
                 case "cmd_btnEndTurn":
@@ -546,7 +572,25 @@ public class PortalActivity extends ARActivity implements PortalRenderer.NewMark
                                    false);
                     }
 
-                    serverService.writeToClient(NetworkConstants.GAME_TURN_OVER, readFrom);
+                    Actor clientActor = GameMaster.getActor(model, readFrom);
+                    if (clientActor != null)
+                    {
+                        serverService.writeToClient(NetworkConstants.PREFIX_TURN_OVER +
+                                                    clientActor.getHealthMaximum() +
+                                                    ":" +
+                                                    clientActor.getHealthCurrent() +
+                                                    ":" +
+                                                    clientActor.getSpecialMaximum() +
+                                                    ":" +
+                                                    clientActor.getSpecialCurrent(),
+                                                    readFrom);
+                    }
+                    else
+                    {
+                        serverService.writeToClient(
+                            NetworkConstants.PREFIX_TURN_OVER + 1 + ":" + 0 + ":" + 1 + ":" + 0,
+                            readFrom);
+                    }
                     break;
                 case "special":
                     int specialId = Integer.parseInt(splitAction[1]);
@@ -1169,7 +1213,6 @@ public class PortalActivity extends ARActivity implements PortalRenderer.NewMark
                            true);
             }
 
-            //TODO client case
             if (attackerId == playerId)
             {
                 Actor actor = GameMaster.getActor(model, playerId);
@@ -1183,12 +1226,30 @@ public class PortalActivity extends ARActivity implements PortalRenderer.NewMark
                 }
                 else
                 {
-                    uiPortalOverlay.setHealth(0);
+                    uiPortalOverlay.overlayWaitingForTurn(1, 0, 1, 0);
                 }
             }
-            else
+            else if (GameMaster.getPlayerActorIds(model).contains(attackerId))
             {
-                serverService.writeToClient(NetworkConstants.GAME_TURN_OVER, attackerId);
+                Actor clientActor = GameMaster.getActor(model, defenderId);
+                if (clientActor != null)
+                {
+                    serverService.writeToClient(NetworkConstants.PREFIX_TURN_OVER +
+                                                clientActor.getHealthMaximum() +
+                                                ":" +
+                                                clientActor.getHealthCurrent() +
+                                                ":" +
+                                                clientActor.getSpecialMaximum() +
+                                                ":" +
+                                                clientActor.getSpecialCurrent(),
+                                                defenderId);
+                }
+                else
+                {
+                    serverService.writeToClient(
+                        NetworkConstants.PREFIX_TURN_OVER + 1 + ":" + 0 + ":" + 1 + ":" + 0,
+                        defenderId);
+                }
             }
 
             if (defenderId == playerId)
@@ -1204,12 +1265,30 @@ public class PortalActivity extends ARActivity implements PortalRenderer.NewMark
                 }
                 else
                 {
-                    uiPortalOverlay.setHealth(0);
+                    uiPortalOverlay.overlayWaitingForTurn(1, 0, 1, 0);
                 }
             }
-            else
+            else if (GameMaster.getPlayerActorIds(model).contains(defenderId))
             {
-                serverService.writeToClient(NetworkConstants.GAME_TURN_OVER, attackerId);
+                Actor clientActor = GameMaster.getActor(model, defenderId);
+                if (clientActor != null)
+                {
+                    serverService.writeToClient(NetworkConstants.PREFIX_TURN_OVER +
+                                                clientActor.getHealthMaximum() +
+                                                ":" +
+                                                clientActor.getHealthCurrent() +
+                                                ":" +
+                                                clientActor.getSpecialMaximum() +
+                                                ":" +
+                                                clientActor.getSpecialCurrent(),
+                                                defenderId);
+                }
+                else
+                {
+                    serverService.writeToClient(
+                        NetworkConstants.PREFIX_TURN_OVER + 1 + ":" + 0 + ":" + 1 + ":" + 0,
+                        defenderId);
+                }
             }
         }
     }
@@ -1336,7 +1415,6 @@ public class PortalActivity extends ARActivity implements PortalRenderer.NewMark
                            specialType.equals("harm"));
             }
 
-            //TODO client case
             if (sourceId == playerId)
             {
                 Actor actor = GameMaster.getActor(model, playerId);
@@ -1350,12 +1428,30 @@ public class PortalActivity extends ARActivity implements PortalRenderer.NewMark
                 }
                 else
                 {
-                    uiPortalOverlay.setEnergy(0);
+                    uiPortalOverlay.overlayWaitingForTurn(1, 0, 1, 0);
                 }
             }
-            else
+            else if (GameMaster.getPlayerActorIds(model).contains(sourceId))
             {
-                serverService.writeToClient(NetworkConstants.GAME_TURN_OVER, sourceId);
+                Actor clientActor = GameMaster.getActor(model, sourceId);
+                if (clientActor != null)
+                {
+                    serverService.writeToClient(NetworkConstants.PREFIX_TURN_OVER +
+                                                clientActor.getHealthMaximum() +
+                                                ":" +
+                                                clientActor.getHealthCurrent() +
+                                                ":" +
+                                                clientActor.getSpecialMaximum() +
+                                                ":" +
+                                                clientActor.getSpecialCurrent(),
+                                                sourceId);
+                }
+                else
+                {
+                    serverService.writeToClient(
+                        NetworkConstants.PREFIX_TURN_OVER + 1 + ":" + 0 + ":" + 1 + ":" + 0,
+                        sourceId);
+                }
             }
 
             if (targetId == playerId)
@@ -1371,12 +1467,30 @@ public class PortalActivity extends ARActivity implements PortalRenderer.NewMark
                 }
                 else
                 {
-                    uiPortalOverlay.setEnergy(0);
+                    uiPortalOverlay.overlayWaitingForTurn(1, 0, 1, 0);
                 }
             }
-            else
+            else if (GameMaster.getPlayerActorIds(model).contains(targetId))
             {
-                serverService.writeToClient(NetworkConstants.GAME_TURN_OVER, sourceId);
+                Actor clientActor = GameMaster.getActor(model, sourceId);
+                if (clientActor != null)
+                {
+                    serverService.writeToClient(NetworkConstants.PREFIX_TURN_OVER +
+                                                clientActor.getHealthMaximum() +
+                                                ":" +
+                                                clientActor.getHealthCurrent() +
+                                                ":" +
+                                                clientActor.getSpecialMaximum() +
+                                                ":" +
+                                                clientActor.getSpecialCurrent(),
+                                                sourceId);
+                }
+                else
+                {
+                    serverService.writeToClient(
+                        NetworkConstants.PREFIX_TURN_OVER + 1 + ":" + 0 + ":" + 1 + ":" + 0,
+                        sourceId);
+                }
             }
         }
     }
@@ -1438,7 +1552,6 @@ public class PortalActivity extends ARActivity implements PortalRenderer.NewMark
                        forwardAction);
         }
 
-        //TODO client case
         if (targetId == playerId)
         {
             Actor actor = GameMaster.getActor(model, playerId);
@@ -1450,6 +1563,19 @@ public class PortalActivity extends ARActivity implements PortalRenderer.NewMark
             else
             {
                 uiPortalOverlay.setHealth(0);
+            }
+        }
+        else if (GameMaster.getPlayerActorIds(model).contains(targetId))
+        {
+            Actor clientActor = GameMaster.getActor(model, targetId);
+            if (clientActor != null)
+            {
+                serverService.writeToClient(
+                    NetworkConstants.PREFIX_HEALTH + clientActor.getHealthCurrent(), targetId);
+            }
+            else
+            {
+                serverService.writeToClient(NetworkConstants.PREFIX_TURN_OVER + 0, targetId);
             }
         }
 
@@ -1712,14 +1838,14 @@ public class PortalActivity extends ARActivity implements PortalRenderer.NewMark
         if (turnId == playerId)
         {
             turn = true;
-            Actor actor1 = GameMaster.getActor(model, playerId);
+            Actor hostActor = GameMaster.getActor(model, playerId);
 
-            if (actor1 != null)
+            if (hostActor != null)
             {
-                uiPortalOverlay.overlayAction(actor1.getHealthMaximum(),
-                                              actor1.getHealthCurrent(),
-                                              actor1.getSpecialMaximum(),
-                                              actor1.getSpecialCurrent());
+                uiPortalOverlay.overlayAction(hostActor.getHealthMaximum(),
+                                              hostActor.getHealthCurrent(),
+                                              hostActor.getSpecialMaximum(),
+                                              hostActor.getSpecialCurrent());
             }
             else
             {
@@ -1734,7 +1860,24 @@ public class PortalActivity extends ARActivity implements PortalRenderer.NewMark
         }
         else
         {
-            serverService.writeToClient(NetworkConstants.GAME_TURN, turnId);
+            Actor clientActor = GameMaster.getActor(model, turnId);
+            if (clientActor != null)
+            {
+                serverService.writeToClient(NetworkConstants.PREFIX_TURN +
+                                            clientActor.getHealthMaximum() +
+                                            ":" +
+                                            clientActor.getHealthCurrent() +
+                                            ":" +
+                                            clientActor.getSpecialMaximum() +
+                                            ":" +
+                                            clientActor.getSpecialCurrent(),
+                                            turnId);
+            }
+            else
+            {
+                serverService.writeToClient(
+                    NetworkConstants.PREFIX_TURN + 1 + ":" + 0 + ":" + 1 + ":" + 0, turnId);
+            }
         }
 
         Logger.logD("exit trace");
