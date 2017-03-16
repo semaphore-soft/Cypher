@@ -9,15 +9,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:id="@+id/btnEndTurn"
-            android:layout_centerVertical="true"
-            android:layout_alignParentStart="true"/>
-
-    <Button
-            android:text="Generate\nRoom"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:id="@+id/btnGenerateRoom"
-            android:layout_below="@+id/btnEndTurn"
+            android:layout_above="@+id/btnSpecial"
             android:layout_alignParentStart="true"/>
 
 

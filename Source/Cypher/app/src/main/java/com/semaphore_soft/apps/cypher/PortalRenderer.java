@@ -51,6 +51,11 @@ class PortalRenderer extends ARRendererGLES20
 
     private static Handler handler = null;
 
+    private static NewMarkerListener newMarkerListener;
+
+    private static ArrayList<Integer> knownMarkers;
+    private static boolean lookingForNewMarkers = false;
+
     @Override
     public boolean configureARScene()
     {
@@ -86,6 +91,8 @@ class PortalRenderer extends ARRendererGLES20
         }
 
         playerMarkerIDs = new int[]{-1, -1, -1, -1};
+
+        knownMarkers = new ArrayList<>();
 
         return true;
     }
@@ -261,7 +268,40 @@ class PortalRenderer extends ARRendererGLES20
 
         float[] projectionMatrix = ARToolKit.getInstance().getProjectionMatrix();
 
-        for (int i = 0; i < playerMarkerIDs.length; ++i)
+        for (int id : markers)
+        {
+            if (ARToolKit.getInstance().queryMarkerVisible(id))
+            {
+                if (knownMarkers.contains(id))
+                {
+                    for (int i : playerMarkerIDs)
+                    {
+                        if (i == id)
+                        {
+                            characterModels.get(i).draw(projectionMatrix,
+                                                        ARToolKit.getInstance()
+                                                                 .queryMarkerTransformation(
+                                                                     playerMarkerIDs[i]));
+                        }
+                    }
+                    for (int i : arRooms.keySet())
+                    {
+                        if (i == id)
+                        {
+                            arRooms.get(i)
+                                   .draw(projectionMatrix,
+                                         ARToolKit.getInstance().queryMarkerTransformation(i));
+                        }
+                    }
+                }
+                else if (lookingForNewMarkers)
+                {
+                    newMarkerListener.newMarker(id);
+                }
+            }
+        }
+
+        /*for (int i = 0; i < playerMarkerIDs.length; ++i)
         {
             if (playerMarkerIDs[i] > -1 &&
                 ARToolKit.getInstance().queryMarkerVisible(playerMarkerIDs[i]))
@@ -280,7 +320,7 @@ class PortalRenderer extends ARRendererGLES20
                        .draw(projectionMatrix,
                              ARToolKit.getInstance().queryMarkerTransformation(i));
             }
-        }
+        }*/
     }
 
     public void setContext(final Context context)
@@ -495,6 +535,8 @@ class PortalRenderer extends ARRendererGLES20
     void setPlayerMarker(final int playerID, final int markerID)
     {
         playerMarkerIDs[playerID] = markerID;
+
+        knownMarkers.add(markerID);
     }
 
     /**
@@ -553,6 +595,8 @@ class PortalRenderer extends ARRendererGLES20
             arRoom.setWall(i, models.get(wallDescriptors[i]));
         }
         arRooms.put(arRoomId, arRoom);
+
+        knownMarkers.add(arRoomId);
     }
 
     /**
@@ -838,6 +882,24 @@ class PortalRenderer extends ARRendererGLES20
     private void concludeAction(final int sourceId)
     {
         gameController.onFinishedAction(sourceId);
+    }
+
+    public static void setNewMarkerListener(NewMarkerListener newMarkerListener)
+    {
+        PortalRenderer.newMarkerListener = newMarkerListener;
+    }
+
+    public static void setLookingForNewMarkers(boolean lookingForNewMarkers)
+    {
+        PortalRenderer.lookingForNewMarkers = lookingForNewMarkers;
+    }
+
+    public static void addKnownMarker(int id)
+    {
+        if (!knownMarkers.contains(id))
+        {
+            knownMarkers.add(id);
+        }
     }
 
     interface NewMarkerListener
