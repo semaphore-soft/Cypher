@@ -3,7 +3,7 @@
     <!--Heal-->
     <heal>
         <name>Heal</name>
-        <cost>10</cost>
+        <cost>2</cost>
         <targetingType>SINGLE_PLAYER</targetingType>
         <effects>
             <effect>HEAL</effect>
@@ -13,7 +13,7 @@
     <!--Beef Increase-->
     <beef_increase>
         <name>Beef Incease</name>
-        <cost>5</cost>
+        <cost>1</cost>
         <duration>2</duration>
         <targetingType>SINGLE_PLAYER</targetingType>
         <effects>
@@ -24,7 +24,7 @@
     <!--Suckerpunch-->
     <suckerpunch>
         <name>Suckerpunch</name>
-        <cost>5</cost>
+        <cost>1</cost>
         <targetingType>SINGLE_NON_PLAYER</targetingType>
         <effects>
             <effect>ATTACK</effect>

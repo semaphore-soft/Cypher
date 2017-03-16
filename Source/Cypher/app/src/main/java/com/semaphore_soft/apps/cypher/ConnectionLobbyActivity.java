@@ -185,7 +185,7 @@ public class ConnectionLobbyActivity extends AppCompatActivity implements Respon
         {
             case "cmd_btnStart":
                 Server.setAccepting(false);
-                serverService.writeAll(NetworkConstants.GAME_START);
+                serverService.writeAll(NetworkConstants.PREFIX_START);
                 LocalBroadcastManager.getInstance(ConnectionLobbyActivity.this)
                                      .unregisterReceiver(responseReceiver);
                 Toast.makeText(ConnectionLobbyActivity.this,
@@ -212,7 +212,7 @@ public class ConnectionLobbyActivity extends AppCompatActivity implements Respon
     @Override
     public void handleRead(String msg, int readFrom)
     {
-        if (msg.equals(NetworkConstants.GAME_START))
+        if (msg.equals(NetworkConstants.PREFIX_START))
         {
             LocalBroadcastManager.getInstance(ConnectionLobbyActivity.this)
                                  .unregisterReceiver(responseReceiver);
