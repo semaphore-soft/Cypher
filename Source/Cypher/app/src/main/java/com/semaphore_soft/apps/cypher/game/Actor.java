@@ -316,9 +316,9 @@ public class Actor
      *
      * @see #receiveAttack(int)
      * @see Special#applySpecial(int, Actor)
-     * @see GameMaster#attack(int, int)
-     * @see GameMaster#special(int, int)
-     * @see GameMaster#special(int, int, int)
+     * @see GameMaster#attack(Model, int, int)
+     * @see GameMaster#special(Model, int, int)
+     * @see GameMaster#special(Model, int, int, int)
      */
     public void setHealthMaximum(int healthMaximum)
     {
@@ -335,9 +335,9 @@ public class Actor
      *
      * @see #receiveAttack(int)
      * @see Special#applySpecial(int, Actor)
-     * @see GameMaster#attack(int, int)
-     * @see GameMaster#special(int, int)
-     * @see GameMaster#special(int, int, int)
+     * @see GameMaster#attack(Model, int, int)
+     * @see GameMaster#special(Model, int, int)
+     * @see GameMaster#special(Model, int, int, int)
      */
     public int getHealthMaximum()
     {
@@ -352,9 +352,9 @@ public class Actor
      *
      * @see #receiveAttack(int)
      * @see Special#applySpecial(int, Actor)
-     * @see GameMaster#attack(int, int)
-     * @see GameMaster#special(int, int)
-     * @see GameMaster#special(int, int, int)
+     * @see GameMaster#attack(Model, int, int)
+     * @see GameMaster#special(Model, int, int)
+     * @see GameMaster#special(Model, int, int, int)
      */
     public void setHealthCurrent(int healthCurrent)
     {
@@ -368,9 +368,9 @@ public class Actor
      *
      * @see #receiveAttack(int)
      * @see Special#applySpecial(int, Actor)
-     * @see GameMaster#attack(int, int)
-     * @see GameMaster#special(int, int)
-     * @see GameMaster#special(int, int, int)
+     * @see GameMaster#attack(Model, int, int)
+     * @see GameMaster#special(Model, int, int)
+     * @see GameMaster#special(Model, int, int, int)
      */
     public int getHealthCurrent()
     {
@@ -607,10 +607,10 @@ public class Actor
      *
      * @see E_STATE
      * @see Special
-     * @see GameMaster#attack(int, int)
-     * @see GameMaster#special(int, int)
-     * @see GameMaster#special(int, int, int)
-     * @see GameMaster#setActorState(int, E_STATE)
+     * @see GameMaster#attack(Model, int, int)
+     * @see GameMaster#special(Model, int, int)
+     * @see GameMaster#special(Model, int, int, int)
+     * @see GameMaster#setActorState(Model, int, E_STATE)
      * @see #receiveAttack(int)
      * @see Special#applySpecial(int, Actor)
      */
@@ -648,7 +648,7 @@ public class Actor
      * @return int: The number of attack tickets given to this {@link Actor}.
      *
      * @see ActorController
-     * @see ActorController#takeTurn(int)
+     * @see ActorController#takeTurn(GameController, Model, int)
      */
     int getAttackTickets()
     {
@@ -667,7 +667,7 @@ public class Actor
      *                      this {@link Actor}.
      *
      * @see ActorController
-     * @see ActorController#takeTurn(int)
+     * @see ActorController#takeTurn(GameController, Model, int)
      */
     public void setAttackTickets(int attackTickets)
     {
@@ -685,7 +685,7 @@ public class Actor
      * @return int: The number of defend tickets given to this {@link Actor}.
      *
      * @see ActorController
-     * @see ActorController#takeTurn(int)
+     * @see ActorController#takeTurn(GameController, Model, int)
      */
     int getDefendTickets()
     {
@@ -704,7 +704,7 @@ public class Actor
      *                      this {@link Actor}.
      *
      * @see ActorController
-     * @see ActorController#takeTurn(int)
+     * @see ActorController#takeTurn(GameController, Model, int)
      */
     public void setDefendTickets(int defendTickets)
     {
@@ -725,7 +725,7 @@ public class Actor
      *
      * @see ActorController
      * @see Special
-     * @see ActorController#takeTurn(int)
+     * @see ActorController#takeTurn(GameController, Model, int)
      */
     int getSpecialTickets()
     {
@@ -747,7 +747,7 @@ public class Actor
      *
      * @see ActorController
      * @see Special
-     * @see ActorController#takeTurn(int)
+     * @see ActorController#takeTurn(GameController, Model, int)
      */
     public void setSpecialTickets(int specialTickets)
     {
@@ -767,7 +767,7 @@ public class Actor
      * @see ActorController
      * @see Room
      * @see Map
-     * @see ActorController#takeTurn(int)
+     * @see ActorController#takeTurn(GameController, Model, int)
      */
     int getMoveTickets()
     {
@@ -788,7 +788,7 @@ public class Actor
      * @see ActorController
      * @see Room
      * @see Map
-     * @see ActorController#takeTurn(int)
+     * @see ActorController#takeTurn(GameController, Model, int)
      */
     public void setMoveTickets(int moveTickets)
     {
@@ -811,7 +811,7 @@ public class Actor
      * </ul>
      *
      * @see ActorController
-     * @see ActorController#takeTurn(int)
+     * @see ActorController#takeTurn(GameController, Model, int)
      */
     boolean isSeeker()
     {
@@ -834,7 +834,7 @@ public class Actor
      *               </ul>
      *
      * @see ActorController
-     * @see ActorController#takeTurn(int)
+     * @see ActorController#takeTurn(GameController, Model, int)
      */
     public void setSeeker(boolean seeker)
     {
