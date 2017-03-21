@@ -599,6 +599,62 @@ public class GameMaster
                 endRoom.addActor(actorId);
 
                 actor.setRoom(endRoomId);
+                actor.setProposedRoomId(-1);
+
+                return 0;
+            case -1:
+                return -1;
+            case -2:
+                return -2;
+            default:
+                break;
+        }
+
+        return -4;
+    }
+
+    public static int simulateMove(final Model model, final int actorId, final int endRoomMarkerId)
+    {
+        Actor actor     = model.getActors().get(actorId);
+        Room  startRoom = getRoom(model, actor.getRoom());
+        int   endRoomId = getRoomIdByMarkerId(model, endRoomMarkerId);
+        Room  endRoom   = model.getRooms().get(endRoomId);
+
+        if (!endRoom.isPlaced())
+        {
+            if (startRoom != null)
+            {
+                startRoom.addActor(actorId);
+            }
+
+            return -3;
+        }
+
+        if (actor.getRoom() == endRoomId)
+        {
+            actor.setProposedRoomId(-1);
+
+            if (startRoom != null)
+            {
+                startRoom.removeActor(actorId);
+            }
+            endRoom.addActor(actorId);
+
+            return 1;
+        }
+
+        int pathRes = getValidPath(model, actor.getRoom(), endRoomId);
+
+        switch (pathRes)
+        {
+            case 0:
+                actor.setProposedRoomId(endRoomId);
+
+                if (startRoom != null)
+                {
+                    startRoom.removeActor(actorId);
+                }
+                endRoom.addActor(actorId);
 
                 return 0;
             case -1:
@@ -941,8 +997,10 @@ public class GameMaster
     public static ConcurrentHashMap<Integer, Actor> getPlayerTargets(final Model model,
                                                                      final int actorId)
     {
-        Actor                             actor   = model.getActors().get(actorId);
-        Room                              room    = model.getRooms().get(actor.getRoom());
+        Actor actor          = model.getActors().get(actorId);
+        int   proposedRoomId = actor.getProposedRoomId();
+        Room room =
+            model.getRooms().get(proposedRoomId > -1 ? proposedRoomId : actor.getRoom());
         ConcurrentHashMap<Integer, Actor> targets = new ConcurrentHashMap<>();
 
         Logger.logI("looking for player targets in room: " + actor.getRoom(), 1);
@@ -982,8 +1040,10 @@ public class GameMaster
     public static ConcurrentHashMap<Integer, Actor> getNonPlayerTargets(final Model model,
                                                                         final int actorId)
     {
-        Actor                             actor   = model.getActors().get(actorId);
-        Room                              room    = model.getRooms().get(actor.getRoom());
+        Actor actor          = model.getActors().get(actorId);
+        int   proposedRoomId = actor.getProposedRoomId();
+        Room room =
+            model.getRooms().get(proposedRoomId > -1 ? proposedRoomId : actor.getRoom());
         ConcurrentHashMap<Integer, Actor> targets = new ConcurrentHashMap<>();
 
         Logger.logI("looking for non-player targets in room: " + actor.getRoom(), 1);
@@ -1022,8 +1082,10 @@ public class GameMaster
     @NonNull
     public static ArrayList<Integer> getPlayerTargetIds(final Model model, final int actorId)
     {
-        Actor              actor   = model.getActors().get(actorId);
-        Room               room    = model.getRooms().get(actor.getRoom());
+        Actor actor          = model.getActors().get(actorId);
+        int   proposedRoomId = actor.getProposedRoomId();
+        Room room =
+            model.getRooms().get(proposedRoomId > -1 ? proposedRoomId : actor.getRoom());
         ArrayList<Integer> targets = new ArrayList<>();
 
         Logger.logD("looking for player targets for: " + actorId);
@@ -1066,8 +1128,10 @@ public class GameMaster
     @NonNull
     public static ArrayList<Integer> getNonPlayerTargetIds(final Model model, final int actorId)
     {
-        Actor              actor   = model.getActors().get(actorId);
-        Room               room    = model.getRooms().get(actor.getRoom());
+        Actor actor          = model.getActors().get(actorId);
+        int   proposedRoomId = actor.getProposedRoomId();
+        Room room =
+            model.getRooms().get(proposedRoomId > -1 ? proposedRoomId : actor.getRoom());
         ArrayList<Integer> targets = new ArrayList<>();
 
         Logger.logD("looking for player targets for: " + actorId);
@@ -1159,6 +1223,8 @@ public class GameMaster
      */
     public static int attack(final Model model, final int attackerId, final int defenderId)
     {
+        int ret;
+
         Actor attacker = model.getActors().get(attackerId);
         Actor defender = model.getActors().get(defenderId);
 
@@ -1168,10 +1234,21 @@ public class GameMaster
 
         if (defender.getHealthCurrent() <= 0)
         {
-            return 1;
+            ret = 1;
+        }
+        else
+        {
+            ret = 0;
         }
 
-        return 0;
+        int proposedRoom = model.getActors().get(attackerId).getProposedRoomId();
+
+        if (proposedRoom > -1)
+        {
+            moveActor(model, attackerId, proposedRoom);
+        }
+
+        return ret;
     }
 
     /**
@@ -1193,6 +1270,24 @@ public class GameMaster
             room.removeActor(actorId);
         }
         model.getActors().remove(actorId);
+    }
+
+    public static void addActorToRoom(final Model model, final int actorId, final int roomId)
+    {
+        Room room = getRoom(model, roomId);
+        if (room != null)
+        {
+            room.addActor(actorId);
+        }
+    }
+
+    public static void removeActorFromRoom(final Model model, final int actorId, final int roomId)
+    {
+        Room room = getRoom(model, roomId);
+        if (room != null)
+        {
+            room.removeActor(actorId);
+        }
     }
 
     /**
@@ -1264,6 +1359,8 @@ public class GameMaster
      */
     public static int special(final Model model, final int sourceId, final int specialId)
     {
+        int ret;
+
         Actor            source  = model.getActors().get(sourceId);
         Special          special = model.getSpecials().get(specialId);
         ArrayList<Actor> targets = new ArrayList<>();
@@ -1292,28 +1389,31 @@ public class GameMaster
             {
                 source.setState(Actor.E_STATE.SPECIAL);
 
+                ret = 0;
+
                 for (Actor target : targets)
                 {
                     boolean kill = false;
 
                     if (target.getHealthCurrent() <= 0)
                     {
-                        /*Room room = getActorRoom(target.getId());
-                        if (room != null)
-                        {
-                            room.removeActor(target.getId());
-                        }*/
-
                         kill = true;
                     }
 
                     if (kill)
                     {
-                        return 1;
+                        ret = 1;
                     }
                 }
 
-                return 0;
+                int proposedRoom = model.getActors().get(sourceId).getProposedRoomId();
+
+                if (proposedRoom > -1)
+                {
+                    moveActor(model, sourceId, proposedRoom);
+                }
+
+                return ret;
             }
 
             return -1;
@@ -1359,6 +1459,8 @@ public class GameMaster
                               final int targetId,
                               final int specialId)
     {
+        int ret;
+
         Actor   source  = model.getActors().get(sourceId);
         Actor   target  = model.getActors().get(targetId);
         Special special = model.getSpecials().get(specialId);
@@ -1369,18 +1471,21 @@ public class GameMaster
             {
                 source.setState(Actor.E_STATE.SPECIAL);
 
+                ret = 0;
+
                 if (target.getHealthCurrent() <= 0)
                 {
-                    /*Room room = getActorRoom(targetId);
-                    if (room != null)
-                    {
-                        room.removeActor(target.getId());
-                    }*/
-
-                    return 1;
+                    ret = 1;
                 }
 
-                return 0;
+                int proposedRoom = model.getActors().get(sourceId).getProposedRoomId();
+
+                if (proposedRoom > -1)
+                {
+                    moveActor(model, sourceId, proposedRoom);
+                }
+
+                return ret;
             }
 
             return -1;

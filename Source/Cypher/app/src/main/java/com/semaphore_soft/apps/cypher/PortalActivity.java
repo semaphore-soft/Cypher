@@ -220,6 +220,8 @@ public class PortalActivity extends ARActivity implements PortalRenderer.NewMark
                     if (firstUnreservedMarker > -1 &&
                         selectPlayerMarker(playerId, characterName, firstUnreservedMarker))
                     {
+                        renderer.setPlayerMarker(playerId);
+
                         Toast.makeText(getApplicationContext(),
                                        "Player Marker Set",
                                        Toast.LENGTH_SHORT)
@@ -290,11 +292,6 @@ public class PortalActivity extends ARActivity implements PortalRenderer.NewMark
                         PortalRenderer.setLookingForNewMarkers(true);
                     }
                     break;
-                case "cmd_btnEndTurn":
-                    int newRoomMark =
-                        getNearestNonPlayerMarker(GameMaster.getActorMakerId(model, playerId));
-                    moveActor(playerId, newRoomMark);
-                    break;
                 case "cmd_btnOpenDoor":
                     if (openDoor())
                     {
@@ -333,25 +330,38 @@ public class PortalActivity extends ARActivity implements PortalRenderer.NewMark
                     break;
                 case "cmd_btnDefend":
                     GameMaster.setActorState(model, playerId, Actor.E_STATE.DEFEND);
-                    Room room = GameMaster.getActorRoom(model, playerId);
-
-                    Toast.makeText(getApplicationContext(),
-                                   "Success",
-                                   Toast.LENGTH_SHORT).show();
-
-                    if (room != null)
-                    {
-                        showAction(room.getMarker(),
-                                   playerId,
-                                   -1,
-                                   1000,
-                                   "defend",
-                                   null,
-                                   true,
-                                   false);
-                    }
 
                     Actor actor = GameMaster.getActor(model, playerId);
+
+                    if (actor != null)
+                    {
+                        int proposedRoomId = actor.getProposedRoomId();
+
+                        Room room = GameMaster.getRoom(model,
+                                                       proposedRoomId >
+                                                       1 ? proposedRoomId : actor.getRoom());
+
+                        if (proposedRoomId > -1)
+                        {
+                            GameMaster.moveActor(model, playerId, proposedRoomId);
+                        }
+
+                        Toast.makeText(getApplicationContext(),
+                                       "Success",
+                                       Toast.LENGTH_SHORT).show();
+
+                        if (room != null)
+                        {
+                            showAction(room.getMarker(),
+                                       playerId,
+                                       -1,
+                                       1000,
+                                       "defend",
+                                       null,
+                                       true,
+                                       false);
+                        }
+                    }
 
                     if (actor != null)
                     {
@@ -657,6 +667,59 @@ public class PortalActivity extends ARActivity implements PortalRenderer.NewMark
         }
     }
 
+    @Override
+    public void newNearestRoomMarker(final int marker)
+    {
+        if (GameMaster.getMarkerAttachment(model, marker) == 1)
+        {
+            Actor actor = GameMaster.getActor(model, playerId);
+            if (actor != null)
+            {
+                int lastProposedRoomId = actor.getProposedRoomId();
+
+                if (lastProposedRoomId > -1)
+                {
+                    if (lastProposedRoomId != actor.getRoom())
+                    {
+                        GameMaster.removeActorFromRoom(model, playerId, lastProposedRoomId);
+                    }
+                    updateRoomResidents(GameMaster.getRoomMarkerId(model, lastProposedRoomId),
+                                        getResidents(lastProposedRoomId));
+                }
+            }
+
+            int simRes = GameMaster.simulateMove(model, playerId, marker);
+
+            if (simRes >= 0)
+            {
+                int curRoomId = GameMaster.getActorRoomId(model, playerId);
+                int newRoomId = GameMaster.getRoomIdByMarkerId(model, marker);
+
+                updateRoomResidents(GameMaster.getRoomMarkerId(model, curRoomId),
+                                    getResidents(curRoomId));
+                updateRoomResidents(marker, getResidents(newRoomId));
+
+                Room room = GameMaster.getRoom(model, newRoomId);
+
+                if (room != null && actor != null && newRoomId != actor.getRoom() &&
+                    GameMaster.getPlayersInRoom(model, newRoomId) == 1)
+                {
+                    int markerID = room.getMarker();
+                    short roomSide = GameMaster.getSideOfRoomFrom(model,
+                                                                  actor.getRoom(),
+                                                                  newRoomId);
+                    renderer.updateRoomAlignment(markerID,
+                                                 roomSide);
+                    serverService.writeAll(
+                        NetworkConstants.PREFIX_UPDATE_ROOM_ALIGNMENT + markerID + ":" +
+                        roomSide);
+                }
+
+                renderer.setPlayerRoomMarker(marker);
+            }
+        }
+    }
+
     /**
      * Get the reference ID of the first AR marker found by the {@link
      * PortalRenderer} which is not already reserved by a game object, or
@@ -907,6 +970,9 @@ public class PortalActivity extends ARActivity implements PortalRenderer.NewMark
                            Toast.LENGTH_SHORT)
                  .show();
 
+            renderer.setPlayerRoomMarker(mark);
+            renderer.setCheckingNearestRoomMarker(true);
+
             return true;
         }
         else
@@ -1128,6 +1194,9 @@ public class PortalActivity extends ARActivity implements PortalRenderer.NewMark
                     postOpenDoorResult(endRoomId, res);
                     serverService.writeAll(NetworkConstants.PREFIX_PLACE_ROOM + nearestMarkerID);
 
+                    updateRoomResidents(GameMaster.getRoomMarkerId(model, endRoomId),
+                                        getResidents(endRoomId));
+
                     return true;
                 }
 
@@ -1210,6 +1279,8 @@ public class PortalActivity extends ARActivity implements PortalRenderer.NewMark
 
         if (res >= 0)
         {
+            renderer.setCheckingNearestRoomMarker(false);
+
             Room  room     = GameMaster.getActorRoom(model, attackerId);
             Actor defender = GameMaster.getActor(model, defenderId);
 
@@ -1412,6 +1483,8 @@ public class PortalActivity extends ARActivity implements PortalRenderer.NewMark
 
         if (res >= 0)
         {
+            renderer.setCheckingNearestRoomMarker(false);
+
             Room  room   = GameMaster.getActorRoom(model, sourceId);
             Actor target = GameMaster.getActor(model, targetId);
 
@@ -1866,6 +1939,8 @@ public class PortalActivity extends ARActivity implements PortalRenderer.NewMark
             {
                 uiPortalOverlay.overlayAction(1, 0, 1, 0);
             }
+
+            renderer.setCheckingNearestRoomMarker(true);
         }
         else if (!GameMaster.getActorIsPlayer(model, turnId))
         {

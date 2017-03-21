@@ -813,4 +813,10 @@ public class PortalClientActivity extends ARActivity implements UIListener,
     {
         clientService.write(NetworkConstants.PREFIX_GENERATE_ROOM_REQUEST + marker);
     }
+
+    @Override
+    public void newNearestRoomMarker(int marker)
+    {
+
+    }
 }

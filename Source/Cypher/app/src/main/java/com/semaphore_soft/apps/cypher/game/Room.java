@@ -147,9 +147,9 @@ public class Room
      * <li>False otherwise.</li>
      * </ul>
      *
-     * @see GameMaster#moveActor(int, int)
-     * @see GameMaster#getValidPath(int, int)
-     * @see GameMaster#openDoor(int, int, short, short)
+     * @see GameMaster#moveActor(Model, int, int)
+     * @see GameMaster#getValidPath(Model, int, int)
+     * @see GameMaster#openDoor(Model, int, int, short, short)
      */
     public boolean isPlaced()
     {
@@ -167,9 +167,9 @@ public class Room
      *               <li>False otherwise.</li>
      *               </ul>
      *
-     * @see GameMaster#moveActor(int, int)
-     * @see GameMaster#getValidPath(int, int)
-     * @see GameMaster#openDoor(int, int, short, short)
+     * @see GameMaster#moveActor(Model, int, int)
+     * @see GameMaster#getValidPath(Model, int, int)
+     * @see GameMaster#openDoor(Model, int, int, short, short)
      */
     public void setPlaced(boolean placed)
     {
@@ -186,10 +186,10 @@ public class Room
      *                associated with, or a resident of, this {@link Room}.
      *
      * @see Actor
-     * @see GameMaster#getPlayerTargets(int)
-     * @see GameMaster#getNonPlayerTargets(int)
-     * @see GameMaster#getPlayerTargetIds(int)
-     * @see GameMaster#getNonPlayerTargetIds(int)
+     * @see GameMaster#getPlayerTargets(Model, int)
+     * @see GameMaster#getNonPlayerTargets(Model, int)
+     * @see GameMaster#getPlayerTargetIds(Model, int)
+     * @see GameMaster#getNonPlayerTargetIds(Model, int)
      */
     public void addActor(int actorID)
     {
@@ -210,11 +210,11 @@ public class Room
      *                {@link Room}.
      *
      * @see Actor
-     * @see GameMaster#getPlayerTargets(int)
-     * @see GameMaster#getNonPlayerTargets(int)
-     * @see GameMaster#getPlayerTargetIds(int)
-     * @see GameMaster#getNonPlayerTargetIds(int)
-     * @see GameMaster#removeDeadActors()
+     * @see GameMaster#getPlayerTargets(Model, int)
+     * @see GameMaster#getNonPlayerTargets(Model, int)
+     * @see GameMaster#getPlayerTargetIds(Model, int)
+     * @see GameMaster#getNonPlayerTargetIds(Model, int)
+     * @see GameMaster#removeDeadActors(Model)
      */
     public void removeActor(int actorID)
     {
@@ -232,10 +232,10 @@ public class Room
      * associated with, or considered to be residents of, this {@link Room}.
      *
      * @see Actor
-     * @see GameMaster#getPlayerTargets(int)
-     * @see GameMaster#getNonPlayerTargets(int)
-     * @see GameMaster#getPlayerTargetIds(int)
-     * @see GameMaster#getNonPlayerTargetIds(int)
+     * @see GameMaster#getPlayerTargets(Model, int)
+     * @see GameMaster#getNonPlayerTargets(Model, int)
+     * @see GameMaster#getPlayerTargetIds(Model, int)
+     * @see GameMaster#getNonPlayerTargetIds(Model, int)
      */
     @NonNull
     public ArrayList<Integer> getResidentActors()
@@ -314,7 +314,7 @@ public class Room
      * @return {@link E_WALL_TYPE}: The {@link E_WALL_TYPE type} of the wall at
      * the given wall position reference ID.
      *
-     * @see GameMaster#getValidAdjacency(int, int, short, short)
+     * @see GameMaster#getValidAdjacency(Model, int, int, short, short)
      */
     public E_WALL_TYPE getWallType(short wall)
     {
@@ -339,7 +339,7 @@ public class Room
      *             to associated with the wall at the given wall position
      *             reference ID.
      *
-     * @see GameMaster#getValidAdjacency(int, int, short, short)
+     * @see GameMaster#getValidAdjacency(Model, int, int, short, short)
      */
     public void setWallType(short wall, E_WALL_TYPE type)
     {

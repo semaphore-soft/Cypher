@@ -23,8 +23,9 @@ public class Actor
 {
     private int     id;
     private String  name;
-    private int     markerID;
-    private int     roomID;
+    private int     markerId;
+    private int     roomId;
+    private int     proposedRoomId;
     private boolean isPlayer;
 
     private String displayName;
@@ -93,17 +94,18 @@ public class Actor
      * @param id       int: The logical reference ID of this {@link Actor}.
      * @param name     String: The reference name of this {@link Actor}.
      *                 Primarily used for logging.
-     * @param markerID int: The marker/graphical reference ID of this {@link
+     * @param markerId int: The marker/graphical reference ID of this {@link
      *                 Actor}.
      *
      * @see E_STATE
      */
-    public Actor(int id, String name, int markerID)
+    public Actor(int id, String name, int markerId)
     {
         this.id = id;
         this.name = name;
-        this.markerID = markerID;
-        roomID = -1;
+        this.markerId = markerId;
+        roomId = -1;
+        proposedRoomId = -1;
         isPlayer = true;
         state = E_STATE.NEUTRAL;
 
@@ -121,14 +123,14 @@ public class Actor
      * non-player {@link Actor}. Initializes member HashMaps.
      *
      * @param id     int: The logical reference ID of this {@link Actor}.
-     * @param roomID int: The logical reference ID of the {@link Room} this
+     * @param roomId int: The logical reference ID of the {@link Room} this
      *               {@link Actor} is associated with, or a resident of.
      *
      * @see E_STATE
      */
-    public Actor(int id, int roomID)
+    public Actor(int id, int roomId)
     {
-        this(id, roomID, "error");
+        this(id, roomId, "error");
     }
 
     /**
@@ -140,19 +142,20 @@ public class Actor
      * non-player {@link Actor}. Initializes member HashMaps.
      *
      * @param id     int: The logical reference ID of this {@link Actor}.
-     * @param roomID int: The logical reference ID of the {@link Room} this
+     * @param roomId int: The logical reference ID of the {@link Room} this
      *               {@link Actor} is associated with, or a resident of.
      * @param name   String: The reference name of this {@link Actor}.
      *               Primarily used for logging.
      *
      * @see E_STATE
      */
-    public Actor(int id, int roomID, String name)
+    public Actor(int id, int roomId, String name)
     {
         this.id = id;
-        this.markerID = -1;
+        this.markerId = -1;
         this.name = name;
-        this.roomID = roomID;
+        this.roomId = roomId;
+        proposedRoomId = -1;
         isPlayer = false;
         state = E_STATE.NEUTRAL;
 
@@ -214,7 +217,7 @@ public class Actor
      */
     public void setMarker(int tagID)
     {
-        this.markerID = tagID;
+        this.markerId = tagID;
     }
 
     /**
@@ -229,7 +232,7 @@ public class Actor
      */
     public int getMarker()
     {
-        return markerID;
+        return markerId;
     }
 
     /**
@@ -246,7 +249,7 @@ public class Actor
      */
     public void setRoom(int roomID)
     {
-        this.roomID = roomID;
+        this.roomId = roomID;
     }
 
     /**
@@ -260,7 +263,17 @@ public class Actor
      */
     public int getRoom()
     {
-        return roomID;
+        return roomId;
+    }
+
+    public void setProposedRoomId(int proposedRoomId)
+    {
+        this.proposedRoomId = proposedRoomId;
+    }
+
+    public int getProposedRoomId()
+    {
+        return proposedRoomId;
     }
 
     /**
