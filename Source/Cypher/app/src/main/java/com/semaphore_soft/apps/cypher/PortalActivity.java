@@ -285,8 +285,6 @@ public class PortalActivity extends ARActivity implements PortalRenderer.NewMark
                             }
                         }
 
-                        serverService.writeAll(NetworkConstants.PREFIX_START);
-
                         PortalRenderer.setLookingForNewMarkers(true);
                     }
                     break;
@@ -1423,7 +1421,7 @@ public class PortalActivity extends ARActivity implements PortalRenderer.NewMark
                            sourceId,
                            targetId,
                            1000,
-                           "special:" + specialType,
+                           "special." + specialType,
                            ((target != null) ? (target.getState() ==
                                                 Actor.E_STATE.DEFEND ? "defend" : null) : null),
                            true,
@@ -1547,7 +1545,7 @@ public class PortalActivity extends ARActivity implements PortalRenderer.NewMark
 
         Logger.logD("received action for actor " + sourceId);
 
-        boolean forwardAction = (action.equals("attack") || action.equals("special:harm"));
+        boolean forwardAction = (action.equals("attack") || action.equals("special.harm"));
 
         Room  room   = GameMaster.getActorRoom(model, sourceId);
         Actor target = GameMaster.getActor(model, targetId);
