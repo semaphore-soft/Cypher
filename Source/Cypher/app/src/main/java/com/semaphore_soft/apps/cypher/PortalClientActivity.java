@@ -37,9 +37,9 @@ import java.util.concurrent.ConcurrentHashMap;
 
 public class PortalClientActivity extends ARActivity implements UIListener,
                                                                 ResponseReceiver.Receiver,
-                                                                GameController
+                                                                GameController,
+                                                                PortalRenderer.NewMarkerListener
 {
-
     private UIPortalActivity uiPortalActivity;
     private UIPortalOverlay  uiPortalOverlay;
 
@@ -67,6 +67,11 @@ public class PortalClientActivity extends ARActivity implements UIListener,
     private static HashMap<Integer, String>                                 playerTargets;
     private static HashMap<Integer, Pair<String, Special.E_TARGETING_TYPE>> specials;
 
+    private static int healthMax;
+    private static int healthCurrent;
+    private static int energyMax;
+    private static int energyCurrent;
+
     /**
      * {@inheritDoc}
      *
@@ -89,6 +94,7 @@ public class PortalClientActivity extends ARActivity implements UIListener,
         renderer = new PortalRenderer();
         renderer.setContext(this);
         PortalRenderer.setGameController(this);
+        PortalRenderer.setNewMarkerListener(this);
 
         responseReceiver = new ResponseReceiver();
         responseReceiver.setListener(this);
@@ -191,9 +197,6 @@ public class PortalClientActivity extends ARActivity implements UIListener,
                 case "cmd_btnEndTurn":
                     moveActor();
                     break;
-                case "cmd_btnGenerateRoom":
-                    generateRoom();
-                    break;
                 case "cmd_btnOpenDoor":
                     openDoor();
                     break;
@@ -229,8 +232,10 @@ public class PortalClientActivity extends ARActivity implements UIListener,
                     uiPortalOverlay.overlaySelect(specialOptions);
                     break;
                 case "cmd_btnCancel":
-                    //TODO
-                    uiPortalOverlay.overlayAction(1, 0, 1, 0);
+                    uiPortalOverlay.overlayAction(healthMax,
+                                                  healthCurrent,
+                                                  energyMax,
+                                                  energyCurrent);
                     break;
             }
         }
@@ -360,31 +365,54 @@ public class PortalClientActivity extends ARActivity implements UIListener,
         else if (msg.startsWith(NetworkConstants.PREFIX_START))
         {
             String[] splitMsg = msg.split(":");
-            uiPortalOverlay.overlayWaitingForTurn(Integer.parseInt(splitMsg[1]),
-                                                  Integer.parseInt(splitMsg[2]),
-                                                  Integer.parseInt(splitMsg[3]),
-                                                  Integer.parseInt(splitMsg[4]));
+
+            healthMax = Integer.parseInt(splitMsg[1]);
+            healthCurrent = Integer.parseInt(splitMsg[2]);
+            energyMax = Integer.parseInt(splitMsg[3]);
+            energyCurrent = Integer.parseInt(splitMsg[4]);
+
+            uiPortalOverlay.overlayWaitingForTurn(healthMax,
+                                                  healthCurrent,
+                                                  energyMax,
+                                                  energyCurrent);
+
+            PortalRenderer.setLookingForNewMarkers(true);
         }
         else if (msg.startsWith(NetworkConstants.PREFIX_TURN))
         {
             String[] splitMsg = msg.split(":");
-            uiPortalOverlay.overlayAction(Integer.parseInt(splitMsg[1]),
-                                          Integer.parseInt(splitMsg[2]),
-                                          Integer.parseInt(splitMsg[3]),
-                                          Integer.parseInt(splitMsg[4]));
+
+            healthMax = Integer.parseInt(splitMsg[1]);
+            healthCurrent = Integer.parseInt(splitMsg[2]);
+            energyMax = Integer.parseInt(splitMsg[3]);
+            energyCurrent = Integer.parseInt(splitMsg[4]);
+
+            uiPortalOverlay.overlayAction(healthMax,
+                                          healthCurrent,
+                                          energyMax,
+                                          energyCurrent);
         }
         else if (msg.startsWith(NetworkConstants.PREFIX_TURN_OVER))
         {
             String[] splitMsg = msg.split(":");
-            uiPortalOverlay.overlayWaitingForTurn(Integer.parseInt(splitMsg[1]),
-                                                  Integer.parseInt(splitMsg[2]),
-                                                  Integer.parseInt(splitMsg[3]),
-                                                  Integer.parseInt(splitMsg[4]));
+
+            healthMax = Integer.parseInt(splitMsg[1]);
+            healthCurrent = Integer.parseInt(splitMsg[2]);
+            energyMax = Integer.parseInt(splitMsg[3]);
+            energyCurrent = Integer.parseInt(splitMsg[4]);
+
+            uiPortalOverlay.overlayWaitingForTurn(healthMax,
+                                                  healthCurrent,
+                                                  energyMax,
+                                                  energyCurrent);
         }
         else if (msg.startsWith(NetworkConstants.PREFIX_HEALTH))
         {
             String[] splitMsg = msg.split(":");
-            uiPortalOverlay.setHealth(Integer.parseInt(splitMsg[1]));
+
+            healthCurrent = Integer.parseInt(splitMsg[1]);
+
+            uiPortalOverlay.setHealth(healthCurrent);
         }
         else if (msg.startsWith(NetworkConstants.PREFIX_CREATE_ROOM))
         {
@@ -668,17 +696,6 @@ public class PortalClientActivity extends ARActivity implements UIListener,
         }
     }
 
-    private void generateRoom()
-    {
-        int firstUnreservedMarker = getFirstUnreservedMarker();
-
-        if (firstUnreservedMarker > -1)
-        {
-            clientService.write(
-                NetworkConstants.PREFIX_GENERATE_ROOM_REQUEST + firstUnreservedMarker);
-        }
-    }
-
     private static short getWallFromAngle(final float angle)
     {
         if (angle > 315 || angle <= 45)
@@ -768,26 +785,32 @@ public class PortalClientActivity extends ARActivity implements UIListener,
     }
 
     @Override
-    public void feedback(String message)
+    public final void feedback(String message)
     {
         // DO NOT USE
     }
 
     @Override
-    public void onActorAction(int sourceId, int targetId, String action)
+    public final void onActorAction(int sourceId, int targetId, String action)
     {
         // DO NOT USE
     }
 
     @Override
-    public void onActorMove(int actorId, int roomId)
+    public final void onActorMove(int actorId, int roomId)
     {
         // DO NOT USE
     }
 
     @Override
-    public void turnPassed(int turnId)
+    public final void turnPassed(int turnId)
     {
         // DO NOT USE
+    }
+
+    @Override
+    public void newMarker(int marker)
+    {
+        clientService.write(NetworkConstants.PREFIX_GENERATE_ROOM_REQUEST + marker);
     }
 }

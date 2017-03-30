@@ -119,16 +119,6 @@ public class UIPortalOverlay extends UIBase
             }
         });
 
-        Button btnGenerateRoom = (Button) findViewById(R.id.btnGenerateRoom);
-        btnGenerateRoom.setOnClickListener(new OnClickListener()
-        {
-            @Override
-            public void onClick(View v)
-            {
-                notifyListener("cmd_btnGenerateRoom");
-            }
-        });
-
         ImageButton btnOpenDoor = (ImageButton) findViewById(R.id.btnOpenDoor);
         btnOpenDoor.setOnClickListener(new OnClickListener()
         {

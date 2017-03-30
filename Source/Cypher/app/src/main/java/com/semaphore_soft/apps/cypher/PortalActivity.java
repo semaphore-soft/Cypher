@@ -116,6 +116,7 @@ public class PortalActivity extends ARActivity implements PortalRenderer.NewMark
         renderer = new PortalRenderer();
         renderer.setContext(this);
         PortalRenderer.setGameController(this);
+        PortalRenderer.setNewMarkerListener(this);
 
         // Setup broadcast networking service broadcast receiver
         responseReceiver = new ResponseReceiver();
@@ -283,15 +284,14 @@ public class PortalActivity extends ARActivity implements PortalRenderer.NewMark
                                 }
                             }
                         }
+
+                        PortalRenderer.setLookingForNewMarkers(true);
                     }
                     break;
                 case "cmd_btnEndTurn":
                     int newRoomMark =
                         getNearestNonPlayerMarker(GameMaster.getActorMakerId(model, playerId));
                     moveActor(playerId, newRoomMark);
-                    break;
-                case "cmd_btnGenerateRoom":
-                    generateRoom(getFirstUnreservedMarker());
                     break;
                 case "cmd_btnOpenDoor":
                     if (openDoor())
@@ -649,7 +649,10 @@ public class PortalActivity extends ARActivity implements PortalRenderer.NewMark
     @Override
     public void newMarker(final int marker)
     {
-
+        if (GameMaster.getMarkerAttachment(model, marker) == -1)
+        {
+            generateRoom(marker);
+        }
     }
 
     /**
@@ -1041,10 +1044,17 @@ public class PortalActivity extends ARActivity implements PortalRenderer.NewMark
 
             createRoom(mark, wallDescriptors);
 
-            Toast.makeText(getApplicationContext(),
-                           "New Room Generated",
-                           Toast.LENGTH_SHORT)
-                 .show();
+            runOnUiThread(new Runnable()
+            {
+                @Override
+                public void run()
+                {
+                    Toast.makeText(getApplicationContext(),
+                                   "New Room Generated",
+                                   Toast.LENGTH_SHORT)
+                         .show();
+                }
+            });
 
             return true;
         }
