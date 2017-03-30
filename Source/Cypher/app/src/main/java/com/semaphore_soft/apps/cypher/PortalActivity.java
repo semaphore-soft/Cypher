@@ -287,8 +287,6 @@ public class PortalActivity extends ARActivity implements PortalRenderer.NewMark
                             }
                         }
 
-                        serverService.writeAll(NetworkConstants.PREFIX_START);
-
                         PortalRenderer.setLookingForNewMarkers(true);
                     }
                     break;
