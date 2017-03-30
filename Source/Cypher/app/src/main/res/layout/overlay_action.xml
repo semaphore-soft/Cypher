@@ -8,31 +8,27 @@
             android:text="End Turn"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_alignParentTop="true"
-            android:layout_alignParentStart="true"
-            android:id="@+id/btnEndTurn"/>
-
-    <Button
-            android:text="Open Door"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:id="@+id/btnOpenDoor"
-            android:layout_alignParentBottom="true"
+            android:id="@+id/btnEndTurn"
+            android:layout_above="@+id/btnSpecial"
             android:layout_alignParentStart="true"/>
 
-    <Button
-            android:text="Generate\nRoom"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:id="@+id/btnGenerateRoom"
-            android:layout_centerVertical="true"
-            android:layout_alignParentStart="true"/>
 
     <ImageButton
             android:layout_width="100dp"
-            android:layout_height="100dp"
-            app:srcCompat="@drawable/button_atk"
-            android:src="@drawable/button_atk"
+            android:layout_height="50dp"
+            app:srcCompat="@drawable/hud_sepia_door"
+            android:src="@drawable/hud_sepia_door"
+            android:id="@+id/btnOpenDoor"
+            android:scaleType="centerInside"
+            android:background="?android:selectableItemBackground"
+            android:layout_alignParentBottom="true"
+            android:layout_alignParentStart="true"/>
+
+    <ImageButton
+            android:layout_width="80dp"
+            android:layout_height="80dp"
+            app:srcCompat="@drawable/hud_sepia_atk"
+            android:src="@drawable/hud_sepia_atk"
             android:id="@+id/btnAttack"
             android:scaleType="centerInside"
             android:background="?android:selectableItemBackground"
@@ -40,10 +36,10 @@
             android:layout_alignParentEnd="true"/>
 
     <ImageButton
-            android:layout_width="100dp"
-            android:layout_height="100dp"
-            app:srcCompat="@drawable/button_def"
-            android:src="@drawable/button_def"
+            android:layout_width="80dp"
+            android:layout_height="80dp"
+            app:srcCompat="@drawable/hud_sepia_def"
+            android:src="@drawable/hud_sepia_def"
             android:id="@+id/btnDefend"
             android:scaleType="centerInside"
             android:background="?android:selectableItemBackground"
@@ -51,14 +47,17 @@
             android:layout_alignParentEnd="true"/>
 
     <ImageButton
-            android:layout_width="100dp"
-            android:layout_height="100dp"
-            app:srcCompat="@drawable/button_mag"
-            android:src="@drawable/button_mag"
+            android:layout_width="80dp"
+            android:layout_height="80dp"
+            app:srcCompat="@drawable/hud_sepia_spells"
+            android:src="@drawable/hud_sepia_spells"
             android:id="@+id/btnSpecial"
             android:scaleType="centerInside"
             android:background="?android:selectableItemBackground"
             android:layout_alignParentBottom="true"
             android:layout_alignParentEnd="true"/>
+
+    <include
+            layout="@layout/overlay_character_info"/>
 
 </RelativeLayout>
