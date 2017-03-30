@@ -832,7 +832,7 @@ class PortalRenderer extends ARRendererGLES20
             }
         }
 
-        String[] splitAction = actionType.split(":");
+        String[] splitAction = actionType.split("\\.");
 
         switch (splitAction[0])
         {

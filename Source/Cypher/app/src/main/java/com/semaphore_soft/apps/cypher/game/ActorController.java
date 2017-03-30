@@ -182,7 +182,7 @@ public class ActorController
 
                                 gameController.onActorAction(actorId,
                                                              nonPlayerTargets.get(0),
-                                                             "special:help");
+                                                             "special.help");
 
                                 usedSpecial = true;
                             }
@@ -206,7 +206,7 @@ public class ActorController
 
                             gameController.onActorAction(actorId,
                                                          playerTargets.get(0),
-                                                         "special:harm");
+                                                         "special.harm");
 
                             usedSpecial = true;
                             break;
@@ -229,7 +229,7 @@ public class ActorController
 
                                 gameController.onActorAction(actorId,
                                                              -1,
-                                                             "special:help");
+                                                             "special.help");
 
                                 usedSpecial = true;
                             }
@@ -251,7 +251,7 @@ public class ActorController
 
                             gameController.onActorAction(actorId,
                                                          -1,
-                                                         "special:harm");
+                                                         "special.harm");
 
                             usedSpecial = true;
 
