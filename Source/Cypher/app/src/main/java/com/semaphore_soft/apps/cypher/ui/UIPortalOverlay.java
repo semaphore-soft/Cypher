@@ -85,6 +85,12 @@ public class UIPortalOverlay extends UIBase
         makeView(R.layout.empty);
     }
 
+    public void overlayDisconnect()
+    {
+        //TODO replace with more/better status information
+        makeView(R.layout.overlay_waiting_for_clients);
+    }
+
     public void overlayAction()
     {
         makeView(R.layout.overlay_action);

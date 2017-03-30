@@ -542,6 +542,18 @@ public class PortalActivity extends ARActivity implements PortalRenderer.NewMark
     {
         Toast.makeText(this, "Status: " + msg + " from <" + readFrom + ">", Toast.LENGTH_SHORT)
              .show();
+        if (msg.equals(NetworkConstants.STATUS_SERVER_START))
+        {
+            serverService.writeAll(NetworkConstants.GAME_RECONNECT);
+            if (turnId == playerId)
+            {
+                uiPortalOverlay.overlayAction();
+            }
+            else
+            {
+                uiPortalOverlay.overlayWaitingForTurn();
+            }
+        }
     }
 
     /**
@@ -555,6 +567,11 @@ public class PortalActivity extends ARActivity implements PortalRenderer.NewMark
     {
         Toast.makeText(this, "Error: " + msg + " from <" + readFrom + ">", Toast.LENGTH_SHORT)
              .show();
+        if (msg.equals(NetworkConstants.ERROR_DISCONNECT_SERVER))
+        {
+            uiPortalOverlay.overlayDisconnect();
+            serverService.writeAll(NetworkConstants.GAME_DISCONNECT);
+        }
     }
 
     @Override

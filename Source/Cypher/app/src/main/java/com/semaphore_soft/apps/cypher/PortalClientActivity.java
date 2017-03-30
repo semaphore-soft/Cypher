@@ -53,7 +53,7 @@ public class PortalClientActivity extends ARActivity implements UIListener,
     private static int    playerId;
     private static String characterName;
 
-    private static boolean turn;
+    private static boolean turn = false;
 
     private static int playerMarker;
     private static int playerRoomMarker;
@@ -363,10 +363,27 @@ public class PortalClientActivity extends ARActivity implements UIListener,
         else if (msg.equals(NetworkConstants.GAME_TURN))
         {
             uiPortalOverlay.overlayAction();
+            turn = true;
         }
         else if (msg.equals(NetworkConstants.GAME_TURN_OVER))
         {
             uiPortalOverlay.overlayWaitingForTurn();
+            turn = false;
+        }
+        else if (msg.equals(NetworkConstants.GAME_DISCONNECT))
+        {
+            uiPortalOverlay.overlayDisconnect();
+        }
+        else if (msg.equals(NetworkConstants.GAME_RECONNECT))
+        {
+            if (turn)
+            {
+                uiPortalOverlay.overlayAction();
+            }
+            else
+            {
+                uiPortalOverlay.overlayWaitingForTurn();
+            }
         }
         else if (msg.startsWith(NetworkConstants.PREFIX_CREATE_ROOM))
         {
