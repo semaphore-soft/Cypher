@@ -1,6 +1,5 @@
 package com.semaphore_soft.apps.cypher;
 
-
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.DialogInterface;
@@ -83,6 +82,9 @@ public class MainActivity extends AppCompatActivity implements GetNameDialogFrag
         }
     }
 
+    /**
+     * Creates an instance of {@link GetNameDialogFragment}.
+     */
     private void showGetNameDialog()
     {
         FragmentManager       fm                    = getSupportFragmentManager();
@@ -91,6 +93,9 @@ public class MainActivity extends AppCompatActivity implements GetNameDialogFrag
         getNameDialogFragment.show(fm, "get_name_dialog");
     }
 
+    /**
+     * Creates an instance of {@link ConnectFragment}.
+     */
     private void showConnectDialog()
     {
         FragmentManager fm              = getSupportFragmentManager();
@@ -124,6 +129,15 @@ public class MainActivity extends AppCompatActivity implements GetNameDialogFrag
         return super.onOptionsItemSelected(item);
     }
 
+    /**
+     * {@inheritDoc}
+     * Starts {@link com.semaphore_soft.apps.cypher.networking.Client Client}.
+     *
+     * @param addr Address to connect to
+     * @param name Name of the player
+     *
+     * @see ClientService
+     */
     @Override
     public void startClient(String addr, String name)
     {
@@ -132,6 +146,14 @@ public class MainActivity extends AppCompatActivity implements GetNameDialogFrag
         clientService.startClient(addr);
     }
 
+    /**
+     * {@inheritDoc}
+     * Starts {@link com.semaphore_soft.apps.cypher.networking.Server Server}.
+     *
+     * @param name Name of the player
+     *
+     * @see ServerService
+     */
     @Override
     public void onFinishGetName(String name)
     {
@@ -141,14 +163,28 @@ public class MainActivity extends AppCompatActivity implements GetNameDialogFrag
         serverService.startServer();
     }
 
+    /**
+     * {@inheritDoc}
+     *
+     * @param msg Message read from network
+     * @param readFrom Device that message was received from
+     */
     @Override
-    public void handleRead(String msg)
+    public void handleRead(String msg, int readFrom)
     {
-        Toast.makeText(this, msg, Toast.LENGTH_SHORT).show();
     }
 
+    /**
+     * {@inheritDoc}
+     * <p>
+     * Moves players to {@link ConnectionLobbyActivity} when client or server
+     * notify that they have successfully started a connection.
+     *
+     * @param msg Status update
+     * @param readFrom Device that update was received from
+     */
     @Override
-    public void handleStatus(String msg)
+    public void handleStatus(String msg, int readFrom)
     {
         if (msg.equals(NetworkConstants.STATUS_CLIENT_CONNECT) ||
             msg.equals(NetworkConstants.STATUS_SERVER_WAIT))
@@ -165,8 +201,16 @@ public class MainActivity extends AppCompatActivity implements GetNameDialogFrag
         }
     }
 
+    /**
+     * {@inheritDoc}
+     * <p>
+     * Shows alert if client was unable to successfully start a connection.
+     *
+     * @param msg Error message
+     * @param readFrom Device that error was received from
+     */
     @Override
-    public void handleError(String msg)
+    public void handleError(String msg, int readFrom)
     {
         Toast.makeText(this, msg, Toast.LENGTH_SHORT).show();
         if (msg.equals(NetworkConstants.ERROR_CLIENT_SOCKET))
@@ -188,6 +232,11 @@ public class MainActivity extends AppCompatActivity implements GetNameDialogFrag
         }
     }
 
+    /**
+     * {@inheritDoc}
+     *
+     * @param cmd Command from UI interaction
+     */
     @Override
     public void onCommand(String cmd)
     {
@@ -217,9 +266,8 @@ public class MainActivity extends AppCompatActivity implements GetNameDialogFrag
                      .show();
 
                 Intent intent = new Intent(getBaseContext(), PortalActivity.class);
-                intent.putExtra("host", true);
                 intent.putExtra("player", 0);
-                intent.putExtra("character", 0);
+                intent.putExtra("character", "knight");
                 startActivity(intent);
                 break;
             }

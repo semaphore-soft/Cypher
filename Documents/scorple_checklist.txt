@@ -6,10 +6,8 @@ _handle death of actors, removal from room, actor table, loot?
 
 _self targeting targeting type
 
-_dynamically assign room side for player/enemy lines
-
 _comment model loader
 
 _specials need a scalar
 
-_timed renderer effects and waiting for 'animations'
+_timing analysis on model loader, texture loader

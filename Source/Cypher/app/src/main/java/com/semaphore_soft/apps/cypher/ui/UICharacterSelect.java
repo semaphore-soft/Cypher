@@ -12,6 +12,7 @@ import com.semaphore_soft.apps.cypher.R;
 
 /**
  * Created by Scorple on 2/19/2017.
+ * UI class for {@link com.semaphore_soft.apps.cypher.CharacterSelectActivity CharacterSelectActivity}.
  */
 
 public class UICharacterSelect extends UIBase
@@ -109,16 +110,31 @@ public class UICharacterSelect extends UIBase
         });
     }
 
+    /**
+     * Set ready status of all players.
+     *
+     * @param status status of players
+     */
     public void setStatus(String status)
     {
         txtStatus.setText(status);
     }
 
+    /**
+     * Set if game can be continued by the host.
+     *
+     * @param enabled whether or not button is enabled
+     */
     public void setStartEnabled(boolean enabled)
     {
         btnStart.setEnabled(enabled);
     }
 
+    /**
+     * Update UI to show players selection.
+     *
+     * @param selection Players selection
+     */
     private void setSelection(String selection)
     {
         if (selected.equals(selection))
@@ -161,7 +177,10 @@ public class UICharacterSelect extends UIBase
         }
     }
 
-    private void clearSelection()
+    /**
+     * Update UI to clear players selection.
+     */
+    public void clearSelection()
     {
         selected = "";
         imgKnight.setVisibility(GONE);
@@ -169,5 +188,62 @@ public class UICharacterSelect extends UIBase
         imgRanger.setVisibility(GONE);
         imgWizard.setVisibility(GONE);
         notifyListener("clear");
+    }
+
+    /**
+     * Set whether or not a character can be chosen by a player.
+     *
+     * @param selection Character to enable or disable
+     * @param enabled Whether to enable or disable selection
+     */
+    public void setButtonEnabled(String selection, boolean enabled)
+    {
+        switch (selection)
+        {
+            case "knight":
+                imgBtnKnight.setEnabled(enabled);
+                if (enabled)
+                {
+                    imgBtnKnight.setImageAlpha(255);
+                }
+                else
+                {
+                    imgBtnKnight.setImageAlpha(80);
+                }
+                break;
+            case "soldier":
+                imgBtnSoldier.setEnabled(enabled);
+                if (enabled)
+                {
+                    imgBtnSoldier.setImageAlpha(255);
+                }
+                else
+                {
+                    imgBtnSoldier.setImageAlpha(80);
+                }
+                break;
+            case "ranger":
+                imgBtnRanger.setEnabled(enabled);
+                if (enabled)
+                {
+                    imgBtnRanger.setImageAlpha(255);
+                }
+                else
+                {
+                    imgBtnRanger.setImageAlpha(80);
+                }
+                break;
+            case "wizard":
+                imgBtnWizard.setEnabled(enabled);
+                if (enabled)
+                {
+                    imgBtnWizard.setImageAlpha(255);
+                }
+                else
+                {
+                    imgBtnWizard.setImageAlpha(80);
+                }
+                break;
+        }
     }
 }

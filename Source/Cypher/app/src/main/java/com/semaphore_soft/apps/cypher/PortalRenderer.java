@@ -3,23 +3,31 @@ package com.semaphore_soft.apps.cypher;
 import android.content.Context;
 import android.opengl.GLES20;
 import android.opengl.Matrix;
+import android.os.Handler;
+import android.support.annotation.Nullable;
+import android.support.v4.util.Pair;
 
 import com.semaphore_soft.apps.cypher.game.Actor;
 import com.semaphore_soft.apps.cypher.game.GameController;
+import com.semaphore_soft.apps.cypher.game.GameMaster;
 import com.semaphore_soft.apps.cypher.game.Room;
+import com.semaphore_soft.apps.cypher.game.Special;
 import com.semaphore_soft.apps.cypher.opengl.ARDrawableGLES20;
 import com.semaphore_soft.apps.cypher.opengl.ARModelGLES20;
+import com.semaphore_soft.apps.cypher.opengl.ARPoseModel;
 import com.semaphore_soft.apps.cypher.opengl.ARRoom;
 import com.semaphore_soft.apps.cypher.opengl.ModelLoader;
 import com.semaphore_soft.apps.cypher.opengl.shader.DynamicShaderProgram;
 import com.semaphore_soft.apps.cypher.opengl.shader.ShaderLoader;
 import com.semaphore_soft.apps.cypher.utils.GameStatLoader;
+import com.semaphore_soft.apps.cypher.utils.Logger;
+import com.semaphore_soft.apps.cypher.utils.Timer;
 
 import org.artoolkit.ar.base.ARToolKit;
 import org.artoolkit.ar.base.rendering.gles20.ARRendererGLES20;
 
 import java.util.ArrayList;
-import java.util.Hashtable;
+import java.util.concurrent.ConcurrentHashMap;
 
 import javax.microedition.khronos.egl.EGLConfig;
 import javax.microedition.khronos.opengles.GL10;
@@ -37,14 +45,11 @@ class PortalRenderer extends ARRendererGLES20
     private static ArrayList<Integer> markers;
     private static int[]              playerMarkerIDs;
 
-    private static ArrayList<ARModelGLES20>            characterModels;
-    private static Hashtable<String, ARDrawableGLES20> models;
-    private static Hashtable<Integer, ARRoom>          arRooms;
+    private static ArrayList<ARModelGLES20>                    characterModels;
+    private static ConcurrentHashMap<String, ARDrawableGLES20> models;
+    private static ConcurrentHashMap<Integer, ARRoom>          arRooms;
 
-    public void setContext(Context context)
-    {
-        this.context = context;
-    }
+    private static Handler handler = null;
 
     @Override
     public boolean configureARScene()
@@ -92,6 +97,9 @@ class PortalRenderer extends ARRendererGLES20
     {
         super.onSurfaceCreated(unused, config);
 
+        Timer loadTimer = new Timer();
+        loadTimer.start();
+
         characterModels = new ArrayList<>();
 
         for (int i = 0; i < 4; ++i)
@@ -111,9 +119,9 @@ class PortalRenderer extends ARRendererGLES20
             characterModels.add(playerMarkerModel);
         }
 
-        arRooms = new Hashtable<>();
+        arRooms = new ConcurrentHashMap<>();
 
-        models = new Hashtable<>();
+        models = new ConcurrentHashMap<>();
 
         ARDrawableGLES20 waypoint =
             ModelLoader.load(context, "waypoint", 40.0f);
@@ -128,21 +136,34 @@ class PortalRenderer extends ARRendererGLES20
         waypoint.setShaderProgram(waypointShaderProgram);
         models.put("waypoint", waypoint);
 
+        ARDrawableGLES20 overlay =
+            ModelLoader.load(context, "overlay", 5.0f, "spark");
+        DynamicShaderProgram overlayShaderProgram =
+            new DynamicShaderProgram(ShaderLoader.createShader(context,
+                                                               "shaders/vertexShaderTextured.glsl",
+                                                               GLES20.GL_VERTEX_SHADER),
+                                     ShaderLoader.createShader(context,
+                                                               "shaders/fragmentShaderShadelessTexturedTransparent.glsl",
+                                                               GLES20.GL_FRAGMENT_SHADER),
+                                     new String[]{"a_Position", "a_Color", "a_Normal", "a_TexCoordinate"});
+        overlay.setShaderProgram(overlayShaderProgram);
+        models.put("overlay", overlay);
+
         ArrayList<String> actorNames = GameStatLoader.getList(context, "actors");
         if (actorNames != null)
         {
             for (String name : actorNames)
             {
                 ARDrawableGLES20 actorModel =
-                    ModelLoader.load(context, name, "actors");
+                    ModelLoader.load(context, name, "actors", 10.f);
                 if (actorModel != null)
                 {
                     DynamicShaderProgram actorShaderProgram =
                         new DynamicShaderProgram(ShaderLoader.createShader(context,
-                                                                           "shaders/vertexShaderUntextured.glsl",
+                                                                           "shaders/vertexShaderTextured.glsl",
                                                                            GLES20.GL_VERTEX_SHADER),
                                                  ShaderLoader.createShader(context,
-                                                                           "shaders/fragmentShaderUntextured.glsl",
+                                                                           "shaders/fragmentShaderTextured.glsl",
                                                                            GLES20.GL_FRAGMENT_SHADER),
                                                  new String[]{"a_Position", "a_Color", "a_Normal"});
                     actorModel.setShaderProgram(actorShaderProgram);
@@ -152,62 +173,62 @@ class PortalRenderer extends ARRendererGLES20
         }
 
         ARDrawableGLES20 roomBase =
-            ModelLoader.load(context, "room_base", 120.0f);
+            ModelLoader.load(context, "room_base", 120.0f, "room_base");
         DynamicShaderProgram roomBaseShaderProgram =
             new DynamicShaderProgram(ShaderLoader.createShader(context,
-                                                               "shaders/vertexShaderUntextured.glsl",
+                                                               "shaders/vertexShaderTextured.glsl",
                                                                GLES20.GL_VERTEX_SHADER),
                                      ShaderLoader.createShader(context,
-                                                               "shaders/fragmentShaderUntextured.glsl",
+                                                               "shaders/fragmentShaderTextured.glsl",
                                                                GLES20.GL_FRAGMENT_SHADER),
                                      new String[]{"a_Position", "a_Color", "a_Normal"});
         roomBase.setShaderProgram(roomBaseShaderProgram);
-        roomBase.setColor(0.5f, 0.5f, 0.5f, 1.0f);
+        //roomBase.setColor(0.5f, 0.5f, 0.5f, 1.0f);
         models.put("room_base", roomBase);
 
         ARDrawableGLES20 roomWall =
-            ModelLoader.load(context, "room_door_north", 120.0f);
+            ModelLoader.load(context, "room_wall_north", 120.0f, "room_base");
         DynamicShaderProgram roomWallShaderProgram =
             new DynamicShaderProgram(ShaderLoader.createShader(context,
-                                                               "shaders/vertexShaderUntextured.glsl",
+                                                               "shaders/vertexShaderTextured.glsl",
                                                                GLES20.GL_VERTEX_SHADER),
                                      ShaderLoader.createShader(context,
-                                                               "shaders/fragmentShaderUntextured.glsl",
+                                                               "shaders/fragmentShaderTextured.glsl",
                                                                GLES20.GL_FRAGMENT_SHADER),
                                      new String[]{"a_Position", "a_Color", "a_Normal"});
         roomWall.setShaderProgram(roomWallShaderProgram);
-        roomWall.setColor(0.5f, 0.5f, 0.5f, 1.0f);
+        //roomWall.setColor(0.5f, 0.5f, 0.5f, 1.0f);
         models.put("room_wall", roomWall);
 
         ARDrawableGLES20 roomDoor =
-            ModelLoader.load(context, "room_door_north", 120.0f);
+            ModelLoader.load(context, "room_door_north", 120.0f, "room_base");
         DynamicShaderProgram roomDoorShaderProgram =
             new DynamicShaderProgram(ShaderLoader.createShader(context,
-                                                               "shaders/vertexShaderUntextured.glsl",
+                                                               "shaders/vertexShaderTextured.glsl",
                                                                GLES20.GL_VERTEX_SHADER),
                                      ShaderLoader.createShader(context,
-                                                               "shaders/fragmentShaderUntextured.glsl",
+                                                               "shaders/fragmentShaderTextured.glsl",
                                                                GLES20.GL_FRAGMENT_SHADER),
                                      new String[]{"a_Position", "a_Color", "a_Normal"});
         roomDoor.setShaderProgram(roomDoorShaderProgram);
-        roomDoor.setColor(0.5f, 0.25f, 0.125f, 1.0f);
+        //roomDoor.setColor(0.5f, 0.25f, 0.125f, 1.0f);
         models.put("room_door_unlocked", roomDoor);
 
         ARDrawableGLES20 roomDoorOpen =
-            ModelLoader.load(context, "room_door_north_open", 120.0f);
+            ModelLoader.load(context, "room_door_north_open", 120.0f, "room_base");
         DynamicShaderProgram roomDoorOpenShaderProgram =
             new DynamicShaderProgram(ShaderLoader.createShader(context,
-                                                               "shaders/vertexShaderUntextured.glsl",
+                                                               "shaders/vertexShaderTextured.glsl",
                                                                GLES20.GL_VERTEX_SHADER),
                                      ShaderLoader.createShader(context,
-                                                               "shaders/fragmentShaderUntextured.glsl",
+                                                               "shaders/fragmentShaderTextured.glsl",
                                                                GLES20.GL_FRAGMENT_SHADER),
                                      new String[]{"a_Position", "a_Color", "a_Normal"});
         roomDoorOpen.setShaderProgram(roomDoorOpenShaderProgram);
-        roomDoorOpen.setColor(0.75f, 0.75f, 0.75f, 1.0f);
+        //roomDoorOpen.setColor(0.75f, 0.75f, 0.75f, 1.0f);
         models.put("room_door_open", roomDoorOpen);
 
-        ARDrawableGLES20 error = ModelLoader.load(context, "error", 120.0f);
+        ARDrawableGLES20 error = ModelLoader.load(context, "error", 10.0f);
         DynamicShaderProgram errorShaderProgram =
             new DynamicShaderProgram(ShaderLoader.createShader(context,
                                                                "shaders/vertexShaderUntextured.glsl",
@@ -219,6 +240,9 @@ class PortalRenderer extends ARRendererGLES20
         error.setShaderProgram(errorShaderProgram);
         error.setColor(0.7f, 0.0f, 0.0f, 1.0f);
         models.put("error", error);
+
+        Logger.logI(
+            "renderer finished loading in " + ((float) loadTimer.getTime()) / 1000f + " seconds");
 
         gameController.onFinishedLoading();
     }
@@ -259,12 +283,22 @@ class PortalRenderer extends ARRendererGLES20
         }
     }
 
-    public void setGameController(GameController gameController)
+    public void setContext(final Context context)
+    {
+        this.context = context;
+    }
+
+    static void setHandler(final Handler handler)
+    {
+        PortalRenderer.handler = handler;
+    }
+
+    static void setGameController(final GameController gameController)
     {
         PortalRenderer.gameController = gameController;
     }
 
-    public int getFirstMarker()
+    int getFirstMarker()
     {
         for (int id : markers)
         {
@@ -277,7 +311,7 @@ class PortalRenderer extends ARRendererGLES20
         return -1;
     }
 
-    public int getFirstMarkerExcluding(ArrayList<Integer> marksX)
+    int getFirstMarkerExcluding(final ArrayList<Integer> marksX)
     {
         for (int id : markers)
         {
@@ -290,7 +324,7 @@ class PortalRenderer extends ARRendererGLES20
         return -1;
     }
 
-    public int getNearestMarker(int mark0)
+    int getNearestMarker(final int mark0)
     {
         int    nearest          = -1;
         double shortestDistance = -1;
@@ -334,7 +368,7 @@ class PortalRenderer extends ARRendererGLES20
         return nearest;
     }
 
-    public int getNearestMarkerExcluding(int mark0, ArrayList<Integer> marksX)
+    int getNearestMarkerExcluding(final int mark0, final ArrayList<Integer> marksX)
     {
         int    nearest          = -1;
         double shortestDistance = -1;
@@ -379,7 +413,7 @@ class PortalRenderer extends ARRendererGLES20
         return nearest;
     }
 
-    public float getMarkerDirection(int mark0)
+    float getMarkerDirection(final int mark0)
     {
         float res;
 
@@ -393,7 +427,7 @@ class PortalRenderer extends ARRendererGLES20
             {
                 output += mark0TransInfo[i + j] + " ";
             }
-            System.out.println(output);
+            Logger.logI(output, 5);
         }
 
         res = ((mark0TransInfo[4] >= 0) ? (float) Math.acos(mark0TransInfo[0]) : (float) (Math.PI +
@@ -401,12 +435,12 @@ class PortalRenderer extends ARRendererGLES20
                                                                                               -mark0TransInfo[0])));
 
         res *= (180 / Math.PI);
-        System.out.println("Flat angle in degrees: " + res);
+        Logger.logI("Flat angle in degrees: " + res, 5);
 
         return ((Float.isNaN(res)) ? 0 : res);
     }
 
-    public float getAngleBetweenMarkers(int mark0, int mark1)
+    float getAngleBetweenMarkers(final int mark0, final int mark1)
     {
         float[] resVector;
 
@@ -430,11 +464,11 @@ class PortalRenderer extends ARRendererGLES20
             new float[]{mark1TransInfo[12], mark1TransInfo[13], mark1TransInfo[14], mark1TransInfo[15]};
 
         String output = "ResVector Before Multiply: ";
-        for (int i = 0; i < resVector.length; ++i)
+        for (float aResVector : resVector)
         {
-            output += resVector[i] + " ";
+            output += aResVector + " ";
         }
-        System.out.println(output);
+        Logger.logI(output, 5);
 
         Matrix.multiplyMV(resVector,
                           0,
@@ -444,127 +478,369 @@ class PortalRenderer extends ARRendererGLES20
                           0);
 
         output = "ResVector After Multiply: ";
-        for (int i = 0; i < resVector.length; ++i)
+        for (float aResVector : resVector)
         {
-            output += resVector[i] + " ";
+            output += aResVector + " ";
         }
 
         float resAngle = (float) Math.atan2(resVector[0], resVector[1]);
         resAngle *= (180 / Math.PI);
         resAngle = ((resAngle < 0) ? (360 + resAngle) : resAngle);
 
-        System.out.println(output);
+        Logger.logI(output, 5);
 
         return ((Float.isNaN(resAngle)) ? 0 : resAngle);
     }
 
-    public void setPlayerMarker(int playerID, int markerID)
+    void setPlayerMarker(final int playerID, final int markerID)
     {
-        playerMarkerIDs[(int) playerID] = markerID;
+        playerMarkerIDs[playerID] = markerID;
     }
 
-    public void createRoom(Room room)
+    /**
+     * Applies an effect texture on an {@link Actor} for {@code duration}.
+     *
+     * @param roomId   int: The reference ID of the AR marker to which the
+     *                 {@link ARRoom} containing the desired {@link Actor} to
+     *                 apply the effect to.
+     * @param actorId  int: The logical reference ID of the desired {@link
+     *                 Actor} to apply the effect to.
+     * @param effect   Name of the effect to apply
+     * @param duration How long the effect should last in milliseconds
+     */
+    private void setActorEffect(final int roomId, final int actorId, String effect, long duration)
+    {
+        final ARRoom room = arRooms.get(roomId);
+        room.addEffect(actorId, models.get(effect));
+        Runnable removeEffect = new Runnable()
+        {
+            @Override
+            public void run()
+            {
+                room.removeEffect(actorId);
+            }
+        };
+        // Remove effect after the duration has passed
+        handler.postDelayed(removeEffect, duration);
+    }
+
+    /**
+     * Create an AR representation of a {@link Room}, an {@link ARRoom},
+     * anchored to a given AR marker reference ID and hosting walls matching
+     * given descriptors, and add it to the {@link PortalRenderer
+     * PortalRenderer's}{@link ARRoom} map.
+     *
+     * @param arRoomId        int: The reference ID of the AR marker the new
+     *                        {@link ARRoom} is anchored to. Should match the
+     *                        marker reference ID of exactly one {@link Room}.
+     * @param wallDescriptors String[]: An array of descriptors which match
+     *                        the names of {@link ARDrawableGLES20} drawables
+     *                        to be used for the wall drawable 'slots' in the
+     *                        {@link ARRoom}.
+     *
+     * @see ARRoom
+     * @see Room
+     * @see ARDrawableGLES20
+     * @see PortalActivity#generateRoom(int)
+     */
+    void createRoom(final int arRoomId,
+                    final String[] wallDescriptors)
     {
         ARRoom arRoom = new ARRoom();
         arRoom.setRoomModel(models.get("room_base"));
-        for (short i = 0; i < 4; ++i)
+        for (short i = 0; i < wallDescriptors.length; ++i)
         {
-            switch (room.getWallType(i))
-            {
-                case NO_DOOR:
-                    arRoom.setWall(i, models.get("room_wall"));
-                    break;
-                case DOOR_UNLOCKED:
-                    arRoom.setWall(i, models.get("room_door_unlocked"));
-                    break;
-                case DOOR_OPEN:
-                    arRoom.setWall(i, models.get("room_door_open"));
-                    break;
-                case DOOR_LOCKED:
-                    arRoom.setWall(i, models.get("room_door_locked"));
-                    break;
-            }
+            arRoom.setWall(i, models.get(wallDescriptors[i]));
         }
-        arRooms.put(room.getMarker(), arRoom);
+        arRooms.put(arRoomId, arRoom);
     }
 
-    public void updateRoomWalls(Room room)
+    /**
+     * Updates the {@link ARDrawableGLES20} drawables in the corresponding wall
+     * 'slots' of a given {@link ARRoom} based on given wall descriptors.
+     *
+     * @param arRoomId        int: The reference ID of the AR marker the
+     *                        desired {@link ARRoom} is anchored to. Should
+     *                        match the marker reference ID of exactly one
+     *                        {@link Room}.
+     * @param wallDescriptors String[]: An array of descriptors which match
+     *                        the names of {@link ARDrawableGLES20} drawables
+     *                        to be used for the wall drawable 'slots' in the
+     *                        {@link ARRoom}.
+     *
+     * @see ARRoom
+     * @see Room
+     * @see ARDrawableGLES20
+     * @see PortalActivity#postOpenDoorResult(int, int)
+     */
+    void updateRoomWalls(final int arRoomId,
+                         final String[] wallDescriptors)
     {
-        ARRoom arRoom = arRooms.get(room.getMarker());
-        for (short i = 0; i < 4; ++i)
+        ARRoom arRoom = arRooms.get(arRoomId);
+        for (short i = 0; i < wallDescriptors.length; ++i)
         {
-            switch (room.getWallType(i))
-            {
-                case NO_DOOR:
-                    arRoom.setWall(i, models.get("room_wall"));
-                    break;
-                case DOOR_UNLOCKED:
-                    arRoom.setWall(i, models.get("room_door_unlocked"));
-                    break;
-                case DOOR_OPEN:
-                    arRoom.setWall(i, models.get("room_door_open"));
-                    break;
-                case DOOR_LOCKED:
-                    arRoom.setWall(i, models.get("room_door_locked"));
-                    break;
-            }
+            arRoom.setWall(i, models.get(wallDescriptors[i]));
         }
     }
 
-    public void updateRoomResidents(Room room, Hashtable<Integer, Actor> actors)
+    /**
+     * Updates the alignment, or orientation of residents, of a given {@link
+     * ARRoom}.
+     * <p>
+     * Alignment is given as an index representing a side of an {@link ARRoom},
+     * or {@link Room}, and specifies that player {@link Actor} character
+     * {@link ARDrawableGLES20} drawables should be lined up along that wall.
+     * Non-player {@link Actor} character {@link ARDrawableGLES20} drawables,
+     * then, should be lined up along the opposite wall.
+     *
+     * @param arRoomId int: The reference ID of the AR marker the desired
+     *                 {@link ARRoom} is anchored to. Should match the marker
+     *                 reference ID of exactly one {@link Room}.
+     * @param side     short: The index of the side of the {@link ARRoom}
+     *                 player character {@link ARDrawableGLES20} drawables
+     *                 should line up along.
+     *
+     * @see ARRoom
+     * @see Room
+     * @see Actor
+     * @see ARDrawableGLES20
+     * @see PortalActivity#postMoveResult(int, int, int, int)
+     */
+    void updateRoomAlignment(final int arRoomId, final short side)
     {
-        ARRoom arRoom = arRooms.get(room.getMarker());
+        ARRoom arRoom = arRooms.get(arRoomId);
+        arRoom.setAlignment(side);
+    }
+
+    /**
+     * Updates the representation of the resident {@link Actor Actors} of a
+     * given {@link ARRoom} given the {@link Actor Actor's} logical reference
+     * IDs, player or non- player flag, and their reference name and pose
+     * delimited by a {@code :}.
+     *
+     * @param arRoomId  int: The reference ID of the AR marker the desired
+     *                  {@link ARRoom} is anchored to. Should match the marker
+     *                  reference ID of exactly one {@link Room}.
+     * @param residents ConcurrentHashMap: A map associating the logical
+     *                  reference IDs of the resident {@link Actor Actors} of
+     *                  the desired {@link Room} with a Pair consisting of
+     *                  their player or non-player flag and a string consisting
+     *                  of their reference name and pose delimited by a {@code
+     *                  :}.
+     *
+     * @see ARRoom
+     * @see Room
+     * @see Actor
+     */
+    void updateRoomResidents(final int arRoomId,
+                             final ConcurrentHashMap<Integer, Pair<Boolean, String>> residents)
+    {
+        Logger.logD("enter trace");
+
+        ARRoom arRoom = arRooms.get(arRoomId);
         arRoom.removeActors();
-        for (int id : room.getResidentActors())
+        for (int id : residents.keySet())
         {
-            if (actors.keySet().contains(id))
-            {
-                String name = actors.get(id).getName();
-                System.out.println("adding actor:" + id + ":" + name + " to room:" + room.getId());
-                Actor actor = actors.get(id);
+            Pair<Boolean, String> resident = residents.get(id);
 
-                if (name != null && models.keySet().contains(name))
+            String[] splitResident = resident.second.split(":");
+
+            String name = splitResident[0];
+
+            Logger.logI("adding actor:" + id + ":" + name + " to arRoom:" + arRoomId, 2);
+
+            String pose = ((splitResident.length > 1) ? splitResident[1] : null);
+
+            if (name != null && models.keySet().contains(name))
+            {
+                if (resident.first)
                 {
-                    if (actor.isPlayer())
-                    {
-                        arRoom.addPlayer(id, models.get(name));
-                    }
-                    else
-                    {
-                        arRoom.addEnemy(id, models.get(name));
-                    }
-                    switch (actor.getState())
-                    {
-                        case NEUTRAL:
-                            arRoom.setResidentPose(id, "default");
-                            break;
-                        case ATTACK:
-                            arRoom.setResidentPose(id, "attack");
-                            break;
-                        case SPECIAL:
-                            arRoom.setResidentPose(id, "special");
-                            break;
-                        case DEFEND:
-                            arRoom.setResidentPose(id, "defend");
-                            break;
-                    }
+                    arRoom.addPlayer(id, models.get(name));
                 }
                 else
                 {
-                    if (actor.isPlayer())
-                    {
-                        arRoom.addPlayer(id, models.get("error"));
-                    }
-                    else
-                    {
-                        arRoom.addEnemy(id, models.get("error"));
-                    }
+                    arRoom.addEnemy(id, models.get(name));
+                }
+
+                if (pose != null)
+                {
+                    arRoom.setResidentPose(id, pose);
+                }
+            }
+            else
+            {
+                if (resident.first)
+                {
+                    arRoom.addPlayer(id, models.get("error"));
+                }
+                else
+                {
+                    arRoom.addEnemy(id, models.get("error"));
                 }
             }
         }
+
+        Logger.logD("enter trace");
     }
 
-    public interface NewMarkerListener
+    /**
+     * Provides a presentation of {@link Actor} action by updating the pose of
+     * an action source {@link Actor} and a target {@link Actor}, if
+     * applicable, in a given {@link ARRoom}. The action poses will expire
+     * after {@code length} and, if present, a Handler will be used to call
+     * back to this {@link PortalRenderer PortalRenderer's} associated {@link
+     * GameController}.
+     *
+     * @param arRoomId     int: The reference ID of the AR marker the desired
+     *                     {@link ARRoom} in which the action is taking place
+     *                     is anchored to. Should match the marker reference ID
+     *                     of exactly one {@link Room}.
+     * @param sourceId     int: The logical reference ID of the source {@link
+     *                     Actor} of the action being shown.
+     * @param targetId     int: The logical reference ID of the target {@link
+     *                     Actor} at which the action being shown is directed,
+     *                     or {@code -1} if the action does not have a specific
+     *                     target.
+     * @param length       int: The duration in milliseconds to present the
+     *                     desired action.
+     * @param actionType   String: A description of the action being shown,
+     *                     e.g. {@code attack}, {@code defend},
+     *                     {@code special:hurt}.
+     *                     <p>
+     *                     Note: {@link Special} actions must include a
+     *                     description of the special type ({@code hurt} or
+     *                     {@code help}, see {@link
+     *                     GameMaster#getSpecialTypeDescriptor(int)})
+     *                     delimited by a {@code :}.
+     * @param targetState  String: A description of the state of the target
+     *                     {@link Actor} of the desired action, or {@code null}
+     *                     if the action being shown does not have a specific
+     *                     target {@link Actor}.
+     * @param playerAction boolean: A flag indicating whether the source {@link
+     *                     Actor} of the action being shown is a player
+     *                     controlled {@link Actor}.
+     *                     <ul>
+     *                     <li>true: The source {@link Actor} is considered to
+     *                     be player controlled.</li>
+     *                     <li>false: The source {@link Actor} is not
+     *                     considered to be player controlled.</li>
+     *                     </ul>
+     * @param forward      boolean: A flag indicating whether the action
+     *                     requires its source and target (if applicable){@link
+     *                     Actor Actors} in the 'forward' position - closer to
+     *                     room center, directly opposite one another.
+     *                     <ul>
+     *                     <li>true: The action requires its source and target
+     *                     (if applicable) {@link Actor Actors} in the
+     *                     'forward' position.</li>
+     *                     <li>false: The action DOES NOT require its source
+     *                     and target (if applicable) {@link Actor Actors} in
+     *                     the 'forward' position.</li>
+     *                     </ul>
+     *
+     * @see Actor
+     * @see ARRoom
+     * @see ARPoseModel
+     * @see GameMaster#getSpecialTypeDescriptor(int)
+     * @see PortalActivity#showAction(int, int, int, int, String, String, boolean, boolean)
+     */
+    void showAction(final int arRoomId,
+                    final int sourceId,
+                    final int targetId,
+                    final long length,
+                    final String actionType,
+                    @Nullable final String targetState,
+                    final boolean playerAction,
+                    final boolean forward)
+    {
+        ARRoom arRoom = arRooms.get(arRoomId);
+        if (forward)
+        {
+            if (playerAction)
+            {
+                arRoom.setForwardPlayer(sourceId);
+                if (targetId > -1)
+                {
+                    arRoom.setForwardEnemy(targetId);
+                    setActorEffect(arRoomId, targetId, "overlay", 1000);
+                }
+            }
+            else
+            {
+                arRoom.setForwardEnemy(sourceId);
+                if (targetId > -1)
+                {
+                    arRoom.setForwardPlayer(targetId);
+                    setActorEffect(arRoomId, targetId, "overlay", 1000);
+                }
+            }
+        }
+
+        String[] splitAction = actionType.split(":");
+
+        switch (splitAction[0])
+        {
+            case "attack":
+                arRoom.setResidentPose(sourceId, "attack");
+                if (targetId > -1)
+                {
+                    if (targetState != null && targetState.equals("defend"))
+                    {
+                        arRoom.setResidentPose(targetId, "defend");
+                    }
+                    else
+                    {
+                        arRoom.setResidentPose(targetId, "hurt");
+                    }
+                }
+                break;
+            case "defend":
+                arRoom.setResidentPose(sourceId, "defend");
+                break;
+            case "special":
+                arRoom.setResidentPose(sourceId, "special");
+                if (targetId != sourceId)
+                {
+                    switch (splitAction[1])
+                    {
+                        case "harm":
+                            if (targetState != null && targetState.equals("defend"))
+                            {
+                                arRoom.setResidentPose(targetId, "defend");
+                            }
+                            else
+                            {
+                                arRoom.setResidentPose(targetId, "hurt");
+                            }
+                            break;
+                        case "help":
+                            arRoom.setResidentPose(targetId, "heroic");
+                            break;
+                    }
+                }
+                break;
+        }
+
+        if (handler != null)
+        {
+            Runnable actionFinisher = new Runnable()
+            {
+                @Override
+                public void run()
+                {
+                    concludeAction(sourceId);
+                }
+            };
+            handler.postDelayed(actionFinisher, length);
+        }
+    }
+
+    private void concludeAction(final int sourceId)
+    {
+        gameController.onFinishedAction(sourceId);
+    }
+
+    interface NewMarkerListener
     {
         void newMarker(int marker);
     }

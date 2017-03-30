@@ -12,6 +12,7 @@ import com.semaphore_soft.apps.cypher.R;
 
 /**
  * Created by Scorple on 1/12/2017.
+ * Dialog to ask for the players name.
  */
 
 public class GetNameDialogFragment extends DialogFragment implements View.OnClickListener
@@ -42,6 +43,9 @@ public class GetNameDialogFragment extends DialogFragment implements View.OnClic
 
     public interface GetNameDialogListener
     {
+        /**
+         * @param name Name of the player
+         */
         void onFinishGetName(String name);
     }
 

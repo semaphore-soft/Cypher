@@ -2,15 +2,12 @@ package com.semaphore_soft.apps.cypher;
 
 import android.content.ComponentName;
 import android.content.Context;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.ServiceConnection;
 import android.os.Bundle;
 import android.os.IBinder;
 import android.support.v4.content.LocalBroadcastManager;
-import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
-import android.util.Log;
 import android.widget.FrameLayout;
 import android.widget.Toast;
 
@@ -22,6 +19,7 @@ import com.semaphore_soft.apps.cypher.networking.ServerService;
 import com.semaphore_soft.apps.cypher.ui.PlayerID;
 import com.semaphore_soft.apps.cypher.ui.UIConnectionLobby;
 import com.semaphore_soft.apps.cypher.ui.UIListener;
+import com.semaphore_soft.apps.cypher.utils.Logger;
 
 import java.net.Inet4Address;
 import java.net.InetAddress;
@@ -32,6 +30,10 @@ import java.util.Enumeration;
 
 /**
  * Created by Scorple on 1/9/2017.
+ * Activity where players will start after they have connected to the host and
+ * wait for other players to join.
+ *
+ * @see UIConnectionLobby
  */
 
 public class ConnectionLobbyActivity extends AppCompatActivity implements ResponseReceiver.Receiver,
@@ -97,7 +99,7 @@ public class ConnectionLobbyActivity extends AppCompatActivity implements Respon
                         if (!inetAddress.isLoopbackAddress() && inetAddress instanceof Inet4Address)
                         {
                             ip = inetAddress.getHostAddress();
-                            Log.i("Lobby", ip);
+                            Logger.logI(ip);
                             break outerloop;
                         }
                     }
@@ -105,7 +107,7 @@ public class ConnectionLobbyActivity extends AppCompatActivity implements Respon
             }
             catch (SocketException ex)
             {
-                Log.e("Lobby", ex.toString());
+                Logger.logE(ex.toString());
             }
 
             uiConnectionLobby.setTextIP("Your IP Address is: " + ip);
@@ -147,6 +149,12 @@ public class ConnectionLobbyActivity extends AppCompatActivity implements Respon
         }
     }
 
+    /**
+     * Assign new players an ID and update clients with new players.
+     *
+     * @param player Name of player
+     * @param id     ID to be assigned to player
+     */
     private void addPlayer(String player, int id)
     {
         PlayerID playerID = new PlayerID();
@@ -161,11 +169,16 @@ public class ConnectionLobbyActivity extends AppCompatActivity implements Respon
             for (PlayerID pid : playersList)
             {
                 serverService.writeAll(
-                    NetworkConstants.PF_PLAYER + pid.getPlayerName() + ":" + pid.getID());
+                    NetworkConstants.PREFIX_PLAYER + pid.getPlayerName() + ":" + pid.getID());
             }
         }
     }
 
+    /**
+     * {@inheritDoc}
+     *
+     * @param cmd Command from UI interaction
+     */
     public void onCommand(String cmd)
     {
         switch (cmd)
@@ -180,7 +193,7 @@ public class ConnectionLobbyActivity extends AppCompatActivity implements Respon
                                Toast.LENGTH_SHORT).show();
                 Intent intent = new Intent(getBaseContext(), CharacterSelectActivity.class);
                 intent.putExtra("host", host);
-                intent.putExtra("player", (long) 0);
+                intent.putExtra("player", 0);
                 intent.putExtra("numClients", playerID);
                 startActivity(intent);
                 break;
@@ -190,28 +203,45 @@ public class ConnectionLobbyActivity extends AppCompatActivity implements Respon
         }
     }
 
+    /**
+     * {@inheritDoc}
+     *
+     * @param msg Message read from network
+     * @param readFrom Device that message was received from
+     */
     @Override
-    public void handleRead(String msg)
+    public void handleRead(String msg, int readFrom)
     {
-        Toast.makeText(this, "Read: " + msg, Toast.LENGTH_SHORT).show();
         if (msg.equals(NetworkConstants.GAME_START))
         {
+            LocalBroadcastManager.getInstance(ConnectionLobbyActivity.this)
+                                 .unregisterReceiver(responseReceiver);
             // Start character select activity after host has started game
             Intent intent = new Intent(getBaseContext(), CharacterSelectActivity.class);
             intent.putExtra("host", host);
             intent.putExtra("player", playerID);
             startActivity(intent);
         }
-        else if (msg.startsWith(NetworkConstants.PF_NAME))
+        else if (msg.startsWith(NetworkConstants.PREFIX_NAME))
         {
-            // add players on server
-            addPlayer(msg.substring(5), ++playerID);
+            // Add players on server
+            // Expect the name of the player
+            String[] splitMsg = msg.split(":");
+            addPlayer(splitMsg[1], ++playerID);
+            serverService.addPlayerID(playerID, readFrom);
         }
-        else if (msg.startsWith(NetworkConstants.PF_PLAYER))
+        else if (msg.startsWith(NetworkConstants.PREFIX_PLAYER))
         {
-            // add players on client
+            // Add players on client
+            // Expect the name of the player,
+            // and the PlayerID assigned to them
             String args[] = msg.split(":");
             addPlayer(args[1], Integer.valueOf(args[2]));
+            // Update client with their playerID
+            if (args[1].equals(name))
+            {
+                playerID = Integer.valueOf(args[2]);
+            }
         }
         else if (msg.equals(NetworkConstants.GAME_UPDATE))
         {
@@ -219,46 +249,48 @@ public class ConnectionLobbyActivity extends AppCompatActivity implements Respon
         }
     }
 
+    /**
+     * {@inheritDoc}
+     *
+     * @param msg Status update
+     * @param readFrom Device that update was received from
+     */
     @Override
-    public void handleStatus(String msg)
+    public void handleStatus(String msg, int readFrom)
     {
         Toast.makeText(this, "Status: " + msg, Toast.LENGTH_SHORT).show();
+        if (msg.equals(NetworkConstants.STATUS_SERVER_WAIT) && readFrom != 0)
+        {
+            // Don't use status updates from the AcceptorThread (uses host id)
+            // If we get a disconnect, stop the AcceptorThread
+            Server.setAccepting(false);
+        }
+        else if (msg.equals(NetworkConstants.STATUS_SERVER_START) && readFrom != 0)
+        {
+            // Don't use status updates from the AcceptorThread (uses host id)
+            // Once we a reconnected let the AcceptorThread start again
+            Server.setAccepting(true);
+            // Resend updates, just in case a client missed it while disconnected
+            // This is needed since this is how the client gets its playerID
+            serverService.writeAll(NetworkConstants.GAME_UPDATE);
+            for (PlayerID pid : playersList)
+            {
+                serverService.writeAll(
+                    NetworkConstants.PREFIX_PLAYER + pid.getPlayerName() + ":" + pid.getID());
+            }
+        }
     }
 
+    /**
+     * {@inheritDoc}
+     *
+     * @param msg Error message
+     * @param readFrom Device that error was received from
+     */
     @Override
-    public void handleError(String msg)
+    public void handleError(String msg, int readFrom)
     {
         Toast.makeText(this, "Error: " + msg, Toast.LENGTH_SHORT).show();
-        if (msg.equals(NetworkConstants.ERROR_DISCONNECT_CLIENT))
-        {
-            AlertDialog.Builder builder = new AlertDialog.Builder(this);
-            builder.setTitle("Error");
-            builder.setMessage("Connection lost. Retry?");
-            builder.setPositiveButton("YES", new DialogInterface.OnClickListener()
-            {
-                @Override
-                public void onClick(DialogInterface dialogInterface, int i)
-                {
-                    clientService.reconnect();
-                    playersList.clear();
-                    dialogInterface.dismiss();
-                }
-            });
-            builder.setNegativeButton("NO", new DialogInterface.OnClickListener()
-            {
-                @Override
-                public void onClick(DialogInterface dialogInterface, int i)
-                {
-                    dialogInterface.dismiss();
-                }
-            });
-            AlertDialog alert = builder.create();
-            alert.show();
-        }
-        else if (msg.equals(NetworkConstants.ERROR_DISCONNECT_SERVER))
-        {
-            serverService.reconnect();
-        }
     }
 
     // Defines callbacks for service binding, passed to bindService()
@@ -290,7 +322,8 @@ public class ConnectionLobbyActivity extends AppCompatActivity implements Respon
             ClientService.LocalBinder binder = (ClientService.LocalBinder) iBinder;
             clientService = binder.getService();
             mClientBound = true;
-            clientService.clientWrite(NetworkConstants.PF_NAME + name);
+            clientService.write(NetworkConstants.PREFIX_NAME + name);
+            uiConnectionLobby.setTextIP("Host IP is: " + clientService.getHostIP());
         }
 
         @Override

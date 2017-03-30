@@ -23,9 +23,15 @@
         <name>potion_of_buffness</name>
     </items>
 
-    <!--Special-->
+    <!--Specials-->
     <specials>
         <name>heal</name>
         <name>beef_increase</name>
     </specials>
+
+    <!--Behaviors-->
+    <behaviors>
+        <name>aggressive</name>
+        <name>cowardly</name>
+    </behaviors>
 </lists>

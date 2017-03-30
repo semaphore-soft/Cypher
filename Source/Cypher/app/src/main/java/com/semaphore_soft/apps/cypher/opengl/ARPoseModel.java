@@ -4,7 +4,8 @@ import android.opengl.Matrix;
 
 import com.semaphore_soft.apps.cypher.opengl.shader.DynamicShaderProgram;
 
-import java.util.Hashtable;
+import java.util.concurrent.ConcurrentHashMap;
+
 
 /**
  * Created by rickm on 2/14/2017.
@@ -12,11 +13,11 @@ import java.util.Hashtable;
 
 public class ARPoseModel implements ARDrawableGLES20
 {
-    private Hashtable<String, ARModelGLES20> poseLib;
-    private String                           defaultPose;
-    private String                           currentPose;
+    private ConcurrentHashMap<String, ARModelGLES20> poseLib;
+    private String                                   defaultPose;
+    private String                                   currentPose;
 
-    public ARPoseModel(Hashtable<String, ARModelGLES20> poseLib, String defaultPose)
+    public ARPoseModel(ConcurrentHashMap<String, ARModelGLES20> poseLib, String defaultPose)
     {
         this.poseLib = poseLib;
         this.defaultPose = defaultPose;

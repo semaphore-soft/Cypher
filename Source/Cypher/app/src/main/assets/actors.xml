@@ -70,6 +70,7 @@
     <specials>
         <name>ignus_fatuus</name>
     </specials>
+    <behavior>cowardly</behavior>
 </lil_ghost>
 
 <!--Groblin-->
@@ -84,5 +85,6 @@
         <name>suckerpunch</name>
         <name>spear_toss</name>
     </specials>
+    <behavior>aggressive</behavior>
 </groblin>
 </enemies>

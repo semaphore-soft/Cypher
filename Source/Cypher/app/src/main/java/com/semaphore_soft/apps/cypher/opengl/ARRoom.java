@@ -1,11 +1,12 @@
 package com.semaphore_soft.apps.cypher.opengl;
 
+import android.opengl.GLES20;
 import android.opengl.Matrix;
 
 import com.semaphore_soft.apps.cypher.opengl.shader.DynamicShaderProgram;
 
-import java.util.ConcurrentModificationException;
-import java.util.Hashtable;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.Semaphore;
 
 /**
  * Created by rickm on 2/10/2017.
@@ -13,19 +14,26 @@ import java.util.Hashtable;
 
 public class ARRoom implements ARDrawableGLES20
 {
-    ARDrawableGLES20 roomModel;
-    ARDrawableGLES20 walls[]       = {null, null, null, null};
-    int              forwardPlayer = -1;
-    int              forwardEnemy  = -1;
-    Hashtable<Integer, ARDrawableGLES20> playerLine;
-    Hashtable<Integer, ARDrawableGLES20> enemyLine;
-    Hashtable<Integer, ARDrawableGLES20> entityPile;
+    private ARDrawableGLES20 roomModel;
+    private ARDrawableGLES20 walls[]       = {null, null, null, null};
+    private int              forwardPlayer = -1;
+    private int              forwardEnemy  = -1;
+    private ConcurrentHashMap<Integer, ARDrawableGLES20> playerLine;
+    private ConcurrentHashMap<Integer, ARDrawableGLES20> enemyLine;
+    private ConcurrentHashMap<Integer, ARDrawableGLES20> entityPile;
+    private ConcurrentHashMap<Integer, ARDrawableGLES20> effects;
+    private short alignment = 2;
+
+    private Semaphore assetAccess;
 
     public ARRoom()
     {
-        playerLine = new Hashtable<>();
-        enemyLine = new Hashtable<>();
-        entityPile = new Hashtable<>();
+        playerLine = new ConcurrentHashMap<>();
+        enemyLine = new ConcurrentHashMap<>();
+        entityPile = new ConcurrentHashMap<>();
+        effects = new ConcurrentHashMap<>();
+
+        assetAccess = new Semaphore(1);
     }
 
     public void setRoomModel(ARDrawableGLES20 roomModel)
@@ -72,8 +80,22 @@ public class ARRoom implements ARDrawableGLES20
 
     public void removeActors()
     {
-        playerLine.clear();
-        enemyLine.clear();
+        try
+        {
+            assetAccess.acquire();
+
+            clearForwardPlayer();
+            clearForwardEnemy();
+
+            playerLine.clear();
+            enemyLine.clear();
+
+            assetAccess.release();
+        }
+        catch (InterruptedException e)
+        {
+            e.printStackTrace();
+        }
     }
 
     public void addEntity(int id, ARDrawableGLES20 entityModel)
@@ -89,6 +111,48 @@ public class ARRoom implements ARDrawableGLES20
         if (entityPile.keySet().contains(id))
         {
             entityPile.remove(id);
+        }
+    }
+
+    /**
+     * Applies an effect to the {@link com.semaphore_soft.apps.cypher.game.Actor Actor}
+     * specified by {@code id}.
+     *
+     * @param id    ID of the {@link com.semaphore_soft.apps.cypher.game.Actor Actor} to apply
+     *              the effect to
+     * @param model The effect texture to overlay on the {@link com.semaphore_soft.apps.cypher.game.Actor Actor}
+     */
+    public void addEffect(int id, ARDrawableGLES20 model)
+    {
+        if (!effects.containsKey(id))
+        {
+            effects.put(id, model);
+        }
+    }
+
+    /**
+     * Remove the effect that has been applied to the {@link com.semaphore_soft.apps.cypher.game.Actor Actor}
+     * specified by {@code id}.
+     *
+     * @param id ID of the {@link com.semaphore_soft.apps.cypher.game.Actor Actor}
+     *           to remove the effect from
+     */
+    public void removeEffect(int id)
+    {
+        try
+        {
+            assetAccess.acquire();
+
+            if (effects.containsKey(id))
+            {
+                effects.remove(id);
+            }
+
+            assetAccess.release();
+        }
+        catch (InterruptedException e)
+        {
+            e.printStackTrace();
         }
     }
 
@@ -161,6 +225,11 @@ public class ARRoom implements ARDrawableGLES20
         }
     }
 
+    public void setAlignment(short side)
+    {
+        alignment = side;
+    }
+
     public void draw(float[] projectionMatrix, float[] modelViewMatrix)
     {
         float[] lightPos             = new float[3];
@@ -176,7 +245,7 @@ public class ARRoom implements ARDrawableGLES20
 
     public void draw(float[] projectionMatrix, float[] modelViewMatrix, float[] lightPos)
     {
-        try
+        if (assetAccess.tryAcquire())
         {
             if (roomModel != null)
             {
@@ -206,17 +275,72 @@ public class ARRoom implements ARDrawableGLES20
             {
                 float[] transformationMatrix = new float[16];
                 System.arraycopy(modelViewMatrix, 0, transformationMatrix, 0, 16);
-                if (forwardPlayer == id)
+
+                switch (alignment)
                 {
-                    Matrix.translateM(transformationMatrix, 0, 0.0f, -40.0f, 0.0f);
+                    case 0:
+                        if (forwardPlayer == id)
+                        {
+                            Matrix.translateM(transformationMatrix, 0, 0.0f, 40.0f, 0.0f);
+                        }
+                        else
+                        {
+                            float actorOffset = lineOffset + (60.0f * i);
+                            Matrix.translateM(transformationMatrix, 0, actorOffset, 80.0f, 0.0f);
+                        }
+                        //Matrix.rotateM(transformationMatrix, 0, 0.0f, 0.0f, 0.0f, 1.0f);
+                        break;
+                    case 1:
+                        if (forwardPlayer == id)
+                        {
+                            Matrix.translateM(transformationMatrix, 0, 40.0f, 0.0f, 0.0f);
+                        }
+                        else
+                        {
+                            float actorOffset = lineOffset + (60.0f * i);
+                            Matrix.translateM(transformationMatrix, 0, 80.0f, actorOffset, 0.0f);
+                        }
+                        Matrix.rotateM(transformationMatrix, 0, 270.0f, 0.0f, 0.0f, 1.0f);
+                        break;
+                    case 2:
+                        if (forwardPlayer == id)
+                        {
+                            Matrix.translateM(transformationMatrix, 0, 0.0f, -40.0f, 0.0f);
+                        }
+                        else
+                        {
+                            float actorOffset = lineOffset + (60.0f * i);
+                            Matrix.translateM(transformationMatrix, 0, actorOffset, -80.0f, 0.0f);
+                        }
+                        Matrix.rotateM(transformationMatrix, 0, 180.0f, 0.0f, 0.0f, 1.0f);
+                        break;
+                    case 3:
+                        if (forwardPlayer == id)
+                        {
+                            Matrix.translateM(transformationMatrix, 0, -40.0f, 0.0f, 0.0f);
+                        }
+                        else
+                        {
+                            float actorOffset = lineOffset + (60.0f * i);
+                            Matrix.translateM(transformationMatrix, 0, -80.0f, actorOffset, 0.0f);
+                        }
+                        Matrix.rotateM(transformationMatrix, 0, 90.0f, 0.0f, 0.0f, 1.0f);
+                        break;
                 }
-                else
-                {
-                    float actorOffset = lineOffset + (60.0f * i);
-                    Matrix.translateM(transformationMatrix, 0, actorOffset, -80.0f, 0.0f);
-                    Matrix.rotateM(transformationMatrix, 0, 180.0f, 0.0f, 0.0f, 1.0f);
-                }
+
                 playerLine.get(id).draw(projectionMatrix, transformationMatrix, lightPos);
+                if (effects.containsKey(id))
+                {
+                    // Plane will appear in front of the enemy
+                    transformationMatrix = getEffectTransformationMatrix(transformationMatrix);
+
+                    GLES20.glEnable(GLES20.GL_BLEND);
+                    GLES20.glBlendFunc(GLES20.GL_SRC_ALPHA, GLES20.GL_ONE_MINUS_SRC_ALPHA);
+
+                    effects.get(id).draw(projectionMatrix, transformationMatrix, lightPos);
+
+                    GLES20.glDisable(GLES20.GL_BLEND);
+                }
                 ++i;
             }
 
@@ -227,16 +351,72 @@ public class ARRoom implements ARDrawableGLES20
             {
                 float[] transformationMatrix = new float[16];
                 System.arraycopy(modelViewMatrix, 0, transformationMatrix, 0, 16);
-                if (forwardEnemy == id)
+
+                switch (alignment)
                 {
-                    Matrix.translateM(transformationMatrix, 0, 0.0f, 40.0f, 0.0f);
+                    case 0:
+                        if (forwardEnemy == id)
+                        {
+                            Matrix.translateM(transformationMatrix, 0, 0.0f, -40.0f, 0.0f);
+                        }
+                        else
+                        {
+                            float actorOffset = lineOffset + (60.0f * i);
+                            Matrix.translateM(transformationMatrix, 0, actorOffset, -80.0f, 0.0f);
+                        }
+                        Matrix.rotateM(transformationMatrix, 0, 180.0f, 0.0f, 0.0f, 1.0f);
+                        break;
+                    case 1:
+                        if (forwardEnemy == id)
+                        {
+                            Matrix.translateM(transformationMatrix, 0, -40.0f, 0.0f, 0.0f);
+                        }
+                        else
+                        {
+                            float actorOffset = lineOffset + (60.0f * i);
+                            Matrix.translateM(transformationMatrix, 0, -80.0f, actorOffset, 0.0f);
+                        }
+                        Matrix.rotateM(transformationMatrix, 0, 90.0f, 0.0f, 0.0f, 1.0f);
+                        break;
+                    case 2:
+                        if (forwardEnemy == id)
+                        {
+                            Matrix.translateM(transformationMatrix, 0, 0.0f, 40.0f, 0.0f);
+                        }
+                        else
+                        {
+                            float actorOffset = lineOffset + (60.0f * i);
+                            Matrix.translateM(transformationMatrix, 0, actorOffset, 80.0f, 0.0f);
+                        }
+                        //Matrix.rotateM(transformationMatrix, 0, 0.0f, 0.0f, 0.0f, 1.0f);
+                        break;
+                    case 3:
+                        if (forwardEnemy == id)
+                        {
+                            Matrix.translateM(transformationMatrix, 0, 40.0f, 0.0f, 0.0f);
+                        }
+                        else
+                        {
+                            float actorOffset = lineOffset + (60.0f * i);
+                            Matrix.translateM(transformationMatrix, 0, 80.0f, actorOffset, 0.0f);
+                        }
+                        Matrix.rotateM(transformationMatrix, 0, 270.0f, 0.0f, 0.0f, 1.0f);
+                        break;
                 }
-                else
-                {
-                    float actorOffset = lineOffset + (60.0f * i);
-                    Matrix.translateM(transformationMatrix, 0, actorOffset, 80.0f, 0.0f);
-                }
+
                 enemyLine.get(id).draw(projectionMatrix, transformationMatrix, lightPos);
+                if (effects.containsKey(id))
+                {
+                    // Plane will appear in front of the enemy
+                    transformationMatrix = getEffectTransformationMatrix(transformationMatrix);
+
+                    GLES20.glEnable(GLES20.GL_BLEND);
+                    GLES20.glBlendFunc(GLES20.GL_SRC_ALPHA, GLES20.GL_ONE_MINUS_SRC_ALPHA);
+
+                    effects.get(id).draw(projectionMatrix, transformationMatrix, lightPos);
+
+                    GLES20.glDisable(GLES20.GL_BLEND);
+                }
                 ++i;
             }
 
@@ -247,10 +427,8 @@ public class ARRoom implements ARDrawableGLES20
                 Matrix.translateM(transformationMatrix, 0, 0.0f, 0.0f, 0.0f);
                 entityPile.get(id).draw(projectionMatrix, transformationMatrix, lightPos);
             }
-        }
-        catch (ConcurrentModificationException x)
-        {
 
+            assetAccess.release();
         }
     }
 
@@ -262,5 +440,24 @@ public class ARRoom implements ARDrawableGLES20
     public void setColor(float r, float g, float b, float a)
     {
 
+    }
+
+    private float[] getEffectTransformationMatrix(final float[] transformationMatrix)
+    {
+        transformationMatrix[0] = 1;
+        transformationMatrix[1] = 0;
+        transformationMatrix[2] = 0;
+        transformationMatrix[4] = 0;
+        transformationMatrix[5] = 1;
+        transformationMatrix[6] = 0;
+        transformationMatrix[8] = 0;
+        transformationMatrix[9] = 0;
+        transformationMatrix[10] = 1;
+
+        transformationMatrix[14] += 40;
+
+        Matrix.rotateM(transformationMatrix, 0, -90.0f, 1.0f, 0.0f, 0.0f);
+
+        return transformationMatrix;
     }
 }

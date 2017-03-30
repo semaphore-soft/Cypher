@@ -2,8 +2,10 @@ package com.semaphore_soft.apps.cypher.game;
 
 import android.util.Pair;
 
+import com.semaphore_soft.apps.cypher.utils.Logger;
+
 import java.util.ArrayList;
-import java.util.Hashtable;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * Created by Scorple on 1/27/2017.
@@ -134,12 +136,12 @@ public class Map
             rotB = (short) ((1 + rotA) % 4);
         }
 
-        System.out.println("idA: " + idA);
-        System.out.println("sideOfA: " + sideOfA);
-        System.out.println("rotA: " + rotA);
-        System.out.println("idB: " + idB);
-        System.out.println("sideOfB: " + sideOfB);
-        System.out.println("rotB: " + rotB);
+        Logger.logI("idA: " + idA, 2);
+        Logger.logI("sideOfA: " + sideOfA, 2);
+        Logger.logI("rotA: " + rotA, 2);
+        Logger.logI("idB: " + idB, 2);
+        Logger.logI("sideOfB: " + sideOfB, 2);
+        Logger.logI("rotB: " + rotB, 2);
 
         if ((rotA == 0 && sideOfA == 0) || (rotA == 1 && sideOfA == 1) ||
             (rotA == 2 && sideOfA == 2) || (rotA == 3 && sideOfA == 3))
@@ -384,11 +386,11 @@ public class Map
         return res;
     }
 
-    public Hashtable<Integer, Pair<Short, Short>> getAdjacentRoomsAndWalls(int idA)
+    public ConcurrentHashMap<Integer, Pair<Short, Short>> getAdjacentRoomsAndWalls(int idA)
     {
-        Hashtable<Integer, Pair<Short, Short>> res = new Hashtable<>();
-        Pair<Integer, Integer>                 pos = getPosition(idA);
-        short                                  rot = getRotation(pos.first, pos.second);
+        ConcurrentHashMap<Integer, Pair<Short, Short>> res = new ConcurrentHashMap<>();
+        Pair<Integer, Integer>                         pos = getPosition(idA);
+        short                                          rot = getRotation(pos.first, pos.second);
 
         for (int i = 0; i < 4; ++i)
         {
@@ -459,6 +461,6 @@ public class Map
             output += "\n";
         }
 
-        System.out.println(output);
+        Logger.logI(output, 2);
     }
 }

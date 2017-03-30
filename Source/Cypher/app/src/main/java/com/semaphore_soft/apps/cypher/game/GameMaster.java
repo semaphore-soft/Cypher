@@ -1,60 +1,163 @@
 package com.semaphore_soft.apps.cypher.game;
 
 import android.content.Context;
+import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
 import android.util.Log;
 import android.util.Pair;
 
+import com.semaphore_soft.apps.cypher.PortalActivity;
 import com.semaphore_soft.apps.cypher.utils.CollectionManager;
 import com.semaphore_soft.apps.cypher.utils.GameStatLoader;
+import com.semaphore_soft.apps.cypher.utils.Logger;
 
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Hashtable;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
- * Created by Scorple on 2/18/2017.
+ * {@link GameMaster game.GameMaster} is a coordinator class intended to define
+ * interaction with the game state {@link Model}, including game state status
+ * checks, game state updating, and the performing of game action updates on
+ * the game state {@link Model} as a whole.
+ * <p>
+ * Used by classes at all levels.
+ *
+ * @author scorple
+ * @see Model
  */
-
 public class GameMaster
 {
     private static Model model;
 
-    public static void setModel(Model model)
+    /**
+     * Set the {@link Model} which describes the game state.
+     *
+     * @param model {@link Model}: The {@link Model} which describes game
+     *              state.
+     */
+    public static void setModel(final Model model)
     {
         GameMaster.model = model;
     }
 
-    public static Room generateRoom(Context context)
+    /**
+     * Creates a new {@link Room} with the next available logical reference ID
+     * and not associated with an AR marker, and add it to the {@link Model}.
+     * <p>
+     * The {@link Room} will host 0-3 random non-player {@link Actor Actors}
+     * and 1-4 doors in a random configuration.
+     * <p>
+     * WARNING: Players will not be able to interact with or connect with the
+     * rest of the game map a {@link Room} which is not associated with an AR
+     * marker.
+     *
+     * @param context Context: The application context. Used for loading in
+     *                any stats needed during {@link Room} generation.
+     *
+     * @return {@link Room}: The created {@link Room} object.
+     *
+     * @see Room
+     * @see Actor
+     * @see Model
+     */
+    public static Room generateRoom(final Context context)
     {
         return generateRoom(context, CollectionManager.getNextID(model.getRooms()));
     }
 
-    public static Room generateRoom(Context context, int id)
+    /**
+     * Creates a new {@link Room} with a given logical reference ID and not
+     * associated with an AR marker, and add it to the {@link Model}.
+     * <p>
+     * The {@link Room} will host 0-3 random non-player {@link Actor Actors}
+     * and 1-4 doors in a random configuration.
+     * <p>
+     * WARNING: Players will not be able to interact with or connect with the
+     * rest of the game map a {@link Room} which is not associated with an AR
+     * marker.
+     *
+     * @param context Context: The application context. Used for loading in
+     *                any stats needed during {@link Room} generation.
+     * @param id      int: The logical reference ID to use for the created
+     *                {@link Room}.
+     *
+     * @return {@link Room}: The created {@link Room} object.
+     *
+     * @see Room
+     * @see Actor
+     * @see Model
+     */
+    public static Room generateRoom(final Context context, final int id)
     {
         return generateRoom(context, id, -1);
     }
 
-    public static Room generateRoom(Context context, int id, int mark)
+    /**
+     * Creates a new {@link Room} with a given logical reference ID and
+     * associated with a given AR marker ID, and add it to the {@link Model}.
+     * <p>
+     * The {@link Room} will host 0-3 random non-player {@link Actor Actors}
+     * and 1-4 doors in a random configuration.
+     *
+     * @param context Context: The application context. Used for loading in
+     *                any stats needed during {@link Room} generation.
+     * @param id      int: The logical reference ID to use for the created
+     *                {@link Room}.
+     * @param mark    int: The reference ID of the AR marker the created {@link
+     *                Room} will associate with.
+     *
+     * @return {@link Room}: The created {@link Room} object.
+     *
+     * @see Room
+     * @see Actor
+     * @see Model
+     */
+    public static Room generateRoom(final Context context, final int id, final int mark)
     {
         Log.d("GameMaster", "Generating room with id " + id + " at mark " + mark);
 
         Room room = new Room(id, mark);
 
-        ArrayList<String> enemyList = GameStatLoader.getList(context, "enemies");
-        if (enemyList != null)
+        int numEnemies = (int) (Math.random() * 4);
+        if (numEnemies > 0)
         {
-            int numEnemies = (int) (Math.random() * 4);
-            for (int i = 0; i < numEnemies; ++i)
+            ArrayList<String> enemyList = GameStatLoader.getList(context, "enemies");
+            if (enemyList != null)
             {
-                Collections.shuffle(enemyList);
-                String enemyName = enemyList.get(0);
+                for (int i = 0; i < numEnemies; ++i)
+                {
+                    Collections.shuffle(enemyList);
+                    String enemyName = enemyList.get(0);
 
-                Actor enemy =
-                    new Actor(CollectionManager.getNextID(model.getActors()), id, enemyName);
-                GameStatLoader.loadActorStats(enemy, enemyName, model.getSpecials(), context);
+                    Actor enemy =
+                        new Actor(CollectionManager.getNextID(model.getActors()), id, enemyName);
+                    GameStatLoader.loadActorStats(enemy, enemyName, model.getSpecials(), context);
 
-                model.addActor(enemy.getId(), enemy);
-                room.addActor(enemy.getId());
+                    model.addActor(enemy.getId(), enemy);
+                    room.addActor(enemy.getId());
+                }
+            }
+        }
+
+        ArrayList<Short> walls = new ArrayList<>();
+        for (short i = 0; i < 4; ++i)
+        {
+            walls.add(i);
+        }
+        Collections.shuffle(walls);
+        int numDoors = (int) (Math.random() * 4);
+        int wall     = 0;
+        for (short i : walls)
+        {
+            if (wall <= numDoors)
+            {
+                room.setWallType(i, Room.E_WALL_TYPE.DOOR_UNLOCKED);
+                ++wall;
+            }
+            else
+            {
+                room.setWallType(i, Room.E_WALL_TYPE.NO_DOOR);
             }
         }
 
@@ -63,16 +166,92 @@ public class GameMaster
         return room;
     }
 
-    public static Room getRoom(int id)
+    /**
+     * Get the {@link Room} object associated with a given logical reference
+     * ID.
+     *
+     * @param id int: The logical reference ID of the desired {@link Room}.
+     *
+     * @return {@link Room}: The {@link Room} object associated ith the
+     * provided logical reference ID in the {@link Model}, or <code>null</code>
+     * if the given logical reference ID does not correspond to a {@link Room}.
+     *
+     * @see Room
+     * @see Model
+     */
+    @Nullable
+    public static Room getRoom(final int id)
     {
         return model.getRooms().get(id);
     }
 
-    public static int getRoomMarkerId(int id)
+    /**
+     * Get the reference ID of the AR marker associated with by a given {@link
+     * Room}.
+     * <p>
+     * To be used for checking the AR marker the given {@link Room} is anchored
+     * to and referencing it in a graphical ({@link
+     * com.semaphore_soft.apps.cypher.PortalRenderer}) context ONLY.
+     *
+     * @param id int: The logical reference ID of the desired {@link Room}.
+     *
+     * @return int: The AR marker ID associated with by the given {@link Room},
+     * or a flag (-1) if the {@link Room} does not associated with an AR
+     * marker.
+     *
+     * @see Room
+     * @see com.semaphore_soft.apps.cypher.PortalRenderer
+     */
+    public static int getRoomMarkerId(final int id)
     {
         return model.getRooms().get(id).getMarker();
     }
 
+    /**
+     * Get the logical reference ID of the {@link Room} which associates with
+     * a given AR marker reference ID.
+     * <p>
+     * To be used for getting game state information about a {@link Room} from
+     * and for use in a graphical ({@link
+     * com.semaphore_soft.apps.cypher.PortalRenderer}) context ONLY.
+     *
+     * @param markerId int: The reference ID of the AR marker associated with
+     *                 by the desired {@link Room}.
+     *
+     * @return int: The logical reference ID of the {@link Room} which
+     * associates with, or is anchored to, the AR marker indexed by the given
+     * ID, or a flag (-1) if no {@link Room} in the {@link Model} associates
+     * with the given AR marker ID.
+     *
+     * @see Room
+     * @see com.semaphore_soft.apps.cypher.PortalRenderer
+     */
+    public static int getRoomIdByMarkerId(final int markerId)
+    {
+        for (Room room : model.getRooms().values())
+        {
+            if (room.getMarker() == markerId)
+            {
+                return room.getId();
+            }
+        }
+
+        return -1;
+    }
+
+    /**
+     * Get a list of the logical reference IDs of every {@link Room} in the
+     * {@link Model} which is considered to be 'placed', accessible, and part
+     * of the game {@link Map}.
+     *
+     * @return ArrayList: A list containing the logical reference IDs of every
+     * {@link Room} in the {@link Model} which is considered to be 'placed'.
+     *
+     * @see Room
+     * @see Model
+     * @see Map
+     */
+    @NonNull
     public static ArrayList<Integer> getPlacedRoomMarkerIds()
     {
         ArrayList<Integer> placedRoomMarkers = new ArrayList<>();
@@ -86,41 +265,229 @@ public class GameMaster
         return placedRoomMarkers;
     }
 
-    public static ArrayList<Integer> getAdjacentRoomIds(int startRoomId)
+    /**
+     * Get a list of the logical reference IDs of every {@link Room} which is
+     * adjacent to a given {@link Room}.
+     *
+     * @param startRoomId int: The logical reference ID of the desired {@link
+     *                    Room} to search for {@link Room Rooms} adjacent to.
+     *
+     * @return ArrayList: A list containing the logical reference IDs of every
+     * {@link Room} which is adjacent to the given start {@link Room}.
+     *
+     * @see Room
+     * @see Map
+     * @see Map#getAdjacentRooms(int)
+     */
+    @NonNull
+    public static ArrayList<Integer> getAdjacentRoomIds(final int startRoomId)
     {
         return model.getMap().getAdjacentRooms(startRoomId);
     }
 
-    public static Actor getActor(int id)
+    /**
+     * Get the short index of the wall of an end {@link Room} connecting it to
+     * a start {@link Room}. Assumes the given {@link Room Rooms} are adjacent.
+     *
+     * @param startRoomId int: The logical reference ID of the desired start
+     *                    {@link Room}.
+     * @param endRoomId   int: The logical reference ID of the desired end
+     *                    {@link Room}.
+     *
+     * @return short: The index of the end {@link Room} wall which connects it
+     * to the start {@link Room}.
+     *
+     * @see Room
+     * @see Map
+     * @see Map#getWallsBetweenAdjacentRooms(int, int)
+     */
+    public static short getSideOfRoomFrom(final int startRoomId, final int endRoomId)
+    {
+        return model.getMap().getWallsBetweenAdjacentRooms(startRoomId, endRoomId).second;
+    }
+
+    /**
+     * Get the number of player {@link Actor Actors} in a given {@link Room}.
+     *
+     * @param roomId int: The logical reference ID of the desired {@link Room}.
+     *
+     * @return int: The count of player controlled {@link Actor Actors} in the
+     * given {@link Room}. 0 if there are no player controlled {@link Actor
+     * Actors} in the given {@link Room}.
+     *
+     * @see Room
+     * @see Actor
+     */
+    public static int getPlayersInRoom(final int roomId)
+    {
+        int  res  = 0;
+        Room room = model.getRooms().get(roomId);
+
+        if (room != null)
+        {
+            for (int id : room.getResidentActors())
+            {
+                if (model.getActors().get(id).isPlayer())
+                {
+                    ++res;
+                }
+            }
+        }
+
+        return res;
+    }
+
+    /**
+     * Get the number of non-player {@link Actor Actors} in a given {@link
+     * Room}.
+     *
+     * @param roomId int: The logical reference ID of the desired {@link Room}.
+     *
+     * @return int: The count of player controlled {@link Actor Actors} in the
+     * given {@link Room}. 0 if there are no non-player controlled {@link Actor
+     * Actors} in the given {@link Room}.
+     *
+     * @see Room
+     * @see Actor
+     */
+    public static int getEnemiesInRoom(final int roomId)
+    {
+        int  res  = 0;
+        Room room = model.getRooms().get(roomId);
+
+        if (room != null)
+        {
+            for (int id : room.getResidentActors())
+            {
+                if (!model.getActors().get(id).isPlayer())
+                {
+                    ++res;
+                }
+            }
+        }
+
+        return res;
+    }
+
+    /**
+     * Get the {@link Actor} object associated with a given logical reference
+     * ID.
+     *
+     * @param id int: The logical reference ID of the desired {@link Actor}.
+     *
+     * @return {@link Actor}: The {@link Actor} object associated ith the
+     * provided logical reference ID in the {@link Model}, or <code>null</code>
+     * if the given logical reference ID does not correspond to an {@link
+     * Actor}.
+     *
+     * @see Actor
+     * @see Model
+     */
+    @Nullable
+    public static Actor getActor(final int id)
     {
         return model.getActors().get(id);
     }
 
-    public static int getActorMakerId(int id)
+    /**
+     * Get the reference ID of the AR marker associated with by a given {@link
+     * Actor}.
+     * <p>
+     * To be used for checking the AR marker the given {@link Actor} associates
+     * with and referencing it in a graphical ({@link
+     * com.semaphore_soft.apps.cypher.PortalRenderer}) context ONLY.
+     *
+     * @param id int: The logical reference ID of the desired {@link Actor}.
+     *
+     * @return int: The AR marker ID associated with by the given {@link
+     * Actor}, or a flag (-1) if the {@link Actor} does not associated with an
+     * AR marker.
+     *
+     * @see Actor
+     * @see com.semaphore_soft.apps.cypher.PortalRenderer
+     */
+    public static int getActorMakerId(final int id)
     {
         return model.getActors().get(id).getMarker();
     }
 
-    public static int getActorRoomId(int id)
+    /**
+     * Get the logical reference ID of the {@link Room} a given {@link Actor}
+     * associates with, or considers itself to be a resident of.
+     * <p>
+     * To be used for referencing the {@link Room} in a game state context
+     * (associating with {@link Actor Actors}, checking path validity, etc.)
+     * ONLY.
+     *
+     * @param id int The logical reference ID of the desired {@link Actor}.
+     *
+     * @return int: The logical reference ID of the {@link Room} the given
+     * {@link Actor} associates with, or considers itself to be a resident of.
+     *
+     * @see Actor
+     * @see Room
+     */
+    public static int getActorRoomId(final int id)
     {
         return model.getActors().get(id).getRoom();
     }
 
-    public static Room getActorRoom(int id)
+    /**
+     * Get the {@link Room} object a given {@link Actor} associates with, or
+     * considers itself to be a reference of.
+     *
+     * @param id int: The logical reference ID of the desired {@link Actor}.
+     *
+     * @return {@link Room}: The {@link Room} object the given {@link Actor}
+     * associates with, or considers itself to be a resident of.
+     *
+     * @see Actor
+     * @see Room
+     */
+    @Nullable
+    public static Room getActorRoom(final int id)
     {
         return model.getRooms().get(model.getActors().get(id).getRoom());
     }
 
-    public static boolean getActorIsPlayer(int id)
+    /**
+     * Check whether or not a given {@link Actor} is a considered to be player
+     * controlled.
+     *
+     * @param id int: The logical reference ID of the desired {@link Actor}.
+     *
+     * @return boolean:
+     * <ul>
+     * <li>True if the given {@link Actor} is considered to be player
+     * controlled.</li>
+     * <li>False otherwise.</li>
+     * </ul>
+     *
+     * @see Actor
+     */
+    public static boolean getActorIsPlayer(final int id)
     {
         return model.getActors().get(id).isPlayer();
     }
 
-    //returns
-    //1: marker attached to a room
-    //0: marker attached to a player
-    //-1: marker not attached to anything
-    public static int getMarkerAttachment(int markId)
+    /**
+     * Get the type of object a given AR marker reference ID is associated
+     * with.
+     *
+     * @param markId int: The reference ID of the desired AR marker.
+     *
+     * @return int:
+     * <ul>
+     * <li>1: The given AR marker ID is associated with a {@link Room}.</li>
+     * <li>0: The given AR marker ID is associated with an {@link Actor}.</li>
+     * <li>-1: The given AR marker ID is not associated with a game
+     * object.</li>
+     * </ul>
+     *
+     * @see Actor
+     * @see Room
+     */
+    public static int getMarkerAttachment(final int markId)
     {
         for (Actor actor : model.getActors().values())
         {
@@ -141,7 +508,24 @@ public class GameMaster
         return -1;
     }
 
-    public static int getIdByMarker(int markId)
+    /**
+     * Get the logical reference ID of the game object associated with a given
+     * AR marker reference ID, regardless of what type of game object it is.
+     * <p>
+     * To be used for referencing an object in a game state context (checking
+     * game object associations, stats, etc.) ONLY.
+     *
+     * @param markId int: The reference ID of the desired AR marker.
+     *
+     * @return int: The logical reference ID of the {@link Actor} or {@link
+     * Room} associated with the given AR marker reference ID, or a flag (-1)
+     * if the given AR marker reference ID is not associated with a game
+     * object.
+     *
+     * @see Actor
+     * @see Room
+     */
+    public static int getIdByMarker(final int markId)
     {
         for (Actor actor : model.getActors().values())
         {
@@ -162,15 +546,34 @@ public class GameMaster
         return -1;
     }
 
-    //returns
-    //2: success, start room established
-    //1: success, remain in room
-    //0: success, actor moves from old room to new room
-    //-1: failure, invalid path, bad connection
-    //-2: failure, invalid path, rooms not adjacent
-    //-3: failure, room not placed
-    //-4: failure, unknown
-    public static int moveActor(int actorId, int endRoomId)
+    /**
+     * Attempt to move a given {@link Actor} to a given {@link Room} and return
+     * a code describing the success or failure of the move.
+     *
+     * @param actorId   int: The logical reference ID of the {@link Actor}
+     *                  attempting to move.
+     * @param endRoomId int: The logical reference ID of the {@link Room} the
+     *                  given {@link Actor} is attempting to move to.
+     *
+     * @return int:
+     * <ul>
+     * <li>2: Success, start {@link Room} established, {@link Actor} moves to
+     * start {@link Room}.</li>
+     * <li>1: Success, {@link Actor} remains in current {@link Room}.</li>
+     * <li>0: Success, {@link Actor} moves from previous {@link Room}to new
+     * {@link Room}.</li>
+     * <li>-1: Failure, invalid path, bad connection between {@link Room
+     * Rooms}.</li>
+     * <li>-2: Failure, invalid path, {@link Room Rooms} not adjacent.</li>
+     * <li>-3: Failure, destination {@link Room} is not placed.</li>
+     * <li>-4: Failure, unknown.</li>
+     * </ul>
+     *
+     * @see Room
+     * @see PortalActivity#moveActor(int, int)
+     * @see PortalActivity#onActorMove(int, int)
+     */
+    public static int moveActor(final int actorId, final int endRoomId)
     {
         Actor actor   = model.getActors().get(actorId);
         Room  endRoom = model.getRooms().get(endRoomId);
@@ -217,11 +620,34 @@ public class GameMaster
         return -4;
     }
 
-    //returns
-    //0: success, valid path
-    //-1: failure, invalid path, bad connection
-    //-2: failure, invalid path, rooms not adjacent
-    private static int getValidPath(int startRoomId, int endRoomId)
+    /**
+     * Check whether or not there is a valid path between two given {@link Room
+     * Rooms} and return a code describing if the path is valid or, if not, why
+     * not.
+     * <p>
+     * A path between two {@link Room Rooms} is considered valid if and only if
+     * there is an open door in the wall connecting each {@link Room} with the
+     * opposite {@link Room}.
+     *
+     * @param startRoomId int: The logical reference ID of the {@link Room}
+     *                    checking for path from.
+     * @param endRoomId   int: The logical reference ID of the {@link Room}
+     *                    checking for path to.
+     *
+     * @return int:
+     * <ul>
+     * <li>0: Valid path.</li>
+     * <li>-1: Invalid path, bad connection between given {@link Room
+     * Rooms}.</li>
+     * <li>-2: Invalid path, given {@link Room Rooms} not adjacent.</li>
+     * </ul>
+     *
+     * @see Room
+     * @see #moveActor(int, int)
+     * @see ActorController#takeTurn(int)
+     * @see Room.E_WALL_TYPE
+     */
+    public static int getValidPath(final int startRoomId, final int endRoomId)
     {
         Map map = model.getMap();
 
@@ -248,10 +674,44 @@ public class GameMaster
         return -1;
     }
 
-    public static int openDoor(int startRoomId,
-                               int endRoomId,
-                               short sideOfStartRoom,
-                               short sideOfEndRoom)
+    /**
+     * Attempt to open a door connecting two given {@link Room Rooms} using the
+     * given the side, or wall, of each {@link Room} the door should be in, add
+     * the proposed end {@link Room} to the {@link Map} if door opening is
+     * successful and return a code describing success or failure.
+     * <p>
+     * A door can be opened between two {@link Room Rooms} if and only if there
+     * is an unlocked door in the given wall index of the start {@link Room}
+     * and the end {@link Room} and a valid adjacency can be formed between the
+     * end {@link Room} and all adjacent {@link Room Rooms}.
+     *
+     * @param startRoomId     int: The logical reference ID of the {@link Room}
+     *                        opening door from.
+     * @param endRoomId       int: The logical reference ID of the {@link Room}
+     *                        opening door to.
+     * @param sideOfStartRoom short: The index of the wall the door must be in
+     *                        for the start {@link Room}.
+     * @param sideOfEndRoom   short: The index of the wall the door must be in
+     *                        for the end {@link Room}.
+     *
+     * @return int:
+     * <ul>
+     * <li>0: Success, door opened between given {@link Room Rooms}.</li>
+     * <li>-1: Failure, door could not be opened between given {@link Room
+     * Rooms}.</li>
+     * </ul>
+     *
+     * @see Room
+     * @see Map
+     * @see #getValidAdjacency(int, int, short, short)
+     * @see #getValidAdjacencyProposedRoom(int, int, short, int, int)
+     * @see PortalActivity#openDoor()
+     * @see Room.E_WALL_TYPE
+     */
+    public static int openDoor(final int startRoomId,
+                               final int endRoomId,
+                               final short sideOfStartRoom,
+                               final short sideOfEndRoom)
     {
         Room startRoom = model.getRooms().get(startRoomId);
         Room endRoom   = model.getRooms().get(endRoomId);
@@ -277,7 +737,7 @@ public class GameMaster
                 //Pair<Integer, Integer> endRoomPosition = map.getPosition(endRoomId);
                 map.print();
 
-                Hashtable<Integer, Pair<Short, Short>>
+                ConcurrentHashMap<Integer, Pair<Short, Short>>
                     adjacentRoomsAndWalls = map.getAdjacentRoomsAndWalls(endRoomId);
 
                 for (int id : adjacentRoomsAndWalls.keySet())
@@ -304,10 +764,43 @@ public class GameMaster
         return -1;
     }
 
-    private static int getValidAdjacency(int startRoomId,
-                                         int endRoomId,
-                                         short sideOfStartRoom,
-                                         short sideOfEndRoom)
+    /**
+     * Check whether or not the placement of a proposed end {@link Room}
+     * rotated such that its given wall connects to a given wall of the given
+     * start {@link Room} forms a valid adjacency with that {@link Room} and
+     * all other {@link Room Rooms} which would be adjacent to the proposed
+     * {@link Room}, and return a code describing the validity.
+     * <p>
+     * A proposed adjacency between two {@link Room Rooms} is valid if and only
+     * if the wall connecting the start {@link Room} to the end {@link Room} is
+     * the same type as the wall connecting the end {@link Room} to the start
+     * {@link Room}.
+     *
+     * @param startRoomId     int: The logical reference ID of the {@link Room}
+     *                        checking validity from.
+     * @param endRoomId       int: The logical reference ID of the {@link Room}
+     *                        checking validity to.
+     * @param sideOfStartRoom short: The index of the wall of the start {@link
+     *                        Room} to check adjacency with.
+     * @param sideOfEndRoom   short: The index of the wall of the end {@link
+     *                        Room} to check adjacency with.
+     *
+     * @return int:
+     * <ul>
+     * <li>0: Valid adjacency between given {@link Room Rooms}.</li>
+     * <li>-1: Invalid adjacency between given {@link Room Rooms}.</li>
+     * </ul>
+     *
+     * @see Room
+     * @see Map
+     * @see #getValidAdjacencyProposedRoom(int, int, short, int, int)
+     * @see #openDoor(int, int, short, short)
+     * @see Room.E_WALL_TYPE
+     */
+    private static int getValidAdjacency(final int startRoomId,
+                                         final int endRoomId,
+                                         final short sideOfStartRoom,
+                                         final short sideOfEndRoom)
     {
         Room startRoom = model.getRooms().get(startRoomId);
         Room endRoom   = model.getRooms().get(endRoomId);
@@ -346,11 +839,46 @@ public class GameMaster
         return 0;
     }
 
-    private static int getValidAdjacencyProposedRoom(int proposedRoomPositionX,
-                                                     int proposedRoomPositionY,
-                                                     short proposedRoomRotation,
-                                                     int testRoomId,
-                                                     int proposedRoomId)
+    /**
+     * Check whether or not a given {@link Room} at proposed X and Y position
+     * with proposed rotation in the {@link Map} forms a valid adjacency with
+     * another given {@link Room} and return a code describing the validity or
+     * invalidity of the adjacency.
+     * <p>
+     * A proposed adjacency between two {@link Room Rooms} is valid if and only
+     * if the wall connecting the start {@link Room} to the end {@link Room} is
+     * the same type as the wall connecting the end {@link Room} to the start
+     * {@link Room}.
+     *
+     * @param proposedRoomPositionX int: The proposed X position of the
+     *                              proposed {@link Room} in the {@link Map}.
+     * @param proposedRoomPositionY int: The proposed Y position of the
+     *                              proposed {@link Room} in the {@link Map}.
+     * @param proposedRoomRotation  int: The proposed rotation of the proposed
+     *                              {@link Room} in the {@link Map}.
+     * @param testRoomId            int: The logical reference ID of the {@link
+     *                              Room} to test the proposed {@link Room
+     *                              Room's} adjacency with.
+     * @param proposedRoomId        int: The logical reference ID of a proposed
+     *                              {@link Room} to add to the {@link Map}.
+     *
+     * @return int:
+     * <ul>
+     * <li>0: Valid adjacency between given {@link Room Rooms}.</li>
+     * <li>-1: Invalid adjacency between given {@link Room Rooms}.</li>
+     * </ul>
+     *
+     * @see Room
+     * @see Map
+     * @see #getValidAdjacency(int, int, short, short)
+     * @see #openDoor(int, int, short, short)
+     * @see Room.E_WALL_TYPE
+     */
+    private static int getValidAdjacencyProposedRoom(final int proposedRoomPositionX,
+                                                     final int proposedRoomPositionY,
+                                                     final short proposedRoomRotation,
+                                                     final int testRoomId,
+                                                     final int proposedRoomId)
     {
         Room testRoom     = model.getRooms().get(testRoomId);
         Room proposedRoom = model.getRooms().get(proposedRoomId);
@@ -397,20 +925,79 @@ public class GameMaster
         return -1;
     }
 
-    public static Hashtable<Integer, Actor> getEnemyTargets(int actorId)
+    /**
+     * Get a map of the valid player {@link Actor} targets for a given {@link
+     * Actor}.
+     * <p>
+     * A target is valid if and only if it resides within the same {@link Room}
+     * as the given {@link Actor}.
+     * <p>
+     * Map may include the given {@link Actor}.
+     *
+     * @param actorId int: The logical reference ID of the desired {@link
+     *                Actor}.
+     *
+     * @return ConcurrentHashMap: A map containing valid player {@link Actor}
+     * targets indexed by their logical reference IDs.
+     *
+     * @see Actor
+     * @see Room
+     */
+    @NonNull
+    public static ConcurrentHashMap<Integer, Actor> getPlayerTargets(final int actorId)
     {
-        Actor                     actor   = model.getActors().get(actorId);
-        Room                      room    = model.getRooms().get(actor.getRoom());
-        Hashtable<Integer, Actor> targets = new Hashtable<>();
+        Actor                             actor   = model.getActors().get(actorId);
+        Room                              room    = model.getRooms().get(actor.getRoom());
+        ConcurrentHashMap<Integer, Actor> targets = new ConcurrentHashMap<>();
 
-        System.out.println("looking for enemy targets in room: " + actor.getRoom());
+        Logger.logI("looking for player targets in room: " + actor.getRoom(), 1);
+
+        for (int targetId : room.getResidentActors())
+        {
+            Actor target = model.getActors().get(targetId);
+            if (target.isPlayer())
+            {
+                Logger.logI("found valid target: " + target.getId(), 1);
+                targets.put(targetId, target);
+            }
+        }
+
+        return targets;
+    }
+
+    /**
+     * Get a map of the valid non-player {@link Actor} targets for a given
+     * {@link Actor}.
+     * <p>
+     * A target is valid if and only if it resides within the same {@link Room}
+     * as the given {@link Actor}.
+     * <p>
+     * Map may include the given {@link Actor}.
+     *
+     * @param actorId int: The logical reference ID of the desired {@link
+     *                Actor}.
+     *
+     * @return ConcurrentHashMap: A map containing valid non-player {@link
+     * Actor} targets indexed by their logical reference IDs.
+     *
+     * @see Actor
+     * @see Room
+     */
+    @NonNull
+    public static ConcurrentHashMap<Integer, Actor> getNonPlayerTargets(final int actorId)
+    {
+        Actor                             actor   = model.getActors().get(actorId);
+        Room                              room    = model.getRooms().get(actor.getRoom());
+        ConcurrentHashMap<Integer, Actor> targets = new ConcurrentHashMap<>();
+
+        Logger.logI("looking for non-player targets in room: " + actor.getRoom(), 1);
 
         for (int targetId : room.getResidentActors())
         {
             Actor target = model.getActors().get(targetId);
             if (!target.isPlayer())
             {
-                System.out.println("found valid target: " + target.getId());
+                Logger.logI("found valid target: " + target.getId(), 1);
                 targets.put(targetId, target);
             }
         }
@@ -418,69 +1005,162 @@ public class GameMaster
         return targets;
     }
 
-    public static Hashtable<Integer, Actor> getPlayerTargets(int actorId)
-    {
-        Actor                     actor   = model.getActors().get(actorId);
-        Room                      room    = model.getRooms().get(actor.getRoom());
-        Hashtable<Integer, Actor> targets = new Hashtable<>();
-
-        System.out.println("looking for player targets in room: " + actor.getRoom());
-
-        for (int targetId : room.getResidentActors())
-        {
-            Actor target = model.getActors().get(targetId);
-            if (target.isPlayer())
-            {
-                System.out.println("found valid target: " + target.getId());
-                targets.put(targetId, target);
-            }
-        }
-
-        return targets;
-    }
-
-    public static ArrayList<Integer> getPlayerTargetIds(int actorId)
+    /**
+     * Get a list of the logical reference IDs of valid player {@link Actor}
+     * targets for a given {@link Actor}.
+     * <p>
+     * A target is valid if and only if it resides within the same {@link Room}
+     * as the given {@link Actor}.
+     * <p>
+     * Will not include the logical reference ID of the given {@link Actor}.
+     *
+     * @param actorId int: The logical reference ID of the desired {@link
+     *                Actor}.
+     *
+     * @return ArrayList: A list containing the logical reference IDs of valid
+     * player {@link Actor} targets for a given {@link Actor}.
+     *
+     * @see Actor
+     * @see Room
+     */
+    @NonNull
+    public static ArrayList<Integer> getPlayerTargetIds(final int actorId)
     {
         Actor              actor   = model.getActors().get(actorId);
         Room               room    = model.getRooms().get(actor.getRoom());
         ArrayList<Integer> targets = new ArrayList<>();
 
-        System.out.println("looking for player targets for : " + actorId);
-        System.out.println("looking for player targets in room: " + actor.getRoom());
+        Logger.logD("looking for player targets for: " + actorId);
+        Logger.logD("looking for player targets in room: " + actor.getRoom());
 
         for (int targetId : room.getResidentActors())
         {
-            Actor target = model.getActors().get(targetId);
-            if (target.isPlayer())
+            if (targetId != actorId)
             {
-                System.out.println("found valid target: " + target.getId());
-                targets.add(targetId);
+                Actor target = model.getActors().get(targetId);
+                if (target.isPlayer())
+                {
+                    Logger.logD("found valid target: " + target.getId());
+                    targets.add(targetId);
+                }
             }
         }
 
         return targets;
     }
 
-    public static Hashtable<Integer, Special> getSpecials(int actorId)
+    /**
+     * Get a list of the logical reference IDs of valid non-player {@link
+     * Actor} targets for a given {@link Actor}.
+     * <p>
+     * A target is valid if and only if it resides within the same {@link Room}
+     * as the given {@link Actor}.
+     * <p>
+     * Will not include the logical reference ID of the given {@link Actor}.
+     *
+     * @param actorId int: The logical reference ID of the desired {@link
+     *                Actor}.
+     *
+     * @return ArrayList: A list containing the logical reference IDs of valid
+     * non-player {@link Actor} targets for a given {@link Actor}.
+     *
+     * @see Actor
+     * @see Room
+     */
+    @NonNull
+    public static ArrayList<Integer> getNonPlayerTargetIds(final int actorId)
     {
-        System.out.println("looking for specials for actor: " + actorId);
+        Actor              actor   = model.getActors().get(actorId);
+        Room               room    = model.getRooms().get(actor.getRoom());
+        ArrayList<Integer> targets = new ArrayList<>();
+
+        Logger.logD("looking for player targets for: " + actorId);
+        Logger.logD("looking for player targets in room: " + actor.getRoom());
+
+        for (int targetId : room.getResidentActors())
+        {
+            if (targetId != actorId)
+            {
+                Actor target = model.getActors().get(targetId);
+                if (!target.isPlayer())
+                {
+                    Logger.logD("found valid target: " + target.getId());
+                    targets.add(targetId);
+                }
+            }
+        }
+
+        return targets;
+    }
+
+    /**
+     * Get a map of the {@link Special} abilities associated with, or known by,
+     * a given {@link Actor}.
+     *
+     * @param actorId int: The logical reference ID of the desired {@link
+     *                Actor}.
+     *
+     * @return ConcurrentHashMap: A map containing the {@link Special}
+     * abilities associated with, or known by, a given {@link Actor}, indexed
+     * by logical reference ID.
+     *
+     * @see Actor
+     * @see Actor#getSpecials()
+     * @see Special
+     */
+    public static ConcurrentHashMap<Integer, Special> getSpecials(final int actorId)
+    {
+        Logger.logI("looking for specials for actor: " + actorId, 1);
         Actor actor = model.getActors().get(actorId);
         for (int id : actor.getSpecials().keySet())
         {
-            System.out.println("found special: " + actor.getSpecials().get(id).getName());
+            Logger.logI("found special: " + actor.getSpecials().get(id).getName(), 1);
         }
         return actor.getSpecials();
     }
 
-    public static void setActorState(int id, Actor.E_STATE state)
+    /**
+     * Update the {@link Actor.E_STATE state} of a given {@link Actor},
+     * reflecting the most recent action taken by that {@link Actor}.
+     *
+     * @param id    int: The logical reference ID of the desired {@link Actor}.
+     * @param state {@link Actor.E_STATE}: The new {@link Actor.E_STATE state}
+     *              of the given {@link Actor}, reflecting the most recent
+     *              action taken by that {@link Actor}.
+     *
+     * @see Actor
+     * @see Actor.E_STATE
+     * @see Actor#setState(Actor.E_STATE)
+     */
+    public static void setActorState(final int id, final Actor.E_STATE state)
     {
         model.getActors().get(id).setState(state);
     }
 
-    //returns
-    //1: success, enemy dead
-    //0: success, enemy still alive
-    public static int attack(int attackerId, int defenderId)
+    /**
+     * Perform an attack originating from a given attacker {@link Actor}
+     * directed at a given defender {@link Actor}, update the {@link Actor
+     * attacker} {@link Actor.E_STATE state} accordingly and return a code
+     * describing the outcome of the attack.
+     *
+     * @param attackerId int: The logical reference ID of the attacking {@link
+     *                   Actor}.
+     * @param defenderId int: The logical reference ID of the target {@link
+     *                   Actor}.
+     *
+     * @return int:
+     * <ul>
+     * <li>1: Attack success, target {@link Actor} killed.</li>
+     * <li>0: Attack success, target {@link Actor} still alive.</li>
+     * </ul>
+     *
+     * @see Actor
+     * @see Actor.E_STATE
+     * @see Actor#attack(Actor)
+     * @see Actor#receiveAttack(int)
+     * @see PortalActivity#postAttackResults(int, int, int)
+     */
+    public static int attack(final int attackerId, final int defenderId)
     {
         Actor attacker = model.getActors().get(attackerId);
         Actor defender = model.getActors().get(defenderId);
@@ -491,21 +1171,101 @@ public class GameMaster
 
         if (defender.getHealthCurrent() <= 0)
         {
-            getActorRoom(defenderId).removeActor(defenderId);
-            model.getActors().remove(defenderId);
-
             return 1;
         }
 
         return 0;
     }
 
-    //returns
-    //1: success, killed one or more targets
-    //0: success
-    //-1: failure, not enough energy
-    //-2: failure, no targets in room
-    public static int special(int sourceId, int specialId)
+    /**
+     * Remove a given {@link Actor} from the {@link Model}, including any
+     * {@link Room} which associated with it.
+     *
+     * @param actorId int: The logical reference ID of the desired {@link
+     *                Actor}.
+     *
+     * @see Actor
+     * @see Room
+     * @see Model
+     */
+    public static void removeActor(final int actorId)
+    {
+        Room room = getActorRoom(actorId);
+        if (room != null)
+        {
+            room.removeActor(actorId);
+        }
+        model.getActors().remove(actorId);
+    }
+
+    /**
+     * Remove all {@link Actor Actors} with a current health value less than or
+     * equal to 0 from the {@link Model} and from any {@link Room Rooms} which
+     * associated with them.
+     * <p>
+     * Excludes player-controlled {@link Actor Actors}.
+     *
+     * @see Actor
+     * @see Room
+     * @see Model
+     */
+    public static void removeDeadActors()
+    {
+        Logger.logD("enter trace");
+
+        ConcurrentHashMap<Integer, Actor> actors           = model.getActors();
+        ArrayList<Integer>                markedForRemoval = new ArrayList<>();
+        for (int id : actors.keySet())
+        {
+            if (!actors.get(id).isPlayer() && actors.get(id).getHealthCurrent() <= 0)
+            {
+                markedForRemoval.add(id);
+                Logger.logD("marked " + id + " for removal");
+            }
+        }
+        for (int id : markedForRemoval)
+        {
+            Room room = model.getRooms().get(actors.get(id).getRoom());
+            room.removeActor(id);
+            Logger.logD("removed " + id + " from room " + room.getId());
+            actors.remove(id);
+            Logger.logD("removed " + id + " from actors list");
+        }
+
+        Logger.logD("exit trace");
+    }
+
+    /**
+     * Perform a given {@link Special} ability originating from a given source
+     * {@link Actor} without a specific target, update the source {@link Actor}
+     * {@link Actor.E_STATE state} if the {@link Special} was performed
+     * successfully and return a code describing the outcome of the {@link
+     * Special} performance.
+     *
+     * @param sourceId  int: The logical reference ID of the desired source
+     *                  {@link Actor}.
+     * @param specialId int: The logical reference ID of the {@link Special}
+     *                  being performed.
+     *
+     * @return int:
+     * <ul>
+     * <li>1: {@link Special} performance success, one or more target {@link
+     * Actor Actors} killed by {@link Special}.</li>
+     * <li>0: {@link Special} performance success, no significant outcome to
+     * report.</li>
+     * <li>-1: {@link Special} performance failure, source {@link Actor} does
+     * not have enough {@link Special} energy.</li>
+     * <li>-2: {@link Special} performance failure, no valid targets for {@link
+     * Special} ability.</li>
+     * </ul>
+     *
+     * @see Actor
+     * @see Actor.E_STATE
+     * @see Actor#performSpecial(Special, ArrayList)
+     * @see PortalActivity#postSpecialResult(int, int, int, int)
+     * @see Special
+     */
+    public static int special(final int sourceId, final int specialId)
     {
         Actor            source  = model.getActors().get(sourceId);
         Special          special = model.getSpecials().get(specialId);
@@ -541,7 +1301,11 @@ public class GameMaster
 
                     if (target.getHealthCurrent() <= 0)
                     {
-                        getActorRoom(target.getId()).removeActor(target.getId());
+                        /*Room room = getActorRoom(target.getId());
+                        if (room != null)
+                        {
+                            room.removeActor(target.getId());
+                        }*/
 
                         kill = true;
                     }
@@ -561,12 +1325,39 @@ public class GameMaster
         return -2;
     }
 
-    //returns
-    //1: success, killed target
-    //0: success
-    //-1: failure, not enough energy
-    //-2: failure, target not valid, not in same room
-    public static int special(int sourceId, int targetId, int specialId)
+    /**
+     * Perform a given {@link Special} ability originating from a given source
+     * {@link Actor} with a specific target {@link Actor}, update the source
+     * {@link Actor} {@link Actor.E_STATE state} if the {@link Special} was
+     * performed successfully and return a code describing the outcome of the
+     * {@link Special} performance.
+     *
+     * @param sourceId  int: The logical reference ID of the desired source
+     *                  {@link Actor}.
+     * @param targetId  int: The logical reference ID of the desired target
+     *                  {@link Actor}.
+     * @param specialId int: The logical reference ID of the {@link Special}
+     *                  being performed.
+     *
+     * @return int:
+     * <ul>
+     * <li>1: {@link Special} performance success, target {@link Actor Actors}
+     * killed by {@link Special}.</li>
+     * <li>0: {@link Special} performance success, no significant outcome to
+     * report.</li>
+     * <li>-1: {@link Special} performance failure, source {@link Actor} does
+     * not have enough {@link Special} energy.</li>
+     * <li>-2: {@link Special} performance failure, no valid targets for {@link
+     * Special} ability.</li>
+     * </ul>
+     *
+     * @see Actor
+     * @see Actor.E_STATE
+     * @see Actor#performSpecial(Special, ArrayList)
+     * @see PortalActivity#postSpecialResult(int, int, int, int)
+     * @see Special
+     */
+    public static int special(final int sourceId, final int targetId, final int specialId)
     {
         Actor   source  = model.getActors().get(sourceId);
         Actor   target  = model.getActors().get(targetId);
@@ -580,7 +1371,11 @@ public class GameMaster
 
                 if (target.getHealthCurrent() <= 0)
                 {
-                    getActorRoom(target.getId()).removeActor(target.getId());
+                    /*Room room = getActorRoom(targetId);
+                    if (room != null)
+                    {
+                        room.removeActor(target.getId());
+                    }*/
 
                     return 1;
                 }
@@ -592,5 +1387,81 @@ public class GameMaster
         }
 
         return -2;
+    }
+
+    /**
+     * Get a String descriptor of the type of a given {@link Special}.
+     * <p>
+     * To be used for presentation ({@link
+     * com.semaphore_soft.apps.cypher.PortalRenderer}) purposes ONLY.
+     *
+     * @param id int: The logical reference ID of the desired {@link Special}.
+     *
+     * @return String:
+     * <ul>
+     * <li>"help": The given {@link Special} has a helping effect, e.g.
+     * positive stat modifier, buff, heal.</li>
+     * <li>"harm": The given {@link Special} has a harming effect, e.g.
+     * negative stat modifier, de-buff, damage.</li>
+     * </ul>
+     *
+     * @see Special
+     * @see Special#getEffects()
+     * @see com.semaphore_soft.apps.cypher.PortalRenderer
+     * @see PortalActivity#postSpecialResult(int, int, int, int)
+     */
+    public static String getSpecialTypeDescriptor(final int id)
+    {
+        ArrayList<Effect.E_EFFECT> specialEffects = model.getSpecials().get(id).getEffects();
+
+        if (specialEffects.contains(Effect.E_EFFECT.HEAL) ||
+            specialEffects.contains(Effect.E_EFFECT.ATTACK_RATING_UP) ||
+            specialEffects.contains(Effect.E_EFFECT.DEFENCE_RATING_UP) ||
+            specialEffects.contains(Effect.E_EFFECT.HEALTH_MAXIMUM_UP) ||
+            specialEffects.contains(Effect.E_EFFECT.SPECIAL_MAXIMUM_UP) ||
+            specialEffects.contains(Effect.E_EFFECT.SPECIAL_RATING_UP))
+        {
+            return "help";
+        }
+
+        return "harm";
+    }
+
+    /**
+     * Get the {@link Special.E_TARGETING_TYPE} of a given {@link Special}
+     * ability.
+     *
+     * @param id int: The logical reference ID of the desired {@link Special}
+     *           ability.
+     *
+     * @return {@link Special.E_TARGETING_TYPE}: The {@link
+     * Special.E_TARGETING_TYPE type} of the given {@link Special} ability.
+     */
+    public static Special.E_TARGETING_TYPE getSpecialTargetingType(final int id)
+    {
+        Special special = model.getSpecials().get(id);
+
+        if (special != null)
+        {
+            return special.getTargetingType();
+        }
+
+        return Special.E_TARGETING_TYPE.SINGLE_NON_PLAYER;
+    }
+
+    @NonNull
+    public static ArrayList<Integer> getPlayerActorIds()
+    {
+        ArrayList<Integer> playerActorIds = new ArrayList<>();
+
+        for (Actor actor : model.getActors().values())
+        {
+            if (actor.isPlayer())
+            {
+                playerActorIds.add(actor.getId());
+            }
+        }
+
+        return playerActorIds;
     }
 }

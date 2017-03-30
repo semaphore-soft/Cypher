@@ -5,18 +5,23 @@ import android.content.Intent;
 import android.os.Binder;
 import android.os.IBinder;
 import android.support.v4.content.LocalBroadcastManager;
-import android.util.Log;
+
+import com.semaphore_soft.apps.cypher.utils.Logger;
 
 /**
- * Created by Evan on 2/6/2017.
- * Server service
+ * Service to manage {@link com.semaphore_soft.apps.cypher.networking.Server.ClientHandler ServerThread}
+ * actions across activities
+ *
+ * @author Evan
+ *
+ * @see Server
+ * @see com.semaphore_soft.apps.cypher.networking.Server.AcceptorThread
+ * @see com.semaphore_soft.apps.cypher.networking.Server.ClientHandler
  */
 
 public class ServerService extends Service
 {
     private Server serverThread;
-
-    private static final String TAG = "ServerService";
 
     public ServerService()
     {
@@ -28,6 +33,11 @@ public class ServerService extends Service
 
     public class LocalBinder extends Binder
     {
+        /**
+         * Allow host to call {@link ServerService} methods.
+         *
+         * @return An instance of {@link ServerService}
+         */
         public ServerService getService()
         {
             // Return this instance of ServerService so clients can call public methods
@@ -47,52 +57,105 @@ public class ServerService extends Service
         serverThread = new Server();
     }
 
+    /**
+     * Starts server listening for connecting clients.
+     *
+     * @see Server#startAcceptor(ServerService)
+     */
     public void startServer()
     {
-        Log.d(TAG, "Starting AcceptorThread");
+        Logger.logD("Starting AcceptorThread");
         serverThread.startAcceptor(this);
     }
 
+    /**
+     * Writes a message to a specific client.
+     *
+     * @param msg Message to write.
+     * @param client Client to write to.
+     *
+     * @see Server#writeToClient(String, int)
+     */
     public void writeToClient(String msg, int client)
     {
-        Log.d(TAG, "Writing to single client");
+        Logger.logD("Writing to single client");
         serverThread.writeToClient(msg, client);
     }
 
+    /**
+     * Writes a message to all connected clients.
+     *
+     * @param msg Message to write.
+     *
+     * @see Server#writeAll(String)
+     */
     public void writeAll(String msg)
     {
-        Log.d(TAG, "Writing to all clients");
+        Logger.logD("Writing to all clients");
         serverThread.writeAll(msg);
     }
 
-    public void reconnect()
+    /**
+     * Add a playerID to identify a thread with.
+     *
+     * @param playerID The playerID, as assigned by the host
+     * @param index    The index of the thread
+     *
+     * @see Server#mapPlayerIDToSocket(int, int)
+     */
+    public void addPlayerID(int playerID, int index)
     {
-        Log.d(TAG, "reconnecting...");
-        serverThread.reconnectClient();
+        serverThread.mapPlayerIDToSocket(playerID, index);
     }
 
-    public void threadRead(String msg)
+    /**
+     * Sends an intent for {@link ResponseReceiver} to signal that data has been read from the network.
+     *
+     * @param msg Message that was read from the network.
+     * @param readFrom The playerID of the device that the message was received from.
+     *                 If the client has not received a playerID,
+     *                 this will be the index of the thread.
+     */
+    public void threadRead(String msg, int readFrom)
     {
-        Log.d(TAG, "Sending thread read");
+        Logger.logD("Sending thread read");
         Intent localIntent = new Intent(NetworkConstants.BROADCAST_MESSAGE)
-            .putExtra(NetworkConstants.MESSAGE, msg);
+            .putExtra(NetworkConstants.MESSAGE, msg)
+            .putExtra(NetworkConstants.INDEX, readFrom);
         LocalBroadcastManager.getInstance(this).sendBroadcast(localIntent);
     }
 
-    public void threadUpdate(String msg)
+    /**
+     * Sends an intent for {@link ResponseReceiver} to signal that the thread's status has changed.
+     *
+     * @param msg Message that was sent from thread.
+     * @param readFrom Client that the message was received from.
+     *                 This is in relation to an array of connected clients
+     *                 and is not related to playerID
+     */
+    public void threadUpdate(String msg, int readFrom)
     {
-        Log.d(TAG, "Sending thread update");
+        Logger.logD("Sending thread update");
         Intent localIntent = new Intent(NetworkConstants.BROADCAST_STATUS)
-            .putExtra(NetworkConstants.MESSAGE, msg);
+            .putExtra(NetworkConstants.MESSAGE, msg)
+            .putExtra(NetworkConstants.INDEX, readFrom);
         LocalBroadcastManager.getInstance(this).sendBroadcast(localIntent);
     }
 
-    public void threadError(String msg)
+    /**
+     * Sends an intent for {@link ResponseReceiver} to signal that an error has occurred in the thread.
+     *
+     * @param msg Error message from the thread.
+     * @param readFrom Client that the message was received from.
+     *                 This is in relation to an array of connected clients
+     *                 and is not related to playerID.
+     */
+    public void threadError(String msg, int readFrom)
     {
-        Log.d(TAG, "Sending thread error");
-        Intent localIntent = new Intent(NetworkConstants.BROADCAST_ERROR).putExtra(
-            NetworkConstants.MESSAGE,
-            msg);
+        Logger.logD("Sending thread error");
+        Intent localIntent = new Intent(NetworkConstants.BROADCAST_ERROR)
+            .putExtra(NetworkConstants.MESSAGE, msg)
+            .putExtra(NetworkConstants.INDEX, readFrom);
         LocalBroadcastManager.getInstance(this).sendBroadcast(localIntent);
     }
 }
