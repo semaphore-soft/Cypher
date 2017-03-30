@@ -3,4 +3,12 @@
     <dimen name="activity_horizontal_margin">16dp</dimen>
     <dimen name="activity_vertical_margin">16dp</dimen>
     <dimen name="fab_margin">16dp</dimen>
+
+    <dimen name="bar_length_min">60dp</dimen>
+    <dimen name="bar_length_max">200dp</dimen>
+
+    <dimen name="bar_height">18dp</dimen>
+    <dimen name="bar_margin">4dp</dimen>
+
+    <dimen name="bar_back_offset">2dp</dimen>
 </resources>

@@ -229,7 +229,8 @@ public class PortalClientActivity extends ARActivity implements UIListener,
                     uiPortalOverlay.overlaySelect(specialOptions);
                     break;
                 case "cmd_btnCancel":
-                    uiPortalOverlay.overlayAction();
+                    //TODO
+                    uiPortalOverlay.overlayAction(1, 0, 1, 0);
                     break;
             }
         }
@@ -356,17 +357,34 @@ public class PortalClientActivity extends ARActivity implements UIListener,
 
             renderer.setPlayerMarker(Integer.parseInt(splitMsg[1]), Integer.parseInt(splitMsg[2]));
         }
-        else if (msg.equals(NetworkConstants.GAME_START))
+        else if (msg.startsWith(NetworkConstants.PREFIX_START))
         {
-            uiPortalOverlay.overlayWaitingForTurn();
+            String[] splitMsg = msg.split(":");
+            uiPortalOverlay.overlayWaitingForTurn(Integer.parseInt(splitMsg[1]),
+                                                  Integer.parseInt(splitMsg[2]),
+                                                  Integer.parseInt(splitMsg[3]),
+                                                  Integer.parseInt(splitMsg[4]));
         }
-        else if (msg.equals(NetworkConstants.GAME_TURN))
+        else if (msg.startsWith(NetworkConstants.PREFIX_TURN))
         {
-            uiPortalOverlay.overlayAction();
+            String[] splitMsg = msg.split(":");
+            uiPortalOverlay.overlayAction(Integer.parseInt(splitMsg[1]),
+                                          Integer.parseInt(splitMsg[2]),
+                                          Integer.parseInt(splitMsg[3]),
+                                          Integer.parseInt(splitMsg[4]));
         }
-        else if (msg.equals(NetworkConstants.GAME_TURN_OVER))
+        else if (msg.startsWith(NetworkConstants.PREFIX_TURN_OVER))
         {
-            uiPortalOverlay.overlayWaitingForTurn();
+            String[] splitMsg = msg.split(":");
+            uiPortalOverlay.overlayWaitingForTurn(Integer.parseInt(splitMsg[1]),
+                                                  Integer.parseInt(splitMsg[2]),
+                                                  Integer.parseInt(splitMsg[3]),
+                                                  Integer.parseInt(splitMsg[4]));
+        }
+        else if (msg.startsWith(NetworkConstants.PREFIX_HEALTH))
+        {
+            String[] splitMsg = msg.split(":");
+            uiPortalOverlay.setHealth(Integer.parseInt(splitMsg[1]));
         }
         else if (msg.startsWith(NetworkConstants.PREFIX_CREATE_ROOM))
         {

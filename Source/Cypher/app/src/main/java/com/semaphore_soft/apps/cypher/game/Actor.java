@@ -516,7 +516,7 @@ public class Actor
      * @see #performSpecial(Special, Actor)
      * @see #performSpecial(Special, ArrayList)
      */
-    int getSpecialCurrent()
+    public int getSpecialCurrent()
     {
         return specialCurrent;
     }
@@ -933,6 +933,13 @@ public class Actor
             specialCurrent -= special.getCost();
         }
 
+        // ensure a self-targeted special's effects will be present for their
+        // entire duration after the turn the special was used
+        if (id == actor.getId())
+        {
+            special.incrementDuration();
+        }
+
         special.applySpecial(getRealSpecialRating(), actor);
 
         return true;
@@ -1212,7 +1219,7 @@ public class Actor
     {
         if (statuses.containsKey(status.getId()))
         {
-            statuses.put(status.getId(), status);
+            statuses.remove(status.getId());
         }
     }
 
