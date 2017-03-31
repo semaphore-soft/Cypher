@@ -52,7 +52,7 @@ public class PortalActivity extends ARActivity implements PortalRenderer.NewMark
 {
     private UIPortalActivity uiPortalActivity;
     private UIPortalOverlay  uiPortalOverlay;
-e
+
     private PortalRenderer renderer;
 
     private static ResponseReceiver responseReceiver;
