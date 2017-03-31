@@ -57,34 +57,49 @@
     </ranger>
 </characters>
 
-        <!--Enemies-->
+<!--Enemies-->
 <enemies>
-<!--'Lil Ghost-->
-<lil_ghost>
-    <name>'Lil Ghost</name>
-    <healthMaximum>6</healthMaximum>
-    <specialMaximum>2</specialMaximum>
-    <attackRating>5</attackRating>
-    <defenceRating>1</defenceRating>
-    <specialRating>6</specialRating>
-    <specials>
-        <name>ignus_fatuus</name>
-    </specials>
-    <behavior>cowardly</behavior>
-</lil_ghost>
+    <!--'Lil Ghost-->
+    <lil_ghost>
+        <name>'Lil Ghost</name>
+        <healthMaximum>6</healthMaximum>
+        <specialMaximum>2</specialMaximum>
+        <attackRating>5</attackRating>
+        <defenceRating>1</defenceRating>
+        <specialRating>6</specialRating>
+        <specials>
+            <name>ignus_fatuus</name>
+        </specials>
+        <behavior>cowardly</behavior>
+    </lil_ghost>
 
-<!--Groblin-->
-<groblin>
-    <name>Groblin</name>
-    <healthMaximum>9</healthMaximum>
-    <specialMaximum>2</specialMaximum>
-    <attackRating>6</attackRating>
-    <defenceRating>2</defenceRating>
-    <specialRating>7</specialRating>
-    <specials>
-        <name>suckerpunch</name>
-        <name>spear_toss</name>
-    </specials>
-    <behavior>aggressive</behavior>
-</groblin>
+    <!--Groblin-->
+    <groblin>
+        <name>Groblin</name>
+        <healthMaximum>9</healthMaximum>
+        <specialMaximum>2</specialMaximum>
+        <attackRating>6</attackRating>
+        <defenceRating>2</defenceRating>
+        <specialRating>7</specialRating>
+        <specials>
+            <name>suckerpunch</name>
+            <name>spear_toss</name>
+        </specials>
+        <behavior>aggressive</behavior>
+    </groblin>
+	
+	<!--Imp King-->
+    <impKing>
+		<name>Imp King</name>
+		<healthMaximum>9</healthMaximum>
+        <specialMaximum>2</specialMaximum>
+        <attackRating>6</attackRating>
+        <defenceRating>2</defenceRating>
+        <specialRating>7</specialRating>
+        <specials>
+            <name>suckerpunch</name>
+            <name>spear_toss</name>
+        </specials>
+        <behavior>aggressive</behavior>
+	</impKing>
 </enemies>
