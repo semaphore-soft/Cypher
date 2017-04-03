@@ -321,7 +321,7 @@ class PortalRenderer extends ARRendererGLES20
             {
                 nearestRoomMarker = newNearestRoomId;
 
-                newMarkerListener.newNearestRoomMarker(nearestRoomMarker);
+                newMarkerListener.newNearestRoomMarker(nearestRoomMarker, -1);
             }
         }
     }
@@ -933,6 +933,6 @@ class PortalRenderer extends ARRendererGLES20
     {
         void newMarker(int marker);
 
-        void newNearestRoomMarker(int marker);
+        void newNearestRoomMarker(int marker, int updateId);
     }
 }

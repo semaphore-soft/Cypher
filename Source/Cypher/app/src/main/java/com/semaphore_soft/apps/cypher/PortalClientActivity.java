@@ -194,9 +194,9 @@ public class PortalClientActivity extends ARActivity implements UIListener,
                             NetworkConstants.PREFIX_MARK_REQUEST + firstUnreservedMarker);
                     }
                     break;
-                case "cmd_btnEndTurn":
-                    moveActor();
-                    break;
+                //                case "cmd_btnEndTurn":
+                //                    moveActor();
+                //                    break;
                 case "cmd_btnOpenDoor":
                     openDoor();
                     break;
@@ -285,16 +285,19 @@ public class PortalClientActivity extends ARActivity implements UIListener,
                     else
                     {
                         clientService.write(NetworkConstants.PREFIX_ACTION_REQUEST + cmd);
+                        renderer.setCheckingNearestRoomMarker(false);
                     }
                 }
                 else
                 {
                     clientService.write(NetworkConstants.PREFIX_ACTION_REQUEST + cmd);
+                    renderer.setCheckingNearestRoomMarker(false);
                 }
             }
             else
             {
                 clientService.write(NetworkConstants.PREFIX_ACTION_REQUEST + cmd);
+                renderer.setCheckingNearestRoomMarker(false);
             }
         }
     }
@@ -314,12 +317,14 @@ public class PortalClientActivity extends ARActivity implements UIListener,
             String[] splitMsg = msg.split(":");
 
             playerMarker = Integer.parseInt(splitMsg[1]);
+            renderer.setPlayerMarker(playerMarker);
         }
         else if (msg.startsWith(NetworkConstants.PREFIX_ASSIGN_ROOM_MARK))
         {
             String[] splitMsg = msg.split(":");
 
             playerRoomMarker = Integer.parseInt(splitMsg[1]);
+            renderer.setPlayerRoomMarker(playerRoomMarker);
         }
         else if (msg.startsWith(NetworkConstants.PREFIX_RESERVE_PLAYER))
         {
@@ -386,6 +391,8 @@ public class PortalClientActivity extends ARActivity implements UIListener,
             healthCurrent = Integer.parseInt(splitMsg[2]);
             energyMax = Integer.parseInt(splitMsg[3]);
             energyCurrent = Integer.parseInt(splitMsg[4]);
+
+            renderer.setCheckingNearestRoomMarker(true);
 
             uiPortalOverlay.overlayAction(healthMax,
                                           healthCurrent,
@@ -814,9 +821,15 @@ public class PortalClientActivity extends ARActivity implements UIListener,
         clientService.write(NetworkConstants.PREFIX_GENERATE_ROOM_REQUEST + marker);
     }
 
+    /**
+     * Simulate a player {@link Actor actor} moving to a new {@link Room}
+     *
+     * @param marker   New {@link Room} the {@link Actor} is moving too.
+     * @param updateId Not used by this function
+     */
     @Override
-    public void newNearestRoomMarker(int marker)
+    public void newNearestRoomMarker(int marker, int updateId)
     {
-
+        clientService.write(NetworkConstants.PREFIX_UPDATE_NEAREST_ROOM + marker);
     }
 }

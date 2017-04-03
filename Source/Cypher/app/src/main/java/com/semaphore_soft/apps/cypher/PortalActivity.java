@@ -25,6 +25,7 @@ import com.semaphore_soft.apps.cypher.networking.NetworkConstants;
 import com.semaphore_soft.apps.cypher.networking.ResponseReceiver;
 import com.semaphore_soft.apps.cypher.networking.Server;
 import com.semaphore_soft.apps.cypher.networking.ServerService;
+import com.semaphore_soft.apps.cypher.opengl.ARRoom;
 import com.semaphore_soft.apps.cypher.ui.UIListener;
 import com.semaphore_soft.apps.cypher.ui.UIPortalActivity;
 import com.semaphore_soft.apps.cypher.ui.UIPortalOverlay;
@@ -552,6 +553,11 @@ public class PortalActivity extends ARActivity implements PortalRenderer.NewMark
                 serverService.writeAll(NetworkConstants.PREFIX_PLACE_ROOM + splitMsg[1]);
             }
         }
+        else if (msg.startsWith(NetworkConstants.PREFIX_UPDATE_NEAREST_ROOM))
+        {
+            String[] splitMsg = msg.split(":");
+            newNearestRoomMarker(Integer.parseInt(splitMsg[1]), readFrom);
+        }
         else if (msg.startsWith(NetworkConstants.PREFIX_ACTION_REQUEST))
         {
             String[] splitMsg = msg.split(";");
@@ -665,12 +671,19 @@ public class PortalActivity extends ARActivity implements PortalRenderer.NewMark
         }
     }
 
+    /**
+     * Simulate a player {@link Actor actor} moving to a new {@link Room}
+     *
+     * @param marker   New {@link Room} the {@link Actor} is moving too.
+     * @param updateId Used to update a {@link PortalClientActivity client}, use -1 to update self.
+     */
     @Override
-    public void newNearestRoomMarker(final int marker)
+    public void newNearestRoomMarker(final int marker, int updateId)
     {
         if (GameMaster.getMarkerAttachment(model, marker) == 1)
         {
-            Actor actor = GameMaster.getActor(model, playerId);
+            int   actorId = updateId == -1 ? playerId : updateId;
+            Actor actor   = GameMaster.getActor(model, actorId);
             if (actor != null)
             {
                 int lastProposedRoomId = actor.getProposedRoomId();
@@ -679,18 +692,18 @@ public class PortalActivity extends ARActivity implements PortalRenderer.NewMark
                 {
                     if (lastProposedRoomId != actor.getRoom())
                     {
-                        GameMaster.removeActorFromRoom(model, playerId, lastProposedRoomId);
+                        GameMaster.removeActorFromRoom(model, actorId, lastProposedRoomId);
                     }
                     updateRoomResidents(GameMaster.getRoomMarkerId(model, lastProposedRoomId),
                                         getResidents(lastProposedRoomId));
                 }
             }
 
-            int simRes = GameMaster.simulateMove(model, playerId, marker);
+            int simRes = GameMaster.simulateMove(model, actorId, marker);
 
             if (simRes >= 0)
             {
-                int curRoomId = GameMaster.getActorRoomId(model, playerId);
+                int curRoomId = GameMaster.getActorRoomId(model, actorId);
                 int newRoomId = GameMaster.getRoomIdByMarkerId(model, marker);
 
                 updateRoomResidents(GameMaster.getRoomMarkerId(model, curRoomId),
@@ -713,7 +726,15 @@ public class PortalActivity extends ARActivity implements PortalRenderer.NewMark
                         roomSide);
                 }
 
-                renderer.setPlayerRoomMarker(marker);
+                if (updateId == -1)
+                {
+                    renderer.setPlayerRoomMarker(marker);
+                }
+                else
+                {
+                    serverService.writeToClient(NetworkConstants.PREFIX_ASSIGN_ROOM_MARK + marker,
+                                                updateId);
+                }
             }
         }
     }
@@ -1828,13 +1849,52 @@ public class PortalActivity extends ARActivity implements PortalRenderer.NewMark
     /**
      * Show actions for client and host
      *
-     * @param arRoomId
-     * @param playerId
-     * @param targetId
-     * @param length
-     * @param actionType
-     * @param targetState
-     * @param forward
+     * @param arRoomId     int: The reference ID of the AR marker the desired
+     *                     {@link ARRoom} in which the action is taking place
+     *                     is anchored to. Should match the marker reference ID
+     *                     of exactly one {@link Room}.
+     * @param playerId     int: The logical reference ID of the source {@link
+     *                     Actor} of the action being shown.
+     * @param targetId     int: The logical reference ID of the target {@link
+     *                     Actor} at which the action being shown is directed,
+     *                     or {@code -1} if the action does not have a specific
+     *                     target.
+     * @param length       int: The duration in milliseconds to present the
+     *                     desired action.
+     * @param actionType   String: A description of the action being shown,
+     *                     e.g. {@code attack}, {@code defend},
+     *                     {@code special:hurt}.
+     *                     <p>
+     *                     Note: {@link Special} actions must include a
+     *                     description of the special type ({@code hurt} or
+     *                     {@code help}, see {@link
+     *                     GameMaster#getSpecialTypeDescriptor(Model, int)})
+     *                     delimited by a {@code :}.
+     * @param targetState  String: A description of the state of the target
+     *                     {@link Actor} of the desired action, or {@code null}
+     *                     if the action being shown does not have a specific
+     *                     target {@link Actor}.
+     * @param playerAction boolean: A flag indicating whether the source {@link
+     *                     Actor} of the action being shown is a player
+     *                     controlled {@link Actor}.
+     *                     <ul>
+     *                     <li>true: The source {@link Actor} is considered to
+     *                     be player controlled.</li>
+     *                     <li>false: The source {@link Actor} is not
+     *                     considered to be player controlled.</li>
+     *                     </ul>
+     * @param forward      boolean: A flag indicating whether the action
+     *                     requires its source and target (if applicable){@link
+     *                     Actor Actors} in the 'forward' position - closer to
+     *                     room center, directly opposite one another.
+     *                     <ul>
+     *                     <li>true: The action requires its source and target
+     *                     (if applicable) {@link Actor Actors} in the
+     *                     'forward' position.</li>
+     *                     <li>false: The action DOES NOT require its source
+     *                     and target (if applicable) {@link Actor Actors} in
+     *                     the 'forward' position.</li>
+     *                     </ul>
      *
      * @see PortalRenderer#showAction(int, int, int, long, String, String, boolean, boolean)
      */
