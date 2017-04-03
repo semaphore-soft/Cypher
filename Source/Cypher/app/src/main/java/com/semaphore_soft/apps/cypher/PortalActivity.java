@@ -1244,7 +1244,7 @@ public class PortalActivity extends ARActivity implements PortalRenderer.NewMark
             }
             else if (GameMaster.getPlayerActorIds(model).contains(attackerId))
             {
-                Actor clientActor = GameMaster.getActor(model, defenderId);
+                Actor clientActor = GameMaster.getActor(model, attackerId);
                 if (clientActor != null)
                 {
                     serverService.writeToClient(NetworkConstants.PREFIX_TURN_OVER +
@@ -1255,13 +1255,13 @@ public class PortalActivity extends ARActivity implements PortalRenderer.NewMark
                                                 clientActor.getSpecialMaximum() +
                                                 ":" +
                                                 clientActor.getSpecialCurrent(),
-                                                defenderId);
+                                                attackerId);
                 }
                 else
                 {
                     serverService.writeToClient(
                         NetworkConstants.PREFIX_TURN_OVER + 1 + ":" + 0 + ":" + 1 + ":" + 0,
-                        defenderId);
+                        attackerId);
                 }
             }
 
@@ -1485,7 +1485,7 @@ public class PortalActivity extends ARActivity implements PortalRenderer.NewMark
             }
             else if (GameMaster.getPlayerActorIds(model).contains(targetId))
             {
-                Actor clientActor = GameMaster.getActor(model, sourceId);
+                Actor clientActor = GameMaster.getActor(model, targetId);
                 if (clientActor != null)
                 {
                     serverService.writeToClient(NetworkConstants.PREFIX_TURN_OVER +
@@ -1496,13 +1496,13 @@ public class PortalActivity extends ARActivity implements PortalRenderer.NewMark
                                                 clientActor.getSpecialMaximum() +
                                                 ":" +
                                                 clientActor.getSpecialCurrent(),
-                                                sourceId);
+                                                targetId);
                 }
                 else
                 {
                     serverService.writeToClient(
                         NetworkConstants.PREFIX_TURN_OVER + 1 + ":" + 0 + ":" + 1 + ":" + 0,
-                        sourceId);
+                        targetId);
                 }
             }
         }
