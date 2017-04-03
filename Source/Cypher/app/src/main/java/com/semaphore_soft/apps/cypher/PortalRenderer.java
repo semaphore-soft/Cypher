@@ -660,7 +660,6 @@ class PortalRenderer extends ARRendererGLES20
      * @see Room
      * @see Actor
      * @see ARDrawableGLES20
-     * @see PortalActivity#postMoveResult(int, int, int, int)
      */
     void updateRoomAlignment(final int arRoomId, final short side)
     {

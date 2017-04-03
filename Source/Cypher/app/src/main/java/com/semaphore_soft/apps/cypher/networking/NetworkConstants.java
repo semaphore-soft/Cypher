@@ -58,7 +58,6 @@ public class NetworkConstants
     public static final String PREFIX_PLACE_ROOM                = "PLACE_ROOM:";
     public static final String PREFIX_ATTACH                    = "ATTACH:";
     public static final String PREFIX_CREATE_ROOM               = "CREATE_ROOM:";
-    public static final String PREFIX_MOVE_REQUEST              = "MOVE_REQUEST:";
     public static final String PREFIX_GENERATE_ROOM_REQUEST     = "GENERATE_ROOM_REQUEST:";
     public static final String PREFIX_OPEN_DOOR_REQUEST         = "OPEN_DOOR_REQUEST:";
     public static final String PREFIX_ACTION_REQUEST            = "ACTION_REQUEST;";

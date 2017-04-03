@@ -194,9 +194,6 @@ public class PortalClientActivity extends ARActivity implements UIListener,
                             NetworkConstants.PREFIX_MARK_REQUEST + firstUnreservedMarker);
                     }
                     break;
-                //                case "cmd_btnEndTurn":
-                //                    moveActor();
-                //                    break;
                 case "cmd_btnOpenDoor":
                     openDoor();
                     break;
@@ -617,37 +614,6 @@ public class PortalClientActivity extends ARActivity implements UIListener,
     /**
      * Get the reference ID of the nearest visible AR marker to a given AR
      * marker via the {@link PortalRenderer} which is not associated with an
-     * {@link Actor}, or {@code -1} if either the given marker is not visible
-     * or there are no other markers in view.
-     *
-     * @param mark0 int: The reference ID of the desired AR marker to get the
-     *              nearest marker to.
-     *
-     * @return int: The reference ID of the nearest visible AR marker to a
-     * given AR marker via the {@link PortalRenderer} which is not associated
-     * with an {@link Actor}, or {@code -1} if either the given marker is not
-     * visible or there are no other markers in view.
-     *
-     * @see PortalRenderer
-     * @see PortalRenderer#getNearestMarkerExcluding(int, ArrayList)
-     * @see Actor
-     * @see Actor#getMarker()
-     */
-    private int getNearestNonPlayerMarker(final int mark0)
-    {
-        int foundMarker = renderer.getNearestMarkerExcluding(mark0, playerMarkers);
-
-        if (foundMarker > -1)
-        {
-            return foundMarker;
-        }
-
-        return -1;
-    }
-
-    /**
-     * Get the reference ID of the nearest visible AR marker to a given AR
-     * marker via the {@link PortalRenderer} which is not associated with an
      * {@link Actor} and is not in the list of AR marker reference IDs
      * indicated as excluded, or {@code -1} if either the given marker is not
      * visible or there are no other markers in view.
@@ -683,24 +649,6 @@ public class PortalClientActivity extends ARActivity implements UIListener,
         }
 
         return -1;
-    }
-
-    private void moveActor()
-    {
-        int nearestMarkerId =
-            getNearestNonPlayerMarker(playerMarker);
-
-        if (nearestMarkerId > -1)
-        {
-            clientService.write(NetworkConstants.PREFIX_MOVE_REQUEST + nearestMarkerId);
-        }
-        else
-        {
-            Toast.makeText(getApplicationContext(),
-                           "Couldn't Find Valid Room",
-                           Toast.LENGTH_SHORT)
-                 .show();
-        }
     }
 
     private static short getWallFromAngle(final float angle)

@@ -522,14 +522,6 @@ public class PortalActivity extends ARActivity implements PortalRenderer.NewMark
 
             generateRoom(mark);
         }
-        else if (msg.startsWith(NetworkConstants.PREFIX_MOVE_REQUEST))
-        {
-            // Expect MarkerID of the room that the client wants to move to
-            String[] splitMsg = msg.split(":");
-
-            int mark = Integer.parseInt(splitMsg[1]);
-            moveActor(readFrom, mark);
-        }
         else if (msg.startsWith(NetworkConstants.PREFIX_OPEN_DOOR_REQUEST))
         {
             // Expect nearestMarkerID,
@@ -780,43 +772,6 @@ public class PortalActivity extends ARActivity implements PortalRenderer.NewMark
     /**
      * Get the reference ID of the nearest visible AR marker to a given AR
      * marker via the {@link PortalRenderer} which is not associated with an
-     * {@link Actor}, or {@code -1} if either the given marker is not visible
-     * or there are no other markers in view.
-     *
-     * @param mark0 int: The reference ID of the desired AR marker to get the
-     *              nearest marker to.
-     *
-     * @return int: The reference ID of the nearest visible AR marker to a
-     * given AR marker via the {@link PortalRenderer} which is not associated
-     * with an {@link Actor}, or {@code -1} if either the given marker is not
-     * visible or there are no other markers in view.
-     *
-     * @see PortalRenderer
-     * @see PortalRenderer#getNearestMarkerExcluding(int, ArrayList)
-     * @see Actor
-     * @see Actor#getMarker()
-     */
-    private int getNearestNonPlayerMarker(final int mark0)
-    {
-        ArrayList<Integer> actorMarkers = new ArrayList<>();
-        for (int id : model.getActors().keySet())
-        {
-            actorMarkers.add(model.getActors().get(id).getMarker());
-        }
-
-        int foundMarker = renderer.getNearestMarkerExcluding(mark0, actorMarkers);
-
-        if (foundMarker > -1)
-        {
-            return foundMarker;
-        }
-
-        return -1;
-    }
-
-    /**
-     * Get the reference ID of the nearest visible AR marker to a given AR
-     * marker via the {@link PortalRenderer} which is not associated with an
      * {@link Actor} and is not in the list of AR marker reference IDs
      * indicated as excluded, or {@code -1} if either the given marker is not
      * visible or there are no other markers in view.
@@ -1002,118 +957,6 @@ public class PortalActivity extends ARActivity implements PortalRenderer.NewMark
                  .show();
 
             return false;
-        }
-    }
-
-    /**
-     * Attempt to move a given {@link Actor} to a {@link Room} anchored to a
-     * given AR marker reference ID.
-     *
-     * @param actorId          int: Logical reference ID of the desired {@link
-     *                         Actor} to move
-     * @param proposedMarkerId int: Reference ID of the AR marker to which the
-     *                         desired {@link Room} should be anchored.
-     *
-     * @see PortalActivity#getNearestNonPlayerMarker(int)
-     * @see PortalActivity#postMoveResult(int, int, int, int)
-     * @see GameMaster#moveActor(Model, int, int)
-     */
-    private void moveActor(final int actorId, final int proposedMarkerId)
-    {
-        if (proposedMarkerId > -1)
-        {
-            if (GameMaster.getMarkerAttachment(model, proposedMarkerId) == 1)
-            {
-                int startRoomId = GameMaster.getActorRoomId(model, actorId);
-                int endRoomId   = GameMaster.getIdByMarker(model, proposedMarkerId);
-
-                int res = GameMaster.moveActor(model, actorId, endRoomId);
-
-                postMoveResult(actorId, startRoomId, endRoomId, res);
-            }
-        }
-        else
-        {
-            Toast.makeText(getApplicationContext(),
-                           "Couldn't Find Valid Room",
-                           Toast.LENGTH_SHORT)
-                 .show();
-        }
-    }
-
-    private void postMoveResult(final int actorId,
-                                final int startRoomId,
-                                final int endRoomId,
-                                final int res)
-    {
-        if (actorId == playerId)
-        {
-            switch (res)
-            {
-                case 2:
-                    Toast.makeText(this, "Moved to starting room", Toast.LENGTH_SHORT).show();
-                    break;
-                case 1:
-                    Toast.makeText(this, "Remaining in room", Toast.LENGTH_SHORT).show();
-                    break;
-                case 0:
-                    Toast.makeText(this, "Moved to new room", Toast.LENGTH_SHORT).show();
-                    break;
-                case -1:
-                    Toast.makeText(this, "Can't move, no door to room", Toast.LENGTH_SHORT).show();
-                    break;
-                case -2:
-                    Toast.makeText(this, "Can't move, room not adjacent", Toast.LENGTH_SHORT)
-                         .show();
-                    break;
-                case -3:
-                    Toast.makeText(this, "Can't move, room not placed", Toast.LENGTH_SHORT).show();
-                    break;
-                case -4:
-                    Toast.makeText(this, "Error", Toast.LENGTH_SHORT).show();
-                    break;
-            }
-        }
-
-        if (res >= 0)
-        {
-            if (startRoomId > -1)
-            {
-                Room room = GameMaster.getRoom(model, startRoomId);
-                if (room != null)
-                {
-                    updateRoomResidents(room.getMarker(), getResidents(startRoomId));
-
-                    updateClientTargets();
-                }
-            }
-            if (endRoomId > -1)
-            {
-                if (GameMaster.getPlayersInRoom(model, endRoomId) == 1)
-                {
-                    Room room = GameMaster.getRoom(model, endRoomId);
-                    if (room != null)
-                    {
-                        int markerID = room.getMarker();
-                        short roomSide = GameMaster.getSideOfRoomFrom(model,
-                                                                      startRoomId,
-                                                                      endRoomId);
-                        renderer.updateRoomAlignment(markerID,
-                                                     roomSide);
-                        serverService.writeAll(
-                            NetworkConstants.PREFIX_UPDATE_ROOM_ALIGNMENT + markerID + ":" +
-                            roomSide);
-                    }
-                }
-                Room room = GameMaster.getRoom(model, endRoomId);
-                if (room != null)
-                {
-                    updateRoomResidents(room.getMarker(), getResidents(endRoomId));
-                }
-
-                serverService.writeToClient(NetworkConstants.PREFIX_ASSIGN_ROOM_MARK +
-                                            GameMaster.getRoomMarkerId(model, endRoomId), actorId);
-            }
         }
     }
 
