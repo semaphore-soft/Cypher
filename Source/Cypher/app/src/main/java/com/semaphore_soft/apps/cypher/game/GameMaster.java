@@ -109,23 +109,49 @@ public class GameMaster
 
         Room room = new Room(id, mark);
 
-        int numEnemies = (int) (Math.random() * 4);
-        if (numEnemies > 0)
+        boolean demo = true;
+
+        if (demo)
         {
-            ArrayList<String> enemyList = GameStatLoader.getList(context, "enemies");
-            if (enemyList != null)
+            String enemyName = "impKing";
+
+            Actor enemy =
+                new Actor(CollectionManager.getNextID(model.getActors()),
+                          id,
+                          enemyName);
+            GameStatLoader.loadActorStats(enemy,
+                                          enemyName,
+                                          model.getSpecials(),
+                                          context);
+
+            model.addActor(enemy.getId(), enemy);
+            room.addActor(enemy.getId());
+        }
+        else
+        {
+            int numEnemies = (int) (Math.random() * 4);
+            if (numEnemies > 0)
             {
-                for (int i = 0; i < numEnemies; ++i)
+                ArrayList<String> enemyList = GameStatLoader.getList(context, "enemies");
+                if (enemyList != null)
                 {
-                    Collections.shuffle(enemyList);
-                    String enemyName = enemyList.get(0);
+                    for (int i = 0; i < numEnemies; ++i)
+                    {
+                        Collections.shuffle(enemyList);
+                        String enemyName = enemyList.get(0);
 
-                    Actor enemy =
-                        new Actor(CollectionManager.getNextID(model.getActors()), id, enemyName);
-                    GameStatLoader.loadActorStats(enemy, enemyName, model.getSpecials(), context);
+                        Actor enemy =
+                            new Actor(CollectionManager.getNextID(model.getActors()),
+                                      id,
+                                      enemyName);
+                        GameStatLoader.loadActorStats(enemy,
+                                                      enemyName,
+                                                      model.getSpecials(),
+                                                      context);
 
-                    model.addActor(enemy.getId(), enemy);
-                    room.addActor(enemy.getId());
+                        model.addActor(enemy.getId(), enemy);
+                        room.addActor(enemy.getId());
+                    }
                 }
             }
         }

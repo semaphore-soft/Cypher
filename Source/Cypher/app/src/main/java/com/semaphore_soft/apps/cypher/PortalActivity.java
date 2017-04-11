@@ -344,9 +344,9 @@ public class PortalActivity extends ARActivity implements PortalRenderer.NewMark
                             GameMaster.moveActor(model, playerId, proposedRoomId);
                         }
 
-                        Toast.makeText(getApplicationContext(),
+                        /*Toast.makeText(getApplicationContext(),
                                        "Success",
-                                       Toast.LENGTH_SHORT).show();
+                                       Toast.LENGTH_SHORT).show();*/
 
                         if (room != null)
                         {
@@ -569,9 +569,9 @@ public class PortalActivity extends ARActivity implements PortalRenderer.NewMark
                     GameMaster.setActorState(model, readFrom, Actor.E_STATE.DEFEND);
                     Room room = GameMaster.getActorRoom(model, readFrom);
 
-                    Toast.makeText(getApplicationContext(),
+                    /*Toast.makeText(getApplicationContext(),
                                    "Success",
-                                   Toast.LENGTH_SHORT).show();
+                                   Toast.LENGTH_SHORT).show();*/
 
                     if (room != null)
                     {
@@ -1110,7 +1110,7 @@ public class PortalActivity extends ARActivity implements PortalRenderer.NewMark
 
             createRoom(mark, wallDescriptors);
 
-            runOnUiThread(new Runnable()
+            /*runOnUiThread(new Runnable()
             {
                 @Override
                 public void run()
@@ -1120,7 +1120,7 @@ public class PortalActivity extends ARActivity implements PortalRenderer.NewMark
                                    Toast.LENGTH_SHORT)
                          .show();
                 }
-            });
+            });*/
 
             return true;
         }
@@ -1268,7 +1268,7 @@ public class PortalActivity extends ARActivity implements PortalRenderer.NewMark
                     Toast.makeText(this, "Killed target", Toast.LENGTH_SHORT).show();
                     break;
                 case 0:
-                    Toast.makeText(this, "Success", Toast.LENGTH_SHORT).show();
+                    //Toast.makeText(this, "Success", Toast.LENGTH_SHORT).show();
                     break;
                 default:
                     break;
@@ -1466,7 +1466,7 @@ public class PortalActivity extends ARActivity implements PortalRenderer.NewMark
                     Toast.makeText(this, "Killed target", Toast.LENGTH_SHORT).show();
                     break;
                 case 0:
-                    Toast.makeText(this, "Success", Toast.LENGTH_SHORT).show();
+                    //Toast.makeText(this, "Success", Toast.LENGTH_SHORT).show();
                     break;
                 case -1:
                     Toast.makeText(this, "You don't have enough energy", Toast.LENGTH_SHORT).show();
