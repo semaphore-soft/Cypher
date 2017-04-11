@@ -290,13 +290,11 @@ class PortalRenderer extends ARRendererGLES20
                     {
                         if (i == id)
                         {
-                            float[] markerTransform = ARToolKit.getInstance()
-                                                               .queryMarkerTransformation(
-                                                                   playerMarkerIDs.get(i));
-                            if (markerTransform != null)
-                            {
-                                characterModels.get(i).draw(projectionMatrix, markerTransform);
-                            }
+                            characterModels.get(i)
+                                           .draw(projectionMatrix,
+                                                 ARToolKit.getInstance()
+                                                          .queryMarkerTransformation(playerMarkerIDs
+                                                                                         .get(i)));
                         }
                     }
                     for (int i : arRooms.keySet())
