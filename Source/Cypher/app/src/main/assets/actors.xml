@@ -1,3 +1,5 @@
+<!--Actors-->
+<actors>
 <!--Characters-->
 <characters>
     <!--Soldier-->
@@ -88,3 +90,4 @@
     <behavior>aggressive</behavior>
 </groblin>
 </enemies>
+</actors>

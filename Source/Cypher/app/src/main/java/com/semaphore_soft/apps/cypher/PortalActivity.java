@@ -1202,14 +1202,14 @@ public class PortalActivity extends ARActivity implements PortalRenderer.NewMark
             switch (res)
             {
                 case 4:
-                    Toast.makeText(this, "All players defeated!", Toast.LENGTH_SHORT).show();
+                    //Toast.makeText(this, "All players defeated!", Toast.LENGTH_SHORT).show();
                     loseCondition = true;
                     break;
                 case 3:
-                    Toast.makeText(this, "Player downed!", Toast.LENGTH_SHORT).show();
+                    //Toast.makeText(this, "Player downed!", Toast.LENGTH_SHORT).show();
                     break;
                 case 2:
-                    Toast.makeText(this, "Boss defeated!", Toast.LENGTH_SHORT).show();
+                    //Toast.makeText(this, "Boss defeated!", Toast.LENGTH_SHORT).show();
                     winCondition = true;
                     break;
                 case 1:
@@ -1409,14 +1409,14 @@ public class PortalActivity extends ARActivity implements PortalRenderer.NewMark
             switch (res)
             {
                 case 4:
-                    Toast.makeText(this, "All players defeated!", Toast.LENGTH_SHORT).show();
+                    //Toast.makeText(this, "All players defeated!", Toast.LENGTH_SHORT).show();
                     loseCondition = true;
                     break;
                 case 3:
-                    Toast.makeText(this, "Player downed!", Toast.LENGTH_SHORT).show();
+                    //Toast.makeText(this, "Player downed!", Toast.LENGTH_SHORT).show();
                     break;
                 case 2:
-                    Toast.makeText(this, "Boss defeated!", Toast.LENGTH_SHORT).show();
+                    //Toast.makeText(this, "Boss defeated!", Toast.LENGTH_SHORT).show();
                     winCondition = true;
                     break;
                 case 1:
@@ -1600,6 +1600,13 @@ public class PortalActivity extends ARActivity implements PortalRenderer.NewMark
             if (actor != null)
             {
                 uiPortalOverlay.setHealth(actor.getHealthCurrent());
+
+                if (actor.getHealthCurrent() <= 0)
+                {
+                    Toast.makeText(this, "Player downed!", Toast.LENGTH_SHORT).show();
+                }
+
+                //TODO client feedback
             }
             else
             {
@@ -1613,6 +1620,13 @@ public class PortalActivity extends ARActivity implements PortalRenderer.NewMark
             {
                 serverService.writeToClient(
                     NetworkConstants.PREFIX_HEALTH + clientActor.getHealthCurrent(), targetId);
+
+                if (clientActor.getHealthCurrent() <= 0)
+                {
+                    Toast.makeText(this, "Player downed!", Toast.LENGTH_SHORT).show();
+                }
+
+                //TODO client feedback
             }
             else
             {
@@ -1866,13 +1880,19 @@ public class PortalActivity extends ARActivity implements PortalRenderer.NewMark
     {
         Logger.logD("enter trace");
 
+        loseCondition = GameMaster.areAllPlayersDead(model);
+
         if (winCondition)
         {
+            Toast.makeText(this, "Boss defeated!", Toast.LENGTH_SHORT).show();
+            //TODO client feedback
             uiPortalOverlay.overlayWinCondition();
             serverService.writeAll(NetworkConstants.GAME_WIN_CONDITION);
         }
         else if (loseCondition)
         {
+            Toast.makeText(this, "All players defeated!", Toast.LENGTH_SHORT).show();
+            //TODO client feedback
             uiPortalOverlay.overlayLoseCondition();
             serverService.writeAll(NetworkConstants.GAME_LOSE_CONDITION);
         }
@@ -1888,48 +1908,59 @@ public class PortalActivity extends ARActivity implements PortalRenderer.NewMark
 
             Logger.logD("next turn is " + turnId);
 
-            if (turnId == playerId)
+            Actor nextActor = GameMaster.getActor(model, turnId);
+            if (nextActor != null && nextActor.getHealthCurrent() <= 0)
             {
-                turn = true;
-                Actor hostActor = GameMaster.getActor(model, playerId);
+                Logger.logD("actor <" + turnId + "> is incapacitated");
 
-                if (hostActor != null)
-                {
-                    uiPortalOverlay.overlayAction(hostActor.getHealthMaximum(),
-                                                  hostActor.getHealthCurrent(),
-                                                  hostActor.getSpecialMaximum(),
-                                                  hostActor.getSpecialCurrent());
-                }
-                else
-                {
-                    uiPortalOverlay.overlayAction(1, 0, 1, 0);
-                }
-            }
-            else if (!GameMaster.getActorIsPlayer(model, turnId))
-            {
-                Logger.logD("turn id is not a player, taking turn for non-player actor " + turnId);
-
-                ActorController.takeTurn(this, model, turnId);
+                postTurn(turnId);
             }
             else
             {
-                Actor clientActor = GameMaster.getActor(model, turnId);
-                if (clientActor != null)
+                if (turnId == playerId)
                 {
-                    serverService.writeToClient(NetworkConstants.PREFIX_TURN +
-                                                clientActor.getHealthMaximum() +
-                                                ":" +
-                                                clientActor.getHealthCurrent() +
-                                                ":" +
-                                                clientActor.getSpecialMaximum() +
-                                                ":" +
-                                                clientActor.getSpecialCurrent(),
-                                                turnId);
+                    turn = true;
+                    Actor hostActor = GameMaster.getActor(model, playerId);
+
+                    if (hostActor != null)
+                    {
+                        uiPortalOverlay.overlayAction(hostActor.getHealthMaximum(),
+                                                      hostActor.getHealthCurrent(),
+                                                      hostActor.getSpecialMaximum(),
+                                                      hostActor.getSpecialCurrent());
+                    }
+                    else
+                    {
+                        uiPortalOverlay.overlayAction(1, 0, 1, 0);
+                    }
+                }
+                else if (!GameMaster.getActorIsPlayer(model, turnId))
+                {
+                    Logger.logD(
+                        "turn id is not a player, taking turn for non-player actor " + turnId);
+
+                    ActorController.takeTurn(this, model, turnId);
                 }
                 else
                 {
-                    serverService.writeToClient(
-                        NetworkConstants.PREFIX_TURN + 1 + ":" + 0 + ":" + 1 + ":" + 0, turnId);
+                    Actor clientActor = GameMaster.getActor(model, turnId);
+                    if (clientActor != null)
+                    {
+                        serverService.writeToClient(NetworkConstants.PREFIX_TURN +
+                                                    clientActor.getHealthMaximum() +
+                                                    ":" +
+                                                    clientActor.getHealthCurrent() +
+                                                    ":" +
+                                                    clientActor.getSpecialMaximum() +
+                                                    ":" +
+                                                    clientActor.getSpecialCurrent(),
+                                                    turnId);
+                    }
+                    else
+                    {
+                        serverService.writeToClient(
+                            NetworkConstants.PREFIX_TURN + 1 + ":" + 0 + ":" + 1 + ":" + 0, turnId);
+                    }
                 }
             }
         }
