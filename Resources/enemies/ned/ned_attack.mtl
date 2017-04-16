@@ -1,7 +1,7 @@
-# Blender MTL File: 'wizardBlend.blend'
+# Blender MTL File: 'nedBlend.blend'
 # Material Count: 1
 
-newmtl armor.001
+newmtl armor
 Ns 96.078431
 Ka 1.000000 1.000000 1.000000
 Kd 1.000000 1.000000 1.000000
@@ -9,5 +9,5 @@ Ks 0.500000 0.500000 0.500000
 Ke 0.070000 0.070000 0.070000
 Ni 1.000000
 d 1.000000
-illum 2
-map_Kd wizardLayers.psd
+illum 0
+map_Kd ned.png
