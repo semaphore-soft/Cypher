@@ -444,8 +444,9 @@ public class GameStatLoader
             boolean foundEffects    = false;
             boolean finishedEffects = false;
 
-            int               cost               = -1;
+            int               cost               = 1;
             int               duration           = -1;
+            float             scalar             = 1;
             String            targetingType      = "";
             ArrayList<String> effects            = new ArrayList<>();
             String            specialDisplayName = null;
@@ -494,6 +495,13 @@ public class GameStatLoader
                                 duration = Integer.parseInt(specialParser.getText());
                                 Logger.logI(
                                     "found duration: " + specialParser.getText(), 1);
+                            }
+                            else if (specialParser.getName().equals("scalar"))
+                            {
+                                specialParser.next();
+                                scalar = Float.parseFloat(specialParser.getText());
+                                Logger.logI(
+                                    "found scalar: " + specialParser.getText(), 1);
                             }
                             else if (specialParser.getName().equals("targetingType"))
                             {
@@ -559,6 +567,7 @@ public class GameStatLoader
                                               specialName,
                                               cost,
                                               duration,
+                                              scalar,
                                               specialTargetingType);
 
                 if (specialDisplayName != null)
