@@ -13,6 +13,7 @@ import com.semaphore_soft.apps.cypher.utils.Logger;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
@@ -116,24 +117,48 @@ public class GameMaster
             if (numEnemies > 0)
             {
                 ArrayList<String> enemyList = GameStatLoader.getList(context, "enemies");
-                if (enemyList != null)
+
+                HashMap<String, Integer> enemyPrevalenceMap =
+                    GameStatLoader.getTagsMembers(context, "actors.xml", enemyList, "prevalence");
+
+                if (enemyPrevalenceMap != null)
                 {
+                    HashMap<String, Pair<Integer, Integer>> enemySpawnRanges = new HashMap<>();
+
+                    int totalPrevalence = 0;
+
+                    for (String name : enemyPrevalenceMap.keySet())
+                    {
+                        int prevalence = enemyPrevalenceMap.get(name);
+                        Pair<Integer, Integer> range =
+                            new Pair<>(totalPrevalence, totalPrevalence + prevalence);
+                        enemySpawnRanges.put(name, range);
+                        totalPrevalence += prevalence;
+                    }
+
                     for (int i = 0; i < numEnemies; ++i)
                     {
-                        Collections.shuffle(enemyList);
-                        String enemyName = enemyList.get(0);
+                        int spawn = (int) (Math.random() * totalPrevalence);
 
-                        Actor enemy =
-                            new Actor(CollectionManager.getNextID(model.getActors()),
-                                      id,
-                                      enemyName);
-                        GameStatLoader.loadActorStats(enemy,
-                                                      enemyName,
-                                                      model.getSpecials(),
-                                                      context);
+                        for (String name : enemySpawnRanges.keySet())
+                        {
+                            Pair<Integer, Integer> range = enemySpawnRanges.get(name);
 
-                        model.addActor(enemy.getId(), enemy);
-                        room.addActor(enemy.getId());
+                            if (spawn >= range.first && spawn < range.second)
+                            {
+                                Actor enemy =
+                                    new Actor(CollectionManager.getNextID(model.getActors()),
+                                              id,
+                                              name);
+                                GameStatLoader.loadActorStats(enemy,
+                                                              name,
+                                                              model.getSpecials(),
+                                                              context);
+
+                                model.addActor(enemy.getId(), enemy);
+                                room.addActor(enemy.getId());
+                            }
+                        }
                     }
                 }
             }

@@ -17,6 +17,7 @@ import org.xmlpull.v1.XmlPullParserFactory;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.concurrent.ConcurrentHashMap;
 
 import static com.semaphore_soft.apps.cypher.utils.CollectionManager.getNextID;
@@ -98,6 +99,127 @@ public class GameStatLoader
             e.printStackTrace();
         }
         return null;
+    }
+
+    public static HashMap<String, Integer> getTagsMembers(Context context,
+                                                          String file,
+                                                          ArrayList<String> tags,
+                                                          String memberName)
+    {
+        try
+        {
+            XmlPullParserFactory factory    = XmlPullParserFactory.newInstance();
+            XmlPullParser        listParser = factory.newPullParser();
+
+            AssetManager assetManager    = context.getAssets();
+            InputStream  listInputStream = assetManager.open(file);
+            listParser.setInput(listInputStream, null);
+
+            Logger.logI("loading tags with member <" + memberName + ">");
+
+            HashMap<String, Integer> res = new HashMap<>();
+
+            int event = listParser.getEventType();
+
+            while (event != XmlPullParser.END_DOCUMENT)
+            {
+                switch (event)
+                {
+                    case XmlPullParser.START_TAG:
+                        for (String tag : tags)
+                        {
+                            if (tag.equals(listParser.getName()))
+                            {
+                                int[] member = new int[1];
+
+                                if (getIntMember(listParser, tag, memberName, member))
+                                {
+                                    res.put(tag, member[0]);
+
+                                    Logger.logI(
+                                        "found tag <" + tag + "> with member <" + memberName + ">");
+                                }
+                            }
+                        }
+                        break;
+                    default:
+                        break;
+                }
+
+                if (tags.size() == res.size())
+                {
+                    return res;
+                }
+
+                event = listParser.next();
+            }
+
+            return res;
+        }
+        catch (XmlPullParserException e)
+        {
+            e.printStackTrace();
+        }
+        catch (IOException e)
+        {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
+    private static boolean getIntMember(final XmlPullParser parser,
+                                        final String parentName,
+                                        final String memberName,
+                                        final int[] member)
+    {
+        Logger.logD("enter trace");
+
+        try
+        {
+            int event = parser.getEventType();
+
+            while (event != XmlPullParser.END_DOCUMENT)
+            {
+                switch (event)
+                {
+                    case XmlPullParser.START_TAG:
+                        if (memberName.equals(parser.getName()))
+                        {
+                            parser.next();
+                            member[0] = Integer.parseInt(parser.getText());
+
+                            Logger.logD("exit trace");
+
+                            return true;
+                        }
+                        break;
+                    case XmlPullParser.END_TAG:
+                        if (parentName.equals(parser.getName()))
+                        {
+                            Logger.logD("exit trace");
+
+                            return false;
+                        }
+                        break;
+                    default:
+                        break;
+                }
+
+                event = parser.next();
+            }
+        }
+        catch (XmlPullParserException e)
+        {
+            e.printStackTrace();
+        }
+        catch (IOException e)
+        {
+            e.printStackTrace();
+        }
+
+        Logger.logD("exit trace");
+
+        return false;
     }
 
     public static void loadActorStats(Actor actor,
