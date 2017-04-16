@@ -14,7 +14,16 @@
         <enemies>
             <name>lil_ghost</name>
             <name>groblin</name>
+            <name>groblin_commando</name>
+            <name>ned</name>
+            <name>ancient_idol</name>
+            <name>bat</name>
         </enemies>
+
+        <!--Bosses-->
+        <bosses>
+            <name>imp_king</name>
+        </bosses>
     </actors>
 
     <!--Items-->
