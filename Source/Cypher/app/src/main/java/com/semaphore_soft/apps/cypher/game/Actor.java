@@ -24,7 +24,7 @@ public class Actor
     private int     id;
     private String  name;
     private int     markerID;
-    private int     roomID;
+    private int     roomId;
     private boolean isPlayer;
 
     private String displayName;
@@ -58,6 +58,8 @@ public class Actor
     private int     specialTickets = 1;
     private int     moveTickets    = 1;
     private boolean seeker         = false;
+
+    private boolean boss = false;
 
     private ConcurrentHashMap<Integer, Special> specials;
     private ConcurrentHashMap<Integer, Item>    items;
@@ -103,7 +105,7 @@ public class Actor
         this.id = id;
         this.name = name;
         this.markerID = markerID;
-        roomID = -1;
+        roomId = -1;
         isPlayer = true;
         state = E_STATE.NEUTRAL;
 
@@ -121,14 +123,14 @@ public class Actor
      * non-player {@link Actor}. Initializes member HashMaps.
      *
      * @param id     int: The logical reference ID of this {@link Actor}.
-     * @param roomID int: The logical reference ID of the {@link Room} this
+     * @param roomId int: The logical reference ID of the {@link Room} this
      *               {@link Actor} is associated with, or a resident of.
      *
      * @see E_STATE
      */
-    public Actor(int id, int roomID)
+    public Actor(int id, int roomId)
     {
-        this(id, roomID, "error");
+        this(id, roomId, "error");
     }
 
     /**
@@ -140,21 +142,44 @@ public class Actor
      * non-player {@link Actor}. Initializes member HashMaps.
      *
      * @param id     int: The logical reference ID of this {@link Actor}.
-     * @param roomID int: The logical reference ID of the {@link Room} this
+     * @param roomId int: The logical reference ID of the {@link Room} this
      *               {@link Actor} is associated with, or a resident of.
      * @param name   String: The reference name of this {@link Actor}.
      *               Primarily used for logging.
      *
      * @see E_STATE
      */
-    public Actor(int id, int roomID, String name)
+    public Actor(int id, int roomId, String name)
+    {
+        this(id, roomId, name, false);
+    }
+
+    /**
+     * Logical ID, {@link Room} ID, and name constructor.
+     * <p>
+     * Creates an {@link Actor} object with a name, associated with a {@link
+     * Room}, and not associated with an AR marker, in a neutral state. Because
+     * it is created with a {@link Room} ID, it will be assumed to be a
+     * non-player {@link Actor}. Initializes member HashMaps.
+     *
+     * @param id     int: The logical reference ID of this {@link Actor}.
+     * @param roomId int: The logical reference ID of the {@link Room} this
+     *               {@link Actor} is associated with, or a resident of.
+     * @param name   String: The reference name of this {@link Actor}.
+     *               Primarily used for logging.
+     *
+     * @see E_STATE
+     */
+    public Actor(int id, int roomId, String name, boolean boss)
     {
         this.id = id;
         this.markerID = -1;
         this.name = name;
-        this.roomID = roomID;
+        this.roomId = roomId;
         isPlayer = false;
         state = E_STATE.NEUTRAL;
+
+        this.boss = boss;
 
         specials = new ConcurrentHashMap<>();
         items = new ConcurrentHashMap<>();
@@ -246,7 +271,7 @@ public class Actor
      */
     public void setRoom(int roomID)
     {
-        this.roomID = roomID;
+        this.roomId = roomID;
     }
 
     /**
@@ -260,7 +285,7 @@ public class Actor
      */
     public int getRoom()
     {
-        return roomID;
+        return roomId;
     }
 
     /**
@@ -839,6 +864,16 @@ public class Actor
     public void setSeeker(boolean seeker)
     {
         this.seeker = seeker;
+    }
+
+    public boolean isBoss()
+    {
+        return boss;
+    }
+
+    public void setBoss(boolean boss)
+    {
+        this.boss = boss;
     }
 
     /**

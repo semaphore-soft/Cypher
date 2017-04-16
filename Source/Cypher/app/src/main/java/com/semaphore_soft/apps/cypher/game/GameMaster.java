@@ -100,6 +100,7 @@ public class GameMaster
      * @see Actor
      * @see Model
      */
+    @Nullable
     public static Room generateRoom(final Context context,
                                     final Model model,
                                     final int id,
@@ -109,25 +110,53 @@ public class GameMaster
 
         Room room = new Room(id, mark);
 
-        int numEnemies = (int) (Math.random() * 4);
-        if (numEnemies > 0)
+        if (getNumRooms(model) < 15)
         {
-            ArrayList<String> enemyList = GameStatLoader.getList(context, "enemies");
-            if (enemyList != null)
+            int numEnemies = (int) (Math.random() * 4);
+            if (numEnemies > 0)
             {
-                for (int i = 0; i < numEnemies; ++i)
+                ArrayList<String> enemyList = GameStatLoader.getList(context, "enemies");
+                if (enemyList != null)
                 {
-                    Collections.shuffle(enemyList);
-                    String enemyName = enemyList.get(0);
+                    for (int i = 0; i < numEnemies; ++i)
+                    {
+                        Collections.shuffle(enemyList);
+                        String enemyName = enemyList.get(0);
 
-                    Actor enemy =
-                        new Actor(CollectionManager.getNextID(model.getActors()), id, enemyName);
-                    GameStatLoader.loadActorStats(enemy, enemyName, model.getSpecials(), context);
+                        Actor enemy =
+                            new Actor(CollectionManager.getNextID(model.getActors()),
+                                      id,
+                                      enemyName);
+                        GameStatLoader.loadActorStats(enemy,
+                                                      enemyName,
+                                                      model.getSpecials(),
+                                                      context);
 
-                    model.addActor(enemy.getId(), enemy);
-                    room.addActor(enemy.getId());
+                        model.addActor(enemy.getId(), enemy);
+                        room.addActor(enemy.getId());
+                    }
                 }
             }
+        }
+        else if (getNumRooms(model) == 16)
+        {
+            ArrayList<String> bossList = GameStatLoader.getList(context, "bosses");
+            if (bossList != null)
+            {
+                Collections.shuffle(bossList);
+                String bossName = bossList.get(0);
+
+                Actor boss =
+                    new Actor(CollectionManager.getNextID(model.getActors()), id, bossName, true);
+                GameStatLoader.loadActorStats(boss, bossName, model.getSpecials(), context);
+
+                model.addActor(boss.getId(), boss);
+                room.addActor(boss.getId());
+            }
+        }
+        else
+        {
+            return null;
         }
 
         ArrayList<Short> walls = new ArrayList<>();
@@ -173,6 +202,11 @@ public class GameMaster
     public static Room getRoom(final Model model, final int id)
     {
         return model.getRooms().get(id);
+    }
+
+    public static int getNumRooms(final Model model)
+    {
+        return model.getRooms().size();
     }
 
     /**
@@ -1168,6 +1202,11 @@ public class GameMaster
 
         if (defender.getHealthCurrent() <= 0)
         {
+            if (defender.isBoss())
+            {
+                return 2;
+            }
+
             return 1;
         }
 
@@ -1305,6 +1344,11 @@ public class GameMaster
                         }*/
 
                         kill = true;
+
+                        if (target.isBoss())
+                        {
+                            return 2;
+                        }
                     }
 
                     if (kill)
@@ -1376,6 +1420,11 @@ public class GameMaster
                     {
                         room.removeActor(target.getId());
                     }*/
+
+                    if (target.isBoss())
+                    {
+                        return 2;
+                    }
 
                     return 1;
                 }

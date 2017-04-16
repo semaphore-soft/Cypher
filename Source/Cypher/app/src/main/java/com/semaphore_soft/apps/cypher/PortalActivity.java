@@ -1040,21 +1040,24 @@ public class PortalActivity extends ARActivity implements PortalRenderer.NewMark
                                         CollectionManager.getNextID(model.getRooms()),
                                         mark);
 
-            String[] wallDescriptors = getWallDescriptors(room.getId());
-
-            createRoom(mark, wallDescriptors);
-
-            runOnUiThread(new Runnable()
+            if (room != null)
             {
-                @Override
-                public void run()
+                String[] wallDescriptors = getWallDescriptors(room.getId());
+
+                createRoom(mark, wallDescriptors);
+
+                runOnUiThread(new Runnable()
                 {
-                    Toast.makeText(getApplicationContext(),
-                                   "New Room Generated",
-                                   Toast.LENGTH_SHORT)
-                         .show();
-                }
-            });
+                    @Override
+                    public void run()
+                    {
+                        Toast.makeText(getApplicationContext(),
+                                       "New Room Generated",
+                                       Toast.LENGTH_SHORT)
+                             .show();
+                    }
+                });
+            }
 
             return true;
         }
@@ -1195,6 +1198,9 @@ public class PortalActivity extends ARActivity implements PortalRenderer.NewMark
         {
             switch (res)
             {
+                case 2:
+                    Toast.makeText(this, "Boss defeated!", Toast.LENGTH_SHORT).show();
+                    break;
                 case 1:
                     Toast.makeText(this, "Killed target", Toast.LENGTH_SHORT).show();
                     break;
@@ -1391,6 +1397,9 @@ public class PortalActivity extends ARActivity implements PortalRenderer.NewMark
         {
             switch (res)
             {
+                case 2:
+                    Toast.makeText(this, "Boss defeated!", Toast.LENGTH_SHORT).show();
+                    break;
                 case 1:
                     Toast.makeText(this, "Killed target", Toast.LENGTH_SHORT).show();
                     break;
