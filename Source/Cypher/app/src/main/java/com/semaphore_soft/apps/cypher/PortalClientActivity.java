@@ -558,6 +558,14 @@ public class PortalClientActivity extends ARActivity implements UIListener,
                 }
             }
         }
+        else if (msg.equals(NetworkConstants.GAME_WIN_CONDITION))
+        {
+            uiPortalOverlay.overlayWinCondition();
+        }
+        else if (msg.equals(NetworkConstants.GAME_LOSE_CONDITION))
+        {
+            uiPortalOverlay.overlayLoseCondition();
+        }
     }
 
     /**

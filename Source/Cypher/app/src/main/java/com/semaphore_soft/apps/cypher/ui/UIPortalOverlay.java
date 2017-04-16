@@ -332,4 +332,14 @@ public class UIPortalOverlay extends UIBase
             lblEnergy.setText("" + energyCurrent);
         }
     }
+
+    public void overlayWinCondition()
+    {
+        makeView(R.layout.overlay_win_condition);
+    }
+
+    public void overlayLoseCondition()
+    {
+        makeView(R.layout.overlay_lose_condition);
+    }
 }

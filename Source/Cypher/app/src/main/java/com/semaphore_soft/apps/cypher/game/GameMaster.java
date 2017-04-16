@@ -1207,6 +1207,16 @@ public class GameMaster
                 return 2;
             }
 
+            if (defender.isPlayer())
+            {
+                if (areAllPlayersDead(model))
+                {
+                    return 4;
+                }
+
+                return 3;
+            }
+
             return 1;
         }
 
@@ -1333,7 +1343,9 @@ public class GameMaster
 
                 for (Actor target : targets)
                 {
-                    boolean kill = false;
+                    boolean kill       = false;
+                    boolean playerKill = false;
+                    boolean teamKill   = false;
 
                     if (target.getHealthCurrent() <= 0)
                     {
@@ -1349,9 +1361,23 @@ public class GameMaster
                         {
                             return 2;
                         }
+
+                        if (target.isPlayer())
+                        {
+                            playerKill = true;
+                        }
                     }
 
-                    if (kill)
+                    if (playerKill)
+                    {
+                        if (areAllPlayersDead(model))
+                        {
+                            return 4;
+                        }
+
+                        return 3;
+                    }
+                    else if (kill)
                     {
                         return 1;
                     }
@@ -1424,6 +1450,16 @@ public class GameMaster
                     if (target.isBoss())
                     {
                         return 2;
+                    }
+
+                    if (target.isPlayer())
+                    {
+                        if (areAllPlayersDead(model))
+                        {
+                            return 4;
+                        }
+
+                        return 3;
                     }
 
                     return 1;
@@ -1512,5 +1548,24 @@ public class GameMaster
         }
 
         return playerActorIds;
+    }
+
+    public static boolean areAllPlayersDead(final Model model)
+    {
+        ArrayList<Integer> playersIds     = getPlayerActorIds(model);
+        int                numPlayers     = playersIds.size();
+        int                numDeadPlayers = 0;
+
+        for (int id : playersIds)
+        {
+            Actor actor = getActor(model, id);
+
+            if (actor != null && actor.getHealthCurrent() <= 0)
+            {
+                ++numDeadPlayers;
+            }
+        }
+
+        return numDeadPlayers >= numPlayers;
     }
 }
