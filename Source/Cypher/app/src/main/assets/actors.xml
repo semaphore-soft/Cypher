@@ -62,7 +62,7 @@
     <!--Enemies-->
     <enemies>
         <!--'Lil Ghost-->
-        <lil_ghost>
+        <lilGhost>
             <name>'Lil Ghost</name>
             <healthMaximum>6</healthMaximum>
             <specialMaximum>2</specialMaximum>
@@ -74,7 +74,7 @@
             </specials>
             <behavior>cowardly</behavior>
             <prevalence>22</prevalence>
-        </lil_ghost>
+        </lilGhost>
 
         <!--Groblin-->
         <groblin>
@@ -93,7 +93,7 @@
         </groblin>
 
         <!--Groblin Commando-->
-        <groblin_commando>
+        <groblinCommando>
             <name>Groblin Commando</name>
             <healthMaximum>20</healthMaximum>
             <specialMaximum>4</specialMaximum>
@@ -106,7 +106,7 @@
             </specials>
             <behavior>aggressive</behavior>
             <prevalence>8</prevalence>
-        </groblin_commando>
+        </groblinCommando>
 
         <!--Ned-->
         <ned>
@@ -125,7 +125,7 @@
         </ned>
 
         <!--Ancient Idol-->
-        <ancient_idol>
+        <ancientIdol>
             <name>Ancient Idol</name>
             <healthMaximum>8</healthMaximum>
             <specialMaximum>20</specialMaximum>
@@ -138,7 +138,7 @@
             </specials>
             <behavior>aggressive</behavior>
             <prevalence>10</prevalence>
-        </ancient_idol>
+        </ancientIdol>
 
         <!--Bat-->
         <bat>
@@ -155,7 +155,7 @@
         </bat>
 
         <!--Imp King-->
-        <imp_king>
+        <impKing>
             <name>Imp King</name>
             <healthMaximum>45</healthMaximum>
             <specialMaximum>99</specialMaximum>
@@ -168,6 +168,6 @@
             </specials>
             <behavior>aggressive</behavior>
             <prevalence>0</prevalence>
-        </imp_king>
+        </impKing>
     </enemies>
 </actors>

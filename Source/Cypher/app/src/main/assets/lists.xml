@@ -12,17 +12,17 @@
 
         <!--Enemies-->
         <enemies>
-            <name>lil_ghost</name>
+            <name>lilGhost</name>
             <name>groblin</name>
-            <name>groblin_commando</name>
+            <name>groblinCommando</name>
             <name>ned</name>
-            <name>ancient_idol</name>
+            <name>ancientIdol</name>
             <name>bat</name>
         </enemies>
 
         <!--Bosses-->
         <bosses>
-            <name>imp_king</name>
+            <name>impKing</name>
         </bosses>
     </actors>
 
