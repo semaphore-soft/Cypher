@@ -109,7 +109,7 @@ public class UIPortalOverlay extends UIBase
     {
         makeView(R.layout.overlay_action);
 
-        Button btnItems = (Button) findViewById(R.id.btnItems);
+        ImageButton btnItems = (ImageButton) findViewById(R.id.btnItems);
         btnItems.setOnClickListener(new OnClickListener()
         {
             @Override

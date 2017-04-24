@@ -4,29 +4,32 @@
                 android:layout_width="match_parent"
                 android:layout_height="match_parent">
 
-    <Button
-            android:text="Items"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:id="@+id/btnItems"
-            android:layout_above="@+id/btnEndTurn"
-            android:layout_alignParentStart="true" />
-
 
     <Button
             android:text="End Turn"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:id="@+id/btnEndTurn"
-            android:layout_above="@+id/btnSpecial"
-            android:layout_alignParentStart="true" />
+            android:layout_alignBottom="@+id/btnDefend"
+            android:layout_alignParentStart="true"/>
+
+    <ImageButton
+            android:layout_width="100dp"
+            android:layout_height="50dp"
+            app:srcCompat="@drawable/hud_sepia_goods"
+            android:src="@drawable/hud_sepia_door"
+            android:id="@+id/btnItems"
+            android:scaleType="centerInside"
+            android:background="?android:selectableItemBackground"
+            android:layout_above="@+id/imageButton"
+            android:layout_alignParentStart="true"/>
 
     <ImageButton
             android:layout_width="100dp"
             android:layout_height="50dp"
             app:srcCompat="@drawable/hud_sepia_door"
             android:src="@drawable/hud_sepia_door"
-            android:id="@+id/btnOpenDoor"
+            android:id="@+id/imageButton"
             android:scaleType="centerInside"
             android:background="?android:selectableItemBackground"
             android:layout_alignParentBottom="true"
@@ -66,6 +69,8 @@
             android:layout_alignParentEnd="true"/>
 
     <include
-            layout="@layout/overlay_character_info"/>
+            layout="@layout/overlay_character_info"
+            android:layout_alignParentTop="true"
+            android:layout_alignParentStart="true"/>
 
 </RelativeLayout>
