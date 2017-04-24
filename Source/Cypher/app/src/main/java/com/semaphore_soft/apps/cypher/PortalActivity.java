@@ -27,6 +27,7 @@ import com.semaphore_soft.apps.cypher.networking.NetworkConstants;
 import com.semaphore_soft.apps.cypher.networking.ResponseReceiver;
 import com.semaphore_soft.apps.cypher.networking.Server;
 import com.semaphore_soft.apps.cypher.networking.ServerService;
+import com.semaphore_soft.apps.cypher.opengl.ARRoom;
 import com.semaphore_soft.apps.cypher.ui.UIListener;
 import com.semaphore_soft.apps.cypher.ui.UIPortalActivity;
 import com.semaphore_soft.apps.cypher.ui.UIPortalOverlay;
@@ -225,6 +226,8 @@ public class PortalActivity extends ARActivity implements PortalRenderer.NewMark
                     if (firstUnreservedMarker > -1 &&
                         selectPlayerMarker(playerId, characterName, firstUnreservedMarker))
                     {
+                        renderer.setPlayerMarker(playerId);
+
                         Toast.makeText(getApplicationContext(),
                                        "Player Marker Set",
                                        Toast.LENGTH_SHORT)
@@ -293,11 +296,6 @@ public class PortalActivity extends ARActivity implements PortalRenderer.NewMark
                         PortalRenderer.setLookingForNewMarkers(true);
                     }
                     break;
-                case "cmd_btnEndTurn":
-                    int newRoomMark =
-                        getNearestNonPlayerMarker(GameMaster.getActorMakerId(model, playerId));
-                    moveActor(playerId, newRoomMark);
-                    break;
                 case "cmd_btnOpenDoor":
                     if (openDoor())
                     {
@@ -337,25 +335,38 @@ public class PortalActivity extends ARActivity implements PortalRenderer.NewMark
                 case "cmd_btnDefend":
                 {
                     GameMaster.setActorState(model, playerId, Actor.E_STATE.DEFEND);
-                    Room room = GameMaster.getActorRoom(model, playerId);
+
+                    Actor actor = GameMaster.getActor(model, playerId);
+
+                    if (actor != null)
+                    {
+                        int proposedRoomId = actor.getProposedRoomId();
+
+                        Room room = GameMaster.getRoom(model,
+                                                       proposedRoomId >
+                                                       1 ? proposedRoomId : actor.getRoom());
+
+                        if (proposedRoomId > -1)
+                        {
+                            GameMaster.moveActor(model, playerId, proposedRoomId);
+                        }
 
                     /*Toast.makeText(getApplicationContext(),
                                    "Success",
                                    Toast.LENGTH_SHORT).show();*/
 
-                    if (room != null)
-                    {
-                        showAction(room.getMarker(),
-                                   playerId,
-                                   -1,
-                                   1000,
-                                   "defend",
-                                   null,
-                                   true,
-                                   false);
+                        if (room != null)
+                        {
+                            showAction(room.getMarker(),
+                                       playerId,
+                                       -1,
+                                       1000,
+                                       "defend",
+                                       null,
+                                       true,
+                                       false);
+                        }
                     }
-
-                    Actor actor = GameMaster.getActor(model, playerId);
 
                     if (actor != null)
                     {
@@ -701,14 +712,6 @@ public class PortalActivity extends ARActivity implements PortalRenderer.NewMark
 
             generateRoom(mark);
         }
-        else if (msg.startsWith(NetworkConstants.PREFIX_MOVE_REQUEST))
-        {
-            // Expect MarkerID of the room that the client wants to move to
-            String[] splitMsg = msg.split(":");
-
-            int mark = Integer.parseInt(splitMsg[1]);
-            moveActor(readFrom, mark);
-        }
         else if (msg.startsWith(NetworkConstants.PREFIX_OPEN_DOOR_REQUEST))
         {
             // Expect nearestMarkerID,
@@ -731,6 +734,11 @@ public class PortalActivity extends ARActivity implements PortalRenderer.NewMark
                 postOpenDoorResult(endRoomId, res);
                 serverService.writeAll(NetworkConstants.PREFIX_PLACE_ROOM + splitMsg[1]);
             }
+        }
+        else if (msg.startsWith(NetworkConstants.PREFIX_UPDATE_NEAREST_ROOM))
+        {
+            String[] splitMsg = msg.split(":");
+            newNearestRoomMarker(Integer.parseInt(splitMsg[1]), readFrom);
         }
         else if (msg.startsWith(NetworkConstants.PREFIX_ACTION_REQUEST))
         {
@@ -995,6 +1003,74 @@ public class PortalActivity extends ARActivity implements PortalRenderer.NewMark
     }
 
     /**
+     * Simulate a player {@link Actor actor} moving to a new {@link Room}
+     *
+     * @param marker   New {@link Room} the {@link Actor} is moving too.
+     * @param updateId Used to update a {@link PortalClientActivity client}, use -1 to update self.
+     */
+    @Override
+    public void newNearestRoomMarker(final int marker, int updateId)
+    {
+        if (GameMaster.getMarkerAttachment(model, marker) == 1)
+        {
+            int   actorId = updateId == -1 ? playerId : updateId;
+            Actor actor   = GameMaster.getActor(model, actorId);
+            if (actor != null)
+            {
+                int lastProposedRoomId = actor.getProposedRoomId();
+
+                if (lastProposedRoomId > -1)
+                {
+                    if (lastProposedRoomId != actor.getRoom())
+                    {
+                        GameMaster.removeActorFromRoom(model, actorId, lastProposedRoomId);
+                    }
+                    updateRoomResidents(GameMaster.getRoomMarkerId(model, lastProposedRoomId),
+                                        getResidents(lastProposedRoomId));
+                }
+            }
+
+            int simRes = GameMaster.simulateMove(model, actorId, marker);
+
+            if (simRes >= 0)
+            {
+                int curRoomId = GameMaster.getActorRoomId(model, actorId);
+                int newRoomId = GameMaster.getRoomIdByMarkerId(model, marker);
+
+                updateRoomResidents(GameMaster.getRoomMarkerId(model, curRoomId),
+                                    getResidents(curRoomId));
+                updateRoomResidents(marker, getResidents(newRoomId));
+
+                Room room = GameMaster.getRoom(model, newRoomId);
+
+                if (room != null && actor != null && newRoomId != actor.getRoom() &&
+                    GameMaster.getPlayersInRoom(model, newRoomId) == 1)
+                {
+                    int markerID = room.getMarker();
+                    short roomSide = GameMaster.getSideOfRoomFrom(model,
+                                                                  actor.getRoom(),
+                                                                  newRoomId);
+                    renderer.updateRoomAlignment(markerID,
+                                                 roomSide);
+                    serverService.writeAll(
+                        NetworkConstants.PREFIX_UPDATE_ROOM_ALIGNMENT + markerID + ":" +
+                        roomSide);
+                }
+
+                if (updateId == -1)
+                {
+                    renderer.setPlayerRoomMarker(marker);
+                }
+                else
+                {
+                    serverService.writeToClient(NetworkConstants.PREFIX_ASSIGN_ROOM_MARK + marker,
+                                                updateId);
+                }
+            }
+        }
+    }
+
+    /**
      * Get the reference ID of the first AR marker found by the {@link
      * PortalRenderer} which is not already reserved by a game object, or
      * {@code -1} if no unreserved markers are in view.
@@ -1023,43 +1099,6 @@ public class PortalActivity extends ARActivity implements PortalRenderer.NewMark
         }
 
         int foundMarker = renderer.getFirstMarkerExcluding(marksX);
-
-        if (foundMarker > -1)
-        {
-            return foundMarker;
-        }
-
-        return -1;
-    }
-
-    /**
-     * Get the reference ID of the nearest visible AR marker to a given AR
-     * marker via the {@link PortalRenderer} which is not associated with an
-     * {@link Actor}, or {@code -1} if either the given marker is not visible
-     * or there are no other markers in view.
-     *
-     * @param mark0 int: The reference ID of the desired AR marker to get the
-     *              nearest marker to.
-     *
-     * @return int: The reference ID of the nearest visible AR marker to a
-     * given AR marker via the {@link PortalRenderer} which is not associated
-     * with an {@link Actor}, or {@code -1} if either the given marker is not
-     * visible or there are no other markers in view.
-     *
-     * @see PortalRenderer
-     * @see PortalRenderer#getNearestMarkerExcluding(int, ArrayList)
-     * @see Actor
-     * @see Actor#getMarker()
-     */
-    private int getNearestNonPlayerMarker(final int mark0)
-    {
-        ArrayList<Integer> actorMarkers = new ArrayList<>();
-        for (int id : model.getActors().keySet())
-        {
-            actorMarkers.add(model.getActors().get(id).getMarker());
-        }
-
-        int foundMarker = renderer.getNearestMarkerExcluding(mark0, actorMarkers);
 
         if (foundMarker > -1)
         {
@@ -1244,6 +1283,9 @@ public class PortalActivity extends ARActivity implements PortalRenderer.NewMark
                            Toast.LENGTH_SHORT)
                  .show();
 
+            renderer.setPlayerRoomMarker(mark);
+            renderer.setCheckingNearestRoomMarker(true);
+
             return true;
         }
         else
@@ -1254,153 +1296,6 @@ public class PortalActivity extends ARActivity implements PortalRenderer.NewMark
                  .show();
 
             return false;
-        }
-    }
-
-    /**
-     * Attempt to move a given {@link Actor} to a {@link Room} anchored to a
-     * given AR marker reference ID.
-     *
-     * @param actorId          int: Logical reference ID of the desired {@link
-     *                         Actor} to move
-     * @param proposedMarkerId int: Reference ID of the AR marker to which the
-     *                         desired {@link Room} should be anchored.
-     *
-     * @see PortalActivity#getNearestNonPlayerMarker(int)
-     * @see PortalActivity#postMoveResult(int, int, int, int)
-     * @see GameMaster#moveActor(Model, int, int)
-     */
-    private void moveActor(final int actorId, final int proposedMarkerId)
-    {
-        if (proposedMarkerId > -1)
-        {
-            if (GameMaster.getMarkerAttachment(model, proposedMarkerId) == 1)
-            {
-                int startRoomId = GameMaster.getActorRoomId(model, actorId);
-                int endRoomId   = GameMaster.getIdByMarker(model, proposedMarkerId);
-
-                int res = GameMaster.moveActor(model, actorId, endRoomId);
-
-                postMoveResult(actorId, startRoomId, endRoomId, res);
-            }
-        }
-        else
-        {
-            Toast.makeText(getApplicationContext(),
-                           "Couldn't Find Valid Room",
-                           Toast.LENGTH_SHORT)
-                 .show();
-        }
-    }
-
-    private void postMoveResult(final int actorId,
-                                final int startRoomId,
-                                final int endRoomId,
-                                final int res)
-    {
-        if (actorId == playerId)
-        {
-            switch (res)
-            {
-                case 2:
-                    Toast.makeText(this, "Moved to starting room", Toast.LENGTH_SHORT).show();
-                    break;
-                case 1:
-                    Toast.makeText(this, "Remaining in room", Toast.LENGTH_SHORT).show();
-                    break;
-                case 0:
-                    Toast.makeText(this, "Moved to new room", Toast.LENGTH_SHORT).show();
-                    break;
-                case -1:
-                    Toast.makeText(this, "Can't move, no door to room", Toast.LENGTH_SHORT).show();
-                    break;
-                case -2:
-                    Toast.makeText(this, "Can't move, room not adjacent", Toast.LENGTH_SHORT)
-                         .show();
-                    break;
-                case -3:
-                    Toast.makeText(this, "Can't move, room not placed", Toast.LENGTH_SHORT).show();
-                    break;
-                case -4:
-                    Toast.makeText(this, "Error", Toast.LENGTH_SHORT).show();
-                    break;
-            }
-        }
-        else
-        {
-            switch (res)
-            {
-                case 2:
-                    serverService.writeToClient(
-                        NetworkConstants.PREFIX_FEEDBACK + "Moved to starting room", actorId);
-                    break;
-                case 1:
-                    serverService.writeToClient(
-                        NetworkConstants.PREFIX_FEEDBACK + "Remaining in room", actorId);
-                    break;
-                case 0:
-                    serverService.writeToClient(
-                        NetworkConstants.PREFIX_FEEDBACK + "Moved to new room", actorId);
-                    break;
-                case -1:
-                    serverService.writeToClient(
-                        NetworkConstants.PREFIX_FEEDBACK + "Can't move, no door to room", actorId);
-                    break;
-                case -2:
-                    serverService.writeToClient(
-                        NetworkConstants.PREFIX_FEEDBACK + "Can't move, room not adjacent",
-                        actorId);
-                    break;
-                case -3:
-                    serverService.writeToClient(
-                        NetworkConstants.PREFIX_FEEDBACK + "Can't move, room not placed", actorId);
-                    break;
-                case -4:
-                    serverService.writeToClient(NetworkConstants.PREFIX_FEEDBACK + "Error",
-                                                actorId);
-                    break;
-            }
-        }
-
-        if (res >= 0)
-        {
-            if (startRoomId > -1)
-            {
-                Room room = GameMaster.getRoom(model, startRoomId);
-                if (room != null)
-                {
-                    updateRoomResidents(room.getMarker(), getResidents(startRoomId));
-
-                    updateClientTargets();
-                }
-            }
-            if (endRoomId > -1)
-            {
-                if (GameMaster.getPlayersInRoom(model, endRoomId) == 1)
-                {
-                    Room room = GameMaster.getRoom(model, endRoomId);
-                    if (room != null)
-                    {
-                        int markerID = room.getMarker();
-                        short roomSide = GameMaster.getSideOfRoomFrom(model,
-                                                                      startRoomId,
-                                                                      endRoomId);
-                        renderer.updateRoomAlignment(markerID,
-                                                     roomSide);
-                        serverService.writeAll(
-                            NetworkConstants.PREFIX_UPDATE_ROOM_ALIGNMENT + markerID + ":" +
-                            roomSide);
-                    }
-                }
-                Room room = GameMaster.getRoom(model, endRoomId);
-                if (room != null)
-                {
-                    updateRoomResidents(room.getMarker(), getResidents(endRoomId));
-                }
-
-                serverService.writeToClient(NetworkConstants.PREFIX_ASSIGN_ROOM_MARK +
-                                            GameMaster.getRoomMarkerId(model, endRoomId), actorId);
-            }
         }
     }
 
@@ -1502,6 +1397,9 @@ public class PortalActivity extends ARActivity implements PortalRenderer.NewMark
                 {
                     postOpenDoorResult(endRoomId, res);
                     serverService.writeAll(NetworkConstants.PREFIX_PLACE_ROOM + nearestMarkerID);
+
+                    updateRoomResidents(GameMaster.getRoomMarkerId(model, endRoomId),
+                                        getResidents(endRoomId));
 
                     return true;
                 }
@@ -1618,6 +1516,8 @@ public class PortalActivity extends ARActivity implements PortalRenderer.NewMark
 
         if (res >= 0)
         {
+            renderer.setCheckingNearestRoomMarker(false);
+
             Room  room     = GameMaster.getActorRoom(model, attackerId);
             Actor defender = GameMaster.getActor(model, defenderId);
 
@@ -1862,6 +1762,8 @@ public class PortalActivity extends ARActivity implements PortalRenderer.NewMark
 
         if (res >= 0)
         {
+            renderer.setCheckingNearestRoomMarker(false);
+
             Room  room   = GameMaster.getActorRoom(model, sourceId);
             Actor target = GameMaster.getActor(model, targetId);
 
@@ -2221,13 +2123,52 @@ public class PortalActivity extends ARActivity implements PortalRenderer.NewMark
     /**
      * Show actions for client and host
      *
-     * @param arRoomId
-     * @param playerId
-     * @param targetId
-     * @param length
-     * @param actionType
-     * @param targetState
-     * @param forward
+     * @param arRoomId     int: The reference ID of the AR marker the desired
+     *                     {@link ARRoom} in which the action is taking place
+     *                     is anchored to. Should match the marker reference ID
+     *                     of exactly one {@link Room}.
+     * @param playerId     int: The logical reference ID of the source {@link
+     *                     Actor} of the action being shown.
+     * @param targetId     int: The logical reference ID of the target {@link
+     *                     Actor} at which the action being shown is directed,
+     *                     or {@code -1} if the action does not have a specific
+     *                     target.
+     * @param length       int: The duration in milliseconds to present the
+     *                     desired action.
+     * @param actionType   String: A description of the action being shown,
+     *                     e.g. {@code attack}, {@code defend},
+     *                     {@code special:hurt}.
+     *                     <p>
+     *                     Note: {@link Special} actions must include a
+     *                     description of the special type ({@code hurt} or
+     *                     {@code help}, see {@link
+     *                     GameMaster#getSpecialTypeDescriptor(Model, int)})
+     *                     delimited by a {@code :}.
+     * @param targetState  String: A description of the state of the target
+     *                     {@link Actor} of the desired action, or {@code null}
+     *                     if the action being shown does not have a specific
+     *                     target {@link Actor}.
+     * @param playerAction boolean: A flag indicating whether the source {@link
+     *                     Actor} of the action being shown is a player
+     *                     controlled {@link Actor}.
+     *                     <ul>
+     *                     <li>true: The source {@link Actor} is considered to
+     *                     be player controlled.</li>
+     *                     <li>false: The source {@link Actor} is not
+     *                     considered to be player controlled.</li>
+     *                     </ul>
+     * @param forward      boolean: A flag indicating whether the action
+     *                     requires its source and target (if applicable){@link
+     *                     Actor Actors} in the 'forward' position - closer to
+     *                     room center, directly opposite one another.
+     *                     <ul>
+     *                     <li>true: The action requires its source and target
+     *                     (if applicable) {@link Actor Actors} in the
+     *                     'forward' position.</li>
+     *                     <li>false: The action DOES NOT require its source
+     *                     and target (if applicable) {@link Actor Actors} in
+     *                     the 'forward' position.</li>
+     *                     </ul>
      *
      * @see PortalRenderer#showAction(int, int, int, long, String, String, boolean, boolean)
      */
@@ -2346,22 +2287,23 @@ public class PortalActivity extends ARActivity implements PortalRenderer.NewMark
                     turn = true;
                     Actor hostActor = GameMaster.getActor(model, playerId);
 
-                    if (hostActor != null)
-                    {
-                        uiPortalOverlay.overlayAction(hostActor.getHealthMaximum(),
-                                                      hostActor.getHealthCurrent(),
-                                                      hostActor.getSpecialMaximum(),
-                                                      hostActor.getSpecialCurrent());
-                    }
-                    else
-                    {
-                        uiPortalOverlay.overlayAction(1, 0, 1, 0);
-                    }
-                }
-                else if (!GameMaster.getActorIsPlayer(model, turnId))
-                {
-                    Logger.logD(
-                        "turn id is not a player, taking turn for non-player actor " + turnId);
+            if (hostActor != null)
+            {
+                uiPortalOverlay.overlayAction(hostActor.getHealthMaximum(),
+                                              hostActor.getHealthCurrent(),
+                                              hostActor.getSpecialMaximum(),
+                                              hostActor.getSpecialCurrent());
+            }
+            else
+            {
+                uiPortalOverlay.overlayAction(1, 0, 1, 0);
+            }
+
+            renderer.setCheckingNearestRoomMarker(true);
+        }
+        else if (!GameMaster.getActorIsPlayer(model, turnId))
+        {
+            Logger.logD("turn id is not a player, taking turn for non-player actor " + turnId);
 
                     ActorController.takeTurn(this, model, turnId);
                 }

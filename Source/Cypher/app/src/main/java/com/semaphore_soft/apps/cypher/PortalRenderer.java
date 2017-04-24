@@ -44,7 +44,7 @@ class PortalRenderer extends ARRendererGLES20
     private static GameController gameController;
 
     private static ArrayList<Integer> markers;
-    private static int[]              playerMarkerIDs;
+    private static ArrayList<Integer> playerMarkerIDs;
 
     private static ArrayList<ARModelGLES20>                    characterModels;
     private static ConcurrentHashMap<String, ARDrawableGLES20> models;
@@ -56,6 +56,12 @@ class PortalRenderer extends ARRendererGLES20
 
     private static ArrayList<Integer> knownMarkers;
     private static boolean lookingForNewMarkers = false;
+
+    private static boolean checkingNearestRoomMarker = false;
+
+    private static int playerMarker      = -1;
+    private static int playerRoomMarker  = -1;
+    private static int nearestRoomMarker = -1;
 
     @Override
     public boolean configureARScene()
@@ -91,7 +97,12 @@ class PortalRenderer extends ARRendererGLES20
             }
         }
 
-        playerMarkerIDs = new int[]{-1, -1, -1, -1};
+        playerMarkerIDs = new ArrayList<>();
+
+        for (int i = 0; i < 4; ++i)
+        {
+            playerMarkerIDs.add(-1);
+        }
 
         knownMarkers = new ArrayList<>();
 
@@ -279,10 +290,11 @@ class PortalRenderer extends ARRendererGLES20
                     {
                         if (i == id)
                         {
-                            characterModels.get(i).draw(projectionMatrix,
-                                                        ARToolKit.getInstance()
-                                                                 .queryMarkerTransformation(
-                                                                     playerMarkerIDs[i]));
+                            characterModels.get(i)
+                                           .draw(projectionMatrix,
+                                                 ARToolKit.getInstance()
+                                                          .queryMarkerTransformation(playerMarkerIDs
+                                                                                         .get(i)));
                         }
                     }
                     for (int i : arRooms.keySet())
@@ -302,26 +314,17 @@ class PortalRenderer extends ARRendererGLES20
             }
         }
 
-        /*for (int i = 0; i < playerMarkerIDs.length; ++i)
+        if (checkingNearestRoomMarker)
         {
-            if (playerMarkerIDs[i] > -1 &&
-                ARToolKit.getInstance().queryMarkerVisible(playerMarkerIDs[i]))
+            int newNearestRoomId = getNearestMarkerExcluding(playerMarker, playerMarkerIDs);
+
+            if (newNearestRoomId != nearestRoomMarker)
             {
-                characterModels.get(i).draw(projectionMatrix,
-                                            ARToolKit.getInstance()
-                                                     .queryMarkerTransformation(playerMarkerIDs[i]));
+                nearestRoomMarker = newNearestRoomId;
+
+                newMarkerListener.newNearestRoomMarker(nearestRoomMarker, -1);
             }
         }
-
-        for (int i : arRooms.keySet())
-        {
-            if (ARToolKit.getInstance().queryMarkerVisible(i))
-            {
-                arRooms.get(i)
-                       .draw(projectionMatrix,
-                             ARToolKit.getInstance().queryMarkerTransformation(i));
-            }
-        }*/
     }
 
     public void setContext(final Context context)
@@ -535,7 +538,7 @@ class PortalRenderer extends ARRendererGLES20
 
     void setPlayerMarker(final int playerID, final int markerID)
     {
-        playerMarkerIDs[playerID] = markerID;
+        playerMarkerIDs.set(playerID, markerID);
 
         knownMarkers.add(markerID);
     }
@@ -598,6 +601,15 @@ class PortalRenderer extends ARRendererGLES20
         arRooms.put(arRoomId, arRoom);
 
         knownMarkers.add(arRoomId);
+
+        StringBuilder sb = new StringBuilder();
+
+        for (int i : knownMarkers)
+        {
+            sb.append(i).append(", ");
+        }
+
+        Logger.logD(sb.toString());
     }
 
     /**
@@ -649,7 +661,6 @@ class PortalRenderer extends ARRendererGLES20
      * @see Room
      * @see Actor
      * @see ARDrawableGLES20
-     * @see PortalActivity#postMoveResult(int, int, int, int)
      */
     void updateRoomAlignment(final int arRoomId, final short side)
     {
@@ -906,8 +917,25 @@ class PortalRenderer extends ARRendererGLES20
         }
     }
 
+    public void setCheckingNearestRoomMarker(boolean check)
+    {
+        checkingNearestRoomMarker = check;
+    }
+
+    public void setPlayerMarker(int mark)
+    {
+        playerMarker = mark;
+    }
+
+    public void setPlayerRoomMarker(int mark)
+    {
+        playerRoomMarker = mark;
+    }
+
     interface NewMarkerListener
     {
         void newMarker(int marker);
+
+        void newNearestRoomMarker(int marker, int updateId);
     }
 }

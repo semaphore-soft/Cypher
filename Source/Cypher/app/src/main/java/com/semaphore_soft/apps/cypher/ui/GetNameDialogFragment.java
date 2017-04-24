@@ -3,10 +3,14 @@ package com.semaphore_soft.apps.cypher.ui;
 import android.app.Activity;
 import android.support.v4.app.DialogFragment;
 import android.os.Bundle;
+import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.WindowManager;
+import android.view.inputmethod.EditorInfo;
 import android.widget.EditText;
+import android.widget.TextView;
 
 import com.semaphore_soft.apps.cypher.R;
 
@@ -28,6 +32,23 @@ public class GetNameDialogFragment extends DialogFragment implements View.OnClic
     {
         View view = inflater.inflate(R.layout.get_name_dialog, container);
         txtName = (EditText) view.findViewById(R.id.txtName);
+        txtName.setOnEditorActionListener(new TextView.OnEditorActionListener()
+        {
+            @Override
+            public boolean onEditorAction(TextView textView, int actionId, KeyEvent keyEvent)
+            {
+                if (actionId == EditorInfo.IME_ACTION_GO)
+                {
+                    String name = txtName.getText().toString();
+                    listener.onFinishGetName(name);
+                    return true;
+                }
+                return false;
+            }
+        });
+        txtName.requestFocus();
+        getDialog().getWindow()
+                   .setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_VISIBLE);
         getDialog().setTitle("Player Name");
         view.findViewById(R.id.btnDone).setOnClickListener(this);
         return view;

@@ -23,8 +23,9 @@ public class Actor
 {
     private int     id;
     private String  name;
-    private int     markerID;
+    private int     markerId;
     private int     roomId;
+    private int     proposedRoomId;
     private boolean isPlayer;
 
     private String displayName;
@@ -96,17 +97,18 @@ public class Actor
      * @param id       int: The logical reference ID of this {@link Actor}.
      * @param name     String: The reference name of this {@link Actor}.
      *                 Primarily used for logging.
-     * @param markerID int: The marker/graphical reference ID of this {@link
+     * @param markerId int: The marker/graphical reference ID of this {@link
      *                 Actor}.
      *
      * @see E_STATE
      */
-    public Actor(int id, String name, int markerID)
+    public Actor(int id, String name, int markerId)
     {
         this.id = id;
         this.name = name;
-        this.markerID = markerID;
+        this.markerId = markerId;
         roomId = -1;
+        proposedRoomId = -1;
         isPlayer = true;
         state = E_STATE.NEUTRAL;
 
@@ -174,9 +176,10 @@ public class Actor
     public Actor(int id, int roomId, String name, boolean boss)
     {
         this.id = id;
-        this.markerID = -1;
+        this.markerId = -1;
         this.name = name;
         this.roomId = roomId;
+        proposedRoomId = -1;
         isPlayer = false;
         state = E_STATE.NEUTRAL;
 
@@ -240,7 +243,7 @@ public class Actor
      */
     public void setMarker(int tagID)
     {
-        this.markerID = tagID;
+        this.markerId = tagID;
     }
 
     /**
@@ -255,7 +258,7 @@ public class Actor
      */
     public int getMarker()
     {
-        return markerID;
+        return markerId;
     }
 
     /**
@@ -287,6 +290,16 @@ public class Actor
     public int getRoom()
     {
         return roomId;
+    }
+
+    public void setProposedRoomId(int proposedRoomId)
+    {
+        this.proposedRoomId = proposedRoomId;
+    }
+
+    public int getProposedRoomId()
+    {
+        return proposedRoomId;
     }
 
     /**

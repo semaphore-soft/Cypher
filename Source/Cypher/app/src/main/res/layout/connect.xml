@@ -53,7 +53,8 @@
                 android:hint="Host Address"
                 android:digits='"0123456789."'
                 android:inputType="number"
-                android:layout_weight="1"/>
+                android:layout_weight="1"
+                android:imeOptions="actionGo" />
     </LinearLayout>
 
     <LinearLayout

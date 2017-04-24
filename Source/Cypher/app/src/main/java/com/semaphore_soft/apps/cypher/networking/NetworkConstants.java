@@ -53,6 +53,10 @@ public class NetworkConstants
     public static final String PREFIX_LOCK                      = "LOCK:";
     public static final String PREFIX_FREE                      = "FREE:";
     public static final String PREFIX_READY                     = "READY:";
+    public static final String PREFIX_START                     = "GAME_START:";
+    public static final String PREFIX_TURN                      = "TURN:";
+    public static final String PREFIX_TURN_OVER                 = "TURN_OVER:";
+    public static final String PREFIX_HEALTH                    = "HEALTH:";
     public static final String PREFIX_MARK_REQUEST              = "MARK_REQUEST:";
     public static final String PREFIX_ASSIGN_MARK               = "ASSIGN_MARK:";
     public static final String PREFIX_ASSIGN_ROOM_MARK          = "ROOM_MARK:";
@@ -61,7 +65,6 @@ public class NetworkConstants
     public static final String PREFIX_PLACE_ROOM                = "PLACE_ROOM:";
     public static final String PREFIX_ATTACH                    = "ATTACH:";
     public static final String PREFIX_CREATE_ROOM               = "CREATE_ROOM:";
-    public static final String PREFIX_MOVE_REQUEST              = "MOVE_REQUEST:";
     public static final String PREFIX_GENERATE_ROOM_REQUEST     = "GENERATE_ROOM_REQUEST:";
     public static final String PREFIX_OPEN_DOOR_REQUEST         = "OPEN_DOOR_REQUEST:";
     public static final String PREFIX_ACTION_REQUEST            = "ACTION_REQUEST;";
@@ -73,6 +76,7 @@ public class NetworkConstants
     public static final String PREFIX_UPDATE_NON_PLAYER_TARGETS = "UPDATE_NON_PLAYER_TARGETS:";
     public static final String PREFIX_UPDATE_PLAYER_TARGETS     = "UPDATE_PLAYER_TARGETS:";
     public static final String PREFIX_UPDATE_PLAYER_SPECIALS    = "UPDATE_PLAYER_SPECIALS:";
+    public static final String PREFIX_UPDATE_NEAREST_ROOM       = "UPDATE_NEAREST_ROOM:";
     public static final String PREFIX_INVENTORY_LIST            = "INVENTORY:";
     public static final String PREFIX_FLOOR_LIST                = "FLOOR:";
     public static final String PREFIX_USE_ITEM                  = "USE:";
