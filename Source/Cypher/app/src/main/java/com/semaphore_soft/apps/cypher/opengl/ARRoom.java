@@ -24,6 +24,9 @@ public class ARRoom implements ARDrawableGLES20
     private ConcurrentHashMap<Integer, ARDrawableGLES20> effects;
     private short alignment = 2;
 
+    private ConcurrentHashMap<Integer, String> playerPoseMap;
+    private ConcurrentHashMap<Integer, String> enemyPoseMap;
+
     private Semaphore assetAccess;
 
     public ARRoom()
@@ -32,6 +35,9 @@ public class ARRoom implements ARDrawableGLES20
         enemyLine = new ConcurrentHashMap<>();
         entityPile = new ConcurrentHashMap<>();
         effects = new ConcurrentHashMap<>();
+
+        playerPoseMap = new ConcurrentHashMap<>();
+        enemyPoseMap = new ConcurrentHashMap<>();
 
         assetAccess = new Semaphore(1);
     }
@@ -48,7 +54,7 @@ public class ARRoom implements ARDrawableGLES20
 
     public void addPlayer(int id, ARDrawableGLES20 playerModel)
     {
-        if (!playerLine.keySet().contains(id))
+        if (!playerLine.containsKey(id))
         {
             playerLine.put(id, playerModel);
         }
@@ -56,7 +62,7 @@ public class ARRoom implements ARDrawableGLES20
 
     public void removePlayer(int id)
     {
-        if (playerLine.keySet().contains(id))
+        if (playerLine.containsKey(id))
         {
             playerLine.remove(id);
         }
@@ -64,7 +70,7 @@ public class ARRoom implements ARDrawableGLES20
 
     public void addEnemy(int id, ARDrawableGLES20 enemyModel)
     {
-        if (!enemyLine.keySet().contains(id))
+        if (!enemyLine.containsKey(id))
         {
             enemyLine.put(id, enemyModel);
         }
@@ -72,7 +78,7 @@ public class ARRoom implements ARDrawableGLES20
 
     public void removeEnemy(int id)
     {
-        if (enemyLine.keySet().contains(id))
+        if (enemyLine.containsKey(id))
         {
             enemyLine.remove(id);
         }
@@ -186,27 +192,13 @@ public class ARRoom implements ARDrawableGLES20
 
     public void setResidentPose(int id, String pose)
     {
-        for (int playerId : playerLine.keySet())
+        if (playerLine.containsKey(id))
         {
-            if (playerId == id)
-            {
-                if (playerLine.get(id) instanceof ARPoseModel)
-                {
-                    ((ARPoseModel) playerLine.get(id)).setPose(pose);
-                }
-                return;
-            }
+            playerPoseMap.put(id, pose);
         }
-        for (int enemyId : enemyLine.keySet())
+        else if (enemyLine.containsKey(id))
         {
-            if (enemyId == id)
-            {
-                if (enemyLine.get(id) instanceof ARPoseModel)
-                {
-                    ((ARPoseModel) enemyLine.get(id)).setPose(pose);
-                }
-                return;
-            }
+            enemyPoseMap.put(id, pose);
         }
     }
 
@@ -328,7 +320,17 @@ public class ARRoom implements ARDrawableGLES20
                         break;
                 }
 
-                playerLine.get(id).draw(projectionMatrix, transformationMatrix, lightPos);
+                if (playerLine.get(id) instanceof ARPoseModel)
+                {
+                    ((ARPoseModel) playerLine.get(id)).draw(projectionMatrix,
+                                                            transformationMatrix,
+                                                            lightPos,
+                                                            playerPoseMap.get(id));
+                }
+                else
+                {
+                    playerLine.get(id).draw(projectionMatrix, transformationMatrix, lightPos);
+                }
                 if (effects.containsKey(id))
                 {
                     // Plane will appear in front of the enemy
@@ -404,7 +406,17 @@ public class ARRoom implements ARDrawableGLES20
                         break;
                 }
 
-                enemyLine.get(id).draw(projectionMatrix, transformationMatrix, lightPos);
+                if (enemyLine.get(id) instanceof ARPoseModel)
+                {
+                    ((ARPoseModel) enemyLine.get(id)).draw(projectionMatrix,
+                                                           transformationMatrix,
+                                                           lightPos,
+                                                           enemyPoseMap.get(id));
+                }
+                else
+                {
+                    enemyLine.get(id).draw(projectionMatrix, transformationMatrix, lightPos);
+                }
                 if (effects.containsKey(id))
                 {
                     // Plane will appear in front of the enemy

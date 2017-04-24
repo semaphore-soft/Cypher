@@ -109,6 +109,16 @@ public class UIPortalOverlay extends UIBase
     {
         makeView(R.layout.overlay_action);
 
+        Button btnItems = (Button) findViewById(R.id.btnItems);
+        btnItems.setOnClickListener(new OnClickListener()
+        {
+            @Override
+            public void onClick(View v)
+            {
+                notifyListener("cmd_btnItems");
+            }
+        });
+
         Button btnEndTurn = (Button) findViewById(R.id.btnEndTurn);
         btnEndTurn.setOnClickListener(new OnClickListener()
         {

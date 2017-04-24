@@ -80,7 +80,7 @@ public abstract class Item
      *
      * @return int: The logical reference ID of this {@link Item}.
      */
-    public int getID()
+    public int getId()
     {
         return id;
     }

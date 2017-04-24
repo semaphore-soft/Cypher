@@ -298,7 +298,7 @@ public class GameStatLoader
                                 actorSpecials.add(actorParser.getText());
                                 Logger.logI("found special: " + actorParser.getText(), 1);
                             }
-                            else if (actorParser.getName().equals("name"))
+                            else if (actorParser.getName().equals("displayName"))
                             {
                                 actorParser.next();
                                 actor.setDisplayName(actorParser.getText());
@@ -411,6 +411,95 @@ public class GameStatLoader
             Logger.logD("actors file error");
             e.printStackTrace();
         }
+    }
+
+    public static HashMap<String, Integer> getItemPrevalence(final Context context,
+                                                             final String actorName)
+    {
+        HashMap<String, Integer> ret = new HashMap<>();
+
+        XmlPullParserFactory factory = null;
+        try
+        {
+            factory = XmlPullParserFactory.newInstance();
+            AssetManager assetManager = context.getAssets();
+
+            XmlPullParser actorItemsParser      = factory.newPullParser();
+            InputStream   actorItemsInputStream = assetManager.open("actors.xml");
+            actorItemsParser.setInput(actorItemsInputStream, null);
+
+            boolean foundActor    = false;
+            boolean foundItems    = false;
+            boolean finishedItems = false;
+            boolean foundItem     = false;
+
+            int event = actorItemsParser.getEventType();
+
+            String itemName       = "none";
+            int    itemPrevalence = 0;
+
+            while (event != XmlPullParser.END_DOCUMENT && !finishedItems)
+            {
+                switch (event)
+                {
+                    case XmlPullParser.START_TAG:
+                        //Logger.logD(actorItemsParser.getName());
+                        if (!foundActor && actorName.equals(actorItemsParser.getName()))
+                        {
+                            foundActor = true;
+                        }
+                        else if (!foundItems && actorItemsParser.getName().equals("items"))
+                        {
+                            foundItems = true;
+                        }
+                        else if (!foundItem && actorItemsParser.getName().equals("item"))
+                        {
+                            foundItem = true;
+                        }
+                        else if (foundItem)
+                        {
+                            if (actorItemsParser.getName().equals("name"))
+                            {
+                                actorItemsParser.next();
+                                itemName = actorItemsParser.getText();
+                            }
+                            else if (actorItemsParser.getName().equals("prevalence"))
+                            {
+                                actorItemsParser.next();
+                                itemPrevalence = Integer.parseInt(actorItemsParser.getText());
+                            }
+                        }
+                        break;
+                    case XmlPullParser.END_TAG:
+                        //Logger.logD(actorItemsParser.getName());
+                        if (foundItem && actorItemsParser.getName().equals("item"))
+                        {
+                            foundItem = false;
+                            ret.put(itemName, itemPrevalence);
+                        }
+                        else if ((foundItems && actorItemsParser.getName().equals("items")) ||
+                                 actorItemsParser.getName().equals(actorName))
+                        {
+                            finishedItems = true;
+                        }
+                        break;
+                    default:
+                        break;
+                }
+
+                event = actorItemsParser.next();
+            }
+        }
+        catch (XmlPullParserException e)
+        {
+            e.printStackTrace();
+        }
+        catch (IOException e)
+        {
+            e.printStackTrace();
+        }
+
+        return ret;
     }
 
     public static Special loadSpecialStats(String specialName,
@@ -676,7 +765,7 @@ public class GameStatLoader
                         if (behaviorName.equals(behaviorParser.getName()))
                         {
                             foundBehavior = true;
-                            Logger.logI("found item", 1);
+                            Logger.logI("found behavior", 1);
                         }
                         else if (foundBehavior)
                         {
@@ -705,6 +794,13 @@ public class GameStatLoader
                                 actor.setMoveTickets(Integer.parseInt(behaviorParser.getText()));
                                 Logger.logI("found move tickets: " + behaviorParser.getText(), 1);
                             }
+                            else if (behaviorParser.getName().equals("item"))
+                            {
+                                behaviorParser.next();
+                                actor.setUseItemTickets(Integer.parseInt(behaviorParser.getText()));
+                                Logger.logI("found use item tickets: " + behaviorParser.getText(),
+                                            1);
+                            }
                             else if (behaviorParser.getName().equals("seek"))
                             {
                                 behaviorParser.next();
@@ -719,7 +815,7 @@ public class GameStatLoader
                             if (behaviorName.equals(behaviorParser.getName()))
                             {
                                 finishedBehavior = true;
-                                Logger.logI("finished item", 1);
+                                Logger.logI("finished behavior", 1);
                             }
                         }
                         break;
@@ -764,21 +860,23 @@ public class GameStatLoader
                                                  item.getEffectRating(),
                                                  ((ItemConsumable) item).getDuration(),
                                                  ((ItemConsumable) item).getTargetingType());
+                    newItem.setDisplayName(item.getDisplayName());
                 }
                 else if (item instanceof ItemDurable)
                 {
                     newItem = new ItemDurable(getNextID(items),
                                               itemName,
                                               item.getEffectRating());
+                    newItem.setDisplayName(item.getDisplayName());
                 }
                 else
                 {
                     Logger.logI("error: bad item in table, removing", 1);
-                    items.remove(item.getID());
+                    items.remove(item.getId());
                 }
                 if (newItem != null)
                 {
-                    items.put(newItem.getID(), newItem);
+                    items.put(newItem.getId(), newItem);
                     Logger.logI("finished loading item");
                     return newItem;
                 }
@@ -984,7 +1082,7 @@ public class GameStatLoader
                 }
             }
 
-            items.put(item.getID(), item);
+            items.put(item.getId(), item);
             Logger.logI("item added to items table", 1);
             Logger.logI("finished loading item <" + itemName + ">");
             return item;

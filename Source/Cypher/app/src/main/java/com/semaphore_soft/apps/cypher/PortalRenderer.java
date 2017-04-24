@@ -10,6 +10,7 @@ import android.support.v4.util.Pair;
 import com.semaphore_soft.apps.cypher.game.Actor;
 import com.semaphore_soft.apps.cypher.game.GameController;
 import com.semaphore_soft.apps.cypher.game.GameMaster;
+import com.semaphore_soft.apps.cypher.game.Model;
 import com.semaphore_soft.apps.cypher.game.Room;
 import com.semaphore_soft.apps.cypher.game.Special;
 import com.semaphore_soft.apps.cypher.opengl.ARDrawableGLES20;
@@ -691,9 +692,10 @@ class PortalRenderer extends ARRendererGLES20
 
             String name = splitResident[0];
 
-            Logger.logI("adding actor:" + id + ":" + name + " to arRoom:" + arRoomId, 2);
-
             String pose = ((splitResident.length > 1) ? splitResident[1] : null);
+
+            Logger.logI("adding actor:" + id + ":" + name + ":" + pose + " to arRoom:" + arRoomId,
+                        2);
 
             if (name != null && models.keySet().contains(name))
             {
@@ -754,7 +756,7 @@ class PortalRenderer extends ARRendererGLES20
      *                     Note: {@link Special} actions must include a
      *                     description of the special type ({@code hurt} or
      *                     {@code help}, see {@link
-     *                     GameMaster#getSpecialTypeDescriptor(int)})
+     *                     GameMaster#getSpecialTypeDescriptor(Model, int)})
      *                     delimited by a {@code :}.
      * @param targetState  String: A description of the state of the target
      *                     {@link Actor} of the desired action, or {@code null}
@@ -785,7 +787,7 @@ class PortalRenderer extends ARRendererGLES20
      * @see Actor
      * @see ARRoom
      * @see ARPoseModel
-     * @see GameMaster#getSpecialTypeDescriptor(int)
+     * @see GameMaster#getSpecialTypeDescriptor(Model, int)
      * @see PortalActivity#showAction(int, int, int, int, String, String, boolean, boolean)
      */
     void showAction(final int arRoomId,
@@ -862,6 +864,8 @@ class PortalRenderer extends ARRendererGLES20
                             break;
                     }
                 }
+                break;
+            default:
                 break;
         }
 

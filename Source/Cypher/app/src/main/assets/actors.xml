@@ -4,7 +4,7 @@
     <characters>
         <!--Soldier-->
         <soldier>
-            <name>Soldier</name>
+            <displayName>Soldier</displayName>
             <healthMaximum>40</healthMaximum>
             <specialMaximum>10</specialMaximum>
             <attackRating>8</attackRating>
@@ -18,7 +18,7 @@
 
         <!--Knight-->
         <knight>
-            <name>Knight</name>
+            <displayName>Knight</displayName>
             <healthMaximum>50</healthMaximum>
             <specialMaximum>30</specialMaximum>
             <attackRating>5</attackRating>
@@ -32,7 +32,7 @@
 
         <!--Wizard-->
         <wizard>
-            <name>Wizard</name>
+            <displayName>Wizard</displayName>
             <healthMaximum>30</healthMaximum>
             <specialMaximum>50</specialMaximum>
             <attackRating>3</attackRating>
@@ -46,7 +46,7 @@
 
         <!--Ranger-->
         <ranger>
-            <name>Ranger</name>
+            <displayName>Ranger</displayName>
             <healthMaximum>35</healthMaximum>
             <specialMaximum>20</specialMaximum>
             <attackRating>7</attackRating>
@@ -63,7 +63,7 @@
     <enemies>
         <!--'Lil Ghost-->
         <lilGhost>
-            <name>'Lil Ghost</name>
+            <displayName>'Lil Ghost</displayName>
             <healthMaximum>6</healthMaximum>
             <specialMaximum>2</specialMaximum>
             <attackRating>5</attackRating>
@@ -74,11 +74,25 @@
             </specials>
             <behavior>cowardly</behavior>
             <prevalence>22</prevalence>
+            <items>
+                <item>
+                    <name>delightful_bread</name>
+                    <prevalence>3</prevalence>
+                </item>
+                <item>
+                    <name>random</name>
+                    <prevalence>2</prevalence>
+                </item>
+                <item>
+                    <name>none</name>
+                    <prevalence>3</prevalence>
+                </item>
+            </items>
         </lilGhost>
 
         <!--Groblin-->
         <groblin>
-            <name>Groblin</name>
+            <displayName>Groblin</displayName>
             <healthMaximum>9</healthMaximum>
             <specialMaximum>2</specialMaximum>
             <attackRating>6</attackRating>
@@ -90,11 +104,25 @@
             </specials>
             <behavior>aggressive</behavior>
             <prevalence>15</prevalence>
+            <items>
+                <item>
+                    <name>delightful_bread</name>
+                    <prevalence>3</prevalence>
+                </item>
+                <item>
+                    <name>random</name>
+                    <prevalence>20</prevalence>
+                </item>
+                <item>
+                    <name>none</name>
+                    <prevalence>3</prevalence>
+                </item>
+            </items>
         </groblin>
 
         <!--Groblin Commando-->
         <groblinCommando>
-            <name>Groblin Commando</name>
+            <displayName>Groblin Commando</displayName>
             <healthMaximum>20</healthMaximum>
             <specialMaximum>4</specialMaximum>
             <attackRating>11</attackRating>
@@ -106,11 +134,25 @@
             </specials>
             <behavior>aggressive</behavior>
             <prevalence>8</prevalence>
+            <items>
+                <item>
+                    <name>delightful_bread</name>
+                    <prevalence>3</prevalence>
+                </item>
+                <item>
+                    <name>random</name>
+                    <prevalence>20</prevalence>
+                </item>
+                <item>
+                    <name>none</name>
+                    <prevalence>3</prevalence>
+                </item>
+            </items>
         </groblinCommando>
 
         <!--Ned-->
         <ned>
-            <name>Ned</name>
+            <displayName>Ned</displayName>
             <healthMaximum>8</healthMaximum>
             <specialMaximum>5</specialMaximum>
             <attackRating>4</attackRating>
@@ -122,11 +164,25 @@
             </specials>
             <behavior>aggressive</behavior>
             <prevalence>8</prevalence>
+            <items>
+                <item>
+                    <name>delightful_bread</name>
+                    <prevalence>3</prevalence>
+                </item>
+                <item>
+                    <name>random</name>
+                    <prevalence>20</prevalence>
+                </item>
+                <item>
+                    <name>none</name>
+                    <prevalence>3</prevalence>
+                </item>
+            </items>
         </ned>
 
         <!--Ancient Idol-->
         <ancientIdol>
-            <name>Ancient Idol</name>
+            <displayName>Ancient Idol</displayName>
             <healthMaximum>8</healthMaximum>
             <specialMaximum>20</specialMaximum>
             <attackRating>2</attackRating>
@@ -138,11 +194,25 @@
             </specials>
             <behavior>aggressive</behavior>
             <prevalence>10</prevalence>
+            <items>
+                <item>
+                    <name>delightful_bread</name>
+                    <prevalence>3</prevalence>
+                </item>
+                <item>
+                    <name>random</name>
+                    <prevalence>20</prevalence>
+                </item>
+                <item>
+                    <name>none</name>
+                    <prevalence>3</prevalence>
+                </item>
+            </items>
         </ancientIdol>
 
         <!--Bat-->
         <bat>
-            <name>Big Ol' Bat</name>
+            <displayName>Big Ol' Bat</displayName>
             <healthMaximum>5</healthMaximum>
             <specialMaximum>5</specialMaximum>
             <attackRating>6</attackRating>
@@ -152,11 +222,25 @@
             </specials>
             <behavior>cowardly</behavior>
             <prevalence>20</prevalence>
+            <items>
+                <item>
+                    <name>delightful_bread</name>
+                    <prevalence>3</prevalence>
+                </item>
+                <item>
+                    <name>random</name>
+                    <prevalence>20</prevalence>
+                </item>
+                <item>
+                    <name>none</name>
+                    <prevalence>3</prevalence>
+                </item>
+            </items>
         </bat>
 
         <!--Imp King-->
         <impKing>
-            <name>Imp King</name>
+            <displayName>Imp King</displayName>
             <healthMaximum>45</healthMaximum>
             <specialMaximum>99</specialMaximum>
             <attackRating>5</attackRating>
@@ -168,6 +252,20 @@
             </specials>
             <behavior>aggressive</behavior>
             <prevalence>0</prevalence>
+            <items>
+                <item>
+                    <name>delightful_bread</name>
+                    <prevalence>3</prevalence>
+                </item>
+                <item>
+                    <name>random</name>
+                    <prevalence>20</prevalence>
+                </item>
+                <item>
+                    <name>none</name>
+                    <prevalence>3</prevalence>
+                </item>
+            </items>
         </impKing>
     </enemies>
 </actors>

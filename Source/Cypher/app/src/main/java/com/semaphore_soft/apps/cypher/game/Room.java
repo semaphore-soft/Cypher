@@ -9,7 +9,7 @@ import static com.semaphore_soft.apps.cypher.game.Room.E_WALL_TYPE.DOOR_UNLOCKED
 /**
  * An instance of {@link Room game.Room} holds and maintains information about
  * the state of one room in the game, including its resident {@link Actor
- * Actors}, its resident {@link Entity Entities}, and the {@link E_WALL_TYPE
+ * Actors}, its resident {@link Item Items}, and the {@link E_WALL_TYPE
  * types} of its walls.
  *
  * @author scorple
@@ -39,7 +39,7 @@ public class Room
     private int                markerID;
     private boolean            placed;
     private ArrayList<Integer> residentActorIDs;
-    private ArrayList<Integer> residentEntityIDs;
+    private ArrayList<Integer> residentItemIDs;
     private E_WALL_TYPE[]      walls;
 
     /**
@@ -81,7 +81,7 @@ public class Room
         this.markerID = markerID;
         this.placed = placed;
         residentActorIDs = new ArrayList<>();
-        residentEntityIDs = new ArrayList<>();
+        residentItemIDs = new ArrayList<>();
         walls = new E_WALL_TYPE[]{
             DOOR_UNLOCKED,
             DOOR_UNLOCKED,
@@ -147,9 +147,9 @@ public class Room
      * <li>False otherwise.</li>
      * </ul>
      *
-     * @see GameMaster#moveActor(int, int)
-     * @see GameMaster#getValidPath(int, int)
-     * @see GameMaster#openDoor(int, int, short, short)
+     * @see GameMaster#moveActor(Model, int, int)
+     * @see GameMaster#getValidPath(Model, int, int)
+     * @see GameMaster#openDoor(Model, int, int, short, short)
      */
     public boolean isPlaced()
     {
@@ -167,9 +167,9 @@ public class Room
      *               <li>False otherwise.</li>
      *               </ul>
      *
-     * @see GameMaster#moveActor(int, int)
-     * @see GameMaster#getValidPath(int, int)
-     * @see GameMaster#openDoor(int, int, short, short)
+     * @see GameMaster#moveActor(Model, int, int)
+     * @see GameMaster#getValidPath(Model, int, int)
+     * @see GameMaster#openDoor(Model, int, int, short, short)
      */
     public void setPlaced(boolean placed)
     {
@@ -186,10 +186,10 @@ public class Room
      *                associated with, or a resident of, this {@link Room}.
      *
      * @see Actor
-     * @see GameMaster#getPlayerTargets(int)
-     * @see GameMaster#getNonPlayerTargets(int)
-     * @see GameMaster#getPlayerTargetIds(int)
-     * @see GameMaster#getNonPlayerTargetIds(int)
+     * @see GameMaster#getPlayerTargets(Model, int)
+     * @see GameMaster#getNonPlayerTargets(Model, int)
+     * @see GameMaster#getPlayerTargetIds(Model, int)
+     * @see GameMaster#getNonPlayerTargetIds(Model, int)
      */
     public void addActor(int actorID)
     {
@@ -210,11 +210,11 @@ public class Room
      *                {@link Room}.
      *
      * @see Actor
-     * @see GameMaster#getPlayerTargets(int)
-     * @see GameMaster#getNonPlayerTargets(int)
-     * @see GameMaster#getPlayerTargetIds(int)
-     * @see GameMaster#getNonPlayerTargetIds(int)
-     * @see GameMaster#removeDeadActors()
+     * @see GameMaster#getPlayerTargets(Model, int)
+     * @see GameMaster#getNonPlayerTargets(Model, int)
+     * @see GameMaster#getPlayerTargetIds(Model, int)
+     * @see GameMaster#getNonPlayerTargetIds(Model, int)
+     * @see GameMaster#removeDeadActors(Model)
      */
     public void removeActor(int actorID)
     {
@@ -232,10 +232,10 @@ public class Room
      * associated with, or considered to be residents of, this {@link Room}.
      *
      * @see Actor
-     * @see GameMaster#getPlayerTargets(int)
-     * @see GameMaster#getNonPlayerTargets(int)
-     * @see GameMaster#getPlayerTargetIds(int)
-     * @see GameMaster#getNonPlayerTargetIds(int)
+     * @see GameMaster#getPlayerTargets(Model, int)
+     * @see GameMaster#getNonPlayerTargets(Model, int)
+     * @see GameMaster#getPlayerTargetIds(Model, int)
+     * @see GameMaster#getNonPlayerTargetIds(Model, int)
      */
     @NonNull
     public ArrayList<Integer> getResidentActors()
@@ -244,56 +244,56 @@ public class Room
     }
 
     /**
-     * Add a single {@link Entity} ID to be associated with this {@link Room}.
-     * This {@link Room} will consider that {@link Entity} to be located within
-     * this {@link Room}, until that {@link Entity Entity's} ID is removed.
+     * Add a single {@link Item} ID to be associated with this {@link Room}.
+     * This {@link Room} will consider that {@link Item} to be located within
+     * this {@link Room}, until that {@link Item Item's} ID is removed.
      *
-     * @param entityID int: The logical reference ID of the {@link Entity} to be
+     * @param itemId int: The logical reference ID of the {@link Item} to be
      *                 associated with, or located within, this {@link Room}.
      *
-     * @see Entity
+     * @see Item
      */
-    public void addEntity(int entityID)
+    public void addItem(int itemId)
     {
-        if (!residentEntityIDs.contains(entityID))
+        if (!residentItemIDs.contains(itemId))
         {
-            residentEntityIDs.add(entityID);
+            residentItemIDs.add(itemId);
         }
     }
 
     /**
-     * Dissociate a single {@link Entity} ID from this {@link Room}. This
-     * {@link Room} will no longer consider that {@link Entity} to be located
-     * within this {@link Room}, unless that {@link Entity Entity's} ID is
+     * Dissociate a single {@link Item} ID from this {@link Room}. This
+     * {@link Room} will no longer consider that {@link Item} to be located
+     * within this {@link Room}, unless that {@link Item Item's} ID is
      * added again.
      *
-     * @param entityID int: The logical reference ID of the {@link Entity} to
+     * @param itemId int: The logical reference ID of the {@link Item} to
      *                 be dissociated with, or no longer located within, this
      *                 {@link Room}.
      *
-     * @see Entity
+     * @see Item
      */
-    public void removeEntity(int entityID)
+    public void removeItem(int itemId)
     {
-        if (residentEntityIDs.contains(entityID))
+        if (residentItemIDs.contains(itemId))
         {
-            residentEntityIDs.remove((Integer) entityID);
+            residentItemIDs.remove((Integer) itemId);
         }
     }
 
     /**
-     * Get the list of the IDs of all {@link Entity Entities} associated with,
+     * Get the list of the IDs of all {@link Item Items} associated with,
      * or considered to be located within, this {@link Room}.
      *
-     * @return ArrayList: A list of IDs of all the {@link Entity Entities}
+     * @return ArrayList: A list of IDs of all the {@link Item Items}
      * associated with, or considered to be located within, this {@link Room}.
      *
-     * @see Entity
+     * @see Item
      */
     @NonNull
-    public ArrayList<Integer> getResidentEntities()
+    public ArrayList<Integer> getResidentItems()
     {
-        return residentEntityIDs;
+        return residentItemIDs;
     }
 
     /**
@@ -314,7 +314,7 @@ public class Room
      * @return {@link E_WALL_TYPE}: The {@link E_WALL_TYPE type} of the wall at
      * the given wall position reference ID.
      *
-     * @see GameMaster#getValidAdjacency(int, int, short, short)
+     * @see GameMaster#getValidAdjacency(Model, int, int, short, short)
      */
     public E_WALL_TYPE getWallType(short wall)
     {
@@ -339,7 +339,7 @@ public class Room
      *             to associated with the wall at the given wall position
      *             reference ID.
      *
-     * @see GameMaster#getValidAdjacency(int, int, short, short)
+     * @see GameMaster#getValidAdjacency(Model, int, int, short, short)
      */
     public void setWallType(short wall, E_WALL_TYPE type)
     {

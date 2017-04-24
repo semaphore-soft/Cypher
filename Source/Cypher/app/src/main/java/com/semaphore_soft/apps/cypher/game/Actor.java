@@ -57,6 +57,7 @@ public class Actor
     private int     defendTickets  = 1;
     private int     specialTickets = 1;
     private int     moveTickets    = 1;
+    private int     useItemTickets = 1;
     private boolean seeker         = false;
 
     private boolean boss = false;
@@ -820,6 +821,16 @@ public class Actor
         this.moveTickets = moveTickets;
     }
 
+    public int getUseItemTickets()
+    {
+        return useItemTickets;
+    }
+
+    public void setUseItemTickets(int useItemTickets)
+    {
+        this.useItemTickets = useItemTickets;
+    }
+
     /**
      * Check this {@link Actor Actor's} 'seeker' flag.
      * <p>
@@ -1053,14 +1064,14 @@ public class Actor
      */
     public void addItem(Item item)
     {
-        if (!items.containsKey(item.getID()))
+        if (!items.containsKey(item.getId()))
         {
-            items.put(item.getID(), item);
+            items.put(item.getId(), item);
             if (item instanceof ItemDurable)
             {
                 for (Effect.E_EFFECT effect : item.getEffects())
                 {
-                    Effect.applyLinkedEffect(effect, item.getEffectRating(), this, item.getID());
+                    Effect.applyLinkedEffect(effect, item.getEffectRating(), this, item.getId());
                 }
             }
         }
@@ -1128,14 +1139,14 @@ public class Actor
      */
     public void removeItem(Item item)
     {
-        if (items.containsKey(item.getID()))
+        if (items.containsKey(item.getId()))
         {
-            items.remove(item.getID());
+            items.remove(item.getId());
             for (int statusID : statuses.keySet())
             {
                 Status status = statuses.get(statusID);
                 if (status instanceof StatusLinked &&
-                    ((StatusLinked) status).getLinkID() == item.getID())
+                    ((StatusLinked) status).getLinkID() == item.getId())
                 {
                     removeStatus(status);
                 }
@@ -1363,12 +1374,14 @@ public class Actor
      * @see Effect.E_EFFECT
      * @see Effect#applyTemporaryEffect(Effect.E_EFFECT, int, int, Actor)
      */
-    public void useItem(int itemID)
+    public boolean useItem(int itemID)
     {
         if (items.containsKey(itemID))
         {
-            useItem(items.get(itemID));
+            return useItem(items.get(itemID));
         }
+
+        return false;
     }
 
     /**
@@ -1386,9 +1399,9 @@ public class Actor
      * @see Effect.E_EFFECT
      * @see Effect#applyTemporaryEffect(Effect.E_EFFECT, int, int, Actor)
      */
-    private void useItem(Item item)
+    private boolean useItem(Item item)
     {
-        if (items.containsKey(item.getID()))
+        if (items.containsKey(item.getId()))
         {
             if (item instanceof ItemConsumable)
             {
@@ -1399,8 +1412,14 @@ public class Actor
                                                 ((ItemConsumable) item).getDuration(),
                                                 this);
                 }
+
+                removeItem(item);
+
+                return true;
             }
         }
+
+        return false;
     }
 
     /**
@@ -1425,5 +1444,10 @@ public class Actor
                 removeStatus(status);
             }
         }
+    }
+
+    public ConcurrentHashMap<Integer, Item> getItems()
+    {
+        return items;
     }
 }

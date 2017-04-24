@@ -10,11 +10,14 @@ import com.semaphore_soft.apps.cypher.PortalActivity;
 import com.semaphore_soft.apps.cypher.utils.CollectionManager;
 import com.semaphore_soft.apps.cypher.utils.GameStatLoader;
 import com.semaphore_soft.apps.cypher.utils.Logger;
+import com.semaphore_soft.apps.cypher.utils.Lottery;
 
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.concurrent.ConcurrentHashMap;
+
+import static com.semaphore_soft.apps.cypher.utils.Lottery.performLottery;
 
 /**
  * {@link GameMaster game.GameMaster} is a coordinator class intended to define
@@ -123,7 +126,7 @@ public class GameMaster
 
                 if (enemyPrevalenceMap != null)
                 {
-                    HashMap<String, Pair<Integer, Integer>> enemySpawnRanges = new HashMap<>();
+                    /*HashMap<String, Pair<Integer, Integer>> enemySpawnRanges = new HashMap<>();
 
                     int totalPrevalence = 0;
 
@@ -134,11 +137,69 @@ public class GameMaster
                             new Pair<>(totalPrevalence, totalPrevalence + prevalence);
                         enemySpawnRanges.put(name, range);
                         totalPrevalence += prevalence;
-                    }
+                    }*/
 
                     for (int i = 0; i < numEnemies; ++i)
                     {
-                        int spawn = (int) (Math.random() * totalPrevalence);
+                        String enemyName = performLottery(enemyPrevalenceMap);
+
+                        Actor enemy = new Actor(CollectionManager.getNextID(model.getActors()),
+                                                id,
+                                                enemyName);
+
+                        GameStatLoader.loadActorStats(enemy,
+                                                      enemyName,
+                                                      model.getSpecials(),
+                                                      context);
+
+                        HashMap<String, Integer> itemPrevalence =
+                            GameStatLoader.getItemPrevalence(context, enemyName);
+
+                        String itemName = Lottery.performLottery(itemPrevalence);
+
+                        Logger.logI("chosen item for <" + enemyName + "> is <" + itemName + ">");
+
+                        Item item = null;
+
+                        if (itemName == null || itemName.equals("none"))
+                        {
+
+                        }
+                        else if (itemName.equals("random"))
+                        {
+                            ArrayList<String> items = GameStatLoader.getList(context, "items");
+
+                            if (items != null)
+                            {
+                                int itemId = (int) (Math.random() * items.size());
+
+                                String selectedItem = items.get(itemId);
+
+                                Logger.logI("randomly selected item:<" + selectedItem + ">");
+
+                                item = GameStatLoader.loadItemStats(selectedItem,
+                                                                    model.getItems(),
+                                                                    model.getSpecials(),
+                                                                    context);
+                            }
+                        }
+                        else
+                        {
+                            item = GameStatLoader.loadItemStats(itemName,
+                                                                model.getItems(),
+                                                                model.getSpecials(),
+                                                                context);
+                        }
+
+                        if (item != null)
+                        {
+                            enemy.addItem(item);
+                        }
+
+                        model.addActor(enemy.getId(), enemy);
+                        room.addActor(enemy.getId());
+
+                        /*int spawn = (int) (Math.random() * totalPrevalence);
 
                         for (String name : enemySpawnRanges.keySet())
                         {
@@ -158,7 +219,7 @@ public class GameMaster
                                 model.addActor(enemy.getId(), enemy);
                                 room.addActor(enemy.getId());
                             }
-                        }
+                        }*/
                     }
                 }
             }
@@ -1241,6 +1302,20 @@ public class GameMaster
 
                 return 3;
             }
+            else
+            {
+                Room room = getRoom(model, defender.getRoom());
+
+                if (room != null)
+                {
+                    for (int itemId : defender.getItems().keySet())
+                    {
+                        room.addItem(itemId);
+                        Logger.logI("item <" + itemId + "> added to room <" + room.getId() + ">");
+                        defender.removeItem(itemId);
+                    }
+                }
+            }
 
             return 1;
         }
@@ -1391,6 +1466,22 @@ public class GameMaster
                         {
                             playerKill = true;
                         }
+                        else
+                        {
+                            Room room = getRoom(model, target.getRoom());
+
+                            if (room != null)
+                            {
+                                for (int itemId : target.getItems().keySet())
+                                {
+                                    room.addItem(itemId);
+                                    Logger.logI(
+                                        "item <" + itemId + "> added to room <" + room.getId() +
+                                        ">");
+                                    target.removeItem(itemId);
+                                }
+                            }
+                        }
                     }
 
                     if (playerKill)
@@ -1485,6 +1576,21 @@ public class GameMaster
                         }
 
                         return 3;
+                    }
+                    else
+                    {
+                        Room room = getRoom(model, target.getRoom());
+
+                        if (room != null)
+                        {
+                            for (int itemId : target.getItems().keySet())
+                            {
+                                room.addItem(itemId);
+                                Logger.logI(
+                                    "item <" + itemId + "> added to room <" + room.getId() + ">");
+                                target.removeItem(itemId);
+                            }
+                        }
                     }
 
                     return 1;
@@ -1592,5 +1698,15 @@ public class GameMaster
         }
 
         return numDeadPlayers >= numPlayers;
+    }
+
+    public static Item getItem(Model model, int itemId)
+    {
+        return model.getItems().get(itemId);
+    }
+
+    public static void removeItem(Model model, int itemId)
+    {
+        model.getItems().remove(itemId);
     }
 }

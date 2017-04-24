@@ -18,6 +18,8 @@ import com.semaphore_soft.apps.cypher.game.ActorController;
 import com.semaphore_soft.apps.cypher.game.Entity;
 import com.semaphore_soft.apps.cypher.game.GameController;
 import com.semaphore_soft.apps.cypher.game.GameMaster;
+import com.semaphore_soft.apps.cypher.game.Item;
+import com.semaphore_soft.apps.cypher.game.ItemConsumable;
 import com.semaphore_soft.apps.cypher.game.Model;
 import com.semaphore_soft.apps.cypher.game.Room;
 import com.semaphore_soft.apps.cypher.game.Special;
@@ -333,6 +335,7 @@ public class PortalActivity extends ARActivity implements PortalRenderer.NewMark
                     uiPortalOverlay.overlaySelect(attackOptions);
                     break;
                 case "cmd_btnDefend":
+                {
                     GameMaster.setActorState(model, playerId, Actor.E_STATE.DEFEND);
                     Room room = GameMaster.getActorRoom(model, playerId);
 
@@ -367,6 +370,7 @@ public class PortalActivity extends ARActivity implements PortalRenderer.NewMark
                     }
 
                     break;
+                }
                 case "cmd_btnSpecial":
                     ArrayList<Pair<String, String>> specialOptions = new ArrayList<>();
 
@@ -381,20 +385,75 @@ public class PortalActivity extends ARActivity implements PortalRenderer.NewMark
                     uiPortalOverlay.overlaySelect(specialOptions);
                     break;
                 case "cmd_btnCancel":
-                    Actor actor1 = GameMaster.getActor(model, playerId);
+                {
+                    Actor actor = GameMaster.getActor(model, playerId);
 
-                    if (actor1 != null)
+                    if (actor != null)
                     {
-                        uiPortalOverlay.overlayAction(actor1.getHealthMaximum(),
-                                                      actor1.getHealthCurrent(),
-                                                      actor1.getSpecialMaximum(),
-                                                      actor1.getSpecialCurrent());
+                        uiPortalOverlay.overlayAction(actor.getHealthMaximum(),
+                                                      actor.getHealthCurrent(),
+                                                      actor.getSpecialMaximum(),
+                                                      actor.getSpecialCurrent());
                     }
                     else
                     {
                         uiPortalOverlay.overlayAction(1, 0, 1, 0);
                     }
+
                     break;
+                }
+                case "cmd_btnItems":
+                {
+                    ArrayList<Pair<String, String>> options = new ArrayList<>();
+
+                    Pair<String, String> inventory = new Pair<>("Inventory", "cmd_btnInventory");
+                    options.add(inventory);
+
+                    Pair<String, String> floor = new Pair<>("Floor", "cmd_btnFloor");
+                    options.add(floor);
+
+                    uiPortalOverlay.overlaySelect(options);
+                    break;
+                }
+                case "cmd_btnInventory":
+                {
+                    ArrayList<Pair<String, String>> options = new ArrayList<>();
+
+                    Actor actor = GameMaster.getActor(model, playerId);
+
+                    if (actor != null)
+                    {
+                        for (Item item : actor.getItems().values())
+                        {
+                            Pair<String, String> itemPair =
+                                new Pair<>(item.getDisplayName(), "cmd_invItem:" + item.getId());
+                            options.add(itemPair);
+                        }
+                    }
+
+                    uiPortalOverlay.overlaySelect(options);
+                    break;
+                }
+                case "cmd_btnFloor":
+                {
+                    ArrayList<Pair<String, String>> options = new ArrayList<>();
+
+                    Room room = GameMaster.getActorRoom(model, playerId);
+
+                    if (room != null)
+                    {
+                        for (int itemId : room.getResidentItems())
+                        {
+                            Item item = GameMaster.getItem(model, itemId);
+                            Pair<String, String> itemPair =
+                                new Pair<>(item.getDisplayName(), "cmd_floorItem:" + item.getId());
+                            options.add(itemPair);
+                        }
+                    }
+
+                    uiPortalOverlay.overlaySelect(options);
+                    break;
+                }
                 default:
                     break;
             }
@@ -466,6 +525,134 @@ public class PortalActivity extends ARActivity implements PortalRenderer.NewMark
                 else
                 {
                     performSpecial(playerId, Integer.parseInt(splitAction[2]), specialId);
+                }
+            }
+            else if (splitAction[0].equals("invItem"))
+            {
+                ArrayList<Pair<String, String>> options = new ArrayList<>();
+
+                Item item = GameMaster.getItem(model, Integer.parseInt(splitAction[1]));
+
+                if (item instanceof ItemConsumable)
+                {
+                    Pair<String, String> useOption =
+                        new Pair<>("Use", "cmd_useItem:" + splitAction[1]);
+                    options.add(useOption);
+                }
+
+                Pair<String, String> dropOption =
+                    new Pair<>("Drop", "cmd_dropItem:" + splitAction[1]);
+                options.add(dropOption);
+
+                uiPortalOverlay.overlaySelect(options);
+            }
+            else if (splitAction[0].equals("floorItem"))
+            {
+                ArrayList<Pair<String, String>> options = new ArrayList<>();
+
+                Pair<String, String> takeOption =
+                    new Pair<>("Take", "cmd_takeItem:" + splitAction[1]);
+                options.add(takeOption);
+
+                uiPortalOverlay.overlaySelect(options);
+            }
+            else if (splitAction[0].equals("useItem"))
+            {
+                Actor actor = GameMaster.getActor(model, playerId);
+                Item  item  = GameMaster.getItem(model, Integer.parseInt(splitAction[1]));
+
+                if (actor != null)
+                {
+                    if (actor.useItem(Integer.parseInt(splitAction[1])))
+                    {
+                        GameMaster.removeItem(model, Integer.parseInt(splitAction[1]));
+
+                        if (item != null)
+                        {
+                            Toast.makeText(this,
+                                           "Used item " + item.getDisplayName(),
+                                           Toast.LENGTH_SHORT)
+                                 .show();
+                        }
+                    }
+                    else
+                    {
+                        Toast.makeText(this,
+                                       "error: failed to use item:<" + splitAction[1] + ">",
+                                       Toast.LENGTH_SHORT).show();
+                    }
+                }
+
+                if (actor != null && actor.getItems().size() > 0)
+                {
+                    onCommand("cmd_btnInventory");
+                }
+                else
+                {
+                    onCommand("cmd_btnCancel");
+                }
+            }
+            else if (splitAction[0].equals("dropItem"))
+            {
+                Actor actor = GameMaster.getActor(model, playerId);
+                Room  room  = GameMaster.getActorRoom(model, playerId);
+                Item  item  = GameMaster.getItem(model, Integer.parseInt(splitAction[1]));
+
+                if (actor != null)
+                {
+                    actor.removeItem(Integer.parseInt(splitAction[1]));
+                }
+
+                if (room != null)
+                {
+                    room.addItem(Integer.parseInt(splitAction[1]));
+                }
+
+                if (item != null)
+                {
+                    Toast.makeText(this,
+                                   "Dropped item " + item.getDisplayName(),
+                                   Toast.LENGTH_SHORT).show();
+                }
+
+                if (actor != null && actor.getItems().size() > 0)
+                {
+                    onCommand("cmd_btnInventory");
+                }
+                else
+                {
+                    onCommand("cmd_btnCancel");
+                }
+            }
+            else if (splitAction[0].equals("takeItem"))
+            {
+                Actor actor = GameMaster.getActor(model, playerId);
+                Room  room  = GameMaster.getActorRoom(model, playerId);
+                Item  item  = GameMaster.getItem(model, Integer.parseInt(splitAction[1]));
+
+                if (actor != null && item != null)
+                {
+                    actor.addItem(item);
+                }
+
+                if (room != null && item != null)
+                {
+                    room.removeItem(item.getId());
+                }
+
+                if (item != null)
+                {
+                    Toast.makeText(this, "Took item " + item.getDisplayName(), Toast.LENGTH_SHORT)
+                         .show();
+                }
+
+                if (room != null && room.getResidentItems().size() > 0)
+                {
+                    onCommand("cmd_btnFloor");
+                }
+                else
+                {
+                    onCommand("cmd_btnCancel");
                 }
             }
         }

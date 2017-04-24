@@ -5,13 +5,21 @@
                 android:layout_height="match_parent">
 
     <Button
+            android:text="Items"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:id="@+id/btnItems"
+            android:layout_above="@+id/btnEndTurn"
+            android:layout_alignParentStart="true" />
+
+
+    <Button
             android:text="End Turn"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:id="@+id/btnEndTurn"
             android:layout_above="@+id/btnSpecial"
-            android:layout_alignParentStart="true"/>
-
+            android:layout_alignParentStart="true" />
 
     <ImageButton
             android:layout_width="100dp"
