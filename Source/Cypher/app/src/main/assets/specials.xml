@@ -4,6 +4,7 @@
     <heal>
         <name>Heal</name>
         <cost>2</cost>
+        <scalar>5</scalar>
         <targetingType>SINGLE_PLAYER</targetingType>
         <effects>
             <effect>HEAL</effect>
@@ -14,6 +15,7 @@
     <beef_increase>
         <name>Beef Incease</name>
         <cost>1</cost>
+        <scalar>4</scalar>
         <duration>2</duration>
         <targetingType>SINGLE_PLAYER</targetingType>
         <effects>
@@ -25,9 +27,100 @@
     <suckerpunch>
         <name>Suckerpunch</name>
         <cost>1</cost>
+        <scalar>1.5</scalar>
         <targetingType>SINGLE_NON_PLAYER</targetingType>
         <effects>
             <effect>ATTACK</effect>
         </effects>
     </suckerpunch>
+
+    <!--Ignus Fatuus-->
+    <ignus_fatuus>
+        <name>Ignus Fatuus</name>
+        <cost>5</cost>
+        <scalar>1.5</scalar>
+        <targetingType>SINGLE_NON_PLAYER</targetingType>
+        <effects>
+            <effect>ATTACK</effect>
+        </effects>
+    </ignus_fatuus>
+
+    <!--Spear Toss-->
+    <spear_toss>
+        <name>Spear Toss</name>
+        <cost>3</cost>
+        <scalar>2</scalar>
+        <targetingType>SINGLE_NON_PLAYER</targetingType>
+        <effects>
+            <effect>ATTACK</effect>
+        </effects>
+    </spear_toss>
+
+    <!--Flame Shot-->
+    <flame_shot>
+        <name>Flame Shot</name>
+        <cost>5</cost>
+        <scalar>2.2</scalar>
+        <targetingType>SINGLE_NON_PLAYER</targetingType>
+        <effects>
+            <effect>ATTACK</effect>
+        </effects>
+    </flame_shot>
+
+    <!--Chill-->
+    <chill>
+        <name>Chill</name>
+        <cost>8</cost>
+        <scalar>1.3</scalar>
+        <targetingType>AOE_NON_PLAYER</targetingType>
+        <effects>
+            <effect>ATTACK</effect>
+        </effects>
+    </chill>
+
+    <!--Flurry of Fists-->
+    <flurry_of_fists>
+        <name>Flurry of Fists</name>
+        <cost>2</cost>
+        <scalar>1</scalar>
+        <targetingType>AOE_NON_PLAYER</targetingType>
+        <effects>
+            <effect>ATTACK</effect>
+        </effects>
+    </flurry_of_fists>
+
+    <!--Take a Shit-->
+    <take_a_shit>
+        <name>Take a Shit</name>
+        <cost>8</cost>
+        <scalar>8</scalar>
+        <targetingType>SINGLE_NON_PLAYER</targetingType>
+        <effects>
+            <effect>ATTACK</effect>
+            <effect>DEFENCE_RATING_DOWN</effect>
+            <effect>ATTACK_RATING_DOWN</effect>
+        </effects>
+    </take_a_shit>
+
+    <!--Multishot-->
+    <multishot>
+        <name>Multishot</name>
+        <cost>5</cost>
+        <scalar>1</scalar>
+        <targetingType>AOE_NON_PLAYER</targetingType>
+        <effects>
+            <effect>ATTACK</effect>
+        </effects>
+    </multishot>
+
+    <!--Pin-->
+    <pin>
+        <name>Pin</name>
+        <cost>5</cost>
+        <scalar>3</scalar>
+        <targetingType>SINGLE_NON_PLAYER</targetingType>
+        <effects>
+            <effect>ATTACK</effect>
+        </effects>
+    </pin>
 </specials>

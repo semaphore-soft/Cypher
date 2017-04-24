@@ -1399,7 +1399,7 @@ public class Actor
      * @see Effect.E_EFFECT
      * @see Effect#applyTemporaryEffect(Effect.E_EFFECT, int, int, Actor)
      */
-    private boolean useItem(Item item)
+    public boolean useItem(Item item)
     {
         if (items.containsKey(item.getId()))
         {

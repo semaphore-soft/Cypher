@@ -339,9 +339,9 @@ public class PortalActivity extends ARActivity implements PortalRenderer.NewMark
                     GameMaster.setActorState(model, playerId, Actor.E_STATE.DEFEND);
                     Room room = GameMaster.getActorRoom(model, playerId);
 
-                    Toast.makeText(getApplicationContext(),
+                    /*Toast.makeText(getApplicationContext(),
                                    "Success",
-                                   Toast.LENGTH_SHORT).show();
+                                   Toast.LENGTH_SHORT).show();*/
 
                     if (room != null)
                     {
@@ -749,9 +749,9 @@ public class PortalActivity extends ARActivity implements PortalRenderer.NewMark
                     GameMaster.setActorState(model, readFrom, Actor.E_STATE.DEFEND);
                     Room room = GameMaster.getActorRoom(model, readFrom);
 
-                    Toast.makeText(getApplicationContext(),
+                    /*Toast.makeText(getApplicationContext(),
                                    "Success",
-                                   Toast.LENGTH_SHORT).show();
+                                   Toast.LENGTH_SHORT).show();*/
 
                     if (room != null)
                     {
@@ -808,6 +808,155 @@ public class PortalActivity extends ARActivity implements PortalRenderer.NewMark
                     break;
             }
         }
+        else if (msg.equals(NetworkConstants.GAME_INVENTORY_REQUEST))
+        {
+            String res = NetworkConstants.PREFIX_INVENTORY_LIST;
+
+            Actor actor = GameMaster.getActor(model, readFrom);
+
+            if (actor != null)
+            {
+                for (int itemId : actor.getItems().keySet())
+                {
+                    Item item = GameMaster.getItem(model, itemId);
+
+                    res += item.getDisplayName() + ",";
+                    res += ((item instanceof ItemConsumable) ? "consumable" : "durable") + ",";
+                    res += itemId + ":";
+                }
+            }
+
+            serverService.writeToClient(res, readFrom);
+        }
+        else if (msg.equals(NetworkConstants.GAME_FLOOR_REQUEST))
+        {
+            String res = NetworkConstants.PREFIX_FLOOR_LIST;
+
+            Actor actor = GameMaster.getActor(model, readFrom);
+            Room  room  = GameMaster.getActorRoom(model, readFrom);
+
+            if (actor != null && room != null)
+            {
+                for (int itemId : room.getResidentItems())
+                {
+                    Item item = GameMaster.getItem(model, itemId);
+
+                    res += item.getDisplayName() + ",";
+                    //res += ((item instanceof ItemConsumable) ? "consumable" : "durable") + ",";
+                    res += itemId + ":";
+                }
+            }
+
+            serverService.writeToClient(res, readFrom);
+        }
+        else if (msg.startsWith(NetworkConstants.PREFIX_USE_ITEM))
+        {
+            String[] splitMsg = msg.split(":");
+
+            Actor actor = GameMaster.getActor(model, readFrom);
+            Item  item  = GameMaster.getItem(model, Integer.parseInt(splitMsg[1]));
+
+            if (actor != null && item != null)
+            {
+                if (actor.useItem(item))
+                {
+                    GameMaster.removeItem(model, item.getId());
+
+                    serverService.writeToClient("Used item " + item.getDisplayName(), readFrom);
+                }
+            }
+
+            if (actor != null && actor.getItems().size() > 0)
+            {
+                handleRead(NetworkConstants.GAME_INVENTORY_REQUEST, readFrom);
+            }
+            else if (actor != null)
+            {
+                serverService.writeToClient(NetworkConstants.PREFIX_TURN +
+                                            actor.getHealthMaximum() +
+                                            ":" +
+                                            actor.getHealthCurrent() +
+                                            ":" +
+                                            actor.getSpecialMaximum() +
+                                            ":" +
+                                            actor.getSpecialCurrent(),
+                                            readFrom);
+            }
+        }
+        else if (msg.startsWith(NetworkConstants.PREFIX_DROP_ITEM))
+        {
+            String[] splitMsg = msg.split(":");
+
+            Actor actor = GameMaster.getActor(model, readFrom);
+            Room  room  = GameMaster.getActorRoom(model, readFrom);
+            Item  item  = GameMaster.getItem(model, Integer.parseInt(splitMsg[1]));
+
+            if (actor != null && item != null)
+            {
+                actor.removeItem(item.getId());
+
+                serverService.writeToClient("Dropped item " + item.getDisplayName(), readFrom);
+            }
+
+            if (room != null)
+            {
+                room.addItem(Integer.parseInt(splitMsg[1]));
+            }
+
+            if (actor != null && actor.getItems().size() > 0)
+            {
+                handleRead(NetworkConstants.GAME_INVENTORY_REQUEST, readFrom);
+            }
+            else if (actor != null)
+            {
+                serverService.writeToClient(NetworkConstants.PREFIX_TURN +
+                                            actor.getHealthMaximum() +
+                                            ":" +
+                                            actor.getHealthCurrent() +
+                                            ":" +
+                                            actor.getSpecialMaximum() +
+                                            ":" +
+                                            actor.getSpecialCurrent(),
+                                            readFrom);
+            }
+        }
+        else if (msg.startsWith(NetworkConstants.PREFIX_TAKE_ITEM))
+        {
+            String[] splitMsg = msg.split(":");
+
+            Actor actor = GameMaster.getActor(model, readFrom);
+            Room  room  = GameMaster.getActorRoom(model, readFrom);
+            Item  item  = GameMaster.getItem(model, Integer.parseInt(splitMsg[1]));
+
+            if (actor != null && item != null)
+            {
+                actor.addItem(item);
+
+                serverService.writeToClient("Took item " + item.getDisplayName(), readFrom);
+            }
+
+            if (room != null)
+            {
+                room.removeItem(Integer.parseInt(splitMsg[1]));
+            }
+
+            if (room != null && room.getResidentItems().size() > 0)
+            {
+                handleRead(NetworkConstants.GAME_FLOOR_REQUEST, readFrom);
+            }
+            else if (actor != null)
+            {
+                serverService.writeToClient(NetworkConstants.PREFIX_TURN +
+                                            actor.getHealthMaximum() +
+                                            ":" +
+                                            actor.getHealthCurrent() +
+                                            ":" +
+                                            actor.getSpecialMaximum() +
+                                            ":" +
+                                            actor.getSpecialCurrent(),
+                                            readFrom);
+            }
+        }
     }
 
     /**
@@ -819,8 +968,8 @@ public class PortalActivity extends ARActivity implements PortalRenderer.NewMark
     @Override
     public void handleStatus(final String msg, int readFrom)
     {
-        Toast.makeText(this, "Status: " + msg + " from <" + readFrom + ">", Toast.LENGTH_SHORT)
-             .show();
+        /*Toast.makeText(this, "Status: " + msg + " from <" + readFrom + ">", Toast.LENGTH_SHORT)
+             .show();*/
     }
 
     /**
@@ -832,8 +981,8 @@ public class PortalActivity extends ARActivity implements PortalRenderer.NewMark
     @Override
     public void handleError(final String msg, int readFrom)
     {
-        Toast.makeText(this, "Error: " + msg + " from <" + readFrom + ">", Toast.LENGTH_SHORT)
-             .show();
+        /*Toast.makeText(this, "Error: " + msg + " from <" + readFrom + ">", Toast.LENGTH_SHORT)
+             .show();*/
     }
 
     @Override
@@ -1177,6 +1326,41 @@ public class PortalActivity extends ARActivity implements PortalRenderer.NewMark
                     break;
             }
         }
+        else
+        {
+            switch (res)
+            {
+                case 2:
+                    serverService.writeToClient(
+                        NetworkConstants.PREFIX_FEEDBACK + "Moved to starting room", actorId);
+                    break;
+                case 1:
+                    serverService.writeToClient(
+                        NetworkConstants.PREFIX_FEEDBACK + "Remaining in room", actorId);
+                    break;
+                case 0:
+                    serverService.writeToClient(
+                        NetworkConstants.PREFIX_FEEDBACK + "Moved to new room", actorId);
+                    break;
+                case -1:
+                    serverService.writeToClient(
+                        NetworkConstants.PREFIX_FEEDBACK + "Can't move, no door to room", actorId);
+                    break;
+                case -2:
+                    serverService.writeToClient(
+                        NetworkConstants.PREFIX_FEEDBACK + "Can't move, room not adjacent",
+                        actorId);
+                    break;
+                case -3:
+                    serverService.writeToClient(
+                        NetworkConstants.PREFIX_FEEDBACK + "Can't move, room not placed", actorId);
+                    break;
+                case -4:
+                    serverService.writeToClient(NetworkConstants.PREFIX_FEEDBACK + "Error",
+                                                actorId);
+                    break;
+            }
+        }
 
         if (res >= 0)
         {
@@ -1403,7 +1587,29 @@ public class PortalActivity extends ARActivity implements PortalRenderer.NewMark
                     Toast.makeText(this, "Killed target", Toast.LENGTH_SHORT).show();
                     break;
                 case 0:
-                    Toast.makeText(this, "Success", Toast.LENGTH_SHORT).show();
+                    /*Toast.makeText(this, "Success", Toast.LENGTH_SHORT).show();*/
+                    break;
+                default:
+                    break;
+            }
+        }
+        else
+        {
+            switch (res)
+            {
+                case 4:
+                    loseCondition = true;
+                    break;
+                case 3:
+                    break;
+                case 2:
+                    winCondition = true;
+                    break;
+                case 1:
+                    serverService.writeToClient(NetworkConstants.PREFIX_FEEDBACK + "Killed target",
+                                                attackerId);
+                    break;
+                case 0:
                     break;
                 default:
                     break;
@@ -1610,13 +1816,44 @@ public class PortalActivity extends ARActivity implements PortalRenderer.NewMark
                     Toast.makeText(this, "Killed target", Toast.LENGTH_SHORT).show();
                     break;
                 case 0:
-                    Toast.makeText(this, "Success", Toast.LENGTH_SHORT).show();
+                    /*Toast.makeText(this, "Success", Toast.LENGTH_SHORT).show();*/
                     break;
                 case -1:
                     Toast.makeText(this, "You don't have enough energy", Toast.LENGTH_SHORT).show();
                     break;
                 case -2:
                     Toast.makeText(this, "No valid targets", Toast.LENGTH_SHORT).show();
+                    break;
+                default:
+                    break;
+            }
+        }
+        else
+        {
+            switch (res)
+            {
+                case 4:
+                    loseCondition = true;
+                    break;
+                case 3:
+                    break;
+                case 2:
+                    winCondition = true;
+                    break;
+                case 1:
+                    serverService.writeToClient(NetworkConstants.PREFIX_FEEDBACK + "Killed target",
+                                                sourceId);
+                    break;
+                case 0:
+                    break;
+                case -1:
+                    serverService.writeToClient(
+                        NetworkConstants.PREFIX_FEEDBACK + "You don't have enough energy",
+                        sourceId);
+                    break;
+                case -2:
+                    serverService.writeToClient(
+                        NetworkConstants.PREFIX_FEEDBACK + "No valid targets", sourceId);
                     break;
                 default:
                     break;
@@ -1741,6 +1978,8 @@ public class PortalActivity extends ARActivity implements PortalRenderer.NewMark
         };
 
         runOnUiThread(uiUpdate);
+
+        serverService.writeAll(NetworkConstants.PREFIX_FEEDBACK + message);
     }
 
     /**
@@ -1791,9 +2030,8 @@ public class PortalActivity extends ARActivity implements PortalRenderer.NewMark
                 if (actor.getHealthCurrent() <= 0)
                 {
                     Toast.makeText(this, "Player downed!", Toast.LENGTH_SHORT).show();
+                    serverService.writeAll(NetworkConstants.PREFIX_FEEDBACK + "Player downed!");
                 }
-
-                //TODO client feedback
             }
             else
             {
@@ -1811,9 +2049,8 @@ public class PortalActivity extends ARActivity implements PortalRenderer.NewMark
                 if (clientActor.getHealthCurrent() <= 0)
                 {
                     Toast.makeText(this, "Player downed!", Toast.LENGTH_SHORT).show();
+                    serverService.writeAll(NetworkConstants.PREFIX_FEEDBACK + "Player downed!");
                 }
-
-                //TODO client feedback
             }
             else
             {
@@ -2072,14 +2309,14 @@ public class PortalActivity extends ARActivity implements PortalRenderer.NewMark
         if (winCondition)
         {
             Toast.makeText(this, "Boss defeated!", Toast.LENGTH_SHORT).show();
-            //TODO client feedback
+            serverService.writeAll(NetworkConstants.PREFIX_FEEDBACK + "Boss defeated!");
             uiPortalOverlay.overlayWinCondition();
             serverService.writeAll(NetworkConstants.GAME_WIN_CONDITION);
         }
         else if (loseCondition)
         {
             Toast.makeText(this, "All players defeated!", Toast.LENGTH_SHORT).show();
-            //TODO client feedback
+            serverService.writeAll(NetworkConstants.PREFIX_FEEDBACK + "All players defeated!");
             uiPortalOverlay.overlayLoseCondition();
             serverService.writeAll(NetworkConstants.GAME_LOSE_CONDITION);
         }

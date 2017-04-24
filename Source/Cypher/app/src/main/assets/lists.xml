@@ -36,6 +36,15 @@
     <specials>
         <name>heal</name>
         <name>beef_increase</name>
+        <name>suckerpunch</name>
+        <name>ignus_fatuus</name>
+        <name>spear_toss</name>
+        <name>flame_shot</name>
+        <name>chill</name>
+        <name>flurry_of_fists</name>
+        <name>take_a_shit</name>
+        <name>multishot</name>
+        <name>pin</name>
     </specials>
 
     <!--Behaviors-->

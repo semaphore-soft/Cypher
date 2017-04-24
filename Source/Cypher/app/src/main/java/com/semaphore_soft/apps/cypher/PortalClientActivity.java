@@ -237,6 +237,23 @@ public class PortalClientActivity extends ARActivity implements UIListener,
                                                   energyMax,
                                                   energyCurrent);
                     break;
+                case "cmd_btnItems":
+                    ArrayList<Pair<String, String>> options = new ArrayList<>();
+
+                    Pair<String, String> inventory = new Pair<>("Inventory", "cmd_btnInventory");
+                    options.add(inventory);
+
+                    Pair<String, String> floor = new Pair<>("Floor", "cmd_btnFloor");
+                    options.add(floor);
+
+                    uiPortalOverlay.overlaySelect(options);
+                    break;
+                case "cmd_btnInventory":
+                    clientService.write(NetworkConstants.GAME_INVENTORY_REQUEST);
+                    break;
+                case "cmd_btnFloor":
+                    clientService.write(NetworkConstants.GAME_FLOOR_REQUEST);
+                    break;
             }
         }
         else
@@ -244,7 +261,53 @@ public class PortalClientActivity extends ARActivity implements UIListener,
             String[] splitCmd    = cmd.split("_");
             String[] splitAction = splitCmd[1].split(":");
 
-            if (splitAction[0].equals("special"))
+            if (splitAction[0].equals("invConItem"))
+            {
+                ArrayList<Pair<String, String>> options = new ArrayList<>();
+
+                Pair<String, String> useOption =
+                    new Pair<>("Use", "cmd_useItem:" + splitAction[1]);
+                options.add(useOption);
+
+                Pair<String, String> dropOption =
+                    new Pair<>("Drop", "cmd_dropItem:" + splitAction[1]);
+                options.add(dropOption);
+
+                uiPortalOverlay.overlaySelect(options);
+            }
+            else if (splitAction[0].equals("invDurItem"))
+            {
+                ArrayList<Pair<String, String>> options = new ArrayList<>();
+
+                Pair<String, String> dropOption =
+                    new Pair<>("Drop", "cmd_dropItem:" + splitAction[1]);
+                options.add(dropOption);
+
+                uiPortalOverlay.overlaySelect(options);
+            }
+            else if (splitAction[0].equals("floorItem"))
+            {
+                ArrayList<Pair<String, String>> options = new ArrayList<>();
+
+                Pair<String, String> takeOption =
+                    new Pair<>("Take", "cmd_takeItem:" + splitAction[1]);
+                options.add(takeOption);
+
+                uiPortalOverlay.overlaySelect(options);
+            }
+            else if (splitAction[0].equals("useItem"))
+            {
+                clientService.write(NetworkConstants.PREFIX_USE_ITEM + splitAction[1]);
+            }
+            else if (splitAction[0].equals("dropItem"))
+            {
+                clientService.write(NetworkConstants.PREFIX_DROP_ITEM + splitAction[1]);
+            }
+            else if (splitAction[0].equals("takeItem"))
+            {
+                clientService.write(NetworkConstants.PREFIX_TAKE_ITEM + splitAction[1]);
+            }
+            else if (splitAction[0].equals("special"))
             {
                 int specialId = Integer.parseInt(splitAction[1]);
 
@@ -565,6 +628,49 @@ public class PortalClientActivity extends ARActivity implements UIListener,
         else if (msg.equals(NetworkConstants.GAME_LOSE_CONDITION))
         {
             uiPortalOverlay.overlayLoseCondition();
+        }
+        else if (msg.startsWith(NetworkConstants.PREFIX_INVENTORY_LIST))
+        {
+            String[] splitMsg = msg.split(":");
+
+            ArrayList<Pair<String, String>> options = new ArrayList<>();
+
+            for (int i = 1; i < splitMsg.length; ++i)
+            {
+                String[] splitItem = splitMsg[i].split(",");
+
+                if (splitItem[1].equals("consumable"))
+                {
+                    options.add(new Pair<>(splitItem[0], "cmd_invConItem:" + splitItem[2]));
+                }
+                else if (splitItem[1].equals("durable"))
+                {
+                    options.add(new Pair<>(splitItem[0], "cmd_invDurItem:" + splitItem[2]));
+                }
+            }
+
+            uiPortalOverlay.overlaySelect(options);
+        }
+        else if (msg.startsWith(NetworkConstants.PREFIX_FLOOR_LIST))
+        {
+            String[] splitMsg = msg.split(":");
+
+            ArrayList<Pair<String, String>> options = new ArrayList<>();
+
+            for (int i = 1; i < splitMsg.length; ++i)
+            {
+                String[] splitItem = splitMsg[i].split(",");
+
+                options.add(new Pair<>(splitItem[0], "cmd_floorItem:" + splitItem[1]));
+            }
+
+            uiPortalOverlay.overlaySelect(options);
+        }
+        else if (msg.startsWith(NetworkConstants.PREFIX_FEEDBACK))
+        {
+            String[] splitMsg = msg.split("~");
+
+            Toast.makeText(this, splitMsg[1], Toast.LENGTH_SHORT).show();
         }
     }
 
