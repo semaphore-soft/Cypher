@@ -8,11 +8,11 @@
             android:layout_width="100dp"
             android:layout_height="50dp"
             app:srcCompat="@drawable/hud_sepia_goods"
-            android:src="@drawable/hud_sepia_door"
+            android:src="@drawable/hud_sepia_goods"
             android:id="@+id/btnItems"
             android:scaleType="centerInside"
             android:background="?android:selectableItemBackground"
-            android:layout_above="@+id/imageButton"
+            android:layout_above="@+id/btnOpenDoor"
             android:layout_alignParentStart="true"/>
 
     <ImageButton
@@ -20,7 +20,7 @@
             android:layout_height="50dp"
             app:srcCompat="@drawable/hud_sepia_door"
             android:src="@drawable/hud_sepia_door"
-            android:id="@+id/imageButton"
+            android:id="@+id/btnOpenDoor"
             android:scaleType="centerInside"
             android:background="?android:selectableItemBackground"
             android:layout_alignParentBottom="true"

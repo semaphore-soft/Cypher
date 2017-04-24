@@ -992,6 +992,8 @@ public class Actor
             specialCurrent -= special.getCost();
         }
 
+        state = E_STATE.SPECIAL;
+
         // ensure a self-targeted special's effects will be present for their
         // entire duration after the turn the special was used
         if (id == actor.getId())
@@ -1040,6 +1042,8 @@ public class Actor
         {
             specialCurrent -= special.getCost();
         }
+
+        state = E_STATE.SPECIAL;
 
         for (Actor actor : actors)
         {

@@ -43,10 +43,6 @@ public class NetworkConstants
     public static final String GAME_LOSE_CONDITION              = "GAME_LOSE";
     public static final String GAME_INVENTORY_REQUEST           = "GAME_INVENTORY";
     public static final String GAME_FLOOR_REQUEST               = "GAME_FLOOR";
-    public static final String PREFIX_START                     = "GAME_START:";
-    public static final String PREFIX_TURN                      = "TURN:";
-    public static final String PREFIX_TURN_OVER                 = "TURN_OVER:";
-    public static final String PREFIX_HEALTH                    = "HEALTH:";
     // Constants to use as prefixes to exchange information with other devices
     public static final String PREFIX_NAME                      = "NAME:";
     public static final String PREFIX_PLAYER                    = "PLAYER:";

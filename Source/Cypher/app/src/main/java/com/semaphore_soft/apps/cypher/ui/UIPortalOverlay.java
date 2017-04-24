@@ -119,16 +119,6 @@ public class UIPortalOverlay extends UIBase
             }
         });
 
-        Button btnEndTurn = (Button) findViewById(R.id.btnEndTurn);
-        btnEndTurn.setOnClickListener(new OnClickListener()
-        {
-            @Override
-            public void onClick(View v)
-            {
-                notifyListener("cmd_btnEndTurn");
-            }
-        });
-
         ImageButton btnOpenDoor = (ImageButton) findViewById(R.id.btnOpenDoor);
         btnOpenDoor.setOnClickListener(new OnClickListener()
         {
