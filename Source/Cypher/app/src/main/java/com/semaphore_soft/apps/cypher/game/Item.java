@@ -172,7 +172,7 @@ public abstract class Item
      * @see Effect.E_EFFECT
      * @see Effect
      */
-    ArrayList<Effect.E_EFFECT> getEffects()
+    public ArrayList<Effect.E_EFFECT> getEffects()
     {
         return effects;
     }

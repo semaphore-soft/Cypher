@@ -3,7 +3,9 @@ package com.semaphore_soft.apps.cypher.ui;
 import android.content.Context;
 import android.support.v4.util.Pair;
 import android.util.AttributeSet;
+import android.view.Gravity;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.ImageButton;
 import android.widget.ImageView;
@@ -27,6 +29,9 @@ public class UIPortalOverlay extends UIBase
 
     private float healthBarMaxLength;
     private float energyBarMaxLength;
+
+    private int lastHealth;
+    private int lastEnergy;
 
     public UIPortalOverlay(Context context)
     {
@@ -179,8 +184,97 @@ public class UIPortalOverlay extends UIBase
             LinearLayout.LayoutParams layoutParams =
                 new LinearLayout.LayoutParams(LayoutParams.WRAP_CONTENT,
                                               LayoutParams.WRAP_CONTENT);
-            layoutParams.setMargins(160, 160, 160, 160);
+            layoutParams.setMargins(80, 80, 80, 160);
             btnTarget.setLayoutParams(layoutParams);
+            btnTarget.setText(name);
+            btnTarget.setOnClickListener(new OnClickListener()
+            {
+                @Override
+                public void onClick(View v)
+                {
+                    notifyListener(option.second);
+                }
+            });
+            lloOptions.addView(btnTarget);
+        }
+
+        Button btnCancel = (Button) findViewById(R.id.btnCancel);
+        btnCancel.setOnClickListener(new OnClickListener()
+        {
+            @Override
+            public void onClick(View v)
+            {
+                notifyListener("cmd_btnCancel");
+            }
+        });
+    }
+
+    public void overlaySelect(ArrayList<Pair<String, String>> options, boolean left, boolean bottom)
+    {
+        if (bottom)
+        {
+            makeView(R.layout.overlay_select);
+        }
+        else
+        {
+            makeView(R.layout.overlay_select_top);
+        }
+
+        setupHealthAndEnergyBars(healthMax, energyMax);
+
+        setHealth(lastHealth);
+        setEnergy(lastEnergy);
+
+        LinearLayout      lloParent  = (LinearLayout) findViewById(R.id.lloParent);
+        LinearLayout      lloOptions = (LinearLayout) findViewById(R.id.lloOptions);
+        ArrayList<String> names      = new ArrayList<>();
+
+        RelativeLayout.LayoutParams parentLayoutParams =
+            new RelativeLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT,
+                                            ViewGroup.LayoutParams.WRAP_CONTENT);
+
+        LinearLayout.LayoutParams optionsLayoutParams =
+            new LinearLayout.LayoutParams(LayoutParams.WRAP_CONTENT,
+                                          LayoutParams.WRAP_CONTENT);
+
+        if (left)
+        {
+            parentLayoutParams.addRule(RelativeLayout.ALIGN_PARENT_START);
+            if (bottom)
+            {
+                parentLayoutParams.addRule(RelativeLayout.ALIGN_PARENT_BOTTOM);
+            }
+            else
+            {
+                parentLayoutParams.addRule(RelativeLayout.ALIGN_PARENT_TOP);
+            }
+            lloParent.setLayoutParams(parentLayoutParams);
+        }
+        else
+        {
+            parentLayoutParams.addRule(RelativeLayout.ALIGN_PARENT_END);
+            if (bottom)
+            {
+                parentLayoutParams.addRule(RelativeLayout.ALIGN_PARENT_BOTTOM);
+            }
+            else
+            {
+                parentLayoutParams.addRule(RelativeLayout.ALIGN_PARENT_TOP);
+            }
+            lloParent.setLayoutParams(parentLayoutParams);
+            lloParent.setGravity(Gravity.END);
+            optionsLayoutParams.gravity = Gravity.END;
+        }
+
+        lloParent.setLayoutParams(parentLayoutParams);
+
+        for (final Pair<String, String> option : options)
+        {
+            Button btnTarget = new Button(getContext());
+            String name      = getName(option.first, 1, names);
+            names.add(name);
+            optionsLayoutParams.setMargins(0, 20, 0, 20);
+            btnTarget.setLayoutParams(optionsLayoutParams);
             btnTarget.setText(name);
             btnTarget.setOnClickListener(new OnClickListener()
             {
@@ -275,6 +369,8 @@ public class UIPortalOverlay extends UIBase
 
     public void setHealth(final int healthCurrent)
     {
+        lastHealth = healthCurrent;
+
         ImageView imgHealth = (ImageView) findViewById(R.id.imgHealth);
         TextView  lblHealth = (TextView) findViewById(R.id.lblHealth);
 
@@ -305,6 +401,8 @@ public class UIPortalOverlay extends UIBase
 
     public void setEnergy(final int energyCurrent)
     {
+        lastEnergy = energyCurrent;
+
         ImageView imgEnergy = (ImageView) findViewById(R.id.imgEnergy);
         TextView  lblEnergy = (TextView) findViewById(R.id.lblEnergy);
 

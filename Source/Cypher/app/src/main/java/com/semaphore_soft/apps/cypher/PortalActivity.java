@@ -330,7 +330,7 @@ public class PortalActivity extends ARActivity implements PortalRenderer.NewMark
                         }
                     }
 
-                    uiPortalOverlay.overlaySelect(attackOptions);
+                    uiPortalOverlay.overlaySelect(attackOptions, false, false);
                     break;
                 case "cmd_btnDefend":
                 {
@@ -393,7 +393,7 @@ public class PortalActivity extends ARActivity implements PortalRenderer.NewMark
                         specialOptions.add(specialPair);
                     }
 
-                    uiPortalOverlay.overlaySelect(specialOptions);
+                    uiPortalOverlay.overlaySelect(specialOptions, false, true);
                     break;
                 case "cmd_btnCancel":
                 {
@@ -423,7 +423,7 @@ public class PortalActivity extends ARActivity implements PortalRenderer.NewMark
                     Pair<String, String> floor = new Pair<>("Floor", "cmd_btnFloor");
                     options.add(floor);
 
-                    uiPortalOverlay.overlaySelect(options);
+                    uiPortalOverlay.overlaySelect(options, true, true);
                     break;
                 }
                 case "cmd_btnInventory":
@@ -442,7 +442,7 @@ public class PortalActivity extends ARActivity implements PortalRenderer.NewMark
                         }
                     }
 
-                    uiPortalOverlay.overlaySelect(options);
+                    uiPortalOverlay.overlaySelect(options, true, true);
                     break;
                 }
                 case "cmd_btnFloor":
@@ -462,7 +462,7 @@ public class PortalActivity extends ARActivity implements PortalRenderer.NewMark
                         }
                     }
 
-                    uiPortalOverlay.overlaySelect(options);
+                    uiPortalOverlay.overlaySelect(options, true, true);
                     break;
                 }
                 default:
@@ -530,7 +530,7 @@ public class PortalActivity extends ARActivity implements PortalRenderer.NewMark
                             }
                         }
 
-                        uiPortalOverlay.overlaySelect(targetOptions);
+                        uiPortalOverlay.overlaySelect(targetOptions, false, true);
                     }
                 }
                 else
@@ -555,7 +555,7 @@ public class PortalActivity extends ARActivity implements PortalRenderer.NewMark
                     new Pair<>("Drop", "cmd_dropItem:" + splitAction[1]);
                 options.add(dropOption);
 
-                uiPortalOverlay.overlaySelect(options);
+                uiPortalOverlay.overlaySelect(options, true, true);
             }
             else if (splitAction[0].equals("floorItem"))
             {
@@ -565,7 +565,7 @@ public class PortalActivity extends ARActivity implements PortalRenderer.NewMark
                     new Pair<>("Take", "cmd_takeItem:" + splitAction[1]);
                 options.add(takeOption);
 
-                uiPortalOverlay.overlaySelect(options);
+                uiPortalOverlay.overlaySelect(options, true, true);
             }
             else if (splitAction[0].equals("useItem"))
             {
@@ -640,6 +640,14 @@ public class PortalActivity extends ARActivity implements PortalRenderer.NewMark
                 Actor actor = GameMaster.getActor(model, playerId);
                 Room  room  = GameMaster.getActorRoom(model, playerId);
                 Item  item  = GameMaster.getItem(model, Integer.parseInt(splitAction[1]));
+
+                if (actor != null && actor.getItems().size() >= 3)
+                {
+                    Toast.makeText(this, "Couldn't take item, bag is full", Toast.LENGTH_SHORT)
+                         .show();
+
+                    return;
+                }
 
                 if (actor != null && item != null)
                 {
@@ -731,7 +739,7 @@ public class PortalActivity extends ARActivity implements PortalRenderer.NewMark
 
             if (res >= 0)
             {
-                postOpenDoorResult(endRoomId, res);
+                postOpenDoorResult(endRoomId, res, readFrom);
                 serverService.writeAll(NetworkConstants.PREFIX_PLACE_ROOM + splitMsg[1]);
             }
         }
@@ -936,11 +944,21 @@ public class PortalActivity extends ARActivity implements PortalRenderer.NewMark
             Room  room  = GameMaster.getActorRoom(model, readFrom);
             Item  item  = GameMaster.getItem(model, Integer.parseInt(splitMsg[1]));
 
+            if (actor != null && actor.getItems().size() >= 3)
+            {
+                serverService.writeToClient(
+                    NetworkConstants.PREFIX_FEEDBACK + "Couldn't take item, bag is full", readFrom);
+
+                return;
+            }
+
             if (actor != null && item != null)
             {
                 actor.addItem(item);
 
-                serverService.writeToClient("Took item " + item.getDisplayName(), readFrom);
+                serverService.writeToClient(
+                    NetworkConstants.PREFIX_FEEDBACK + "Took item " + item.getDisplayName(),
+                    readFrom);
             }
 
             if (room != null)
@@ -1315,7 +1333,7 @@ public class PortalActivity extends ARActivity implements PortalRenderer.NewMark
 
                 createRoom(mark, wallDescriptors);
 
-                runOnUiThread(new Runnable()
+                /*runOnUiThread(new Runnable()
                 {
                     @Override
                     public void run()
@@ -1325,7 +1343,7 @@ public class PortalActivity extends ARActivity implements PortalRenderer.NewMark
                                        Toast.LENGTH_SHORT)
                              .show();
                     }
-                });
+                });*/
             }
 
             return true;
@@ -1395,7 +1413,7 @@ public class PortalActivity extends ARActivity implements PortalRenderer.NewMark
 
                 if (res >= 0)
                 {
-                    postOpenDoorResult(endRoomId, res);
+                    postOpenDoorResult(endRoomId, res, playerId);
                     serverService.writeAll(NetworkConstants.PREFIX_PLACE_ROOM + nearestMarkerID);
 
                     updateRoomResidents(GameMaster.getRoomMarkerId(model, endRoomId),
@@ -1427,14 +1445,33 @@ public class PortalActivity extends ARActivity implements PortalRenderer.NewMark
         }
     }
 
-    private void postOpenDoorResult(final int endRoomId, final int res)
+    private void postOpenDoorResult(final int endRoomId, final int res, final int sourceActorId)
     {
-        switch (res)
+        if (sourceActorId == playerId)
         {
-            case 0:
-                break;
-            case -1:
-                break;
+            switch (res)
+            {
+                case 0:
+                    break;
+                default:
+                    Toast.makeText(this,
+                                   "Couldn't open door, bad adjacency of new room",
+                                   Toast.LENGTH_SHORT).show();
+                    break;
+            }
+        }
+        else
+        {
+            switch (res)
+            {
+                case 0:
+                    break;
+                default:
+                    serverService.writeToClient(NetworkConstants.PREFIX_FEEDBACK +
+                                                "Couldn't open door, bad adjacency of new room",
+                                                sourceActorId);
+                    break;
+            }
         }
 
         if (res >= 0)
@@ -2287,23 +2324,24 @@ public class PortalActivity extends ARActivity implements PortalRenderer.NewMark
                     turn = true;
                     Actor hostActor = GameMaster.getActor(model, playerId);
 
-            if (hostActor != null)
-            {
-                uiPortalOverlay.overlayAction(hostActor.getHealthMaximum(),
-                                              hostActor.getHealthCurrent(),
-                                              hostActor.getSpecialMaximum(),
-                                              hostActor.getSpecialCurrent());
-            }
-            else
-            {
-                uiPortalOverlay.overlayAction(1, 0, 1, 0);
-            }
+                    if (hostActor != null)
+                    {
+                        uiPortalOverlay.overlayAction(hostActor.getHealthMaximum(),
+                                                      hostActor.getHealthCurrent(),
+                                                      hostActor.getSpecialMaximum(),
+                                                      hostActor.getSpecialCurrent());
+                    }
+                    else
+                    {
+                        uiPortalOverlay.overlayAction(1, 0, 1, 0);
+                    }
 
-            renderer.setCheckingNearestRoomMarker(true);
-        }
-        else if (!GameMaster.getActorIsPlayer(model, turnId))
-        {
-            Logger.logD("turn id is not a player, taking turn for non-player actor " + turnId);
+                    renderer.setCheckingNearestRoomMarker(true);
+                }
+                else if (!GameMaster.getActorIsPlayer(model, turnId))
+                {
+                    Logger.logD(
+                        "turn id is not a player, taking turn for non-player actor " + turnId);
 
                     ActorController.takeTurn(this, model, turnId);
                 }

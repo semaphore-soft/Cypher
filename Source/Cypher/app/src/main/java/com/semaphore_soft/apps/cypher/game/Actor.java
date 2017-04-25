@@ -1420,10 +1420,18 @@ public class Actor
      */
     public boolean useItem(Item item)
     {
+        Logger.logD("enter trace");
+
+        Logger.logD("item id:<" + item.getId() + ">");
+
         if (items.containsKey(item.getId()))
         {
+            Logger.logD("item found in inventory");
+
             if (item instanceof ItemConsumable)
             {
+                Logger.logD("item is consumable");
+
                 for (Effect.E_EFFECT effect : item.getEffects())
                 {
                     Logger.logI("applying effect:<" + effect.toString() + "> with rating:<" +
@@ -1437,9 +1445,13 @@ public class Actor
 
                 removeItem(item);
 
+                Logger.logD("exit trace");
+
                 return true;
             }
         }
+
+        Logger.logD("exit trace");
 
         return false;
     }

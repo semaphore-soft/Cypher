@@ -7,9 +7,16 @@
             android:orientation="vertical"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_alignParentBottom="true"
-            android:layout_alignParentStart="true"
+            android:layout_alignParentTop="true"
+            android:layout_alignParentEnd="true"
             android:id="@+id/lloParent">
+
+        <Button
+                android:text="Cancel"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:id="@+id/btnCancel"
+                android:layout_marginBottom="20dp"/>
 
         <LinearLayout
                 android:orientation="vertical"
@@ -17,13 +24,6 @@
                 android:layout_height="wrap_content"
                 android:id="@+id/lloOptions">
         </LinearLayout>
-
-        <Button
-                android:text="Cancel"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:id="@+id/btnCancel"
-                android:layout_marginTop="20dp"/>
 
     </LinearLayout>
 

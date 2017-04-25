@@ -113,7 +113,8 @@ public class ActorController
                 boolean foundValidMove = false;
                 for (int roomId : adjacentRooms)
                 {
-                    if (GameMaster.getValidPath(model, actor.getRoom(), roomId) == 0)
+                    if (GameMaster.getRoomFull(model, roomId) == 0 &&
+                        GameMaster.getValidPath(model, actor.getRoom(), roomId) == 0)
                     {
                         validMoveRooms.add(roomId);
                         foundValidMove = true;
