@@ -1503,10 +1503,21 @@ public class PortalActivity extends ARActivity implements PortalRenderer.NewMark
 
     private void postAttackResults(final int attackerId, final int defenderId, final int res)
     {
+        Actor attacker = GameMaster.getActor(model, attackerId);
+        Actor defender = GameMaster.getActor(model, defenderId);
+
         if (attackerId == playerId)
         {
             switch (res)
             {
+                case 5:
+                    Toast.makeText(this,
+                                   defender.getDisplayName() + " dropped something!",
+                                   Toast.LENGTH_SHORT).show();
+                    serverService.writeAll(
+                        NetworkConstants.PREFIX_FEEDBACK + defender.getDisplayName() +
+                        " dropped something!");
+                    break;
                 case 4:
                     //Toast.makeText(this, "All players defeated!", Toast.LENGTH_SHORT).show();
                     loseCondition = true;
@@ -1519,10 +1530,21 @@ public class PortalActivity extends ARActivity implements PortalRenderer.NewMark
                     winCondition = true;
                     break;
                 case 1:
-                    Toast.makeText(this, "Killed target", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(this,
+                                   "You killed " + defender.getDisplayName(),
+                                   Toast.LENGTH_SHORT).show();
+                    serverService.writeAll(
+                        NetworkConstants.PREFIX_FEEDBACK + attacker.getDisplayName() + " killed " +
+                        defender.getDisplayName());
                     break;
                 case 0:
-                    /*Toast.makeText(this, "Success", Toast.LENGTH_SHORT).show();*/
+                    Toast.makeText(this,
+                                   "You attacked " + defender.getDisplayName(),
+                                   Toast.LENGTH_SHORT).show();
+                    serverService.writeAll(
+                        NetworkConstants.PREFIX_FEEDBACK + attacker.getDisplayName() +
+                        " attacked " +
+                        defender.getDisplayName());
                     break;
                 default:
                     break;
@@ -1532,6 +1554,14 @@ public class PortalActivity extends ARActivity implements PortalRenderer.NewMark
         {
             switch (res)
             {
+                case 5:
+                    Toast.makeText(this,
+                                   defender.getDisplayName() + " dropped something!",
+                                   Toast.LENGTH_SHORT).show();
+                    serverService.writeAll(
+                        NetworkConstants.PREFIX_FEEDBACK + defender.getDisplayName() +
+                        " dropped something!");
+                    break;
                 case 4:
                     loseCondition = true;
                     break;
@@ -1541,10 +1571,40 @@ public class PortalActivity extends ARActivity implements PortalRenderer.NewMark
                     winCondition = true;
                     break;
                 case 1:
-                    serverService.writeToClient(NetworkConstants.PREFIX_FEEDBACK + "Killed target",
+                    Toast.makeText(this,
+                                   attacker.getDisplayName() + " killed " +
+                                   defender.getDisplayName(),
+                                   Toast.LENGTH_SHORT).show();
+                    serverService.writeToClient(NetworkConstants.PREFIX_FEEDBACK + "You killed " +
+                                                defender.getDisplayName(),
                                                 attackerId);
+                    for (int id : GameMaster.getPlayerActorIds(model))
+                    {
+                        if (id != playerId && id != attackerId)
+                        {
+                            serverService.writeToClient(
+                                NetworkConstants.PREFIX_FEEDBACK + attacker.getDisplayName() +
+                                " killed " + defender.getDisplayName(), id);
+                        }
+                    }
                     break;
                 case 0:
+                    Toast.makeText(this,
+                                   attacker.getDisplayName() + " killed " +
+                                   defender.getDisplayName(),
+                                   Toast.LENGTH_SHORT).show();
+                    serverService.writeToClient(NetworkConstants.PREFIX_FEEDBACK + "You attacked " +
+                                                defender.getDisplayName(),
+                                                attackerId);
+                    for (int id : GameMaster.getPlayerActorIds(model))
+                    {
+                        if (id != playerId && id != attackerId)
+                        {
+                            serverService.writeToClient(
+                                NetworkConstants.PREFIX_FEEDBACK + attacker.getDisplayName() +
+                                " attacked " + defender.getDisplayName(), id);
+                        }
+                    }
                     break;
                 default:
                     break;
@@ -1555,8 +1615,8 @@ public class PortalActivity extends ARActivity implements PortalRenderer.NewMark
         {
             renderer.setCheckingNearestRoomMarker(false);
 
-            Room  room     = GameMaster.getActorRoom(model, attackerId);
-            Actor defender = GameMaster.getActor(model, defenderId);
+            Room room = GameMaster.getActorRoom(model, attackerId);
+            //Actor defender = GameMaster.getActor(model, defenderId);
 
             if (room != null)
             {
@@ -1734,10 +1794,29 @@ public class PortalActivity extends ARActivity implements PortalRenderer.NewMark
                                    final int specialId,
                                    final int res)
     {
+        Actor   source  = GameMaster.getActor(model, sourceId);
+        Actor   target  = GameMaster.getActor(model, targetId);
+        Special special = GameMaster.getSpecial(model, specialId);
+
         if (sourceId == playerId)
         {
             switch (res)
             {
+                case 6:
+                    Toast.makeText(this,
+                                   "One of them dropped something!",
+                                   Toast.LENGTH_SHORT).show();
+                    serverService.writeAll(
+                        NetworkConstants.PREFIX_FEEDBACK + "One of them dropped something!");
+                    break;
+                case 5:
+                    Toast.makeText(this,
+                                   target.getDisplayName() + " dropped something!",
+                                   Toast.LENGTH_SHORT).show();
+                    serverService.writeAll(
+                        NetworkConstants.PREFIX_FEEDBACK + target.getDisplayName() +
+                        " dropped something!");
+                    break;
                 case 4:
                     //Toast.makeText(this, "All players defeated!", Toast.LENGTH_SHORT).show();
                     loseCondition = true;
@@ -1750,10 +1829,21 @@ public class PortalActivity extends ARActivity implements PortalRenderer.NewMark
                     winCondition = true;
                     break;
                 case 1:
-                    Toast.makeText(this, "Killed target", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(this,
+                                   "You killed " + target.getDisplayName(),
+                                   Toast.LENGTH_SHORT).show();
+                    serverService.writeAll(
+                        NetworkConstants.PREFIX_FEEDBACK + source.getDisplayName() + " killed " +
+                        target.getDisplayName() + " with " + special.getDisplayName());
                     break;
                 case 0:
-                    /*Toast.makeText(this, "Success", Toast.LENGTH_SHORT).show();*/
+                    Toast.makeText(this,
+                                   "You used " + special.getDisplayName() + " on " +
+                                   target.getDisplayName(),
+                                   Toast.LENGTH_SHORT).show();
+                    serverService.writeAll(
+                        NetworkConstants.PREFIX_FEEDBACK + source.getDisplayName() + " used " +
+                        special.getDisplayName() + " on " + target.getDisplayName());
                     break;
                 case -1:
                     Toast.makeText(this, "You don't have enough energy", Toast.LENGTH_SHORT).show();
@@ -1769,6 +1859,21 @@ public class PortalActivity extends ARActivity implements PortalRenderer.NewMark
         {
             switch (res)
             {
+                case 6:
+                    Toast.makeText(this,
+                                   "One of them dropped something!",
+                                   Toast.LENGTH_SHORT).show();
+                    serverService.writeAll(
+                        NetworkConstants.PREFIX_FEEDBACK + "One of them dropped something!");
+                    break;
+                case 5:
+                    Toast.makeText(this,
+                                   target.getDisplayName() + " dropped something!",
+                                   Toast.LENGTH_SHORT).show();
+                    serverService.writeAll(
+                        NetworkConstants.PREFIX_FEEDBACK + target.getDisplayName() +
+                        " dropped something!");
+                    break;
                 case 4:
                     loseCondition = true;
                     break;
@@ -1778,10 +1883,45 @@ public class PortalActivity extends ARActivity implements PortalRenderer.NewMark
                     winCondition = true;
                     break;
                 case 1:
-                    serverService.writeToClient(NetworkConstants.PREFIX_FEEDBACK + "Killed target",
-                                                sourceId);
+                    Toast.makeText(this,
+                                   source.getDisplayName() +
+                                   " killed " + target.getDisplayName() + " with " +
+                                   special.getDisplayName(),
+                                   Toast.LENGTH_SHORT).show();
+                    serverService.writeToClient(
+                        NetworkConstants.PREFIX_FEEDBACK + "You killed " + target.getDisplayName(),
+                        sourceId);
+                    for (int id : GameMaster.getPlayerActorIds(model))
+                    {
+                        if (id != playerId && id != sourceId)
+                        {
+                            serverService.writeToClient(
+                                NetworkConstants.PREFIX_FEEDBACK + source.getDisplayName() +
+                                " killed " + target.getDisplayName() + " with " +
+                                special.getDisplayName(), id);
+                        }
+                    }
                     break;
                 case 0:
+                    Toast.makeText(this,
+                                   source.getDisplayName() +
+                                   " used " + special.getDisplayName() + " on " +
+                                   target.getDisplayName(),
+                                   Toast.LENGTH_SHORT).show();
+                    serverService.writeToClient(
+                        NetworkConstants.PREFIX_FEEDBACK + "You used " + special.getDisplayName() +
+                        " on " + target.getDisplayName(),
+                        sourceId);
+                    for (int id : GameMaster.getPlayerActorIds(model))
+                    {
+                        if (id != playerId && id != sourceId)
+                        {
+                            serverService.writeToClient(
+                                NetworkConstants.PREFIX_FEEDBACK + source.getDisplayName() +
+                                " used " + special.getDisplayName() + " on " +
+                                target.getDisplayName(), id);
+                        }
+                    }
                     break;
                 case -1:
                     serverService.writeToClient(
@@ -1801,8 +1941,8 @@ public class PortalActivity extends ARActivity implements PortalRenderer.NewMark
         {
             renderer.setCheckingNearestRoomMarker(false);
 
-            Room  room   = GameMaster.getActorRoom(model, sourceId);
-            Actor target = GameMaster.getActor(model, targetId);
+            Room room = GameMaster.getActorRoom(model, sourceId);
+            //Actor target = GameMaster.getActor(model, targetId);
 
             String specialType = GameMaster.getSpecialTypeDescriptor(model, specialId);
 

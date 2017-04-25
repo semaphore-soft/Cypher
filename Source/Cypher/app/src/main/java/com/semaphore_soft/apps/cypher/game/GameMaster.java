@@ -1403,6 +1403,8 @@ public class GameMaster
             }
             else
             {
+                ret = 1;
+
                 Room room = getRoom(model, defender.getRoom());
 
                 if (room != null)
@@ -1412,10 +1414,10 @@ public class GameMaster
                         room.addItem(itemId);
                         Logger.logI("item <" + itemId + "> added to room <" + room.getId() + ">");
                         defender.removeItem(itemId);
+
+                        ret = 5;
                     }
                 }
-
-                ret = 1;
             }
         }
 
@@ -1577,7 +1579,7 @@ public class GameMaster
 
                     if (target.getHealthCurrent() <= 0)
                     {
-                        kill = true;
+                        ret = 1;
 
                         if (target.isBoss())
                         {
@@ -1601,6 +1603,8 @@ public class GameMaster
                                         "item <" + itemId + "> added to room <" + room.getId() +
                                         ">");
                                     target.removeItem(itemId);
+
+                                    ret = 6;
                                 }
                             }
                         }
@@ -1608,16 +1612,12 @@ public class GameMaster
 
                     if (playerKill)
                     {
+                        ret = 3;
+
                         if (areAllPlayersDead(model))
                         {
-                            return 4;
+                            ret = 4;
                         }
-
-                        return 3;
-                    }
-                    else if (kill)
-                    {
-                        ret = 1;
                     }
                 }
 
@@ -1717,6 +1717,8 @@ public class GameMaster
                                 Logger.logI(
                                     "item <" + itemId + "> added to room <" + room.getId() + ">");
                                 target.removeItem(itemId);
+
+                                ret = 5;
                             }
                         }
                     }
@@ -1833,13 +1835,20 @@ public class GameMaster
         return numDeadPlayers >= numPlayers;
     }
 
-    public static Item getItem(Model model, int itemId)
+    @Nullable
+    public static Item getItem(final Model model, final int itemId)
     {
         return model.getItems().get(itemId);
     }
 
-    public static void removeItem(Model model, int itemId)
+    public static void removeItem(final Model model, final int itemId)
     {
         model.getItems().remove(itemId);
+    }
+
+    @Nullable
+    public static Special getSpecial(final Model model, final int specialId)
+    {
+        return model.getSpecials().get(specialId);
     }
 }
