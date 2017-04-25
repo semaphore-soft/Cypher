@@ -63,6 +63,8 @@ public class ModelLoader
                                         float size,
                                         String texture)
     {
+        Logger.logD("enter trace");
+
         if (name != null)
         {
             try
@@ -113,13 +115,26 @@ public class ModelLoader
 
                             ARModelGLES20 model;
 
+                            int texHandle;
+
                             if (texture == null)
                             {
-                                model = loadModel(context, filename, size, name);
+                                Logger.logI("using texture:<" + name + ".png>");
+
+                                texHandle =
+                                    TextureLoader.loadTexture(context, "textures/" + name + ".png");
+
+                                model = loadModel(context, filename, size, texHandle);
                             }
                             else
                             {
-                                model = loadModel(context, filename, size, texture);
+                                Logger.logI("using texture:<" + texture + ".png>");
+
+                                texHandle = TextureLoader.loadTexture(context,
+                                                                      "textures/" + texture +
+                                                                      ".png");
+
+                                model = loadModel(context, filename, size, texHandle);
                             }
 
                             if (model != null)
@@ -134,6 +149,8 @@ public class ModelLoader
                         }
                     }
 
+                    Logger.logD("exit trace");
+
                     return new ARPoseModel(poseLib, defaultPose);
                 }
                 else
@@ -143,13 +160,28 @@ public class ModelLoader
                         filename += ".obj";
                     }
 
+                    int texHandle;
+
                     if (texture == null)
                     {
-                        return loadModel(context, filename, size, name);
+                        Logger.logI("using texture:<" + name + ".png>");
+
+                        texHandle = TextureLoader.loadTexture(context, "textures/" + name + ".png");
+
+                        Logger.logD("exit trace");
+
+                        return loadModel(context, filename, size, texHandle);
                     }
                     else
                     {
-                        return loadModel(context, filename, size, texture);
+                        Logger.logI("using texture:<" + texture + ".png>");
+
+                        texHandle =
+                            TextureLoader.loadTexture(context, "textures/" + texture + ".png");
+
+                        Logger.logD("exit trace");
+
+                        return loadModel(context, filename, size, texHandle);
                     }
                 }
             }
@@ -159,14 +191,20 @@ public class ModelLoader
             }
         }
 
+        Logger.logD("exit trace");
+
         return null;
     }
 
     private static ARModelGLES20 loadModel(Context context,
                                            String filename,
                                            float size,
-                                           String texture)
+                                           int texture)
     {
+        Logger.logD("enter trace");
+
+        Logger.logD("filename:<" + filename + ">, texture:<" + texture + ">");
+
         Timer timer = new Timer();
         timer.start();
 
@@ -395,8 +433,7 @@ public class ModelLoader
                 arModel.makeTexCoordinateBuffer(texCoordinatesInVertexOrder);
             }
             arModel.makeVertexIndexBuffer(vertexIndices);
-            arModel.setTextureHandle(TextureLoader.loadTexture(context,
-                                                               "textures/" + texture + ".png"));
+            arModel.setTextureHandle(texture);
 
             Logger.logI(
                 "finished making openGL object in " + ((float) openGLTimer.getTime()) / 1000f +
@@ -406,12 +443,16 @@ public class ModelLoader
             Logger.logI("finished loading model <" + filename + "> in " +
                         ((float) timer.getTime()) / 1000f + " seconds", 3);
 
+            Logger.logD("exit trace");
+
             return arModel;
         }
         catch (IOException e)
         {
             e.printStackTrace();
         }
+
+        Logger.logD("exit trace");
 
         return null;
     }

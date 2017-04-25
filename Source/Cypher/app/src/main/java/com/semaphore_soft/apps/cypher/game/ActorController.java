@@ -315,6 +315,8 @@ public class ActorController
                         GameMaster.removeItem(model, itemId);
                     }
 
+                    actor.setState(Actor.E_STATE.NEUTRAL);
+
                     gameController.feedback(actor.getDisplayName() + " used item " + itemName);
 
                     gameController.onActorAction(actorId, -1, "item");

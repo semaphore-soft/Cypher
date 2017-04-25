@@ -1,5 +1,7 @@
 package com.semaphore_soft.apps.cypher.game;
 
+import com.semaphore_soft.apps.cypher.utils.Logger;
+
 import java.util.ArrayList;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -1424,6 +1426,9 @@ public class Actor
             {
                 for (Effect.E_EFFECT effect : item.getEffects())
                 {
+                    Logger.logI("applying effect:<" + effect.toString() + "> with rating:<" +
+                                item.getEffectRating() + ">");
+
                     Effect.applyTemporaryEffect(effect,
                                                 item.getEffectRating(),
                                                 ((ItemConsumable) item).getDuration(),

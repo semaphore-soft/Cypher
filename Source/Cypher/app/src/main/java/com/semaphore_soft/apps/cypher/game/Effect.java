@@ -1,5 +1,7 @@
 package com.semaphore_soft.apps.cypher.game;
 
+import com.semaphore_soft.apps.cypher.utils.Logger;
+
 /**
  * {@link Effect game.Effect} provides a list of effect types for {@link Item
  * Items} and {@link Special Specials} to associate with, and the methods
@@ -85,11 +87,16 @@ public abstract class Effect
         {
             case HEAL:
             {
+                Logger.logI("applying heal");
+                Logger.logI("pre-health:<" + actor.getHealthCurrent() + ">");
+
                 int actorHealthMaximum = actor.getHealthMaximum();
                 int actorHealthCurrent = actor.getHealthCurrent();
                 actor.setHealthCurrent(((actorHealthCurrent + effectRating) >
                                         actorHealthMaximum) ? actorHealthMaximum :
                                        actorHealthCurrent + effectRating);
+
+                Logger.logI("post-health:<" + actor.getHealthCurrent() + ">");
                 break;
             }
             case ATTACK:

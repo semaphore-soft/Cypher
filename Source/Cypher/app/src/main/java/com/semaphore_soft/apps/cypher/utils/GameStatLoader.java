@@ -137,7 +137,8 @@ public class GameStatLoader
                                     res.put(tag, member[0]);
 
                                     Logger.logI(
-                                        "found tag <" + tag + "> with member <" + memberName + ">");
+                                        "found tag <" + tag + "> with member <" + memberName +
+                                        ">:<" + member[0] + ">");
                                 }
                             }
                         }

@@ -171,7 +171,7 @@ public class GameMaster
 
                             if (items != null)
                             {
-                                int itemId = (int) (Math.random() * (items.size() + 1));
+                                int itemId = (int) (Math.random() * items.size());
 
                                 String selectedItem = items.get(itemId);
 
