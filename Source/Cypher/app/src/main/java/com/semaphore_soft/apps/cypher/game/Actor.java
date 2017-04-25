@@ -1480,6 +1480,8 @@ public class Actor
      */
     public void tick()
     {
+        Logger.logD("enter trace");
+
         ArrayList<Actor> noLongerEffectingActors = new ArrayList<>();
 
         for (Actor actor : effectedActors)
@@ -1491,8 +1493,12 @@ public class Actor
                 if (status instanceof StatusTemporary &&
                     ((StatusTemporary) status).getSourceActorId() == id)
                 {
+                    Logger.logI("found child temporary status of actor:<" + id + "> on actor:<" +
+                                actor.getId() + ">, status is of type:<" +
+                                status.getType().toString() + ">");
                     if (((StatusTemporary) status).tick())
                     {
+                        Logger.logI("child status expired, removing");
                         actor.removeStatus(status);
                     }
                     else
@@ -1504,6 +1510,9 @@ public class Actor
 
             if (noLongerEffecting)
             {
+                Logger.logI("actor:<" + id + "> if no longer effecting actor:<" + actor.getId() +
+                            ">, removing from effecting list");
+
                 noLongerEffectingActors.add(actor);
             }
         }
@@ -1517,9 +1526,11 @@ public class Actor
         {
             if (status instanceof StatusLinked)
             {
+                Logger.logI("checking linked status");
                 switch (status.getType())
                 {
                     case RECURRING_HEAL:
+                        Logger.logI("applying recurring heal");
                         Effect.applyTemporaryEffect(Effect.E_EFFECT.HEAL,
                                                     status.getEffectRating(),
                                                     0,
@@ -1527,6 +1538,7 @@ public class Actor
                                                     this);
                         break;
                     case RECURRING_ENERGY_RESTORE:
+                        Logger.logI("applying recurring energy restore");
                         Effect.applyTemporaryEffect(Effect.E_EFFECT.ENERGY_RESTORE,
                                                     status.getEffectRating(),
                                                     0,
@@ -1547,6 +1559,8 @@ public class Actor
                 removeStatus(status);
             }
         }*/
+
+        Logger.logD("exit trace");
     }
 
     public ConcurrentHashMap<Integer, Item> getItems()
@@ -1556,10 +1570,17 @@ public class Actor
 
     public void addEffectedActor(Actor actor)
     {
+        Logger.logD("enter trace");
+
         if (!effectedActors.contains(actor))
         {
+            Logger.logI(
+                "registering effect of actor:<" + id + "> on actor:<" + actor.getId() + ">");
+
             effectedActors.add(actor);
         }
+
+        Logger.logD("exit trace");
     }
 
     public ConcurrentHashMap<Integer, Status> getStatuses()
