@@ -277,13 +277,16 @@ public abstract class Effect
         {
             case HEAL:
             {
-                int actorHealthMaximum = actor.getHealthMaximum();
-                int actorHealthCurrent = actor.getHealthCurrent();
-                actor.setHealthCurrent(((actorHealthCurrent + effectRating) >
-                                        actorHealthMaximum) ? actorHealthMaximum :
-                                       actorHealthCurrent + effectRating);
+                actor.addNewStatusLinked(Status.E_STATUS_TYPE.RECURRING_HEAL,
+                                         effectRating,
+                                         linkId);
                 break;
             }
+            case ENERGY_RESTORE:
+                actor.addNewStatusLinked(Status.E_STATUS_TYPE.RECURRING_ENERGY_RESTORE,
+                                         effectRating,
+                                         linkId);
+                break;
             case ATTACK:
             {
                 int damage = effectRating;

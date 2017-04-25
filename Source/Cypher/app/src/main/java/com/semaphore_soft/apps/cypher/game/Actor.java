@@ -1513,6 +1513,32 @@ public class Actor
             effectedActors.remove(actor);
         }
 
+        for (Status status : statuses.values())
+        {
+            if (status instanceof StatusLinked)
+            {
+                switch (status.getType())
+                {
+                    case RECURRING_HEAL:
+                        Effect.applyTemporaryEffect(Effect.E_EFFECT.HEAL,
+                                                    status.getEffectRating(),
+                                                    0,
+                                                    this,
+                                                    this);
+                        break;
+                    case RECURRING_ENERGY_RESTORE:
+                        Effect.applyTemporaryEffect(Effect.E_EFFECT.ENERGY_RESTORE,
+                                                    status.getEffectRating(),
+                                                    0,
+                                                    this,
+                                                    this);
+                        break;
+                    default:
+                        break;
+                }
+            }
+        }
+
         /*for (int statusID : statuses.keySet())
         {
             Status status = statuses.get(statusID);

@@ -29,6 +29,8 @@ abstract class Status
      */
     enum E_STATUS_TYPE
     {
+        RECURRING_HEAL,
+        RECURRING_ENERGY_RESTORE,
         HEALTH_MAXIMUM_MODIFIER,
         ATTACK_RATING_MODIFIER,
         SPECIAL_MAXIMUM_MODIFIER,
