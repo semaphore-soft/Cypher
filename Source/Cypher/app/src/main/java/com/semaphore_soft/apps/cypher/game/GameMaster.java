@@ -682,7 +682,6 @@ public class GameMaster
      * </ul>
      *
      * @see Room
-     * @see PortalActivity#moveActor(int, int)
      * @see PortalActivity#onActorMove(int, int)
      */
     public static int moveActor(final Model model, final int actorId, final int endRoomId)
@@ -786,6 +785,37 @@ public class GameMaster
         }
 
         return -4;
+    }
+
+    public static int getRoomFull(final Model model, final int roomId)
+    {
+        int residentEnemies = 0;
+
+        Room endRoom = getRoom(model, roomId);
+
+        if (endRoom != null)
+        {
+            for (int actorId : endRoom.getResidentActors())
+            {
+                Actor actor = getActor(model, actorId);
+
+                if (actor != null && !actor.isPlayer())
+                {
+                    ++residentEnemies;
+                }
+            }
+
+            if (residentEnemies >= 4)
+            {
+                return -1;
+            }
+
+            return 0;
+        }
+        else
+        {
+            return -2;
+        }
     }
 
     /**

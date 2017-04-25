@@ -226,13 +226,17 @@ public class ARRoom implements ARDrawableGLES20
     {
         float[] lightPos             = new float[3];
         float[] transformationMatrix = new float[16];
-        System.arraycopy(modelViewMatrix, 0, transformationMatrix, 0, 16);
-        Matrix.translateM(transformationMatrix, 0, 0.0f, 0.0f, 80.0f);
-        for (int i = 0; i < 3; ++i)
+        try
         {
-            lightPos[i] = transformationMatrix[i + 12];
+            System.arraycopy(modelViewMatrix, 0, transformationMatrix, 0, 16);
+            Matrix.translateM(transformationMatrix, 0, 0.0f, 0.0f, 80.0f);
+            System.arraycopy(transformationMatrix, 12, lightPos, 0, 3);
+            draw(projectionMatrix, modelViewMatrix, lightPos);
         }
-        draw(projectionMatrix, modelViewMatrix, lightPos);
+        catch (NullPointerException e)
+        {
+            e.printStackTrace();
+        }
     }
 
     public void draw(float[] projectionMatrix, float[] modelViewMatrix, float[] lightPos)

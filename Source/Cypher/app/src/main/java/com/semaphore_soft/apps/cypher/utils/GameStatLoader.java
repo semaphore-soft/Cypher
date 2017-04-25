@@ -861,6 +861,10 @@ public class GameStatLoader
                                                  item.getEffectRating(),
                                                  ((ItemConsumable) item).getDuration(),
                                                  ((ItemConsumable) item).getTargetingType());
+                    for (Effect.E_EFFECT effect : item.getEffects())
+                    {
+                        newItem.addEffect(effect);
+                    }
                     newItem.setDisplayName(item.getDisplayName());
                 }
                 else if (item instanceof ItemDurable)

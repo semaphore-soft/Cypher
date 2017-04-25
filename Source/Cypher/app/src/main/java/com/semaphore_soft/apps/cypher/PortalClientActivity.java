@@ -207,7 +207,7 @@ public class PortalClientActivity extends ARActivity implements UIListener,
                         attackOptions.add(targetPair);
                     }
 
-                    uiPortalOverlay.overlaySelect(attackOptions);
+                    uiPortalOverlay.overlaySelect(attackOptions, false, false);
                     break;
                 case "cmd_btnDefend":
                     clientService.write(NetworkConstants.PREFIX_ACTION_REQUEST + "cmd_defend");
@@ -226,7 +226,7 @@ public class PortalClientActivity extends ARActivity implements UIListener,
                         specialOptions.add(specialOptionPair);
                     }
 
-                    uiPortalOverlay.overlaySelect(specialOptions);
+                    uiPortalOverlay.overlaySelect(specialOptions, false, true);
                     break;
                 case "cmd_btnCancel":
                     uiPortalOverlay.overlayAction(healthMax,
@@ -243,7 +243,7 @@ public class PortalClientActivity extends ARActivity implements UIListener,
                     Pair<String, String> floor = new Pair<>("Floor", "cmd_btnFloor");
                     options.add(floor);
 
-                    uiPortalOverlay.overlaySelect(options);
+                    uiPortalOverlay.overlaySelect(options, true, true);
                     break;
                 case "cmd_btnInventory":
                     clientService.write(NetworkConstants.GAME_INVENTORY_REQUEST);
@@ -270,7 +270,7 @@ public class PortalClientActivity extends ARActivity implements UIListener,
                     new Pair<>("Drop", "cmd_dropItem:" + splitAction[1]);
                 options.add(dropOption);
 
-                uiPortalOverlay.overlaySelect(options);
+                uiPortalOverlay.overlaySelect(options, true, true);
             }
             else if (splitAction[0].equals("invDurItem"))
             {
@@ -280,7 +280,7 @@ public class PortalClientActivity extends ARActivity implements UIListener,
                     new Pair<>("Drop", "cmd_dropItem:" + splitAction[1]);
                 options.add(dropOption);
 
-                uiPortalOverlay.overlaySelect(options);
+                uiPortalOverlay.overlaySelect(options, true, true);
             }
             else if (splitAction[0].equals("floorItem"))
             {
@@ -290,7 +290,7 @@ public class PortalClientActivity extends ARActivity implements UIListener,
                     new Pair<>("Take", "cmd_takeItem:" + splitAction[1]);
                 options.add(takeOption);
 
-                uiPortalOverlay.overlaySelect(options);
+                uiPortalOverlay.overlaySelect(options, true, true);
             }
             else if (splitAction[0].equals("useItem"))
             {
@@ -340,7 +340,7 @@ public class PortalClientActivity extends ARActivity implements UIListener,
                             }
                         }
 
-                        uiPortalOverlay.overlaySelect(targetOptions);
+                        uiPortalOverlay.overlaySelect(targetOptions, false, true);
                     }
                     else
                     {
@@ -653,7 +653,7 @@ public class PortalClientActivity extends ARActivity implements UIListener,
                 }
             }
 
-            uiPortalOverlay.overlaySelect(options);
+            uiPortalOverlay.overlaySelect(options, true, true);
         }
         else if (msg.startsWith(NetworkConstants.PREFIX_FLOOR_LIST))
         {
@@ -668,7 +668,7 @@ public class PortalClientActivity extends ARActivity implements UIListener,
                 options.add(new Pair<>(splitItem[0], "cmd_floorItem:" + splitItem[1]));
             }
 
-            uiPortalOverlay.overlaySelect(options);
+            uiPortalOverlay.overlaySelect(options, true, true);
         }
         else if (msg.startsWith(NetworkConstants.PREFIX_FEEDBACK))
         {
