@@ -91,7 +91,7 @@ public class Special
         ++duration;
     }
 
-    public void applySpecial(int specialRating, Actor actor)
+    public void applySpecial(int specialRating, Actor sourceActor, Actor targetActor)
     {
         int effectRating = (int) Math.ceil(((float) specialRating) * scalar);
 
@@ -100,7 +100,8 @@ public class Special
             Effect.applyTemporaryEffect(effect,
                                         effectRating,
                                         duration,
-                                        actor);
+                                        sourceActor,
+                                        targetActor);
         }
     }
 }

@@ -69,6 +69,8 @@ public class Actor
     private ConcurrentHashMap<Integer, Item>    items;
     private ConcurrentHashMap<Integer, Status>  statuses;
 
+    private ArrayList<Actor> effectedActors;
+
     /**
      * Logical ID and name constructor.
      * <p>
@@ -117,6 +119,8 @@ public class Actor
         specials = new ConcurrentHashMap<>();
         items = new ConcurrentHashMap<>();
         statuses = new ConcurrentHashMap<>();
+
+        effectedActors = new ArrayList<>();
     }
 
     /**
@@ -190,6 +194,8 @@ public class Actor
         specials = new ConcurrentHashMap<>();
         items = new ConcurrentHashMap<>();
         statuses = new ConcurrentHashMap<>();
+
+        effectedActors = new ArrayList<>();
     }
 
     /**
@@ -356,7 +362,7 @@ public class Actor
      *                      will be able to have.
      *
      * @see #receiveAttack(int)
-     * @see Special#applySpecial(int, Actor)
+     * @see Special#applySpecial(int, Actor, Actor)
      * @see GameMaster#attack(Model, int, int)
      * @see GameMaster#special(Model, int, int)
      * @see GameMaster#special(Model, int, int, int)
@@ -375,7 +381,7 @@ public class Actor
      * @return int: The maximum amount of health this {@link Actor} can have.
      *
      * @see #receiveAttack(int)
-     * @see Special#applySpecial(int, Actor)
+     * @see Special#applySpecial(int, Actor, Actor)
      * @see GameMaster#attack(Model, int, int)
      * @see GameMaster#special(Model, int, int)
      * @see GameMaster#special(Model, int, int, int)
@@ -392,7 +398,7 @@ public class Actor
      *                      Actor} is to have.
      *
      * @see #receiveAttack(int)
-     * @see Special#applySpecial(int, Actor)
+     * @see Special#applySpecial(int, Actor, Actor)
      * @see GameMaster#attack(Model, int, int)
      * @see GameMaster#special(Model, int, int)
      * @see GameMaster#special(Model, int, int, int)
@@ -408,7 +414,7 @@ public class Actor
      * @return int: The current amount of health this {@link Actor} has.
      *
      * @see #receiveAttack(int)
-     * @see Special#applySpecial(int, Actor)
+     * @see Special#applySpecial(int, Actor, Actor)
      * @see GameMaster#attack(Model, int, int)
      * @see GameMaster#special(Model, int, int)
      * @see GameMaster#special(Model, int, int, int)
@@ -576,7 +582,7 @@ public class Actor
      * @see #getRealSpecialRating()
      * @see #performSpecial(Special, Actor)
      * @see #performSpecial(Special, ArrayList)
-     * @see Special#applySpecial(int, Actor)
+     * @see Special#applySpecial(int, Actor, Actor)
      */
     public void setSpecialRating(int specialRating)
     {
@@ -596,7 +602,7 @@ public class Actor
      * @see #getRealSpecialRating()
      * @see #performSpecial(Special, Actor)
      * @see #performSpecial(Special, ArrayList)
-     * @see Special#applySpecial(int, Actor)
+     * @see Special#applySpecial(int, Actor, Actor)
      */
     public int getSpecialRating()
     {
@@ -653,7 +659,7 @@ public class Actor
      * @see GameMaster#special(Model, int, int, int)
      * @see GameMaster#setActorState(Model, int, E_STATE)
      * @see #receiveAttack(int)
-     * @see Special#applySpecial(int, Actor)
+     * @see Special#applySpecial(int, Actor, Actor)
      */
     void setState(E_STATE state)
     {
@@ -671,7 +677,7 @@ public class Actor
      *
      * @see E_STATE
      * @see #receiveAttack(int)
-     * @see Special#applySpecial(int, Actor)
+     * @see Special#applySpecial(int, Actor, Actor)
      */
     public E_STATE getState()
     {
@@ -981,7 +987,7 @@ public class Actor
      * </ul>
      *
      * @see Special
-     * @see Special#applySpecial(int, Actor)
+     * @see Special#applySpecial(int, Actor, Actor)
      */
     public boolean performSpecial(Special special, Actor actor)
     {
@@ -996,14 +1002,14 @@ public class Actor
 
         state = E_STATE.SPECIAL;
 
-        // ensure a self-targeted special's effects will be present for their
+        /*// ensure a self-targeted special's effects will be present for their
         // entire duration after the turn the special was used
         if (id == actor.getId())
         {
             special.incrementDuration();
-        }
+        }*/
 
-        special.applySpecial(getRealSpecialRating(), actor);
+        special.applySpecial(getRealSpecialRating(), this, actor);
 
         return true;
     }
@@ -1032,7 +1038,7 @@ public class Actor
      * </ul>
      *
      * @see Special
-     * @see Special#applySpecial(int, Actor)
+     * @see Special#applySpecial(int, Actor, Actor)
      */
     public boolean performSpecial(Special special, ArrayList<Actor> actors)
     {
@@ -1049,7 +1055,7 @@ public class Actor
 
         for (Actor actor : actors)
         {
-            special.applySpecial(getRealSpecialRating(), actor);
+            special.applySpecial(getRealSpecialRating(), this, actor);
         }
 
         return true;
@@ -1216,10 +1222,13 @@ public class Actor
      * @see Special
      * @see Effect
      */
-    void addNewStatusTemporary(Status.E_STATUS_TYPE type, int effectRating, int duration)
+    void addNewStatusTemporary(Status.E_STATUS_TYPE type,
+                               int effectRating,
+                               int duration,
+                               int sourceActorId)
     {
         StatusTemporary status =
-            new StatusTemporary(getNextID(statuses), type, effectRating, duration);
+            new StatusTemporary(getNextID(statuses), type, effectRating, duration, sourceActorId);
 
         statuses.put(status.getId(), status);
     }
@@ -1391,7 +1400,7 @@ public class Actor
      * @see Item
      * @see Effect
      * @see Effect.E_EFFECT
-     * @see Effect#applyTemporaryEffect(Effect.E_EFFECT, int, int, Actor)
+     * @see Effect#applyTemporaryEffect(Effect.E_EFFECT, int, int, Actor, Actor)
      */
     public boolean useItem(int itemID)
     {
@@ -1416,7 +1425,7 @@ public class Actor
      * @see Item
      * @see Effect
      * @see Effect.E_EFFECT
-     * @see Effect#applyTemporaryEffect(Effect.E_EFFECT, int, int, Actor)
+     * @see Effect#applyTemporaryEffect(Effect.E_EFFECT, int, int, Actor, Actor)
      */
     public boolean useItem(Item item)
     {
@@ -1440,6 +1449,7 @@ public class Actor
                     Effect.applyTemporaryEffect(effect,
                                                 item.getEffectRating(),
                                                 ((ItemConsumable) item).getDuration(),
+                                                this,
                                                 this);
                 }
 
@@ -1470,18 +1480,64 @@ public class Actor
      */
     public void tick()
     {
-        for (int statusID : statuses.keySet())
+        ArrayList<Actor> noLongerEffectingActors = new ArrayList<>();
+
+        for (Actor actor : effectedActors)
+        {
+            boolean noLongerEffecting = true;
+
+            for (Status status : actor.getStatuses().values())
+            {
+                if (status instanceof StatusTemporary &&
+                    ((StatusTemporary) status).getSourceActorId() == id)
+                {
+                    if (((StatusTemporary) status).tick())
+                    {
+                        actor.removeStatus(status);
+                    }
+                    else
+                    {
+                        noLongerEffecting = false;
+                    }
+                }
+            }
+
+            if (noLongerEffecting)
+            {
+                noLongerEffectingActors.add(actor);
+            }
+        }
+
+        for (Actor actor : noLongerEffectingActors)
+        {
+            effectedActors.remove(actor);
+        }
+
+        /*for (int statusID : statuses.keySet())
         {
             Status status = statuses.get(statusID);
             if (status instanceof StatusTemporary && ((StatusTemporary) status).tick())
             {
                 removeStatus(status);
             }
-        }
+        }*/
     }
 
     public ConcurrentHashMap<Integer, Item> getItems()
     {
         return items;
+    }
+
+    public void addEffectedActor(Actor actor)
+    {
+        if (!effectedActors.contains(actor))
+        {
+            effectedActors.add(actor);
+        }
+    }
+
+    public ConcurrentHashMap<Integer, Status> getStatuses()
+    {
+        return statuses;
     }
 }

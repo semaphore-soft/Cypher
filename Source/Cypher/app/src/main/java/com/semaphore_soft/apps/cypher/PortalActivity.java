@@ -2301,6 +2301,7 @@ public class PortalActivity extends ARActivity implements PortalRenderer.NewMark
         else
         {
             Actor actor = GameMaster.getActor(model, actorId);
+
             if (actor != null)
             {
                 actor.tick();
@@ -2311,6 +2312,12 @@ public class PortalActivity extends ARActivity implements PortalRenderer.NewMark
             Logger.logD("next turn is " + turnId);
 
             Actor nextActor = GameMaster.getActor(model, turnId);
+
+            /*if (nextActor != null)
+            {
+                nextActor.tick();
+            }*/
+
             if (nextActor != null && nextActor.getHealthCurrent() <= 0)
             {
                 Logger.logD("actor <" + turnId + "> is incapacitated");
