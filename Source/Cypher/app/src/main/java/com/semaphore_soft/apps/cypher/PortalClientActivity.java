@@ -153,6 +153,15 @@ public class PortalClientActivity extends ARActivity implements UIListener,
 
     /**
      * {@inheritDoc}
+     */
+    @Override
+    public void onBackPressed()
+    {
+        //do nothing
+    }
+
+    /**
+     * {@inheritDoc}
      *
      * @return
      */
