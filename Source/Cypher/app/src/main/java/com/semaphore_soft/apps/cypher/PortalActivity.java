@@ -2933,6 +2933,26 @@ public class PortalActivity extends ARActivity implements PortalRenderer.NewMark
             if (actor != null)
             {
                 actor.tick();
+
+                if (actorId == playerId)
+                {
+                    uiPortalOverlay.overlayWaitingForTurn(actor.getHealthMaximum(),
+                                                          actor.getHealthCurrent(),
+                                                          actor.getSpecialMaximum(),
+                                                          actor.getSpecialCurrent());
+                }
+                else if (GameMaster.getPlayerActorIds(model).contains(actorId))
+                {
+                    serverService.writeToClient(NetworkConstants.PREFIX_TURN_OVER +
+                                                actor.getHealthMaximum() +
+                                                ":" +
+                                                actor.getHealthCurrent() +
+                                                ":" +
+                                                actor.getSpecialMaximum() +
+                                                ":" +
+                                                actor.getSpecialCurrent(),
+                                                actorId);
+                }
             }
 
             turnId = CollectionManager.getNextIdFromId(turnId, model.getActors());

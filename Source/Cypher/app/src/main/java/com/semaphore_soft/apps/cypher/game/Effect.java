@@ -46,8 +46,8 @@ public abstract class Effect
         SPECIAL_MAXIMUM_DOWN,
         SPECIAL_RATING_UP,
         SPECIAL_RATING_DOWN,
-        DEFENCE_RATING_UP,
-        DEFENCE_RATING_DOWN
+        DEFENSE_RATING_UP,
+        DEFENSE_RATING_DOWN
     }
 
     /**
@@ -75,7 +75,7 @@ public abstract class Effect
      * @see Item
      * @see Special
      * @see Special#applySpecial(int, Actor, Actor)
-     * @see Actor#useItem(int)
+     * @see Actor#useItem(Model, int)
      * @see Actor#useItem(Item)
      * @see Actor#addNewStatusTemporary(Status.E_STATUS_TYPE, int, int, int)
      */
@@ -85,12 +85,16 @@ public abstract class Effect
                                      Actor sourceActor,
                                      Actor targetActor)
     {
-        int adjustedDuration = //(sourceActor.getId() == targetActor.getId())
-            //?
-            duration + 1;
-        //:
-        //duration
-        // ;
+        int adjustedDuration = (sourceActor.getId() == targetActor.getId())
+                               ?
+                               duration + 2
+                               //;
+                               :
+                               duration + 1;
+
+        Logger.logI(
+            "applying effect:<" + effect.toString() + "> with duration:<" + duration + "> to <" +
+            targetActor.getDisplayName() + "> from <" + sourceActor.getDisplayName() + ">");
 
         switch (effect)
         {
@@ -142,7 +146,7 @@ public abstract class Effect
                         break;
                 }
 
-                damage -= targetActor.getRealDefenceRating();
+                damage -= targetActor.getRealDefenseRating();
                 damage = (damage < 0) ? 0 : damage;
 
                 int actorHealth = targetActor.getHealthCurrent();
@@ -221,18 +225,18 @@ public abstract class Effect
                 sourceActor.addEffectedActor(targetActor);
                 break;
             }
-            case DEFENCE_RATING_UP:
+            case DEFENSE_RATING_UP:
             {
-                targetActor.addNewStatusTemporary(Status.E_STATUS_TYPE.DEFENCE_RATING_MODIFIER,
+                targetActor.addNewStatusTemporary(Status.E_STATUS_TYPE.DEFENSE_RATING_MODIFIER,
                                                   effectRating,
                                                   adjustedDuration,
                                                   sourceActor.getId());
                 sourceActor.addEffectedActor(targetActor);
                 break;
             }
-            case DEFENCE_RATING_DOWN:
+            case DEFENSE_RATING_DOWN:
             {
-                targetActor.addNewStatusTemporary(Status.E_STATUS_TYPE.DEFENCE_RATING_MODIFIER,
+                targetActor.addNewStatusTemporary(Status.E_STATUS_TYPE.DEFENSE_RATING_MODIFIER,
                                                   -effectRating,
                                                   adjustedDuration,
                                                   sourceActor.getId());
@@ -307,7 +311,7 @@ public abstract class Effect
                         break;
                 }
 
-                damage -= actor.getRealDefenceRating();
+                damage -= actor.getRealDefenseRating();
                 damage = (damage < 0) ? 0 : damage;
 
                 int actorHealth = actor.getHealthCurrent();
@@ -370,16 +374,16 @@ public abstract class Effect
                                          linkId);
                 break;
             }
-            case DEFENCE_RATING_UP:
+            case DEFENSE_RATING_UP:
             {
-                actor.addNewStatusLinked(Status.E_STATUS_TYPE.DEFENCE_RATING_MODIFIER,
+                actor.addNewStatusLinked(Status.E_STATUS_TYPE.DEFENSE_RATING_MODIFIER,
                                          effectRating,
                                          linkId);
                 break;
             }
-            case DEFENCE_RATING_DOWN:
+            case DEFENSE_RATING_DOWN:
             {
-                actor.addNewStatusLinked(Status.E_STATUS_TYPE.DEFENCE_RATING_MODIFIER,
+                actor.addNewStatusLinked(Status.E_STATUS_TYPE.DEFENSE_RATING_MODIFIER,
                                          -effectRating,
                                          linkId);
                 break;

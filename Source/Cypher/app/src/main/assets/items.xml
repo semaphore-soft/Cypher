@@ -45,92 +45,92 @@
     </elven_pan_pizza>
 
     <!--$30 Italian Meal-->
-    <30_italian_meal>
-    <name>$30 Italian Meal</name>
-    <effectRating>50</effectRating>
-    <duration>0</duration>
-    <targetingType>AOE_PLAYER</targetingType>
-    <effects>
-        <effect>HEAL</effect>
-    </effects>
-</30_italian_meal>
+    <italian_meal_30>
+        <name>$30 Italian Meal</name>
+        <effectRating>50</effectRating>
+        <duration>0</duration>
+        <targetingType>AOE_PLAYER</targetingType>
+        <effects>
+            <effect>HEAL</effect>
+        </effects>
+    </italian_meal_30>
 
-        <!--$50 Italian Meal-->
-<50_italian_meal>
-<name>$50 Italian Meal</name>
-<effectRating>50</effectRating>
-<duration>0</duration>
-<targetingType>AOE_PLAYER</targetingType>
-<effects>
-<effect>HEAL</effect>
-<effect>ENERGY_RESTORE</effect>
-</effects>
-        </50_italian_meal>
+    <!--$50 Italian Meal-->
+    <italian_meal_50>
+        <name>$50 Italian Meal</name>
+        <effectRating>50</effectRating>
+        <duration>0</duration>
+        <targetingType>AOE_PLAYER</targetingType>
+        <effects>
+            <effect>HEAL</effect>
+            <effect>ENERGY_RESTORE</effect>
+        </effects>
+    </italian_meal_50>
 
-        <!--Fire Cracker-->
-<fire_cracker>
-<name>Fire Cracker</name>
-<effectRating>20</effectRating>
-<duration>0</duration>
-<targetingType>SINGLE_NON_PLAYER</targetingType>
-<effects>
-    <effect>ATTACK</effect>
-</effects>
-</fire_cracker>
+    <!--Fire Cracker-->
+    <fire_cracker>
+        <name>Fire Cracker</name>
+        <effectRating>20</effectRating>
+        <duration>0</duration>
+        <targetingType>SINGLE_NON_PLAYER</targetingType>
+        <effects>
+            <effect>ATTACK</effect>
+        </effects>
+    </fire_cracker>
 
-        <!--Elixir-->
-<elixir>
-<name>Elixir</name>
-<effectRating>20</effectRating>
-<duration>0</duration>
-<targetingType>SINGLE_PLAYER</targetingType>
-<effects>
-    <effect>ENERGY_RESTORE</effect>
-</effects>
-</elixir>
+    <!--Elixir-->
+    <elixir>
+        <name>Elixir</name>
+        <effectRating>20</effectRating>
+        <duration>0</duration>
+        <targetingType>SINGLE_PLAYER</targetingType>
+        <effects>
+            <effect>ENERGY_RESTORE</effect>
+        </effects>
+    </elixir>
 
-        <!--Impressive Shin Greaves-->
-<impressive_shin_greaves>
-<name>Impressive Shin Greaves</name>
-<effectRating>3</effectRating>
-<effects>
-    <effect>DEFENSE_RATING_UP</effect>
-</effects>
-</impressive_shin_greaves>
+    <!--Impressive Shin Greaves-->
+    <impressive_shin_greaves>
+        <name>Impressive Shin Greaves</name>
+        <effectRating>3</effectRating>
+        <effects>
+            <effect>DEFENSE_RATING_UP</effect>
+        </effects>
+    </impressive_shin_greaves>
 
-        <!--Champion Gauntlets-->
-<champion_gauntlets>
-<name>Champion Gauntlets</name>
-<effectRating>3</effectRating>
-<effects>
-    <effect>ATTACK_RATING_UP</effect>
-</effects>
-</champion_gauntlets>
+    <!--Champion Gauntlets-->
+    <champion_gauntlets>
+        <name>Champion Gauntlets</name>
+        <effectRating>3</effectRating>
+        <effects>
+            <effect>ATTACK_RATING_UP</effect>
+        </effects>
+    </champion_gauntlets>
 
-        <!--Refresh Ring-->
-<refresh_ring>
-<name>Refresh Ring</name>
-<effectRating>2</effectRating>
-<effects>
-    <effect>HEAL</effect>
-</effects>
-</refresh_ring>
+    <!--Refresh Ring-->
+    <refresh_ring>
+        <name>Refresh Ring</name>
+        <effectRating>2</effectRating>
+        <effects>
+            <effect>HEAL</effect>
+        </effects>
+    </refresh_ring>
 
-        <!--Ancient Spell Book-->
-<ancient_spell_book>
-<name>Ancient Spell Book</name>
-<effectRating>3</effectRating>
-<effects>
-    <effect>SPECIAL_RATING_UP</effect>
-</effects>
-</ancient_spell_book>
+    <!--Ancient Spell Book-->
+    <ancient_spell_book>
+        <name>Ancient Spell Book</name>
+        <effectRating>3</effectRating>
+        <effects>
+            <effect>SPECIAL_RATING_UP</effect>
+        </effects>
+    </ancient_spell_book>
 
-        <!--Spell Ring-->
-<spell_ring>
-<name>Spell Ring</name>
-<effectRating>2</effectRating>
-<effects>
-    <effect>ENERGY_RESTORE</effect>
-</effects>
-</spell_ring>
+    <!--Spell Ring-->
+    <spell_ring>
+        <name>Spell Ring</name>
+        <effectRating>2</effectRating>
+        <effects>
+            <effect>ENERGY_RESTORE</effect>
+        </effects>
+    </spell_ring>
 </items>

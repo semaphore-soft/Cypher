@@ -1774,7 +1774,7 @@ public class GameMaster
 
         if (specialEffects.contains(Effect.E_EFFECT.HEAL) ||
             specialEffects.contains(Effect.E_EFFECT.ATTACK_RATING_UP) ||
-            specialEffects.contains(Effect.E_EFFECT.DEFENCE_RATING_UP) ||
+            specialEffects.contains(Effect.E_EFFECT.DEFENSE_RATING_UP) ||
             specialEffects.contains(Effect.E_EFFECT.HEALTH_MAXIMUM_UP) ||
             specialEffects.contains(Effect.E_EFFECT.SPECIAL_MAXIMUM_UP) ||
             specialEffects.contains(Effect.E_EFFECT.SPECIAL_RATING_UP))

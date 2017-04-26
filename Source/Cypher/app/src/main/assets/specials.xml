@@ -19,7 +19,7 @@
         <duration>2</duration>
         <targetingType>SINGLE_PLAYER</targetingType>
         <effects>
-            <effect>DEFENCE_RATING_UP</effect>
+            <effect>DEFENSE_RATING_UP</effect>
         </effects>
     </beef_increase>
 
@@ -97,7 +97,7 @@
         <targetingType>SINGLE_NON_PLAYER</targetingType>
         <effects>
             <effect>ATTACK</effect>
-            <effect>DEFENCE_RATING_DOWN</effect>
+            <effect>DEFENSE_RATING_DOWN</effect>
             <effect>ATTACK_RATING_DOWN</effect>
         </effects>
     </take_a_shit>

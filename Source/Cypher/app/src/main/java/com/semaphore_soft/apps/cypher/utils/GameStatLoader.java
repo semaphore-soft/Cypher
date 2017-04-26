@@ -335,12 +335,12 @@ public class GameStatLoader
                                 Logger.logI(
                                     "found special rating: " + actorParser.getText(), 1);
                             }
-                            else if (actorParser.getName().equals("defenceRating"))
+                            else if (actorParser.getName().equals("defenseRating"))
                             {
                                 actorParser.next();
-                                actor.setDefenceRating(Integer.parseInt(actorParser.getText()));
+                                actor.setDefenseRating(Integer.parseInt(actorParser.getText()));
                                 Logger.logI(
-                                    "found defence rating: " + actorParser.getText(), 1);
+                                    "found defense rating: " + actorParser.getText(), 1);
                             }
                             else if (actorParser.getName().equals("behavior"))
                             {
@@ -699,11 +699,11 @@ public class GameStatLoader
                         case "SPECIAL_RATING_DOWN":
                             special.addEffect(Effect.E_EFFECT.SPECIAL_RATING_DOWN);
                             break;
-                        case "DEFENCE_RATING_UP":
-                            special.addEffect(Effect.E_EFFECT.DEFENCE_RATING_UP);
+                        case "DEFENSE_RATING_UP":
+                            special.addEffect(Effect.E_EFFECT.DEFENSE_RATING_UP);
                             break;
-                        case "DEFENCE_RATING_DOWN":
-                            special.addEffect(Effect.E_EFFECT.DEFENCE_RATING_DOWN);
+                        case "DEFENSE_RATING_DOWN":
+                            special.addEffect(Effect.E_EFFECT.DEFENSE_RATING_DOWN);
                             break;
                         default:
                             Special linkedSpecial = loadSpecialStats(effect, specials, context);
@@ -919,6 +919,7 @@ public class GameStatLoader
                 switch (event)
                 {
                     case XmlPullParser.START_TAG:
+                        //Logger.logD(itemParser.getName());
                         if (itemName.equals(itemParser.getName()))
                         {
                             foundItem = true;
@@ -965,6 +966,7 @@ public class GameStatLoader
                         }
                         break;
                     case XmlPullParser.END_TAG:
+                        //Logger.logD(itemParser.getName());
                         if (foundItem)
                         {
                             if (itemName.equals(itemParser.getName()))
@@ -1042,6 +1044,9 @@ public class GameStatLoader
                     case "HEAL":
                         item.addEffect(Effect.E_EFFECT.HEAL);
                         break;
+                    case "ENERGY_RESTORE":
+                        item.addEffect(Effect.E_EFFECT.ENERGY_RESTORE);
+                        break;
                     case "ATTACK":
                         item.addEffect(Effect.E_EFFECT.ATTACK);
                         break;
@@ -1069,11 +1074,11 @@ public class GameStatLoader
                     case "SPECIAL_RATING_DOWN":
                         item.addEffect(Effect.E_EFFECT.SPECIAL_RATING_DOWN);
                         break;
-                    case "DEFENCE_RATING_UP":
-                        item.addEffect(Effect.E_EFFECT.DEFENCE_RATING_UP);
+                    case "DEFENSE_RATING_UP":
+                        item.addEffect(Effect.E_EFFECT.DEFENSE_RATING_UP);
                         break;
-                    case "DEFENCE_RATING_DOWN":
-                        item.addEffect(Effect.E_EFFECT.DEFENCE_RATING_DOWN);
+                    case "DEFENSE_RATING_DOWN":
+                        item.addEffect(Effect.E_EFFECT.DEFENSE_RATING_DOWN);
                         break;
                     default:
                         Special special = loadSpecialStats(effect, specials, context);

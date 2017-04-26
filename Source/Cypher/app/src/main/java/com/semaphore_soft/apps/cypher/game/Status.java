@@ -36,7 +36,7 @@ abstract class Status
         SPECIAL_MAXIMUM_MODIFIER,
         SPECIAL_RATING_MODIFIER,
         SPECIAL_COST_MODIFIER,
-        DEFENCE_RATING_MODIFIER
+        DEFENSE_RATING_MODIFIER
     }
 
     private   E_STATUS_TYPE type;

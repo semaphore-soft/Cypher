@@ -53,7 +53,7 @@ public class Actor
     private int     specialMaximum;
     private int     specialCurrent;
     private int     specialRating;
-    private int     defenceRating;
+    private int     defenseRating;
     private E_STATE state;
 
     private int     attackTickets  = 1;
@@ -615,15 +615,15 @@ public class Actor
      * Used in determining the amount of damage this {@link Actor} ignores when
      * attacked.
      *
-     * @param defenceRating int: The base defense rating this {@link Actor}
+     * @param defenseRating int: The base defense rating this {@link Actor}
      *                      will have.
      *
      * @see #receiveAttack(int)
-     * @see #getRealDefenceRating()
+     * @see #getRealDefenseRating()
      */
-    public void setDefenceRating(int defenceRating)
+    public void setDefenseRating(int defenseRating)
     {
-        this.defenceRating = defenceRating;
+        this.defenseRating = defenseRating;
     }
 
     /**
@@ -635,11 +635,11 @@ public class Actor
      * @return int: The base defense rating of this {@link Actor}.
      *
      * @see #receiveAttack(int)
-     * @see #getRealDefenceRating()
+     * @see #getRealDefenseRating()
      */
-    public int getDefenceRating()
+    public int getDefenseRating()
     {
-        return defenceRating;
+        return defenseRating;
     }
 
     /**
@@ -930,7 +930,7 @@ public class Actor
     /**
      * Calculate the amount of damage received by this {@link Actor} based on
      * the attack rating, this {@link Actor Actor's} {@link E_STATE state}, and
-     * defence rating. Update this {@link Actor Actor's} current health
+     * defense rating. Update this {@link Actor Actor's} current health
      * accordingly.
      *
      * @param attackRating int: The attack rating of the incoming attack.
@@ -958,7 +958,7 @@ public class Actor
                 break;
         }
 
-        damage -= getRealDefenceRating();
+        damage -= getRealDefenseRating();
         damage = (damage < 0) ? 0 : damage;
 
         healthCurrent = (damage > healthCurrent) ? 0 : healthCurrent - damage;
@@ -1094,8 +1094,14 @@ public class Actor
             items.put(item.getId(), item);
             if (item instanceof ItemDurable)
             {
+                Logger.logI(
+                    "actor:<" + id + "> acquired durable item:<" + item.getDisplayName() + ">");
+
                 for (Effect.E_EFFECT effect : item.getEffects())
                 {
+                    Logger.logI("applying linked effect:<" + effect.toString() + "> with rating:<" +
+                                item.getEffectRating() + ">");
+
                     Effect.applyLinkedEffect(effect, item.getEffectRating(), this, item.getId());
                 }
             }
@@ -1128,12 +1134,17 @@ public class Actor
     {
         if (items.containsKey(itemID))
         {
+            Logger.logI("actor:<" + id + "> removing item:<" + itemID + ">");
+
             items.remove(itemID);
             for (int statusID : statuses.keySet())
             {
                 Status status = statuses.get(statusID);
                 if (status instanceof StatusLinked && ((StatusLinked) status).getLinkID() == itemID)
                 {
+                    Logger.logI("removing linked status:<" + status.getId() +
+                                "> with link id:<" + ((StatusLinked) status).getLinkID() + ">");
+
                     removeStatus(status);
                 }
             }
@@ -1369,21 +1380,21 @@ public class Actor
      * @see Status#getType()
      * @see Status#getEffectRating()
      */
-    int getRealDefenceRating()
+    int getRealDefenseRating()
     {
-        int realDefenceRating = defenceRating;
+        int realDefenseRating = defenseRating;
 
         for (int statusID : statuses.keySet())
         {
             Status status = statuses.get(statusID);
-            if (status.getType() == Status.E_STATUS_TYPE.DEFENCE_RATING_MODIFIER)
+            if (status.getType() == Status.E_STATUS_TYPE.DEFENSE_RATING_MODIFIER)
             {
-                realDefenceRating += status.getEffectRating();
+                realDefenseRating += status.getEffectRating();
             }
 
         }
 
-        return realDefenceRating;
+        return realDefenseRating;
     }
 
     /**

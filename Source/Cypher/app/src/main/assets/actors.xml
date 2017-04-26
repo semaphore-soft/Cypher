@@ -8,7 +8,7 @@
             <healthMaximum>40</healthMaximum>
             <specialMaximum>10</specialMaximum>
             <attackRating>8</attackRating>
-            <defenceRating>3</defenceRating>
+            <defenseRating>3</defenseRating>
             <specialRating>5</specialRating>
             <specials>
                 <name>flurry_of_fists</name>
@@ -22,7 +22,7 @@
             <healthMaximum>50</healthMaximum>
             <specialMaximum>30</specialMaximum>
             <attackRating>5</attackRating>
-            <defenceRating>4</defenceRating>
+            <defenseRating>4</defenseRating>
             <specialRating>6</specialRating>
             <specials>
                 <name>heal</name>
@@ -36,7 +36,7 @@
             <healthMaximum>30</healthMaximum>
             <specialMaximum>50</specialMaximum>
             <attackRating>3</attackRating>
-            <defenceRating>1</defenceRating>
+            <defenseRating>1</defenseRating>
             <specialRating>8</specialRating>
             <specials>
                 <name>flame_shot</name>
@@ -50,7 +50,7 @@
             <healthMaximum>35</healthMaximum>
             <specialMaximum>20</specialMaximum>
             <attackRating>7</attackRating>
-            <defenceRating>2</defenceRating>
+            <defenseRating>2</defenseRating>
             <specialRating>4</specialRating>
             <specials>
                 <name>multishot</name>
@@ -67,7 +67,7 @@
             <healthMaximum>6</healthMaximum>
             <specialMaximum>2</specialMaximum>
             <attackRating>5</attackRating>
-            <defenceRating>1</defenceRating>
+            <defenseRating>1</defenseRating>
             <specialRating>6</specialRating>
             <specials>
                 <name>ignus_fatuus</name>
@@ -96,7 +96,7 @@
             <healthMaximum>9</healthMaximum>
             <specialMaximum>2</specialMaximum>
             <attackRating>6</attackRating>
-            <defenceRating>2</defenceRating>
+            <defenseRating>2</defenseRating>
             <specialRating>7</specialRating>
             <specials>
                 <name>suckerpunch</name>
@@ -106,7 +106,7 @@
             <prevalence>15</prevalence>
             <items>
                 <item>
-                    <name>delightful_bread</name>
+                    <name>elven_bread</name>
                     <prevalence>3</prevalence>
                 </item>
                 <item>
@@ -126,7 +126,7 @@
             <healthMaximum>20</healthMaximum>
             <specialMaximum>4</specialMaximum>
             <attackRating>11</attackRating>
-            <defenceRating>2</defenceRating>
+            <defenseRating>2</defenseRating>
             <specialRating>7</specialRating>
             <specials>
                 <name>suckerpunch</name>
@@ -136,16 +136,12 @@
             <prevalence>8</prevalence>
             <items>
                 <item>
-                    <name>delightful_bread</name>
-                    <prevalence>3</prevalence>
-                </item>
-                <item>
                     <name>random</name>
                     <prevalence>20</prevalence>
                 </item>
                 <item>
                     <name>none</name>
-                    <prevalence>3</prevalence>
+                    <prevalence>1</prevalence>
                 </item>
             </items>
         </groblinCommando>
@@ -154,10 +150,10 @@
         <ned>
             <displayName>Ned</displayName>
             <healthMaximum>8</healthMaximum>
-            <specialMaximum>5</specialMaximum>
+            <specialMaximum>99</specialMaximum>
             <attackRating>4</attackRating>
-            <defenceRating>0</defenceRating>
-            <specialRating>12</specialRating>
+            <defenseRating>0</defenseRating>
+            <specialRating>8</specialRating>
             <specials>
                 <name>flame_shot</name>
                 <name>chill</name>
@@ -166,16 +162,16 @@
             <prevalence>8</prevalence>
             <items>
                 <item>
-                    <name>delightful_bread</name>
+                    <name>elixir</name>
                     <prevalence>3</prevalence>
                 </item>
                 <item>
                     <name>random</name>
-                    <prevalence>20</prevalence>
+                    <prevalence>2</prevalence>
                 </item>
                 <item>
                     <name>none</name>
-                    <prevalence>3</prevalence>
+                    <prevalence>1</prevalence>
                 </item>
             </items>
         </ned>
@@ -186,7 +182,7 @@
             <healthMaximum>8</healthMaximum>
             <specialMaximum>20</specialMaximum>
             <attackRating>2</attackRating>
-            <defenceRating>4</defenceRating>
+            <defenseRating>4</defenseRating>
             <specialRating>8</specialRating>
             <specials>
                 <name>ignus_fatuus</name>
@@ -196,12 +192,12 @@
             <prevalence>10</prevalence>
             <items>
                 <item>
-                    <name>delightful_bread</name>
+                    <name>fire_cracker</name>
                     <prevalence>3</prevalence>
                 </item>
                 <item>
                     <name>random</name>
-                    <prevalence>20</prevalence>
+                    <prevalence>15</prevalence>
                 </item>
                 <item>
                     <name>none</name>
@@ -216,7 +212,7 @@
             <healthMaximum>5</healthMaximum>
             <specialMaximum>5</specialMaximum>
             <attackRating>6</attackRating>
-            <defenceRating>0</defenceRating>
+            <defenseRating>0</defenseRating>
             <specialRating>0</specialRating>
             <specials>
             </specials>
@@ -224,7 +220,7 @@
             <prevalence>20</prevalence>
             <items>
                 <item>
-                    <name>delightful_bread</name>
+                    <name>elven_bread</name>
                     <prevalence>3</prevalence>
                 </item>
                 <item>
@@ -244,7 +240,7 @@
             <healthMaximum>45</healthMaximum>
             <specialMaximum>99</specialMaximum>
             <attackRating>5</attackRating>
-            <defenceRating>1</defenceRating>
+            <defenseRating>1</defenseRating>
             <specialRating>14</specialRating>
             <specials>
                 <name>flame_shot</name>
@@ -254,16 +250,8 @@
             <prevalence>0</prevalence>
             <items>
                 <item>
-                    <name>delightful_bread</name>
-                    <prevalence>3</prevalence>
-                </item>
-                <item>
-                    <name>random</name>
-                    <prevalence>20</prevalence>
-                </item>
-                <item>
-                    <name>none</name>
-                    <prevalence>3</prevalence>
+                    <name>elixir</name>
+                    <prevalence>1</prevalence>
                 </item>
             </items>
         </impKing>
