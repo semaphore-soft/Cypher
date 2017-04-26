@@ -126,19 +126,6 @@ public class GameMaster
 
                 if (enemyPrevalenceMap != null)
                 {
-                    /*HashMap<String, Pair<Integer, Integer>> enemySpawnRanges = new HashMap<>();
-
-                    int totalPrevalence = 0;
-
-                    for (String name : enemyPrevalenceMap.keySet())
-                    {
-                        int prevalence = enemyPrevalenceMap.get(name);
-                        Pair<Integer, Integer> range =
-                            new Pair<>(totalPrevalence, totalPrevalence + prevalence);
-                        enemySpawnRanges.put(name, range);
-                        totalPrevalence += prevalence;
-                    }*/
-
                     for (int i = 0; i < numEnemies; ++i)
                     {
                         String enemyName = performLottery(enemyPrevalenceMap);
@@ -198,33 +185,11 @@ public class GameMaster
 
                         model.addActor(enemy.getId(), enemy);
                         room.addActor(enemy.getId());
-
-                        /*int spawn = (int) (Math.random() * totalPrevalence);
-
-                        for (String name : enemySpawnRanges.keySet())
-                        {
-                            Pair<Integer, Integer> range = enemySpawnRanges.get(name);
-
-                            if (spawn >= range.first && spawn < range.second)
-                            {
-                                Actor enemy =
-                                    new Actor(CollectionManager.getNextID(model.getActors()),
-                                              id,
-                                              name);
-                                GameStatLoader.loadActorStats(enemy,
-                                                              name,
-                                                              model.getSpecials(),
-                                                              context);
-
-                                model.addActor(enemy.getId(), enemy);
-                                room.addActor(enemy.getId());
-                            }
-                        }*/
                     }
                 }
             }
         }
-        else if (getNumRooms(model) == 16)
+        else if (getNumRooms(model) == 15)
         {
             ArrayList<String> bossList = GameStatLoader.getList(context, "bosses");
             if (bossList != null)
