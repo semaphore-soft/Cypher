@@ -628,7 +628,7 @@ class PortalRenderer extends ARRendererGLES20
      * @see ARRoom
      * @see Room
      * @see ARDrawableGLES20
-     * @see PortalActivity#postOpenDoorResult(int, int)
+     * @see PortalActivity#postOpenDoorResult(int, int, int)
      */
     void updateRoomWalls(final int arRoomId,
                          final String[] wallDescriptors)
@@ -856,7 +856,29 @@ class PortalRenderer extends ARRendererGLES20
                 break;
             case "special":
                 arRoom.setResidentPose(sourceId, "special");
-                if (targetId != sourceId)
+                if (targetId != -1 && targetId != sourceId)
+                {
+                    switch (splitAction[1])
+                    {
+                        case "harm":
+                            if (targetState != null && targetState.equals("defend"))
+                            {
+                                arRoom.setResidentPose(targetId, "defend");
+                            }
+                            else
+                            {
+                                arRoom.setResidentPose(targetId, "hurt");
+                            }
+                            break;
+                        case "help":
+                            arRoom.setResidentPose(targetId, "heroic");
+                            break;
+                    }
+                }
+                break;
+            case "item":
+                arRoom.setResidentPose(sourceId, "heroic");
+                if (targetId != -1 && targetId != sourceId && splitAction.length > 1)
                 {
                     switch (splitAction[1])
                     {

@@ -72,10 +72,11 @@ public class NetworkConstants
     public static final String PREFIX_UPDATE_NON_PLAYER_TARGETS = "UPDATE_NON_PLAYER_TARGETS:";
     public static final String PREFIX_UPDATE_PLAYER_TARGETS     = "UPDATE_PLAYER_TARGETS:";
     public static final String PREFIX_UPDATE_PLAYER_SPECIALS    = "UPDATE_PLAYER_SPECIALS:";
+    public static final String PREFIX_UPDATE_PLAYER_ITEMS       = "UPDATE_PLAYER_ITEMS:";
     public static final String PREFIX_UPDATE_NEAREST_ROOM       = "UPDATE_NEAREST_ROOM:";
     public static final String PREFIX_INVENTORY_LIST            = "INVENTORY:";
     public static final String PREFIX_FLOOR_LIST                = "FLOOR:";
-    public static final String PREFIX_USE_ITEM                  = "USE:";
+    public static final String PREFIX_USE_ITEM                  = "USE;";
     public static final String PREFIX_DROP_ITEM                 = "DROP:";
     public static final String PREFIX_TAKE_ITEM                 = "TAKE:";
     public static final String PREFIX_FEEDBACK                  = "FEEDBACK~";

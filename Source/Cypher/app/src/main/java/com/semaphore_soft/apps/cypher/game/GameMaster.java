@@ -1291,17 +1291,24 @@ public class GameMaster
         Logger.logD("looking for player targets for: " + actorId);
         Logger.logD("looking for player targets in room: " + actor.getRoom());
 
-        for (int targetId : room.getResidentActors())
+        try
         {
-            if (targetId != actorId)
+            for (int targetId : room.getResidentActors())
             {
-                Actor target = model.getActors().get(targetId);
-                if (!target.isPlayer())
+                if (targetId != actorId)
                 {
-                    Logger.logD("found valid target: " + target.getId());
-                    targets.add(targetId);
+                    Actor target = model.getActors().get(targetId);
+                    if (!target.isPlayer())
+                    {
+                        Logger.logD("found valid target: " + target.getId());
+                        targets.add(targetId);
+                    }
                 }
             }
+        }
+        catch (Exception e)
+        {
+            return getNonPlayerTargetIds(model, actorId);
         }
 
         return targets;

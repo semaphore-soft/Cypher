@@ -577,38 +577,193 @@ public class PortalActivity extends ARActivity implements PortalRenderer.NewMark
             }
             else if (splitAction[0].equals("useItem"))
             {
+                boolean finished = false;
+
                 Actor actor = GameMaster.getActor(model, playerId);
                 Item  item  = GameMaster.getItem(model, Integer.parseInt(splitAction[1]));
 
-                if (actor != null)
-                {
-                    if (actor.useItem(Integer.parseInt(splitAction[1])))
-                    {
-                        GameMaster.removeItem(model, Integer.parseInt(splitAction[1]));
+                String type = null;
 
-                        if (item != null)
-                        {
-                            Toast.makeText(this,
-                                           "Used item " + item.getDisplayName(),
-                                           Toast.LENGTH_SHORT)
-                                 .show();
-                        }
-                    }
-                    else
-                    {
-                        Toast.makeText(this,
-                                       "error: failed to use item:<" + splitAction[1] + ">",
-                                       Toast.LENGTH_SHORT).show();
-                    }
-                }
-
-                if (actor != null && actor.getItems().size() > 0)
+                if (actor != null && item != null && item instanceof ItemConsumable)
                 {
-                    onCommand("cmd_btnInventory");
+                    switch (((ItemConsumable) item).getTargetingType())
+                    {
+                        case SINGLE_PLAYER:
+                            type = ".help";
+                            if (splitAction.length < 3)
+                            {
+                                ArrayList<Pair<String, String>> targetOptions = new ArrayList<>();
+
+                                for (Actor target : GameMaster.getPlayerTargets(model, playerId)
+                                                              .values())
+                                {
+                                    if (target != null)
+                                    {
+                                        Pair<String, String> targetPair =
+                                            new Pair<>(target.getDisplayName(),
+                                                       "cmd_useItem:" + splitAction[1] + ":" +
+                                                       target.getId());
+
+                                        targetOptions.add(targetPair);
+                                    }
+                                }
+
+                                uiPortalOverlay.overlaySelect(targetOptions, false, true);
+                            }
+                            else
+                            {
+                                int   targetId    = Integer.parseInt(splitAction[2]);
+                                Actor targetActor = GameMaster.getActor(model, targetId);
+
+                                if (targetActor != null)
+                                {
+                                    if (targetActor.useItem(item))
+                                    {
+                                        actor.removeItem(Integer.parseInt(splitAction[1]));
+                                        GameMaster.removeItem(model,
+                                                              Integer.parseInt(splitAction[1]));
+
+                                        Toast.makeText(getApplicationContext(),
+                                                       "You used " + item.getDisplayName() +
+                                                       " on " +
+                                                       ((targetId ==
+                                                         playerId) ? "yourself" : actor.getDisplayName()),
+                                                       Toast.LENGTH_SHORT).show();
+                                        serverService.writeAll(
+                                            NetworkConstants.PREFIX_FEEDBACK +
+                                            actor.getDisplayName() +
+                                            " used " +
+                                            item.getDisplayName());
+
+                                        finished = true;
+                                    }
+                                }
+                            }
+                            break;
+                        case SINGLE_NON_PLAYER:
+                            type = ".harm";
+                            if (splitAction.length < 3)
+                            {
+                                ArrayList<Pair<String, String>> targetOptions = new ArrayList<>();
+
+                                for (Actor target : GameMaster.getNonPlayerTargets(model, playerId)
+                                                              .values())
+                                {
+                                    if (target != null)
+                                    {
+                                        Pair<String, String> targetPair =
+                                            new Pair<>(target.getDisplayName(),
+                                                       "cmd_useItem:" + splitAction[1] + ":" +
+                                                       target.getId());
+
+                                        targetOptions.add(targetPair);
+                                    }
+                                }
+
+                                uiPortalOverlay.overlaySelect(targetOptions, false, true);
+                            }
+                            else
+                            {
+                                int   targetId    = Integer.parseInt(splitAction[2]);
+                                Actor targetActor = GameMaster.getActor(model, targetId);
+
+                                if (targetActor != null)
+                                {
+                                    if (targetActor.useItem(item))
+                                    {
+                                        actor.removeItem(Integer.parseInt(splitAction[1]));
+                                        GameMaster.removeItem(model,
+                                                              Integer.parseInt(splitAction[1]));
+
+                                        Toast.makeText(getApplicationContext(),
+                                                       "You used " + item.getDisplayName() +
+                                                       " on " + actor.getDisplayName(),
+                                                       Toast.LENGTH_SHORT).show();
+                                        serverService.writeAll(
+                                            NetworkConstants.PREFIX_FEEDBACK +
+                                            actor.getDisplayName() +
+                                            " used " +
+                                            item.getDisplayName());
+
+                                        finished = true;
+                                    }
+                                }
+                            }
+                            break;
+                        case AOE_PLAYER:
+                            type = ".help";
+                            for (Actor target : GameMaster.getPlayerTargets(model, playerId)
+                                                          .values())
+                            {
+                                target.useItem(item);
+
+                                Toast.makeText(getApplicationContext(),
+                                               "You used " + item.getDisplayName(),
+                                               Toast.LENGTH_SHORT).show();
+                                serverService.writeAll(
+                                    NetworkConstants.PREFIX_FEEDBACK + actor.getDisplayName() +
+                                    " used " +
+                                    item.getDisplayName());
+
+                                finished = true;
+                            }
+                            break;
+                        case AOE_NON_PLAYER:
+                            type = ".harm";
+                            for (Actor target : GameMaster.getNonPlayerTargets(model, playerId)
+                                                          .values())
+                            {
+                                target.useItem(item);
+
+                                Toast.makeText(getApplicationContext(),
+                                               "You used " + item.getDisplayName(),
+                                               Toast.LENGTH_SHORT).show();
+                                serverService.writeAll(
+                                    NetworkConstants.PREFIX_FEEDBACK + actor.getDisplayName() +
+                                    " used " +
+                                    item.getDisplayName());
+
+                                finished = true;
+                            }
+                            break;
+                    }
                 }
                 else
                 {
-                    onCommand("cmd_btnCancel");
+                    return;
+                }
+
+                if (finished)
+                {
+                    GameMaster.setActorState(model, playerId, Actor.E_STATE.NEUTRAL);
+
+                    int proposedRoomId = actor.getProposedRoomId();
+
+                    Room room = GameMaster.getRoom(model,
+                                                   proposedRoomId >
+                                                   1 ? proposedRoomId : actor.getRoom());
+
+                    if (proposedRoomId > -1)
+                    {
+                        GameMaster.moveActor(model, playerId, proposedRoomId);
+                    }
+
+                    if (room != null)
+                    {
+                        showAction(room.getMarker(),
+                                   playerId,
+                                   -1,
+                                   1000,
+                                   "item" + type,
+                                   null,
+                                   true,
+                                   false);
+                    }
+
+                    uiPortalOverlay.overlayWaitingForTurn(actor.getHealthMaximum(),
+                                                          actor.getHealthCurrent(),
+                                                          actor.getSpecialMaximum(),
+                                                          actor.getSpecialCurrent());
                 }
             }
             else if (splitAction[0].equals("dropItem"))
@@ -617,22 +772,33 @@ public class PortalActivity extends ARActivity implements PortalRenderer.NewMark
                 Room  room  = GameMaster.getActorRoom(model, playerId);
                 Item  item  = GameMaster.getItem(model, Integer.parseInt(splitAction[1]));
 
+                if (room != null)
+                {
+                    if (room.getResidentItems().size() < 3)
+                    {
+                        room.addItem(Integer.parseInt(splitAction[1]));
+                    }
+                    else
+                    {
+                        Toast.makeText(this,
+                                       "There's no room to drop an item here!",
+                                       Toast.LENGTH_SHORT).show();
+                        return;
+                    }
+                }
+
                 if (actor != null)
                 {
                     actor.removeItem(Integer.parseInt(splitAction[1]));
                 }
 
-                if (room != null)
-                {
-                    room.addItem(Integer.parseInt(splitAction[1]));
-                }
-
-                if (item != null)
-                {
-                    Toast.makeText(this,
-                                   "Dropped item " + item.getDisplayName(),
-                                   Toast.LENGTH_SHORT).show();
-                }
+                Toast.makeText(this,
+                               "You dropped item " +
+                               ((item != null) ? item.getDisplayName() : "an item"),
+                               Toast.LENGTH_SHORT).show();
+                serverService.writeAll(
+                    ((actor != null) ? actor.getDisplayName() : "Someone") + " dropped " +
+                    ((item != null) ? item.getDisplayName() : "an item"));
 
                 if (actor != null && actor.getItems().size() > 0)
                 {
@@ -881,7 +1047,6 @@ public class PortalActivity extends ARActivity implements PortalRenderer.NewMark
                     if (item != null)
                     {
                         res += item.getDisplayName() + ",";
-                        //res += ((item instanceof ItemConsumable) ? "consumable" : "durable") + ",";
                         res += itemId + ":";
                     }
                 }
@@ -891,37 +1056,232 @@ public class PortalActivity extends ARActivity implements PortalRenderer.NewMark
         }
         else if (msg.startsWith(NetworkConstants.PREFIX_USE_ITEM))
         {
-            String[] splitMsg = msg.split(":");
+            String[] splitMsg    = msg.split(";");
+            String[] splitAction = splitMsg[1].split(":");
 
             Actor actor = GameMaster.getActor(model, readFrom);
-            Item  item  = GameMaster.getItem(model, Integer.parseInt(splitMsg[1]));
+            Item  item  = GameMaster.getItem(model, Integer.parseInt(splitAction[0]));
 
-            if (actor != null && item != null)
+            String type = null;
+
+            if (actor != null && item != null && item instanceof ItemConsumable)
             {
-                if (actor.useItem(item))
+                switch (((ItemConsumable) item).getTargetingType())
                 {
-                    GameMaster.removeItem(model, item.getId());
+                    case SINGLE_PLAYER:
+                        type = ".help";
+                        if (splitAction.length < 3)
+                        {
+                        }
+                        else
+                        {
+                            int   targetId    = Integer.parseInt(splitAction[1]);
+                            Actor targetActor = GameMaster.getActor(model, targetId);
 
-                    serverService.writeToClient("Used item " + item.getDisplayName(), readFrom);
+                            if (targetActor != null)
+                            {
+                                if (targetActor.useItem(item))
+                                {
+                                    actor.removeItem(Integer.parseInt(splitAction[0]));
+                                    GameMaster.removeItem(model,
+                                                          Integer.parseInt(splitAction[0]));
+
+                                    Toast.makeText(getApplicationContext(),
+                                                   actor.getDisplayName() + " used " +
+                                                   item.getDisplayName() +
+                                                   " on " +
+                                                   ((targetId ==
+                                                     readFrom) ? "himself" : actor.getDisplayName()),
+                                                   Toast.LENGTH_SHORT).show();
+                                    serverService.writeToClient(
+                                        NetworkConstants.PREFIX_FEEDBACK + "You used " +
+                                        item.getDisplayName() + " on " + ((targetId ==
+                                                                           readFrom) ? "yourself" : actor
+                                                                              .getDisplayName()),
+                                        readFrom);
+                                    for (int id : GameMaster.getPlayerActorIds(model))
+                                    {
+                                        if (id != playerId && id != readFrom)
+                                        {
+                                            serverService.writeToClient(
+                                                actor.getDisplayName() + " used " +
+                                                item.getDisplayName() +
+                                                " on " +
+                                                ((targetId ==
+                                                  readFrom) ? "himself" : actor.getDisplayName()),
+                                                id);
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                        break;
+                    case SINGLE_NON_PLAYER:
+                        type = ".harm";
+                        if (splitAction.length < 3)
+                        {
+                        }
+                        else
+                        {
+                            int   targetId    = Integer.parseInt(splitAction[1]);
+                            Actor targetActor = GameMaster.getActor(model, targetId);
+
+                            if (targetActor != null)
+                            {
+                                if (targetActor.useItem(item))
+                                {
+                                    actor.removeItem(Integer.parseInt(splitAction[0]));
+                                    GameMaster.removeItem(model,
+                                                          Integer.parseInt(splitAction[0]));
+
+                                    Toast.makeText(getApplicationContext(),
+                                                   actor.getDisplayName() + " used " +
+                                                   item.getDisplayName() +
+                                                   " on " +
+                                                   ((targetId ==
+                                                     readFrom) ? "himself" : actor.getDisplayName()),
+                                                   Toast.LENGTH_SHORT).show();
+                                    serverService.writeToClient(
+                                        NetworkConstants.PREFIX_FEEDBACK + "You used " +
+                                        item.getDisplayName() + " on " + ((targetId ==
+                                                                           readFrom) ? "yourself" : actor
+                                                                              .getDisplayName()),
+                                        readFrom);
+                                    for (int id : GameMaster.getPlayerActorIds(model))
+                                    {
+                                        if (id != playerId && id != readFrom)
+                                        {
+                                            serverService.writeToClient(
+                                                actor.getDisplayName() + " used " +
+                                                item.getDisplayName() +
+                                                " on " +
+                                                ((targetId ==
+                                                  readFrom) ? "himself" : actor.getDisplayName()),
+                                                id);
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                        break;
+                    case AOE_PLAYER:
+                        type = ".help";
+                        for (Actor target : GameMaster.getPlayerTargets(model, readFrom)
+                                                      .values())
+                        {
+                            target.useItem(item);
+
+                            Toast.makeText(getApplicationContext(),
+                                           actor.getDisplayName() + " used " +
+                                           item.getDisplayName(),
+                                           Toast.LENGTH_SHORT).show();
+                            serverService.writeToClient(
+                                NetworkConstants.PREFIX_FEEDBACK + "You used " +
+                                item.getDisplayName(),
+                                readFrom);
+                            for (int id : GameMaster.getPlayerActorIds(model))
+                            {
+                                if (id != playerId && id != readFrom)
+                                {
+                                    serverService.writeToClient(
+                                        actor.getDisplayName() + " used " +
+                                        item.getDisplayName(),
+                                        id);
+                                }
+                            }
+                        }
+                        break;
+                    case AOE_NON_PLAYER:
+                        type = ".harm";
+                        for (Actor target : GameMaster.getNonPlayerTargets(model, readFrom)
+                                                      .values())
+                        {
+                            target.useItem(item);
+
+                            Toast.makeText(getApplicationContext(),
+                                           actor.getDisplayName() + " used " +
+                                           item.getDisplayName(),
+                                           Toast.LENGTH_SHORT).show();
+                            serverService.writeToClient(
+                                NetworkConstants.PREFIX_FEEDBACK + "You used " +
+                                item.getDisplayName(),
+                                readFrom);
+                            for (int id : GameMaster.getPlayerActorIds(model))
+                            {
+                                if (id != playerId && id != readFrom)
+                                {
+                                    serverService.writeToClient(
+                                        actor.getDisplayName() + " used " +
+                                        item.getDisplayName(),
+                                        id);
+                                }
+                            }
+                        }
+                        break;
+                }
+            }
+            else
+            {
+                return;
+            }
+
+            String playerItems = "";
+
+            for (Item playerItem : actor.getItems().values())
+            {
+                playerItems +=
+                    "," + playerItem.getId() + "." + playerItem.getDisplayName() + "." +
+                    ((playerItem instanceof ItemConsumable) ? ((ItemConsumable) playerItem).getTargetingType()
+                                                                                           .name() : "DUR");
+            }
+
+            if (!playerItems.equals(""))
+            {
+                playerItems = playerItems.substring(1);
+                serverService.writeToClient(
+                    NetworkConstants.PREFIX_UPDATE_PLAYER_ITEMS + playerItems, playerId);
+            }
+
+            GameMaster.setActorState(model, readFrom, Actor.E_STATE.NEUTRAL);
+
+            Room room = GameMaster.getActorRoom(model, readFrom);
+
+            if (room != null)
+            {
+                showAction(room.getMarker(),
+                           readFrom,
+                           -1,
+                           1000,
+                           "item" + type,
+                           null,
+                           true,
+                           false);
+            }
+
+            Toast.makeText(getApplicationContext(),
+                           actor.getDisplayName() + " used " + item.getDisplayName(),
+                           Toast.LENGTH_SHORT).show();
+            serverService.writeToClient(
+                NetworkConstants.PREFIX_FEEDBACK + "You used " + item.getDisplayName(),
+                readFrom);
+            for (int id : GameMaster.getPlayerActorIds(model))
+            {
+                if (id != playerId && id != readFrom)
+                {
+                    serverService.writeToClient(
+                        actor.getDisplayName() + " used " + item.getDisplayName(), id);
                 }
             }
 
-            if (actor != null && actor.getItems().size() > 0)
-            {
-                handleRead(NetworkConstants.GAME_INVENTORY_REQUEST, readFrom);
-            }
-            else if (actor != null)
-            {
-                serverService.writeToClient(NetworkConstants.PREFIX_TURN +
-                                            actor.getHealthMaximum() +
-                                            ":" +
-                                            actor.getHealthCurrent() +
-                                            ":" +
-                                            actor.getSpecialMaximum() +
-                                            ":" +
-                                            actor.getSpecialCurrent(),
-                                            readFrom);
-            }
+            serverService.writeToClient(NetworkConstants.PREFIX_TURN_OVER +
+                                        actor.getHealthMaximum() +
+                                        ":" +
+                                        actor.getHealthCurrent() +
+                                        ":" +
+                                        actor.getSpecialMaximum() +
+                                        ":" +
+                                        actor.getSpecialCurrent(),
+                                        readFrom);
         }
         else if (msg.startsWith(NetworkConstants.PREFIX_DROP_ITEM))
         {
@@ -931,16 +1291,59 @@ public class PortalActivity extends ARActivity implements PortalRenderer.NewMark
             Room  room  = GameMaster.getActorRoom(model, readFrom);
             Item  item  = GameMaster.getItem(model, Integer.parseInt(splitMsg[1]));
 
+            if (actor != null && room != null)
+            {
+                if (room.getResidentItems().size() < 3)
+                {
+                    room.addItem(Integer.parseInt(splitMsg[1]));
+
+                    String playerItems = "";
+
+                    for (Item playerItem : actor.getItems().values())
+                    {
+                        playerItems +=
+                            "," + playerItem.getId() + "." + playerItem.getDisplayName() + "." +
+                            ((playerItem instanceof ItemConsumable) ? ((ItemConsumable) playerItem).getTargetingType()
+                                                                                                   .name() : "DUR");
+                    }
+
+                    if (!playerItems.equals(""))
+                    {
+                        playerItems = playerItems.substring(1);
+                        serverService.writeToClient(
+                            NetworkConstants.PREFIX_UPDATE_PLAYER_ITEMS + playerItems, playerId);
+                    }
+                }
+                else
+                {
+                    serverService.writeToClient(
+                        NetworkConstants.PREFIX_FEEDBACK + "There's no room to drop an item here!",
+                        readFrom);
+                }
+            }
+
             if (actor != null && item != null)
             {
                 actor.removeItem(item.getId());
-
-                serverService.writeToClient("Dropped item " + item.getDisplayName(), readFrom);
             }
 
-            if (room != null)
+            Toast.makeText(this,
+                           ((actor != null) ? actor.getDisplayName() : "Someone") + " dropped " +
+                           ((item != null) ? item.getDisplayName() : "an item"),
+                           Toast.LENGTH_SHORT).show();
+            serverService.writeToClient(NetworkConstants.PREFIX_FEEDBACK + "You dropped item " +
+                                        ((item != null) ? item.getDisplayName() : "an item"),
+                                        readFrom);
+            for (int id : GameMaster.getPlayerActorIds(model))
             {
-                room.addItem(Integer.parseInt(splitMsg[1]));
+                if (id != playerId && id != readFrom)
+                {
+                    serverService.writeToClient(NetworkConstants.PREFIX_FEEDBACK + ((actor !=
+                                                                                     null) ? actor.getDisplayName() : "Someone") +
+                                                " dropped " +
+                                                ((item !=
+                                                  null) ? item.getDisplayName() : "an item"), id);
+                }
             }
 
             if (actor != null && actor.getItems().size() > 0)
@@ -983,6 +1386,26 @@ public class PortalActivity extends ARActivity implements PortalRenderer.NewMark
                 serverService.writeToClient(
                     NetworkConstants.PREFIX_FEEDBACK + "Took item " + item.getDisplayName(),
                     readFrom);
+
+                if (PortalActivity.playerId != playerId)
+                {
+                    String playerItems = "";
+
+                    for (Item playerItem : actor.getItems().values())
+                    {
+                        playerItems +=
+                            "," + playerItem.getId() + "." + playerItem.getDisplayName() + "." +
+                            ((playerItem instanceof ItemConsumable) ? ((ItemConsumable) playerItem).getTargetingType()
+                                                                                                   .name() : "DUR");
+                    }
+
+                    if (!playerItems.equals(""))
+                    {
+                        playerItems = playerItems.substring(1);
+                        serverService.writeToClient(
+                            NetworkConstants.PREFIX_UPDATE_PLAYER_ITEMS + playerItems, playerId);
+                    }
+                }
             }
 
             if (room != null)
@@ -1886,7 +2309,8 @@ public class PortalActivity extends ARActivity implements PortalRenderer.NewMark
                                    "You used " +
                                    ((special != null) ? special.getDisplayName() : "Something") +
                                    " on " +
-                                   ((target != null) ? target.getDisplayName() : "Someone"),
+                                   ((targetId == sourceId) ? "yourself" : ((target != null) ? target
+                                       .getDisplayName() : "Someone")),
                                    Toast.LENGTH_SHORT).show();
                     serverService.writeAll(
                         NetworkConstants.PREFIX_FEEDBACK +
@@ -1965,7 +2389,8 @@ public class PortalActivity extends ARActivity implements PortalRenderer.NewMark
                                    " used " +
                                    ((special != null) ? special.getDisplayName() : "Something") +
                                    " on " +
-                                   ((target != null) ? target.getDisplayName() : "Someone"),
+                                   ((targetId == sourceId) ? "yourself" : ((target != null) ? target
+                                       .getDisplayName() : "Someone")),
                                    Toast.LENGTH_SHORT).show();
                     serverService.writeToClient(
                         NetworkConstants.PREFIX_FEEDBACK + "You used " +

@@ -303,24 +303,143 @@ public class ActorController
 
                     if (!usedSpecial)
                     {
-                        Logger.logD("actor <" + actorId + "> failed to use special");
+                        Logger.logD("actor <" + actorId + "> failed to use special, rerolling");
 
-                        gameController.turnPassed(actorId);
+                        takeTurn(gameController, model, actorId);
+
+                        //gameController.turnPassed(actorId);
                     }
                     break;
                 case "item":
-                    String itemName = GameMaster.getItem(model, itemId).getDisplayName();
+                    ItemConsumable item = (ItemConsumable) GameMaster.getItem(model, itemId);
 
-                    if (actor.useItem(itemId))
+                    String itemName = item.getDisplayName();
+
+                    Logger.logI("using item " + itemName);
+
+                    boolean usedItem = false;
+
+                    switch (item.getTargetingType())
                     {
-                        GameMaster.removeItem(model, itemId);
+                        case SINGLE_PLAYER:
+                        {
+                            if (nonPlayerTargets.size() > 0)
+                            {
+                                Collections.shuffle(nonPlayerTargets);
+
+                                Actor targetActor =
+                                    GameMaster.getActor(model, nonPlayerTargets.get(0));
+
+                                targetActor.useItem(model, itemId);
+
+                                actor.removeItem(itemId);
+
+                                Logger.logI(
+                                    "actor " + actor.getName() + " used " + item.getName());
+
+                                gameController.onActorAction(actorId,
+                                                             nonPlayerTargets.get(0),
+                                                             "item.help");
+
+                                gameController.feedback(
+                                    actor.getDisplayName() + " used " + itemName + " on " +
+                                    ((actor.getId() ==
+                                      targetActor.getId()) ? "himself" : targetActor.getDisplayName()));
+
+                                usedItem = true;
+                            }
+                            break;
+                        }
+                        case SINGLE_NON_PLAYER:
+                        {
+                            Collections.shuffle(playerTargets);
+
+                            Actor targetActor = GameMaster.getActor(model, playerTargets.get(0));
+
+                            targetActor.useItem(model, itemId);
+
+                            actor.removeItem(itemId);
+
+                            Logger.logI(
+                                "actor " + actor.getName() + " used " + item.getName());
+
+                            gameController.onActorAction(actorId,
+                                                         playerTargets.get(0),
+                                                         "item.harm");
+
+                            gameController.feedback(
+                                actor.getDisplayName() + " used " + itemName + " on " +
+                                targetActor.getDisplayName());
+
+                            usedItem = true;
+
+                            break;
+                        }
+                        case AOE_PLAYER:
+                        {
+                            if (nonPlayerTargets.size() > 0)
+                            {
+                                for (int i : nonPlayerTargets)
+                                {
+                                    Actor targetActor = GameMaster.getActor(model, i);
+
+                                    targetActor.useItem(model, itemId);
+                                }
+
+                                actor.removeItem(itemId);
+
+                                Logger.logI(
+                                    "actor " + actor.getName() + " used " + item.getName());
+
+                                gameController.onActorAction(actorId, -1, "item.help");
+
+                                gameController.feedback(
+                                    actor.getDisplayName() + " used " + itemName);
+
+                                usedItem = true;
+                            }
+                            break;
+                        }
+                        case AOE_NON_PLAYER:
+                        {
+                            for (int i : playerTargets)
+                            {
+                                Actor targetActor = GameMaster.getActor(model, i);
+
+                                targetActor.useItem(model, itemId);
+                            }
+
+                            actor.removeItem(itemId);
+
+                            Logger.logI(
+                                "actor " + actor.getName() + " used " + item.getName());
+
+                            gameController.onActorAction(actorId, -1, "item.harm");
+
+                            gameController.feedback(actor.getDisplayName() + " used " + itemName);
+
+                            usedItem = true;
+
+                            break;
+                        }
                     }
 
-                    actor.setState(Actor.E_STATE.NEUTRAL);
+                    /*if (actor.useItem(itemId))
+                    {
+                        GameMaster.removeItem(model, itemId);
+                    }*/
 
-                    gameController.feedback(actor.getDisplayName() + " used item " + itemName);
+                    if (usedItem)
+                    {
+                        actor.setState(Actor.E_STATE.NEUTRAL);
+                    }
+                    else
+                    {
+                        Logger.logI("actor <" + actorId + "> failed to use item, rerolling");
 
-                    gameController.onActorAction(actorId, -1, "item");
+                        takeTurn(gameController, model, actorId);
+                    }
+
                     break;
                 case "move":
                     if (validMoveRooms.size() > 0)

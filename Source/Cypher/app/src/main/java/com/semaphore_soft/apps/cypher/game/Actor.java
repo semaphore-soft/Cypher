@@ -1402,14 +1402,14 @@ public class Actor
      * @see Effect.E_EFFECT
      * @see Effect#applyTemporaryEffect(Effect.E_EFFECT, int, int, Actor, Actor)
      */
-    public boolean useItem(int itemID)
+    public boolean useItem(Model model, int itemID)
     {
-        if (items.containsKey(itemID))
+        //if (items.containsKey(itemID))
         {
-            return useItem(items.get(itemID));
+            return useItem(GameMaster.getItem(model, itemID));
         }
 
-        return false;
+        //return false;
     }
 
     /**
@@ -1433,9 +1433,9 @@ public class Actor
 
         Logger.logD("item id:<" + item.getId() + ">");
 
-        if (items.containsKey(item.getId()))
+        //if (items.containsKey(item.getId()))
         {
-            Logger.logD("item found in inventory");
+            //Logger.logD("item found in inventory");
 
             if (item instanceof ItemConsumable)
             {
@@ -1453,7 +1453,7 @@ public class Actor
                                                 this);
                 }
 
-                removeItem(item);
+                //removeItem(item);
 
                 Logger.logD("exit trace");
 

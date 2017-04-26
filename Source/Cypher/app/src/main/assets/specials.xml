@@ -13,7 +13,7 @@
 
     <!--Beef Increase-->
     <beef_increase>
-        <name>Beef Incease</name>
+        <name>Beef Increase</name>
         <cost>1</cost>
         <scalar>4</scalar>
         <duration>2</duration>

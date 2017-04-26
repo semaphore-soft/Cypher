@@ -14,6 +14,7 @@ import android.widget.Toast;
 
 import com.semaphore_soft.apps.cypher.game.Actor;
 import com.semaphore_soft.apps.cypher.game.GameController;
+import com.semaphore_soft.apps.cypher.game.ItemConsumable;
 import com.semaphore_soft.apps.cypher.game.Room;
 import com.semaphore_soft.apps.cypher.game.Special;
 import com.semaphore_soft.apps.cypher.networking.Client;
@@ -63,9 +64,10 @@ public class PortalClientActivity extends ARActivity implements UIListener,
     private static ArrayList<Integer> roomMarkers;
     private static ArrayList<Integer> placedRoomMarkers;
 
-    private static HashMap<Integer, String>                                 nonPlayerTargets;
-    private static HashMap<Integer, String>                                 playerTargets;
-    private static HashMap<Integer, Pair<String, Special.E_TARGETING_TYPE>> specials;
+    private static HashMap<Integer, String>                                        nonPlayerTargets;
+    private static HashMap<Integer, String>                                        playerTargets;
+    private static HashMap<Integer, Pair<String, Special.E_TARGETING_TYPE>>        specials;
+    private static HashMap<Integer, Pair<String, ItemConsumable.E_TARGETING_TYPE>> items;
 
     private static int healthMax;
     private static int healthCurrent;
@@ -116,6 +118,7 @@ public class PortalClientActivity extends ARActivity implements UIListener,
         nonPlayerTargets = new HashMap<>();
         playerTargets = new HashMap<>();
         specials = new HashMap<>();
+        items = new HashMap<>();
     }
 
     /**
@@ -247,6 +250,23 @@ public class PortalClientActivity extends ARActivity implements UIListener,
                     break;
                 case "cmd_btnInventory":
                     clientService.write(NetworkConstants.GAME_INVENTORY_REQUEST);
+
+                    ArrayList<Pair<String, String>> itemOptions = new ArrayList<>();
+
+                    for (int i : items.keySet())
+                    {
+                        Pair<String, ItemConsumable.E_TARGETING_TYPE> itemDescriptionPair =
+                            items.get(i);
+                        String itemName =
+                            itemDescriptionPair.first;
+                        Pair<String, String> itemOptionPair =
+                            new Pair<>(itemName,
+                                       ((itemDescriptionPair.second !=
+                                         null) ? "cmd_invConItem:" : "cmd_invDurItem:") + i);
+                        itemOptions.add(itemOptionPair);
+                    }
+
+                    uiPortalOverlay.overlaySelect(itemOptions, false, true);
                     break;
                 case "cmd_btnFloor":
                     clientService.write(NetworkConstants.GAME_FLOOR_REQUEST);
@@ -294,6 +314,55 @@ public class PortalClientActivity extends ARActivity implements UIListener,
             }
             else if (splitAction[0].equals("useItem"))
             {
+                int itemId = Integer.parseInt(splitAction[1]);
+
+                ItemConsumable.E_TARGETING_TYPE itemType = items.get(itemId).second;
+
+                if (splitAction.length < 3)
+                {
+                    if (itemType != ItemConsumable.E_TARGETING_TYPE.AOE_PLAYER && itemType !=
+                                                                                  ItemConsumable.E_TARGETING_TYPE.AOE_NON_PLAYER)
+                    {
+                        ArrayList<Pair<String, String>> targetOptions = new ArrayList<>();
+
+                        if (itemType == ItemConsumable.E_TARGETING_TYPE.SINGLE_NON_PLAYER)
+                        {
+                            for (int i : nonPlayerTargets.keySet())
+                            {
+                                Pair<String, String> targetPair =
+                                    new Pair<>(nonPlayerTargets.get(i),
+                                               "cmd_useItem:" + itemId + ":" + i);
+
+                                targetOptions.add(targetPair);
+                            }
+                        }
+                        else
+                        {
+                            for (int i : playerTargets.keySet())
+                            {
+                                Pair<String, String> targetPair =
+                                    new Pair<>(playerTargets.get(i),
+                                               "cmd_useItem:" + itemId + ":" + i);
+
+                                targetOptions.add(targetPair);
+                            }
+                        }
+
+                        uiPortalOverlay.overlaySelect(targetOptions, false, true);
+                    }
+                    else
+                    {
+                        clientService.write(NetworkConstants.PREFIX_USE_ITEM + splitAction[1]);
+                        renderer.setCheckingNearestRoomMarker(false);
+                    }
+                }
+                else
+                {
+                    clientService.write(
+                        NetworkConstants.PREFIX_USE_ITEM + splitAction[1] + ":" + splitAction[2]);
+                    renderer.setCheckingNearestRoomMarker(false);
+                }
+
                 clientService.write(NetworkConstants.PREFIX_USE_ITEM + splitAction[1]);
             }
             else if (splitAction[0].equals("dropItem"))
@@ -622,6 +691,29 @@ public class PortalClientActivity extends ARActivity implements UIListener,
                                    Special.E_TARGETING_TYPE.valueOf(splitSpecialTriad[2]));
 
                     specials.put(Integer.parseInt(splitSpecialTriad[0]), specialNameTargetingPair);
+                }
+            }
+        }
+        else if (msg.startsWith(NetworkConstants.PREFIX_UPDATE_PLAYER_ITEMS))
+        {
+            items.clear();
+
+            String[] splitMsg = msg.split(":");
+
+            if (splitMsg.length > 1)
+            {
+                String[] itemTriads = splitMsg[1].split(",");
+
+                for (String itemTriad : itemTriads)
+                {
+                    String[] splitItemTriad = itemTriad.split("\\.");
+
+                    Pair<String, ItemConsumable.E_TARGETING_TYPE> itemNameTargetingPair =
+                        new Pair<>(splitItemTriad[1],
+                                   (!splitItemTriad[2].equals("DUR") ?
+                                    ItemConsumable.E_TARGETING_TYPE.valueOf(splitItemTriad[2]) : null));
+
+                    items.put(Integer.parseInt(splitItemTriad[0]), itemNameTargetingPair);
                 }
             }
         }

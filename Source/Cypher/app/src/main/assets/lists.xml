@@ -30,6 +30,17 @@
     <items>
         <name>delightful_bread</name>
         <name>potion_of_buffness</name>
+        <name>elven_bread</name>
+        <name>elven_pan_pizza</name>
+        <name>30_italian_meal</name>
+        <name>50_italian_meal</name>
+        <name>fire_cracker</name>
+        <name>elixir</name>
+        <name>impressive_shin_greaves</name>
+        <name>champion_gauntlets</name>
+        <name>refresh_ring</name>
+        <name>ancient_spell_book</name>
+        <name>spell_ring</name>
     </items>
 
     <!--Specials-->
