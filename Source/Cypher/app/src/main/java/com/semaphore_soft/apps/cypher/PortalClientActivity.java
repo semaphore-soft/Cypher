@@ -4,6 +4,7 @@ import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.ServiceConnection;
+import android.media.MediaPlayer;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.IBinder;
@@ -74,6 +75,8 @@ public class PortalClientActivity extends ARActivity implements UIListener,
     private static int energyMax;
     private static int energyCurrent;
 
+    private static MediaPlayer mediaPlayer;
+
     /**
      * {@inheritDoc}
      *
@@ -83,6 +86,11 @@ public class PortalClientActivity extends ARActivity implements UIListener,
     public void onCreate(Bundle savedInstanceState)
     {
         super.onCreate(savedInstanceState);
+
+        mediaPlayer = MediaPlayer.create(this, R.raw.overworld);
+        mediaPlayer.setLooping(true);
+        mediaPlayer.start();
+
         setContentView(R.layout.empty);
 
         uiPortalActivity = new UIPortalActivity(this);

@@ -4,6 +4,7 @@ import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.ServiceConnection;
+import android.media.MediaPlayer;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.IBinder;
@@ -98,6 +99,8 @@ public class PortalActivity extends ARActivity implements PortalRenderer.NewMark
         }
     };
 
+    private static MediaPlayer mediaPlayer;
+
     /**
      * {@inheritDoc}
      *
@@ -107,6 +110,11 @@ public class PortalActivity extends ARActivity implements PortalRenderer.NewMark
     public void onCreate(Bundle savedInstanceState)
     {
         super.onCreate(savedInstanceState); //Calls ARActivity's actor, abstract class of ARBaseLib
+
+        mediaPlayer = MediaPlayer.create(this, R.raw.overworld);
+        mediaPlayer.setLooping(true);
+        mediaPlayer.start();
+
         setContentView(R.layout.empty);
 
         // Setup ui
