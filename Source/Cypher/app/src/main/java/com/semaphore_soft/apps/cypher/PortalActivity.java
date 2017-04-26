@@ -192,6 +192,15 @@ public class PortalActivity extends ARActivity implements PortalRenderer.NewMark
 
     /**
      * {@inheritDoc}
+     */
+    @Override
+    public void onBackPressed()
+    {
+        //do nothing
+    }
+
+    /**
+     * {@inheritDoc}
      *
      * @return
      */
