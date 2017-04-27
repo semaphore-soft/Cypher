@@ -235,7 +235,7 @@ public class PortalActivity extends ARActivity implements PortalRenderer.NewMark
                     if (firstUnreservedMarker > -1 &&
                         selectPlayerMarker(playerId, characterName, firstUnreservedMarker))
                     {
-                        renderer.setPlayerMarker(playerId);
+                        renderer.setPlayerMarker(firstUnreservedMarker);
 
                         Toast.makeText(getApplicationContext(),
                                        "Player Marker Set",
