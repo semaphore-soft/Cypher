@@ -400,6 +400,8 @@ public class GameStatLoader
                 Logger.logI("actor behavior not defined", 1);
             }
 
+            actor.setName(actorName);
+
             Logger.logI("finished loading actor <" + actorName + ">");
         }
         catch (XmlPullParserException e)
@@ -723,6 +725,9 @@ public class GameStatLoader
 
                 specials.put(special.getId(), special);
                 Logger.logI("special added to specials table", 1);
+
+                special.setName(specialName);
+
                 Logger.logI("finished loading special <" + specialName + ">");
                 return special;
             }

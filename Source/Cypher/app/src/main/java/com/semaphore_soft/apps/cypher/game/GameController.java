@@ -1,5 +1,7 @@
 package com.semaphore_soft.apps.cypher.game;
 
+import android.support.annotation.Nullable;
+
 /**
  * The {@link GameController game.GameController} interface defines the methods
  * which must be defined on a class which coordinates the game state {@link
@@ -76,7 +78,7 @@ public interface GameController
      * @see Actor
      * @see ActorController
      */
-    void onActorAction(int sourceId, int targetId, String action);
+    void onActorAction(int sourceId, int targetId, String action, @Nullable String desc);
 
     /**
      * Callback method, informed the {@link GameController} that a non-player

@@ -157,7 +157,10 @@ public class ActorController
                         GameMaster.getActor(model, actorId).getDisplayName() + " attacked " +
                         GameMaster.getActor(model, playerTargets.get(0)).getDisplayName());
 
-                    gameController.onActorAction(actorId, playerTargets.get(0), "attack");
+                    gameController.onActorAction(actorId,
+                                                 playerTargets.get(0),
+                                                 "attack",
+                                                 actor.getName());
                     break;
                 case "defend":
                     actor.setState(Actor.E_STATE.DEFEND);
@@ -165,7 +168,7 @@ public class ActorController
                     gameController.feedback(
                         GameMaster.getActor(model, actorId).getDisplayName() + " defended ");
 
-                    gameController.onActorAction(actorId, -1, "defend");
+                    gameController.onActorAction(actorId, -1, "defend", actor.getName());
                     break;
                 case "special":
                     ArrayList<Integer> specialIds = new ArrayList<>();
@@ -212,7 +215,8 @@ public class ActorController
 
                                         gameController.onActorAction(actorId,
                                                                      nonPlayerTargets.get(0),
-                                                                     "special.help");
+                                                                     "special.help",
+                                                                     special.getName());
 
                                         usedSpecial = true;
                                     }
@@ -238,7 +242,8 @@ public class ActorController
 
                                     gameController.onActorAction(actorId,
                                                                  playerTargets.get(0),
-                                                                 "special.harm");
+                                                                 "special.harm",
+                                                                 special.getName());
 
                                     usedSpecial = true;
                                     break;
@@ -264,7 +269,8 @@ public class ActorController
 
                                         gameController.onActorAction(actorId,
                                                                      -1,
-                                                                     "special.help");
+                                                                     "special.help",
+                                                                     special.getName());
 
                                         usedSpecial = true;
                                     }
@@ -287,7 +293,8 @@ public class ActorController
 
                                     gameController.onActorAction(actorId,
                                                                  -1,
-                                                                 "special.harm");
+                                                                 "special.harm",
+                                                                 special.getName());
 
                                     usedSpecial = true;
 
@@ -339,7 +346,8 @@ public class ActorController
 
                                 gameController.onActorAction(actorId,
                                                              nonPlayerTargets.get(0),
-                                                             "item.help");
+                                                             "item.help",
+                                                             item.getName());
 
                                 gameController.feedback(
                                     actor.getDisplayName() + " used " + itemName + " on " +
@@ -365,7 +373,8 @@ public class ActorController
 
                             gameController.onActorAction(actorId,
                                                          playerTargets.get(0),
-                                                         "item.harm");
+                                                         "item.harm",
+                                                         item.getName());
 
                             gameController.feedback(
                                 actor.getDisplayName() + " used " + itemName + " on " +
@@ -391,7 +400,10 @@ public class ActorController
                                 Logger.logI(
                                     "actor " + actor.getName() + " used " + item.getName());
 
-                                gameController.onActorAction(actorId, -1, "item.help");
+                                gameController.onActorAction(actorId,
+                                                             -1,
+                                                             "item.help",
+                                                             item.getName());
 
                                 gameController.feedback(
                                     actor.getDisplayName() + " used " + itemName);
@@ -414,7 +426,7 @@ public class ActorController
                             Logger.logI(
                                 "actor " + actor.getName() + " used " + item.getName());
 
-                            gameController.onActorAction(actorId, -1, "item.harm");
+                            gameController.onActorAction(actorId, -1, "item.harm", item.getName());
 
                             gameController.feedback(actor.getDisplayName() + " used " + itemName);
 

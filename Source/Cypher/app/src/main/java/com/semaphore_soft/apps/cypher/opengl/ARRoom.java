@@ -5,6 +5,7 @@ import android.opengl.Matrix;
 
 import com.semaphore_soft.apps.cypher.opengl.shader.DynamicShaderProgram;
 
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Semaphore;
 
@@ -475,5 +476,15 @@ public class ARRoom implements ARDrawableGLES20
         Matrix.rotateM(transformationMatrix, 0, -90.0f, 1.0f, 0.0f, 0.0f);
 
         return transformationMatrix;
+    }
+
+    public Set<Integer> getPlayers()
+    {
+        return playerLine.keySet();
+    }
+
+    public Set<Integer> getEnemies()
+    {
+        return enemyLine.keySet();
     }
 }

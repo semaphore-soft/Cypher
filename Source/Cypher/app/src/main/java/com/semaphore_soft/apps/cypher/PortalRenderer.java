@@ -1,6 +1,7 @@
 package com.semaphore_soft.apps.cypher;
 
 import android.content.Context;
+import android.media.MediaPlayer;
 import android.opengl.GLES20;
 import android.opengl.Matrix;
 import android.os.Handler;
@@ -28,6 +29,7 @@ import org.artoolkit.ar.base.ARToolKit;
 import org.artoolkit.ar.base.rendering.gles20.ARRendererGLES20;
 
 import java.util.ArrayList;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
 import javax.microedition.khronos.egl.EGLConfig;
@@ -62,6 +64,8 @@ class PortalRenderer extends ARRendererGLES20
     private static int playerMarker      = -1;
     private static int playerRoomMarker  = -1;
     private static int nearestRoomMarker = -1;
+
+    private static MediaPlayer mediaPlayer;
 
     @Override
     public boolean configureARScene()
@@ -155,18 +159,24 @@ class PortalRenderer extends ARRendererGLES20
         waypoint.setShaderProgram(waypointShaderProgram);
         models.put("waypoint", waypoint);
 
-        ARDrawableGLES20 overlay =
-            ModelLoader.load(context, "overlay", 5.0f, "spark");
-        DynamicShaderProgram overlayShaderProgram =
-            new DynamicShaderProgram(ShaderLoader.createShader(context,
-                                                               "shaders/vertexShaderTextured.glsl",
-                                                               GLES20.GL_VERTEX_SHADER),
-                                     ShaderLoader.createShader(context,
-                                                               "shaders/fragmentShaderShadelessTexturedTransparent.glsl",
-                                                               GLES20.GL_FRAGMENT_SHADER),
-                                     new String[]{"a_Position", "a_Color", "a_Normal", "a_TexCoordinate"});
-        overlay.setShaderProgram(overlayShaderProgram);
-        models.put("overlay", overlay);
+        String[] effects =
+            new String[]{"spark", "chill", "flameShot", "heal", "ignusFatuus", "slash"};
+
+        for (String effect : effects)
+        {
+            ARDrawableGLES20 overlay =
+                ModelLoader.load(context, "overlay", 5.0f, effect);
+            DynamicShaderProgram overlayShaderProgram =
+                new DynamicShaderProgram(ShaderLoader.createShader(context,
+                                                                   "shaders/vertexShaderTextured.glsl",
+                                                                   GLES20.GL_VERTEX_SHADER),
+                                         ShaderLoader.createShader(context,
+                                                                   "shaders/fragmentShaderShadelessTexturedTransparent.glsl",
+                                                                   GLES20.GL_FRAGMENT_SHADER),
+                                         new String[]{"a_Position", "a_Color", "a_Normal", "a_TexCoordinate"});
+            overlay.setShaderProgram(overlayShaderProgram);
+            models.put(effect, overlay);
+        }
 
         ArrayList<String> actorNames = GameStatLoader.getList(context, "actors");
         if (actorNames != null)
@@ -554,7 +564,10 @@ class PortalRenderer extends ARRendererGLES20
      * @param effect   Name of the effect to apply
      * @param duration How long the effect should last in milliseconds
      */
-    private void setActorEffect(final int roomId, final int actorId, String effect, long duration)
+    private void setActorEffect(final int roomId,
+                                final int actorId,
+                                final String effect,
+                                final long duration)
     {
         final ARRoom room = arRooms.get(roomId);
         room.addEffect(actorId, models.get(effect));
@@ -568,6 +581,34 @@ class PortalRenderer extends ARRendererGLES20
         };
         // Remove effect after the duration has passed
         handler.postDelayed(removeEffect, duration);
+    }
+
+    private void setActorsEffects(final int roomId,
+                                  final boolean players,
+                                  String effect,
+                                  long duration)
+    {
+        final ARRoom room = arRooms.get(roomId);
+
+        if (room != null)
+        {
+            Set<Integer> actors = (players) ? room.getPlayers() : room.getEnemies();
+
+            for (final int id : actors)
+            {
+                room.addEffect(id, models.get(effect));
+                Runnable removeEffect = new Runnable()
+                {
+                    @Override
+                    public void run()
+                    {
+                        room.removeEffect(id);
+                    }
+                };
+                // Remove effect after the duration has passed
+                handler.postDelayed(removeEffect, duration);
+            }
+        }
     }
 
     /**
@@ -799,7 +840,7 @@ class PortalRenderer extends ARRendererGLES20
      * @see ARRoom
      * @see ARPoseModel
      * @see GameMaster#getSpecialTypeDescriptor(Model, int)
-     * @see PortalActivity#showAction(int, int, int, int, String, String, boolean, boolean)
+     * @see PortalActivity#showAction(int, int, int, int, String, String, boolean, boolean, String)
      */
     void showAction(final int arRoomId,
                     final int sourceId,
@@ -808,8 +849,18 @@ class PortalRenderer extends ARRendererGLES20
                     final String actionType,
                     @Nullable final String targetState,
                     final boolean playerAction,
-                    final boolean forward)
+                    final boolean forward,
+                    @Nullable final String desc)
     {
+        Logger.logD("action:<" + actionType + ">");
+        Logger.logD("action description:<" + desc + ">");
+
+        if (mediaPlayer != null)
+        {
+            mediaPlayer.release();
+            mediaPlayer = null;
+        }
+
         ARRoom arRoom = arRooms.get(arRoomId);
         if (forward)
         {
@@ -819,7 +870,6 @@ class PortalRenderer extends ARRendererGLES20
                 if (targetId > -1)
                 {
                     arRoom.setForwardEnemy(targetId);
-                    setActorEffect(arRoomId, targetId, "overlay", 1000);
                 }
             }
             else
@@ -828,7 +878,6 @@ class PortalRenderer extends ARRendererGLES20
                 if (targetId > -1)
                 {
                     arRoom.setForwardPlayer(targetId);
-                    setActorEffect(arRoomId, targetId, "overlay", 1000);
                 }
             }
         }
@@ -849,6 +898,40 @@ class PortalRenderer extends ARRendererGLES20
                     {
                         arRoom.setResidentPose(targetId, "hurt");
                     }
+                    setActorEffect(arRoomId, targetId, "spark", 1000);
+                }
+                if (desc != null)
+                {
+                    switch (desc)
+                    {
+                        case "knight":
+                        case "soldier":
+                        case "groblin":
+                        case "groblinCommando":
+                            if (targetState != null && targetState.equals("defend"))
+                            {
+                                mediaPlayer = MediaPlayer.create(context, R.raw.metalic_prot);
+                                mediaPlayer.start();
+                            }
+                            else
+                            {
+                                mediaPlayer = MediaPlayer.create(context, R.raw.metalic_vuln);
+                                mediaPlayer.start();
+                            }
+                            break;
+                        case "wizard":
+                            mediaPlayer = MediaPlayer.create(context, R.raw.hit);
+                            mediaPlayer.start();
+                            break;
+                        case "ranger":
+                            mediaPlayer = MediaPlayer.create(context, R.raw.arrow);
+                            mediaPlayer.start();
+                            break;
+                        default:
+                            mediaPlayer = MediaPlayer.create(context, R.raw.hit);
+                            mediaPlayer.start();
+                            break;
+                    }
                 }
                 break;
             case "defend":
@@ -856,23 +939,83 @@ class PortalRenderer extends ARRendererGLES20
                 break;
             case "special":
                 arRoom.setResidentPose(sourceId, "special");
-                if (targetId != -1 && targetId != sourceId)
+                boolean players = false;
+                if (splitAction.length > 1)
                 {
                     switch (splitAction[1])
                     {
                         case "harm":
-                            if (targetState != null && targetState.equals("defend"))
+                            if (targetId != -1 && targetId != sourceId)
                             {
-                                arRoom.setResidentPose(targetId, "defend");
+                                if (targetState != null && targetState.equals("defend"))
+                                {
+                                    arRoom.setResidentPose(targetId, "defend");
+                                }
+                                else
+                                {
+                                    arRoom.setResidentPose(targetId, "hurt");
+                                }
                             }
-                            else
-                            {
-                                arRoom.setResidentPose(targetId, "hurt");
-                            }
+                            players = !playerAction;
                             break;
                         case "help":
-                            arRoom.setResidentPose(targetId, "heroic");
+                            if (targetId != -1 && targetId != sourceId)
+                            {
+                                arRoom.setResidentPose(targetId, "heroic");
+                            }
+                            players = playerAction;
                             break;
+                    }
+                }
+                if (desc != null)
+                {
+                    switch (desc)
+                    {
+                        case "chill":
+                            mediaPlayer = MediaPlayer.create(context, R.raw.chill);
+                            mediaPlayer.start();
+                            setActorsEffects(arRoomId, players, "chill", 1000);
+                            break;
+                        case "flame_shot":
+                            mediaPlayer = MediaPlayer.create(context, R.raw.flame_shot);
+                            mediaPlayer.start();
+                            setActorEffect(arRoomId, targetId, "flameShot", 1000);
+                            break;
+                        case "heal":
+                        case "beef_increase":
+                            mediaPlayer = MediaPlayer.create(context, R.raw.magic_hlp);
+                            mediaPlayer.start();
+                            setActorEffect(arRoomId, targetId, "heal", 1000);
+                            break;
+                        case "ignus_fatuus":
+                            mediaPlayer = MediaPlayer.create(context, R.raw.magic_atk);
+                            mediaPlayer.start();
+                            setActorEffect(arRoomId, targetId, "ignusFatuus", 1000);
+                            break;
+                        case "pin":
+                            mediaPlayer = MediaPlayer.create(context, R.raw.arrow);
+                            mediaPlayer.start();
+                            setActorEffect(arRoomId, targetId, "spark", 1000);
+                        case "multishot":
+                            mediaPlayer = MediaPlayer.create(context, R.raw.multishot);
+                            mediaPlayer.start();
+                            setActorsEffects(arRoomId, players, "spark", 1000);
+                            break;
+                        case "flurry_of_fists":
+                        case "take_a_shit":
+                            mediaPlayer = MediaPlayer.create(context, R.raw.multi_punch);
+                            mediaPlayer.start();
+                            setActorsEffects(arRoomId, players, "spark", 1000);
+                            break;
+                        case "suckerpunch":
+                            mediaPlayer = MediaPlayer.create(context, R.raw.hit);
+                            mediaPlayer.start();
+                            setActorEffect(arRoomId, targetId, "spark", 1000);
+                            break;
+                        case "spear_toss":
+                            mediaPlayer = MediaPlayer.create(context, R.raw.metalic_vuln);
+                            mediaPlayer.start();
+                            setActorEffect(arRoomId, targetId, "spark", 1000);
                     }
                 }
                 break;
@@ -897,6 +1040,10 @@ class PortalRenderer extends ARRendererGLES20
                             break;
                     }
                 }
+                break;
+            case "door":
+                mediaPlayer = MediaPlayer.create(context, R.raw.open_door);
+                mediaPlayer.start();
                 break;
             default:
                 break;

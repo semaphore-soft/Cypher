@@ -649,7 +649,8 @@ public class PortalClientActivity extends ARActivity implements UIListener,
                                 splitMsg[5],
                                 splitMsg[6].equals("") ? null : splitMsg[6],
                                 Boolean.parseBoolean(splitMsg[7]),
-                                Boolean.parseBoolean(splitMsg[8]));
+                                Boolean.parseBoolean(splitMsg[8]),
+                                splitMsg[9]);
         }
         else if (msg.startsWith(NetworkConstants.PREFIX_UPDATE_NON_PLAYER_TARGETS))
         {
@@ -969,7 +970,7 @@ public class PortalClientActivity extends ARActivity implements UIListener,
     }
 
     @Override
-    public final void onActorAction(int sourceId, int targetId, String action)
+    public final void onActorAction(int sourceId, int targetId, String action, String desc)
     {
         // DO NOT USE
     }
