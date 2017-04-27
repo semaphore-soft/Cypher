@@ -67,6 +67,8 @@ class PortalRenderer extends ARRendererGLES20
 
     private static MediaPlayer mediaPlayer;
 
+    private static boolean soundEnabled = true;
+
     @Override
     public boolean configureARScene()
     {
@@ -910,26 +912,41 @@ class PortalRenderer extends ARRendererGLES20
                         case "groblinCommando":
                             if (targetState != null && targetState.equals("defend"))
                             {
-                                mediaPlayer = MediaPlayer.create(context, R.raw.metalic_prot);
-                                mediaPlayer.start();
+                                if (soundEnabled)
+                                {
+                                    mediaPlayer = MediaPlayer.create(context, R.raw.metalic_prot);
+                                    mediaPlayer.start();
+                                }
                             }
                             else
                             {
-                                mediaPlayer = MediaPlayer.create(context, R.raw.metalic_vuln);
-                                mediaPlayer.start();
+                                if (soundEnabled)
+                                {
+                                    mediaPlayer = MediaPlayer.create(context, R.raw.metalic_vuln);
+                                    mediaPlayer.start();
+                                }
                             }
                             break;
                         case "wizard":
-                            mediaPlayer = MediaPlayer.create(context, R.raw.hit);
-                            mediaPlayer.start();
+                            if (soundEnabled)
+                            {
+                                mediaPlayer = MediaPlayer.create(context, R.raw.hit);
+                                mediaPlayer.start();
+                            }
                             break;
                         case "ranger":
-                            mediaPlayer = MediaPlayer.create(context, R.raw.arrow);
-                            mediaPlayer.start();
+                            if (soundEnabled)
+                            {
+                                mediaPlayer = MediaPlayer.create(context, R.raw.arrow);
+                                mediaPlayer.start();
+                            }
                             break;
                         default:
-                            mediaPlayer = MediaPlayer.create(context, R.raw.hit);
-                            mediaPlayer.start();
+                            if (soundEnabled)
+                            {
+                                mediaPlayer = MediaPlayer.create(context, R.raw.hit);
+                                mediaPlayer.start();
+                            }
                             break;
                     }
                 }
@@ -972,49 +989,77 @@ class PortalRenderer extends ARRendererGLES20
                     switch (desc)
                     {
                         case "chill":
-                            mediaPlayer = MediaPlayer.create(context, R.raw.chill);
-                            mediaPlayer.start();
+                            if (soundEnabled)
+                            {
+                                mediaPlayer = MediaPlayer.create(context, R.raw.chill);
+                                mediaPlayer.start();
+                            }
                             setActorsEffects(arRoomId, players, "chill", 1000);
                             break;
                         case "flame_shot":
-                            mediaPlayer = MediaPlayer.create(context, R.raw.flame_shot);
-                            mediaPlayer.start();
+                            if (soundEnabled)
+                            {
+                                mediaPlayer = MediaPlayer.create(context, R.raw.flame_shot);
+                                mediaPlayer.start();
+                            }
                             setActorEffect(arRoomId, targetId, "flameShot", 1000);
                             break;
                         case "heal":
                         case "beef_increase":
-                            mediaPlayer = MediaPlayer.create(context, R.raw.magic_hlp);
-                            mediaPlayer.start();
+                            if (soundEnabled)
+                            {
+                                mediaPlayer = MediaPlayer.create(context, R.raw.magic_hlp);
+                                mediaPlayer.start();
+                            }
                             setActorEffect(arRoomId, targetId, "heal", 1000);
                             break;
                         case "ignus_fatuus":
-                            mediaPlayer = MediaPlayer.create(context, R.raw.magic_atk);
-                            mediaPlayer.start();
+                            if (soundEnabled)
+                            {
+                                mediaPlayer = MediaPlayer.create(context, R.raw.magic_atk);
+                                mediaPlayer.start();
+                            }
                             setActorEffect(arRoomId, targetId, "ignusFatuus", 1000);
                             break;
                         case "pin":
-                            mediaPlayer = MediaPlayer.create(context, R.raw.arrow);
-                            mediaPlayer.start();
+                            if (soundEnabled)
+                            {
+                                mediaPlayer = MediaPlayer.create(context, R.raw.arrow);
+                                mediaPlayer.start();
+                            }
                             setActorEffect(arRoomId, targetId, "spark", 1000);
+                            break;
                         case "multishot":
-                            mediaPlayer = MediaPlayer.create(context, R.raw.multishot);
-                            mediaPlayer.start();
+                            if (soundEnabled)
+                            {
+                                mediaPlayer = MediaPlayer.create(context, R.raw.multishot);
+                                mediaPlayer.start();
+                            }
                             setActorsEffects(arRoomId, players, "spark", 1000);
                             break;
                         case "flurry_of_fists":
                         case "take_a_shit":
-                            mediaPlayer = MediaPlayer.create(context, R.raw.multi_punch);
-                            mediaPlayer.start();
+                            if (soundEnabled)
+                            {
+                                mediaPlayer = MediaPlayer.create(context, R.raw.multi_punch);
+                                mediaPlayer.start();
+                            }
                             setActorsEffects(arRoomId, players, "spark", 1000);
                             break;
                         case "suckerpunch":
-                            mediaPlayer = MediaPlayer.create(context, R.raw.hit);
-                            mediaPlayer.start();
+                            if (soundEnabled)
+                            {
+                                mediaPlayer = MediaPlayer.create(context, R.raw.hit);
+                                mediaPlayer.start();
+                            }
                             setActorEffect(arRoomId, targetId, "spark", 1000);
                             break;
                         case "spear_toss":
-                            mediaPlayer = MediaPlayer.create(context, R.raw.metalic_vuln);
-                            mediaPlayer.start();
+                            if (soundEnabled)
+                            {
+                                mediaPlayer = MediaPlayer.create(context, R.raw.metalic_vuln);
+                                mediaPlayer.start();
+                            }
                             setActorEffect(arRoomId, targetId, "spark", 1000);
                     }
                 }
@@ -1042,8 +1087,11 @@ class PortalRenderer extends ARRendererGLES20
                 }
                 break;
             case "door":
-                mediaPlayer = MediaPlayer.create(context, R.raw.open_door);
-                mediaPlayer.start();
+                if (soundEnabled)
+                {
+                    mediaPlayer = MediaPlayer.create(context, R.raw.open_door);
+                    mediaPlayer.start();
+                }
                 break;
             default:
                 break;
@@ -1106,5 +1154,10 @@ class PortalRenderer extends ARRendererGLES20
         void newMarker(int marker);
 
         void newNearestRoomMarker(int marker, int updateId);
+    }
+
+    public void toggleSound()
+    {
+
     }
 }

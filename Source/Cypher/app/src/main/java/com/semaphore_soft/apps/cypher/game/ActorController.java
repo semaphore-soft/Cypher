@@ -206,7 +206,7 @@ public class ActorController
                                                       .getName());
 
                                         gameController.feedback(
-                                            actor.getDisplayName() + " used special " +
+                                            actor.getDisplayName() + " used " +
                                             special.getDisplayName() +
                                             " on " +
                                             GameMaster.getActor(model,
@@ -234,7 +234,7 @@ public class ActorController
                                         GameMaster.getActor(model, playerTargets.get(0)).getName());
 
                                     gameController.feedback(
-                                        actor.getDisplayName() + " used special " +
+                                        actor.getDisplayName() + " used " +
                                         special.getDisplayName() +
                                         " on " +
                                         GameMaster.getActor(model, playerTargets.get(0))
@@ -264,7 +264,7 @@ public class ActorController
                                             special.getName());
 
                                         gameController.feedback(
-                                            actor.getDisplayName() + " used special " +
+                                            actor.getDisplayName() + " used " +
                                             special.getDisplayName());
 
                                         gameController.onActorAction(actorId,
@@ -288,7 +288,7 @@ public class ActorController
                                         "actor " + actor.getName() + " used " + special.getName());
 
                                     gameController.feedback(
-                                        actor.getDisplayName() + " used special " +
+                                        actor.getDisplayName() + " used " +
                                         special.getDisplayName());
 
                                     gameController.onActorAction(actorId,

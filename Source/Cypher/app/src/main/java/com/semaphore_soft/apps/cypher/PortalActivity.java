@@ -102,6 +102,8 @@ public class PortalActivity extends ARActivity implements PortalRenderer.NewMark
 
     private static MediaPlayer mediaPlayer;
 
+    private static boolean musicEnabled = true;
+
     /**
      * {@inheritDoc}
      *
@@ -253,7 +255,26 @@ public class PortalActivity extends ARActivity implements PortalRenderer.NewMark
 
                         serverService.writeAll(
                             NetworkConstants.PREFIX_RESERVE_PLAYER + firstUnreservedMarker);
-                        serverService.writeAll(NetworkConstants.PREFIX_ATTACH + playerId + ":" +
+
+                        int markCharId = 0;
+
+                        switch (characterName)
+                        {
+                            case NetworkConstants.GAME_KNIGHT:
+                                markCharId = 0;
+                                break;
+                            case NetworkConstants.GAME_SOLDIER:
+                                markCharId = 1;
+                                break;
+                            case NetworkConstants.GAME_RANGER:
+                                markCharId = 2;
+                                break;
+                            case NetworkConstants.GAME_WIZARD:
+                                markCharId = 3;
+                                break;
+                        }
+
+                        serverService.writeAll(NetworkConstants.PREFIX_ATTACH + markCharId + ":" +
                                                firstUnreservedMarker);
 
                         playerMarkerSelected = true;
@@ -540,6 +561,12 @@ public class PortalActivity extends ARActivity implements PortalRenderer.NewMark
                     uiPortalOverlay.overlaySelect(options, true, true);
                     break;
                 }
+                case "cmd_btnToggleMusic":
+                    toggleMusic();
+                    break;
+                case "cmd_btnToggleSound":
+                    renderer.toggleSound();
+                    break;
                 default:
                     break;
             }
@@ -744,13 +771,14 @@ public class PortalActivity extends ARActivity implements PortalRenderer.NewMark
 
                                         Toast.makeText(getApplicationContext(),
                                                        "You used " + item.getDisplayName() +
-                                                       " on " + actor.getDisplayName(),
+                                                       " on " + targetActor.getDisplayName(),
                                                        Toast.LENGTH_SHORT).show();
                                         serverService.writeAll(
                                             NetworkConstants.PREFIX_FEEDBACK +
                                             actor.getDisplayName() +
                                             " used " +
-                                            item.getDisplayName());
+                                            item.getDisplayName() + " on " +
+                                            targetActor.getDisplayName());
 
                                         finished = true;
                                     }
@@ -944,8 +972,29 @@ public class PortalActivity extends ARActivity implements PortalRenderer.NewMark
                 serverService.writeToClient(NetworkConstants.GAME_WAIT, readFrom);
                 serverService.writeToClient(NetworkConstants.PREFIX_ASSIGN_MARK + mark, readFrom);
                 serverService.writeAll(NetworkConstants.PREFIX_RESERVE_PLAYER + splitMsg[1]);
+
+                String characterName = playerCharacterMap.get(readFrom);
+
+                int markCharId = 0;
+
+                switch (characterName)
+                {
+                    case NetworkConstants.GAME_KNIGHT:
+                        markCharId = 0;
+                        break;
+                    case NetworkConstants.GAME_SOLDIER:
+                        markCharId = 1;
+                        break;
+                    case NetworkConstants.GAME_RANGER:
+                        markCharId = 2;
+                        break;
+                    case NetworkConstants.GAME_WIZARD:
+                        markCharId = 3;
+                        break;
+                }
+
                 serverService.writeAll(
-                    NetworkConstants.PREFIX_ATTACH + readFrom + ":" + splitMsg[1]);
+                    NetworkConstants.PREFIX_ATTACH + markCharId + ":" + splitMsg[1]);
 
                 ++numClientsSelected;
 
@@ -1217,12 +1266,12 @@ public class PortalActivity extends ARActivity implements PortalRenderer.NewMark
                                                    item.getDisplayName() +
                                                    " on " +
                                                    ((targetId ==
-                                                     readFrom) ? "himself" : actor.getDisplayName()),
+                                                     readFrom) ? "himself" : targetActor.getDisplayName()),
                                                    Toast.LENGTH_SHORT).show();
                                     serverService.writeToClient(
                                         NetworkConstants.PREFIX_FEEDBACK + "You used " +
                                         item.getDisplayName() + " on " + ((targetId ==
-                                                                           readFrom) ? "yourself" : actor
+                                                                           readFrom) ? "yourself" : targetActor
                                                                               .getDisplayName()),
                                         readFrom);
                                     for (int id : GameMaster.getPlayerActorIds(model))
@@ -1234,7 +1283,7 @@ public class PortalActivity extends ARActivity implements PortalRenderer.NewMark
                                                 item.getDisplayName() +
                                                 " on " +
                                                 ((targetId ==
-                                                  readFrom) ? "himself" : actor.getDisplayName()),
+                                                  readFrom) ? "himself" : targetActor.getDisplayName()),
                                                 id);
                                         }
                                     }
@@ -1783,7 +1832,22 @@ public class PortalActivity extends ARActivity implements PortalRenderer.NewMark
                                           model.getSpecials(),
                                           getApplicationContext());
             model.getActors().put(playerId, actor);
-            renderer.setPlayerMarker(playerId, mark);
+
+            switch (characterName)
+            {
+                case NetworkConstants.GAME_KNIGHT:
+                    renderer.setPlayerMarker(0, mark);
+                    break;
+                case NetworkConstants.GAME_SOLDIER:
+                    renderer.setPlayerMarker(1, mark);
+                    break;
+                case NetworkConstants.GAME_RANGER:
+                    renderer.setPlayerMarker(2, mark);
+                    break;
+                case NetworkConstants.GAME_WIZARD:
+                    renderer.setPlayerMarker(3, mark);
+                    break;
+            }
 
             if (PortalActivity.playerId != playerId)
             {
@@ -2395,7 +2459,7 @@ public class PortalActivity extends ARActivity implements PortalRenderer.NewMark
                                    final int res)
     {
         Actor   source  = GameMaster.getActor(model, sourceId);
-        Actor   target  = GameMaster.getActor(model, targetId);
+        Actor   target  = (targetId > -1) ? GameMaster.getActor(model, targetId) : null;
         Special special = GameMaster.getSpecial(model, specialId);
 
         if (sourceId == playerId)
@@ -2445,15 +2509,21 @@ public class PortalActivity extends ARActivity implements PortalRenderer.NewMark
                     Toast.makeText(this,
                                    "You used " +
                                    ((special != null) ? special.getDisplayName() : "Something") +
-                                   " on " +
-                                   ((targetId == sourceId) ? "yourself" : ((target != null) ? target
-                                       .getDisplayName() : "Someone")),
+                                   ((targetId > -1) ?
+                                    " on " +
+                                    ((targetId == sourceId) ? "yourself" : ((target !=
+                                                                             null) ? target
+                                                                                .getDisplayName() : "Someone")) : ""),
                                    Toast.LENGTH_SHORT).show();
                     serverService.writeAll(
                         NetworkConstants.PREFIX_FEEDBACK +
                         ((source != null) ? source.getDisplayName() : "Someone") + " used " +
-                        ((special != null) ? special.getDisplayName() : "Something") + " on " +
-                        ((target != null) ? target.getDisplayName() : "Someone"));
+                        ((special != null) ? special.getDisplayName() : "Something") +
+                        ((targetId > -1) ?
+                         " on " +
+                         ((targetId == sourceId) ? "yourself" : ((target !=
+                                                                  null) ? target
+                                                                     .getDisplayName() : "Someone")) : ""));
                     break;
                 case -1:
                     Toast.makeText(this, "You don't have enough energy", Toast.LENGTH_SHORT).show();
@@ -2525,14 +2595,20 @@ public class PortalActivity extends ARActivity implements PortalRenderer.NewMark
                                    ((source != null) ? source.getDisplayName() : "Someone") +
                                    " used " +
                                    ((special != null) ? special.getDisplayName() : "Something") +
-                                   " on " +
-                                   ((targetId == sourceId) ? "yourself" : ((target != null) ? target
-                                       .getDisplayName() : "Someone")),
+                                   ((targetId > -1) ?
+                                    " on " +
+                                    ((targetId == sourceId) ? "yourself" : ((target !=
+                                                                             null) ? target
+                                                                                .getDisplayName() : "Someone")) : ""),
                                    Toast.LENGTH_SHORT).show();
                     serverService.writeToClient(
                         NetworkConstants.PREFIX_FEEDBACK + "You used " +
                         ((special != null) ? special.getDisplayName() : "Something") +
-                        " on " + ((target != null) ? target.getDisplayName() : "Someone"),
+                        ((targetId > -1) ?
+                         " on " +
+                         ((targetId == sourceId) ? "yourself" : ((target !=
+                                                                  null) ? target
+                                                                     .getDisplayName() : "Someone")) : ""),
                         sourceId);
                     for (int id : GameMaster.getPlayerActorIds(model))
                     {
@@ -2543,8 +2619,12 @@ public class PortalActivity extends ARActivity implements PortalRenderer.NewMark
                                 ((source != null) ? source.getDisplayName() : "Someone") +
                                 " used " +
                                 ((special != null) ? special.getDisplayName() : "Something") +
-                                " on " +
-                                ((target != null) ? target.getDisplayName() : "Someone"), id);
+                                ((targetId > -1) ?
+                                 " on " +
+                                 ((targetId == sourceId) ? "yourself" : ((target !=
+                                                                          null) ? target
+                                                                             .getDisplayName() : "Someone")) : ""),
+                                id);
                         }
                     }
                     break;
@@ -3375,4 +3455,22 @@ public class PortalActivity extends ARActivity implements PortalRenderer.NewMark
             mServerBound = false;
         }
     };
+
+    private void toggleMusic()
+    {
+        musicEnabled = !musicEnabled;
+
+        if (musicEnabled)
+        {
+            mediaPlayer = MediaPlayer.create(this, R.raw.overworld);
+            mediaPlayer.setLooping(true);
+            mediaPlayer.start();
+        }
+        else
+        {
+            mediaPlayer.stop();
+            mediaPlayer.release();
+            mediaPlayer = null;
+        }
+    }
 }

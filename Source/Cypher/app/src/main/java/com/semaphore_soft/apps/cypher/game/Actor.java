@@ -922,7 +922,12 @@ public class Actor
      */
     void attack(Actor actor)
     {
+        Logger.logI("actor:<" + id + "> attacking actor:<" + actor.getId() + ">");
+        Logger.logI("target health pre-attack:<" + actor.getHealthCurrent() + ">");
+
         actor.receiveAttack(getRealAttackRating());
+
+        Logger.logI("target health post-attack:<" + actor.getHealthCurrent() + ">");
 
         state = E_STATE.ATTACK;
     }
