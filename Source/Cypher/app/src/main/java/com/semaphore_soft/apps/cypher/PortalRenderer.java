@@ -286,9 +286,9 @@ class PortalRenderer extends ARRendererGLES20
             {
                 if (knownMarkers.contains(id))
                 {
-                    for (int i : playerMarkerIDs)
+                    for (int i = 0; i < playerMarkerIDs.size(); ++i)
                     {
-                        if (i == id)
+                        if (playerMarkerIDs.get(i) == id)
                         {
                             characterModels.get(i)
                                            .draw(projectionMatrix,
