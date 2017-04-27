@@ -312,16 +312,55 @@ public class PortalActivity extends ARActivity implements PortalRenderer.NewMark
 
                         if (actor != null)
                         {
-                            uiPortalOverlay.overlayAction(actor.getHealthMaximum(),
-                                                          actor.getHealthCurrent(),
-                                                          actor.getSpecialMaximum(),
-                                                          actor.getSpecialCurrent());
+                            int proposedRoomId = actor.getProposedRoomId();
+
+                            Room room = GameMaster.getRoom(model,
+                                                           proposedRoomId >
+                                                           1 ? proposedRoomId : actor.getRoom());
+
+                            if (proposedRoomId > -1)
+                            {
+                                GameMaster.moveActor(model, playerId, proposedRoomId);
+                            }
+
+                            Toast.makeText(getApplicationContext(),
+                                           "You opened a door",
+                                           Toast.LENGTH_SHORT).show();
+                            serverService.writeAll(
+                                NetworkConstants.PREFIX_FEEDBACK + actor.getDisplayName() +
+                                " opened a door");
+
+                            if (room != null)
+                            {
+                                showAction(room.getMarker(),
+                                           playerId,
+                                           -1,
+                                           1000,
+                                           "none",
+                                           null,
+                                           true,
+                                           false);
+                            }
+                        }
+
+                        if (actor != null)
+                        {
+                            uiPortalOverlay.overlayWaitingForTurn(actor.getHealthMaximum(),
+                                                                  actor.getHealthCurrent(),
+                                                                  actor.getSpecialMaximum(),
+                                                                  actor.getSpecialCurrent());
                         }
                         else
                         {
-                            uiPortalOverlay.overlayAction(1, 0, 1, 0);
+                            uiPortalOverlay.overlayWaitingForTurn(1, 0, 1, 0);
                         }
                     }
+                    /*else
+                    {
+                        Toast.makeText(getApplicationContext(),
+                                       "You can't open a door here",
+                                       Toast.LENGTH_SHORT).show();
+                    }*/
                     break;
                 case "cmd_btnAttack":
                     ArrayList<Pair<String, String>> attackOptions = new ArrayList<>();
@@ -910,8 +949,14 @@ public class PortalActivity extends ARActivity implements PortalRenderer.NewMark
             // sideOfEndRoom
             String[] splitMsg = msg.split(":");
 
-            int startRoomId = GameMaster.getActorRoomId(model, readFrom);
-            int endRoomId   = GameMaster.getRoomIdByMarkerId(model, Integer.parseInt(splitMsg[1]));
+            Actor actor = GameMaster.getActor(model, readFrom);
+
+            int startRoomId = (actor != null &&
+                               actor.getProposedRoomId() !=
+                               -1) ? actor.getProposedRoomId() : GameMaster
+                                  .getActorRoomId(model, playerId);
+
+            int endRoomId = GameMaster.getRoomIdByMarkerId(model, Integer.parseInt(splitMsg[1]));
 
             int res =
                 GameMaster.openDoor(model,
@@ -920,10 +965,52 @@ public class PortalActivity extends ARActivity implements PortalRenderer.NewMark
                                     Short.parseShort(splitMsg[2]),
                                     Short.parseShort(splitMsg[3]));
 
+            postOpenDoorResult(endRoomId, res, readFrom);
+
             if (res >= 0)
             {
-                postOpenDoorResult(endRoomId, res, readFrom);
                 serverService.writeAll(NetworkConstants.PREFIX_PLACE_ROOM + splitMsg[1]);
+
+                if (actor != null)
+                {
+                    int proposedRoomId = actor.getProposedRoomId();
+
+                    Room room = GameMaster.getRoom(model,
+                                                   proposedRoomId >
+                                                   1 ? proposedRoomId : actor.getRoom());
+
+                    if (proposedRoomId > -1)
+                    {
+                        GameMaster.moveActor(model, readFrom, proposedRoomId);
+                    }
+
+                    Toast.makeText(getApplicationContext(),
+                                   actor.getDisplayName() + " opened a door",
+                                   Toast.LENGTH_SHORT).show();
+                    serverService.writeToClient(
+                        NetworkConstants.PREFIX_FEEDBACK + "You opened a door", readFrom);
+                    for (int id : GameMaster.getPlayerActorIds(model))
+                    {
+                        if (id != playerId && id != readFrom)
+                        {
+                            serverService.writeToClient(
+                                NetworkConstants.PREFIX_FEEDBACK + actor.getDisplayName() +
+                                " opened a door", id);
+                        }
+                    }
+
+                    if (room != null)
+                    {
+                        showAction(room.getMarker(),
+                                   readFrom,
+                                   -1,
+                                   1000,
+                                   "none",
+                                   null,
+                                   true,
+                                   false);
+                    }
+                }
             }
         }
         else if (msg.startsWith(NetworkConstants.PREFIX_UPDATE_NEAREST_ROOM))
@@ -1837,7 +1924,11 @@ public class PortalActivity extends ARActivity implements PortalRenderer.NewMark
 
     private boolean openDoor()
     {
-        int startRoomId = GameMaster.getActorRoomId(model, playerId);
+        Actor actor = GameMaster.getActor(model, playerId);
+
+        int startRoomId = (actor != null &&
+                           actor.getProposedRoomId() != -1) ? actor.getProposedRoomId() : GameMaster
+                              .getActorRoomId(model, playerId);
 
         ArrayList<Integer> placedRoomMarkers = GameMaster.getPlacedRoomMarkerIds(model);
 
@@ -1867,9 +1958,10 @@ public class PortalActivity extends ARActivity implements PortalRenderer.NewMark
                                         sideOfStartRoom,
                                         sideOfEndRoom);
 
+                postOpenDoorResult(endRoomId, res, playerId);
+
                 if (res >= 0)
                 {
-                    postOpenDoorResult(endRoomId, res, playerId);
                     serverService.writeAll(NetworkConstants.PREFIX_PLACE_ROOM + nearestMarkerID);
 
                     updateRoomResidents(GameMaster.getRoomMarkerId(model, endRoomId),
