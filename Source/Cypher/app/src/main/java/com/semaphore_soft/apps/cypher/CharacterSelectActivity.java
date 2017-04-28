@@ -144,6 +144,15 @@ public class CharacterSelectActivity extends AppCompatActivity implements Respon
 
     /**
      * {@inheritDoc}
+     */
+    @Override
+    public void onBackPressed()
+    {
+        //do nothing
+    }
+
+    /**
+     * {@inheritDoc}
      *
      * @param cmd Command from UI interaction
      */

@@ -150,6 +150,15 @@ public class ConnectionLobbyActivity extends AppCompatActivity implements Respon
     }
 
     /**
+     * {@inheritDoc}
+     */
+    @Override
+    public void onBackPressed()
+    {
+        //do nothing
+    }
+
+    /**
      * Assign new players an ID and update clients with new players.
      *
      * @param player Name of player
