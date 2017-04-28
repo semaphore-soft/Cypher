@@ -74,26 +74,26 @@ class PortalRenderer extends ARRendererGLES20
     {
         markers = new ArrayList<>();
 
-        markers.add(ARToolKit.getInstance().addMarker("single;Data/00.patt;80"));
-        markers.add(ARToolKit.getInstance().addMarker("single;Data/01.patt;80"));
-        markers.add(ARToolKit.getInstance().addMarker("single;Data/02.patt;80"));
-        markers.add(ARToolKit.getInstance().addMarker("single;Data/03.patt;80"));
-        markers.add(ARToolKit.getInstance().addMarker("single;Data/04.patt;80"));
-        markers.add(ARToolKit.getInstance().addMarker("single;Data/05.patt;80"));
-        markers.add(ARToolKit.getInstance().addMarker("single;Data/06.patt;80"));
-        markers.add(ARToolKit.getInstance().addMarker("single;Data/07.patt;80"));
-        markers.add(ARToolKit.getInstance().addMarker("single;Data/08.patt;80"));
-        markers.add(ARToolKit.getInstance().addMarker("single;Data/09.patt;80"));
-        markers.add(ARToolKit.getInstance().addMarker("single;Data/10.patt;80"));
-        markers.add(ARToolKit.getInstance().addMarker("single;Data/11.patt;80"));
-        markers.add(ARToolKit.getInstance().addMarker("single;Data/12.patt;80"));
-        markers.add(ARToolKit.getInstance().addMarker("single;Data/13.patt;80"));
-        markers.add(ARToolKit.getInstance().addMarker("single;Data/14.patt;80"));
-        markers.add(ARToolKit.getInstance().addMarker("single;Data/15.patt;80"));
-        markers.add(ARToolKit.getInstance().addMarker("single;Data/16.patt;80"));
-        markers.add(ARToolKit.getInstance().addMarker("single;Data/17.patt;80"));
-        markers.add(ARToolKit.getInstance().addMarker("single;Data/18.patt;80"));
-        markers.add(ARToolKit.getInstance().addMarker("single;Data/19.patt;80"));
+        markers.add(ARToolKit.getInstance().addMarker("single;Data/mk2_00.patt;80"));
+        markers.add(ARToolKit.getInstance().addMarker("single;Data/mk2_01.patt;80"));
+        markers.add(ARToolKit.getInstance().addMarker("single;Data/mk2_02.patt;80"));
+        markers.add(ARToolKit.getInstance().addMarker("single;Data/mk2_03.patt;80"));
+        markers.add(ARToolKit.getInstance().addMarker("single;Data/mk2_04.patt;80"));
+        markers.add(ARToolKit.getInstance().addMarker("single;Data/mk2_05.patt;80"));
+        markers.add(ARToolKit.getInstance().addMarker("single;Data/mk2_06.patt;80"));
+        markers.add(ARToolKit.getInstance().addMarker("single;Data/mk2_07.patt;80"));
+        markers.add(ARToolKit.getInstance().addMarker("single;Data/mk2_08.patt;80"));
+        markers.add(ARToolKit.getInstance().addMarker("single;Data/mk2_09.patt;80"));
+        markers.add(ARToolKit.getInstance().addMarker("single;Data/mk2_10.patt;80"));
+        markers.add(ARToolKit.getInstance().addMarker("single;Data/mk2_11.patt;80"));
+        markers.add(ARToolKit.getInstance().addMarker("single;Data/mk2_12.patt;80"));
+        markers.add(ARToolKit.getInstance().addMarker("single;Data/mk2_13.patt;80"));
+        markers.add(ARToolKit.getInstance().addMarker("single;Data/mk2_14.patt;80"));
+        markers.add(ARToolKit.getInstance().addMarker("single;Data/mk2_15.patt;80"));
+        markers.add(ARToolKit.getInstance().addMarker("single;Data/mk2_16.patt;80"));
+        markers.add(ARToolKit.getInstance().addMarker("single;Data/mk2_17.patt;80"));
+        markers.add(ARToolKit.getInstance().addMarker("single;Data/mk2_18.patt;80"));
+        markers.add(ARToolKit.getInstance().addMarker("single;Data/mk2_19.patt;80"));
 
         for (int id : markers)
         {
