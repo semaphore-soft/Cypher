@@ -431,13 +431,13 @@ public class PortalClientActivity extends ARActivity implements UIListener,
                     else
                     {
                         clientService.write(NetworkConstants.PREFIX_ACTION_REQUEST + cmd);
-                        renderer.setCheckingNearestRoomMarker(false);
+                        //renderer.setCheckingNearestRoomMarker(false);
                     }
                 }
                 else
                 {
                     clientService.write(NetworkConstants.PREFIX_ACTION_REQUEST + cmd);
-                    renderer.setCheckingNearestRoomMarker(false);
+                    //renderer.setCheckingNearestRoomMarker(false);
                 }
             }
             else
@@ -558,6 +558,8 @@ public class PortalClientActivity extends ARActivity implements UIListener,
                                                   healthCurrent,
                                                   energyMax,
                                                   energyCurrent);
+
+            renderer.setCheckingNearestRoomMarker(false);
         }
         else if (msg.startsWith(NetworkConstants.PREFIX_HEALTH))
         {

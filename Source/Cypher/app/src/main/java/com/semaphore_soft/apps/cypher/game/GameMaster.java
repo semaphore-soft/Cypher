@@ -1517,9 +1517,12 @@ public class GameMaster
         Special          special = model.getSpecials().get(specialId);
         ArrayList<Actor> targets = new ArrayList<>();
 
+        int actorRoomId = (source.getProposedRoomId() !=
+                           -1) ? source.getProposedRoomId() : source.getRoom();
+
         for (Actor actor : model.getActors().values())
         {
-            if (actor.getRoom() == source.getRoom())
+            if (actor.getRoom() == actorRoomId)
             {
                 if (special.getTargetingType() == Special.E_TARGETING_TYPE.AOE_PLAYER &&
                     actor.isPlayer())
@@ -1652,7 +1655,10 @@ public class GameMaster
         Actor   target  = model.getActors().get(targetId);
         Special special = model.getSpecials().get(specialId);
 
-        if (source.getRoom() == target.getRoom())
+        int actorRoomId = (source.getProposedRoomId() !=
+                           -1) ? source.getProposedRoomId() : source.getRoom();
+
+        if (actorRoomId == target.getRoom())
         {
             if (source.performSpecial(special, target))
             {

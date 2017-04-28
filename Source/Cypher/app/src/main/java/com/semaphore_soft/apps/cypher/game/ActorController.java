@@ -310,11 +310,11 @@ public class ActorController
 
                     if (!usedSpecial)
                     {
-                        Logger.logD("actor <" + actorId + "> failed to use special, rerolling");
+                        Logger.logD("actor <" + actorId + "> failed to use special");
 
-                        takeTurn(gameController, model, actorId);
+                        //takeTurn(gameController, model, actorId);
 
-                        //gameController.turnPassed(actorId);
+                        gameController.turnPassed(actorId);
                     }
                     break;
                 case "item":
@@ -447,9 +447,11 @@ public class ActorController
                     }
                     else
                     {
-                        Logger.logI("actor <" + actorId + "> failed to use item, rerolling");
+                        Logger.logI("actor <" + actorId + "> failed to use item");
 
-                        takeTurn(gameController, model, actorId);
+                        //takeTurn(gameController, model, actorId);
+
+                        gameController.turnPassed(actorId);
                     }
 
                     break;
@@ -462,6 +464,12 @@ public class ActorController
                             "actor " + actor.getName() + " moved to " + validMoveRooms.get(0));
 
                         gameController.onActorMove(actorId, validMoveRooms.get(0));
+                    }
+                    else
+                    {
+                        Logger.logI("actor <" + actorId + "> failed to move");
+
+                        gameController.turnPassed(actorId);
                     }
                     break;
                 default:

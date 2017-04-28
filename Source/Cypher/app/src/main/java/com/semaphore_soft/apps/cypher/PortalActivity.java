@@ -540,7 +540,17 @@ public class PortalActivity extends ARActivity implements PortalRenderer.NewMark
                 {
                     ArrayList<Pair<String, String>> options = new ArrayList<>();
 
-                    Room room = GameMaster.getActorRoom(model, playerId);
+                    Actor actor = GameMaster.getActor(model, playerId);
+                    Room  room  = null;
+
+                    if (actor != null && actor.getProposedRoomId() != -1)
+                    {
+                        GameMaster.getRoom(model, actor.getProposedRoomId());
+                    }
+                    else
+                    {
+                        room = GameMaster.getActorRoom(model, playerId);
+                    }
 
                     if (room != null)
                     {
@@ -721,7 +731,7 @@ public class PortalActivity extends ARActivity implements PortalRenderer.NewMark
                                                        "You used " + item.getDisplayName() +
                                                        " on " +
                                                        ((targetId ==
-                                                         playerId) ? "yourself" : actor.getDisplayName()),
+                                                         playerId) ? "yourself" : targetActor.getDisplayName()),
                                                        Toast.LENGTH_SHORT).show();
                                         serverService.writeAll(
                                             NetworkConstants.PREFIX_FEEDBACK +
@@ -1025,7 +1035,7 @@ public class PortalActivity extends ARActivity implements PortalRenderer.NewMark
             int startRoomId = (actor != null &&
                                actor.getProposedRoomId() !=
                                -1) ? actor.getProposedRoomId() : GameMaster
-                                  .getActorRoomId(model, playerId);
+                                  .getActorRoomId(model, readFrom);
 
             int endRoomId = GameMaster.getRoomIdByMarkerId(model, Integer.parseInt(splitMsg[1]));
 
@@ -1091,6 +1101,7 @@ public class PortalActivity extends ARActivity implements PortalRenderer.NewMark
         {
             String[] splitMsg = msg.split(":");
             newNearestRoomMarker(Integer.parseInt(splitMsg[1]), readFrom);
+            updateClientTargets();
         }
         else if (msg.startsWith(NetworkConstants.PREFIX_ACTION_REQUEST))
         {
@@ -1211,7 +1222,16 @@ public class PortalActivity extends ARActivity implements PortalRenderer.NewMark
             String res = NetworkConstants.PREFIX_FLOOR_LIST;
 
             Actor actor = GameMaster.getActor(model, readFrom);
-            Room  room  = GameMaster.getActorRoom(model, readFrom);
+            Room  room  = null;
+
+            if (actor != null && actor.getProposedRoomId() != -1)
+            {
+                GameMaster.getRoom(model, actor.getProposedRoomId());
+            }
+            else
+            {
+                room = GameMaster.getActorRoom(model, playerId);
+            }
 
             if (actor != null && room != null)
             {
@@ -2248,7 +2268,7 @@ public class PortalActivity extends ARActivity implements PortalRenderer.NewMark
                 case 0:
                     Toast.makeText(this,
                                    ((attacker != null) ? attacker.getDisplayName() : "Someone") +
-                                   " killed " +
+                                   " attacked " +
                                    ((defender != null) ? defender.getDisplayName() : "Someone"),
                                    Toast.LENGTH_SHORT).show();
                     serverService.writeToClient(NetworkConstants.PREFIX_FEEDBACK + "You attacked " +
