@@ -11,6 +11,7 @@ import android.widget.TextView;
 import com.semaphore_soft.apps.cypher.R;
 
 import java.util.ArrayList;
+import java.util.ConcurrentModificationException;
 
 /**
  * Created by Scorple on 2/6/2017.
@@ -96,17 +97,26 @@ public class UIConnectionLobby extends UIBase
      *
      * @param list New list of players connected
      */
-    public void setPlayersList(ArrayList<PlayerID> list)
+    public void setPlayersList(final ArrayList<PlayerID> list)
     {
-        for (PlayerID playerID : playersList)
+        try
         {
-            playersList.remove(playerID);
+            for (PlayerID playerID : playersList)
+            {
+                playersList.remove(playerID);
+            }
+            for (PlayerID playerID : list)
+            {
+                playersList.add(playerID);
+            }
+            playerIDAdapter.notifyDataSetChanged();
         }
-        for (PlayerID playerID : list)
+        catch (ConcurrentModificationException x)
         {
-            playersList.add(playerID);
+            x.printStackTrace();
+
+            setPlayersList(list);
         }
-        playerIDAdapter.notifyDataSetChanged();
     }
 
     /**
