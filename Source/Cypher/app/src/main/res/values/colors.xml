@@ -11,4 +11,10 @@
     <color name="energySecondary">#FFFFFF</color>
 
     <color name="mainBackground">#e7f5fc</color>
+
+    <color name="plainText">#f0f4c3</color>
+
+    <color name="btnBackgroundLight">#e5cc7a</color>
+    <color name="btnBackgroundDark">#ab7b4a</color>
+    <color name="btnText">#3b2313</color>
 </resources>
