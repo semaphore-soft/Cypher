@@ -1052,6 +1052,9 @@ public class PortalActivity extends ARActivity implements PortalRenderer.NewMark
             {
                 serverService.writeAll(NetworkConstants.PREFIX_PLACE_ROOM + splitMsg[1]);
 
+                updateRoomResidents(GameMaster.getRoomMarkerId(model, endRoomId),
+                                    getResidents(endRoomId));
+
                 if (actor != null)
                 {
                     int proposedRoomId = actor.getProposedRoomId();
@@ -1092,7 +1095,7 @@ public class PortalActivity extends ARActivity implements PortalRenderer.NewMark
                                    null,
                                    true,
                                    false,
-                                   null);
+                                   desc);
                     }
                 }
             }
