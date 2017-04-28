@@ -91,7 +91,7 @@
 
     <!--Take a Shit-->
     <take_a_shit>
-        <name>Take a Shit</name>
+        <name>Decimate</name>
         <cost>8</cost>
         <scalar>8</scalar>
         <targetingType>SINGLE_NON_PLAYER</targetingType>
