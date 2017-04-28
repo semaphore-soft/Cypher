@@ -87,9 +87,9 @@ public class PortalClientActivity extends ARActivity implements UIListener,
     {
         super.onCreate(savedInstanceState);
 
-        mediaPlayer = MediaPlayer.create(this, R.raw.overworld);
+        /*mediaPlayer = MediaPlayer.create(this, R.raw.overworld);
         mediaPlayer.setLooping(true);
-        mediaPlayer.start();
+        mediaPlayer.start();*/
 
         setContentView(R.layout.empty);
 

@@ -114,9 +114,9 @@ public class PortalActivity extends ARActivity implements PortalRenderer.NewMark
     {
         super.onCreate(savedInstanceState); //Calls ARActivity's actor, abstract class of ARBaseLib
 
-        mediaPlayer = MediaPlayer.create(this, R.raw.overworld);
+        /*mediaPlayer = MediaPlayer.create(this, R.raw.overworld);
         mediaPlayer.setLooping(true);
-        mediaPlayer.start();
+        mediaPlayer.start();*/
 
         setContentView(R.layout.empty);
 
