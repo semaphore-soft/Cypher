@@ -50,7 +50,7 @@ public class MainActivity extends AppCompatActivity implements GetNameDialogFrag
         ((FrameLayout) findViewById(R.id.empty)).addView(UIMainActivity);
         UIMainActivity.setUIListener(this);
 
-        setSupportActionBar(UIMainActivity.getToolbar());
+        //setSupportActionBar(UIMainActivity.getToolbar());
 
         // Allow network connections
         StrictMode.ThreadPolicy policy =

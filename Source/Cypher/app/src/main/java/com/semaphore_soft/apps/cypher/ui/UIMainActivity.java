@@ -1,7 +1,6 @@
 package com.semaphore_soft.apps.cypher.ui;
 
 import android.content.Context;
-import android.support.v7.widget.Toolbar;
 import android.util.AttributeSet;
 import android.view.View;
 import android.widget.ImageButton;
@@ -83,8 +82,8 @@ public class UIMainActivity extends UIBase
         });*/
     }
 
-    public Toolbar getToolbar()
+    /*public Toolbar getToolbar()
     {
         return (Toolbar) findViewById(R.id.toolbar);
-    }
+    }*/
 }
