@@ -436,31 +436,40 @@ class PortalRenderer extends ARRendererGLES20
                 if (!marksX.contains(mark1) && mark0 != mark1 &&
                     ARToolKit.getInstance().queryMarkerVisible(mark1))
                 {
-                    float[] mark0TransInfo =
-                        ARToolKit.getInstance().queryMarkerTransformation(mark0);
-                    float[] mark0PosInfo =
-                        {mark0TransInfo[mark0TransInfo.length - 4], mark0TransInfo[
-                            mark0TransInfo.length -
-                            3], mark0TransInfo[
-                            mark0TransInfo.length - 2]};
-
-                    float[] mark1TransInfo =
-                        ARToolKit.getInstance().queryMarkerTransformation(mark1);
-                    float[] mark1PosInfo =
-                        {mark1TransInfo[mark1TransInfo.length - 4], mark1TransInfo[
-                            mark1TransInfo.length -
-                            3], mark1TransInfo[
-                            mark1TransInfo.length - 2]};
-
-                    double thisDistance =
-                        Math.sqrt(Math.pow(mark0PosInfo[0] - mark1PosInfo[0], 2) +
-                                  Math.pow(mark0PosInfo[1] - mark1PosInfo[1], 2) +
-                                  Math.pow(mark0PosInfo[2] - mark1PosInfo[2], 2));
-
-                    if (thisDistance < shortestDistance || shortestDistance < 0)
+                    try
                     {
-                        nearest = mark1;
-                        shortestDistance = thisDistance;
+                        float[] mark0TransInfo =
+                            ARToolKit.getInstance().queryMarkerTransformation(mark0);
+                        float[] mark0PosInfo =
+                            {mark0TransInfo[mark0TransInfo.length - 4], mark0TransInfo[
+                                mark0TransInfo.length -
+                                3], mark0TransInfo[
+                                mark0TransInfo.length - 2]};
+
+                        float[] mark1TransInfo =
+                            ARToolKit.getInstance().queryMarkerTransformation(mark1);
+                        float[] mark1PosInfo =
+                            {mark1TransInfo[mark1TransInfo.length - 4], mark1TransInfo[
+                                mark1TransInfo.length -
+                                3], mark1TransInfo[
+                                mark1TransInfo.length - 2]};
+
+                        double thisDistance =
+                            Math.sqrt(Math.pow(mark0PosInfo[0] - mark1PosInfo[0], 2) +
+                                      Math.pow(mark0PosInfo[1] - mark1PosInfo[1], 2) +
+                                      Math.pow(mark0PosInfo[2] - mark1PosInfo[2], 2));
+
+                        if (thisDistance < shortestDistance || shortestDistance < 0)
+                        {
+                            nearest = mark1;
+                            shortestDistance = thisDistance;
+                        }
+                    }
+                    catch (NullPointerException x)
+                    {
+                        x.printStackTrace();
+
+                        getNearestMarkerExcluding(mark0, marksX);
                     }
                 }
             }
