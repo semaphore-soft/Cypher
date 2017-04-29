@@ -78,7 +78,7 @@ public class ServerService extends Service
      */
     public void writeToClient(String msg, int client)
     {
-        Logger.logD("Writing to single client");
+        Logger.logD("Writing to single client", 5);
         serverThread.writeToClient(msg, client);
     }
 
@@ -91,7 +91,7 @@ public class ServerService extends Service
      */
     public void writeAll(String msg)
     {
-        Logger.logD("Writing to all clients");
+        Logger.logD("Writing to all clients", 5);
         serverThread.writeAll(msg);
     }
 
@@ -118,7 +118,7 @@ public class ServerService extends Service
      */
     public void threadRead(String msg, int readFrom)
     {
-        Logger.logD("Sending thread read");
+        Logger.logD("Sending thread read", 5);
         Intent localIntent = new Intent(NetworkConstants.BROADCAST_MESSAGE)
             .putExtra(NetworkConstants.MESSAGE, msg)
             .putExtra(NetworkConstants.INDEX, readFrom);
@@ -135,7 +135,7 @@ public class ServerService extends Service
      */
     public void threadUpdate(String msg, int readFrom)
     {
-        Logger.logD("Sending thread update");
+        Logger.logD("Sending thread update", 5);
         Intent localIntent = new Intent(NetworkConstants.BROADCAST_STATUS)
             .putExtra(NetworkConstants.MESSAGE, msg)
             .putExtra(NetworkConstants.INDEX, readFrom);
@@ -152,7 +152,7 @@ public class ServerService extends Service
      */
     public void threadError(String msg, int readFrom)
     {
-        Logger.logD("Sending thread error");
+        Logger.logD("Sending thread error", 5);
         Intent localIntent = new Intent(NetworkConstants.BROADCAST_ERROR)
             .putExtra(NetworkConstants.MESSAGE, msg)
             .putExtra(NetworkConstants.INDEX, readFrom);

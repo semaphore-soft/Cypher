@@ -94,7 +94,7 @@ public class Server
      */
     public void writeAll(String str)
     {
-        Logger.logD("Attempting to write to all clients");
+        Logger.logD("Attempting to write to all clients", 5);
         for (ClientHandler server : clients)
         {
             server.write(str);
@@ -111,7 +111,7 @@ public class Server
      */
     public void writeToClient(String str, int id)
     {
-        Logger.logD("Attempting to write to client " + String.valueOf(id));
+        Logger.logD("Attempting to write to client " + String.valueOf(id), 5);
         if (idToSocket.containsKey(id))
         {
             idToSocket.get(id).write(str);
@@ -166,7 +166,7 @@ public class Server
             {
                 try
                 {
-                    Logger.logI("Waiting on accept");
+                    Logger.logI("Waiting on accept", 5);
                     // Pass 0 since this does not receive input from client
                     serverService.threadUpdate(NetworkConstants.STATUS_SERVER_WAIT, 0);
 
@@ -259,7 +259,7 @@ public class Server
                 out.writeUTF(str);
                 // Flush after write or inputStream will hang on read
                 out.flush();
-                Logger.logD("sent message: " + str);
+                Logger.logD("sent message: " + str, 5);
             }
             catch (IOException e)
             {
@@ -314,8 +314,8 @@ public class Server
          */
         private void processMessage(String msg)
         {
-            Logger.logI(msg);
-            Logger.logD(String.valueOf(getClientID(clients.indexOf(this))));
+            Logger.logI(msg, 5);
+            Logger.logD(String.valueOf(getClientID(clients.indexOf(this))), 5);
             serverService.threadRead(msg, getClientID(clients.indexOf(this)));
         }
 

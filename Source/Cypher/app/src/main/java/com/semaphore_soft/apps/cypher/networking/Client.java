@@ -121,7 +121,7 @@ public class Client
                 out.writeUTF(str);
                 // Flush after write or inputStream will hang on read
                 out.flush();
-                Logger.logD("sent message: " + str);
+                Logger.logD("sent message: " + str, 5);
             }
             catch (IOException e)
             {
@@ -174,7 +174,7 @@ public class Client
          */
         private void processMessage(String msg)
         {
-            Logger.logI(msg);
+            Logger.logI(msg, 5);
             clientService.threadRead(msg);
         }
 
