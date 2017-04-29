@@ -14,6 +14,7 @@ import android.widget.RelativeLayout;
 import android.widget.TextView;
 
 import com.semaphore_soft.apps.cypher.R;
+import com.semaphore_soft.apps.cypher.networking.NetworkConstants;
 import com.semaphore_soft.apps.cypher.utils.Logger;
 
 import java.util.ArrayList;
@@ -32,6 +33,8 @@ public class UIPortalOverlay extends UIBase
 
     private int lastHealth;
     private int lastEnergy;
+
+    private int charPortrait;
 
     public UIPortalOverlay(Context context)
     {
@@ -101,6 +104,9 @@ public class UIPortalOverlay extends UIBase
     {
         makeView(R.layout.overlay_waiting_for_turn);
 
+        ImageView imgPortraitChar = (ImageView) findViewById(R.id.imgPortraitChar);
+        imgPortraitChar.setImageResource(charPortrait);
+
         setupHealthAndEnergyBars(healthMax, energyMax);
 
         setHealth(healthCurrent);
@@ -113,6 +119,9 @@ public class UIPortalOverlay extends UIBase
                               final int energyCurrent)
     {
         makeView(R.layout.overlay_action);
+
+        ImageView imgPortraitChar = (ImageView) findViewById(R.id.imgPortraitChar);
+        imgPortraitChar.setImageResource(charPortrait);
 
         ImageButton btnItems = (ImageButton) findViewById(R.id.btnItems);
         btnItems.setOnClickListener(new OnClickListener()
@@ -173,6 +182,10 @@ public class UIPortalOverlay extends UIBase
     public void overlaySelect(ArrayList<Pair<String, String>> options)
     {
         makeView(R.layout.overlay_select);
+
+        ImageView imgPortraitChar = (ImageView) findViewById(R.id.imgPortraitChar);
+        imgPortraitChar.setImageResource(charPortrait);
+
         LinearLayout      lloOptions = (LinearLayout) findViewById(R.id.lloOptions);
         ArrayList<String> names      = new ArrayList<>();
 
@@ -219,6 +232,9 @@ public class UIPortalOverlay extends UIBase
         {
             makeView(R.layout.overlay_select_top);
         }
+
+        ImageView imgPortraitChar = (ImageView) findViewById(R.id.imgPortraitChar);
+        imgPortraitChar.setImageResource(charPortrait);
 
         setupHealthAndEnergyBars(healthMax, energyMax);
 
@@ -439,5 +455,27 @@ public class UIPortalOverlay extends UIBase
     public void overlayLoseCondition()
     {
         makeView(R.layout.overlay_lose_condition);
+    }
+
+    public void setCharPortrait(String characterName)
+    {
+        switch (characterName)
+        {
+            case NetworkConstants.GAME_KNIGHT:
+                charPortrait = R.drawable.portrait_knight;
+                break;
+            case NetworkConstants.GAME_SOLDIER:
+                charPortrait = R.drawable.portrait_sold;
+                break;
+            case NetworkConstants.GAME_RANGER:
+                charPortrait = R.drawable.portrait_rang;
+                break;
+            case NetworkConstants.GAME_WIZARD:
+                charPortrait = R.drawable.portrait_wiz;
+                break;
+            default:
+                charPortrait = R.drawable.hud_sepia_portrait;
+                break;
+        }
     }
 }

@@ -75,10 +75,10 @@
                 android:id="@+id/imgKnight"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
-                app:srcCompat="@android:color/darker_gray"
+                app:srcCompat="@drawable/knight_final"
                 android:background="?android:selectableItemBackground"
                 android:visibility="gone"
-                android:scaleType="fitCenter"/>
+                android:scaleType="fitCenter" />
 
         <ImageView
                 android:id="@+id/imgSoldier"

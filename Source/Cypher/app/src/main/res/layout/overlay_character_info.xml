@@ -75,4 +75,13 @@
             android:background="?android:selectableItemBackground"
             android:id="@+id/imgPortrait"/>
 
+    <ImageView
+            android:layout_width="100dip"
+            android:layout_height="100dip"
+            app:srcCompat="@drawable/player_soldier"
+            android:src="@drawable/hud_sepia_portrait"
+            android:scaleType="centerInside"
+            android:background="?android:selectableItemBackground"
+            android:id="@+id/imgPortraitChar" />
+
 </RelativeLayout>

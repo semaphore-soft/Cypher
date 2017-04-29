@@ -158,6 +158,8 @@ public class PortalActivity extends ARActivity implements PortalRenderer.NewMark
 
         playerCharacterMap =
             (HashMap<Integer, String>) getIntent().getSerializableExtra("character_selection");
+
+        uiPortalOverlay.setCharPortrait(characterName);
     }
 
     /**

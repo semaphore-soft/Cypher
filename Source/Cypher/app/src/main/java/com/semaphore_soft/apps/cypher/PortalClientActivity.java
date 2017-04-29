@@ -127,6 +127,8 @@ public class PortalClientActivity extends ARActivity implements UIListener,
         playerTargets = new HashMap<>();
         specials = new HashMap<>();
         items = new HashMap<>();
+
+        uiPortalOverlay.setCharPortrait(characterName);
     }
 
     /**
