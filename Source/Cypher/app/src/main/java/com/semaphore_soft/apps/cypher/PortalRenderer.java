@@ -7,6 +7,7 @@ import android.opengl.Matrix;
 import android.os.Handler;
 import android.support.annotation.Nullable;
 import android.support.v4.util.Pair;
+import android.widget.Toast;
 
 import com.semaphore_soft.apps.cypher.game.Actor;
 import com.semaphore_soft.apps.cypher.game.GameController;
@@ -866,113 +867,224 @@ class PortalRenderer extends ARRendererGLES20
         Logger.logD("action:<" + actionType + ">");
         Logger.logD("action description:<" + desc + ">");
 
-        if (mediaPlayer != null)
+        try
         {
-            mediaPlayer.release();
-            mediaPlayer = null;
-        }
-
-        ARRoom arRoom = arRooms.get(arRoomId);
-        if (forward)
-        {
-            if (playerAction)
+            if (mediaPlayer != null)
             {
-                arRoom.setForwardPlayer(sourceId);
-                if (targetId > -1)
+                mediaPlayer.release();
+                mediaPlayer = null;
+            }
+
+            ARRoom arRoom = arRooms.get(arRoomId);
+            if (forward)
+            {
+                if (playerAction)
                 {
-                    arRoom.setForwardEnemy(targetId);
+                    arRoom.setForwardPlayer(sourceId);
+                    if (targetId > -1)
+                    {
+                        arRoom.setForwardEnemy(targetId);
+                    }
+                }
+                else
+                {
+                    arRoom.setForwardEnemy(sourceId);
+                    if (targetId > -1)
+                    {
+                        arRoom.setForwardPlayer(targetId);
+                    }
                 }
             }
-            else
+
+            String[] splitAction = actionType.split("\\.");
+
+            switch (splitAction[0])
             {
-                arRoom.setForwardEnemy(sourceId);
-                if (targetId > -1)
-                {
-                    arRoom.setForwardPlayer(targetId);
-                }
-            }
-        }
-
-        String[] splitAction = actionType.split("\\.");
-
-        switch (splitAction[0])
-        {
-            case "attack":
-                arRoom.setResidentPose(sourceId, "attack");
-                if (targetId > -1)
-                {
-                    if (targetState != null && targetState.equals("defend"))
+                case "attack":
+                    arRoom.setResidentPose(sourceId, "attack");
+                    if (targetId > -1)
                     {
-                        arRoom.setResidentPose(targetId, "defend");
+                        if (targetState != null && targetState.equals("defend"))
+                        {
+                            arRoom.setResidentPose(targetId, "defend");
+                        }
+                        else
+                        {
+                            arRoom.setResidentPose(targetId, "hurt");
+                        }
+                        setActorEffect(arRoomId, targetId, "spark", 1000);
                     }
-                    else
+                    if (desc != null)
                     {
-                        arRoom.setResidentPose(targetId, "hurt");
-                    }
-                    setActorEffect(arRoomId, targetId, "spark", 1000);
-                }
-                if (desc != null)
-                {
-                    switch (desc)
-                    {
-                        case "knight":
-                        case "soldier":
-                        case "groblin":
-                        case "groblinCommando":
-                            if (targetState != null && targetState.equals("defend"))
-                            {
+                        switch (desc)
+                        {
+                            case "knight":
+                            case "soldier":
+                            case "groblin":
+                            case "groblinCommando":
+                                if (targetState != null && targetState.equals("defend"))
+                                {
+                                    if (soundEnabled)
+                                    {
+                                        mediaPlayer =
+                                            MediaPlayer.create(context, R.raw.metalic_prot);
+                                        mediaPlayer.start();
+                                    }
+                                }
+                                else
+                                {
+                                    if (soundEnabled)
+                                    {
+                                        mediaPlayer =
+                                            MediaPlayer.create(context, R.raw.metalic_vuln);
+                                        mediaPlayer.start();
+                                    }
+                                }
+                                break;
+                            case "wizard":
                                 if (soundEnabled)
                                 {
-                                    mediaPlayer = MediaPlayer.create(context, R.raw.metalic_prot);
+                                    mediaPlayer = MediaPlayer.create(context, R.raw.hit);
                                     mediaPlayer.start();
                                 }
-                            }
-                            else
-                            {
+                                break;
+                            case "ranger":
+                                if (soundEnabled)
+                                {
+                                    mediaPlayer = MediaPlayer.create(context, R.raw.arrow);
+                                    mediaPlayer.start();
+                                }
+                                break;
+                            default:
+                                if (soundEnabled)
+                                {
+                                    mediaPlayer = MediaPlayer.create(context, R.raw.hit);
+                                    mediaPlayer.start();
+                                }
+                                break;
+                        }
+                    }
+                    break;
+                case "defend":
+                    arRoom.setResidentPose(sourceId, "defend");
+                    break;
+                case "special":
+                    arRoom.setResidentPose(sourceId, "special");
+                    boolean players = false;
+                    if (splitAction.length > 1)
+                    {
+                        switch (splitAction[1])
+                        {
+                            case "harm":
+                                if (targetId != -1 && targetId != sourceId)
+                                {
+                                    if (targetState != null && targetState.equals("defend"))
+                                    {
+                                        arRoom.setResidentPose(targetId, "defend");
+                                    }
+                                    else
+                                    {
+                                        arRoom.setResidentPose(targetId, "hurt");
+                                    }
+                                }
+                                players = !playerAction;
+                                break;
+                            case "help":
+                                if (targetId != -1 && targetId != sourceId)
+                                {
+                                    arRoom.setResidentPose(targetId, "heroic");
+                                }
+                                players = playerAction;
+                                break;
+                        }
+                    }
+                    if (desc != null)
+                    {
+                        switch (desc)
+                        {
+                            case "chill":
+                                if (soundEnabled)
+                                {
+                                    mediaPlayer = MediaPlayer.create(context, R.raw.chill);
+                                    mediaPlayer.start();
+                                }
+                                setActorsEffects(arRoomId, players, "chill", 1000);
+                                break;
+                            case "flame_shot":
+                                if (soundEnabled)
+                                {
+                                    mediaPlayer = MediaPlayer.create(context, R.raw.flame_shot);
+                                    mediaPlayer.start();
+                                }
+                                setActorEffect(arRoomId, targetId, "flameShot", 1000);
+                                break;
+                            case "heal":
+                            case "beef_increase":
+                                if (soundEnabled)
+                                {
+                                    mediaPlayer = MediaPlayer.create(context, R.raw.magic_hlp);
+                                    mediaPlayer.start();
+                                }
+                                setActorEffect(arRoomId, targetId, "heal", 1000);
+                                break;
+                            case "ignus_fatuus":
+                                if (soundEnabled)
+                                {
+                                    mediaPlayer = MediaPlayer.create(context, R.raw.magic_atk);
+                                    mediaPlayer.start();
+                                }
+                                setActorEffect(arRoomId, targetId, "ignusFatuus", 1000);
+                                break;
+                            case "pin":
+                                if (soundEnabled)
+                                {
+                                    mediaPlayer = MediaPlayer.create(context, R.raw.arrow);
+                                    mediaPlayer.start();
+                                }
+                                setActorEffect(arRoomId, targetId, "spark", 1000);
+                                break;
+                            case "multishot":
+                                if (soundEnabled)
+                                {
+                                    mediaPlayer = MediaPlayer.create(context, R.raw.multishot);
+                                    mediaPlayer.start();
+                                }
+                                setActorsEffects(arRoomId, players, "spark", 1000);
+                                break;
+                            case "flurry_of_fists":
+                            case "take_a_shit":
+                                if (soundEnabled)
+                                {
+                                    mediaPlayer = MediaPlayer.create(context, R.raw.multi_punch);
+                                    mediaPlayer.start();
+                                }
+                                setActorsEffects(arRoomId, players, "spark", 1000);
+                                break;
+                            case "suckerpunch":
+                                if (soundEnabled)
+                                {
+                                    mediaPlayer = MediaPlayer.create(context, R.raw.hit);
+                                    mediaPlayer.start();
+                                }
+                                setActorEffect(arRoomId, targetId, "spark", 1000);
+                                break;
+                            case "spear_toss":
                                 if (soundEnabled)
                                 {
                                     mediaPlayer = MediaPlayer.create(context, R.raw.metalic_vuln);
                                     mediaPlayer.start();
                                 }
-                            }
-                            break;
-                        case "wizard":
-                            if (soundEnabled)
-                            {
-                                mediaPlayer = MediaPlayer.create(context, R.raw.hit);
-                                mediaPlayer.start();
-                            }
-                            break;
-                        case "ranger":
-                            if (soundEnabled)
-                            {
-                                mediaPlayer = MediaPlayer.create(context, R.raw.arrow);
-                                mediaPlayer.start();
-                            }
-                            break;
-                        default:
-                            if (soundEnabled)
-                            {
-                                mediaPlayer = MediaPlayer.create(context, R.raw.hit);
-                                mediaPlayer.start();
-                            }
-                            break;
+                                setActorEffect(arRoomId, targetId, "spark", 1000);
+                        }
                     }
-                }
-                break;
-            case "defend":
-                arRoom.setResidentPose(sourceId, "defend");
-                break;
-            case "special":
-                arRoom.setResidentPose(sourceId, "special");
-                boolean players = false;
-                if (splitAction.length > 1)
-                {
-                    switch (splitAction[1])
+                    break;
+                case "item":
+                    arRoom.setResidentPose(sourceId, "heroic");
+                    if (targetId != -1 && targetId != sourceId && splitAction.length > 1)
                     {
-                        case "harm":
-                            if (targetId != -1 && targetId != sourceId)
-                            {
+                        switch (splitAction[1])
+                        {
+                            case "harm":
                                 if (targetState != null && targetState.equals("defend"))
                                 {
                                     arRoom.setResidentPose(targetId, "defend");
@@ -981,129 +1093,31 @@ class PortalRenderer extends ARRendererGLES20
                                 {
                                     arRoom.setResidentPose(targetId, "hurt");
                                 }
-                            }
-                            players = !playerAction;
-                            break;
-                        case "help":
-                            if (targetId != -1 && targetId != sourceId)
-                            {
+                                break;
+                            case "help":
                                 arRoom.setResidentPose(targetId, "heroic");
-                            }
-                            players = playerAction;
-                            break;
+                                break;
+                        }
                     }
-                }
-                if (desc != null)
-                {
-                    switch (desc)
+                    break;
+                case "door":
+                    if (soundEnabled)
                     {
-                        case "chill":
-                            if (soundEnabled)
-                            {
-                                mediaPlayer = MediaPlayer.create(context, R.raw.chill);
-                                mediaPlayer.start();
-                            }
-                            setActorsEffects(arRoomId, players, "chill", 1000);
-                            break;
-                        case "flame_shot":
-                            if (soundEnabled)
-                            {
-                                mediaPlayer = MediaPlayer.create(context, R.raw.flame_shot);
-                                mediaPlayer.start();
-                            }
-                            setActorEffect(arRoomId, targetId, "flameShot", 1000);
-                            break;
-                        case "heal":
-                        case "beef_increase":
-                            if (soundEnabled)
-                            {
-                                mediaPlayer = MediaPlayer.create(context, R.raw.magic_hlp);
-                                mediaPlayer.start();
-                            }
-                            setActorEffect(arRoomId, targetId, "heal", 1000);
-                            break;
-                        case "ignus_fatuus":
-                            if (soundEnabled)
-                            {
-                                mediaPlayer = MediaPlayer.create(context, R.raw.magic_atk);
-                                mediaPlayer.start();
-                            }
-                            setActorEffect(arRoomId, targetId, "ignusFatuus", 1000);
-                            break;
-                        case "pin":
-                            if (soundEnabled)
-                            {
-                                mediaPlayer = MediaPlayer.create(context, R.raw.arrow);
-                                mediaPlayer.start();
-                            }
-                            setActorEffect(arRoomId, targetId, "spark", 1000);
-                            break;
-                        case "multishot":
-                            if (soundEnabled)
-                            {
-                                mediaPlayer = MediaPlayer.create(context, R.raw.multishot);
-                                mediaPlayer.start();
-                            }
-                            setActorsEffects(arRoomId, players, "spark", 1000);
-                            break;
-                        case "flurry_of_fists":
-                        case "take_a_shit":
-                            if (soundEnabled)
-                            {
-                                mediaPlayer = MediaPlayer.create(context, R.raw.multi_punch);
-                                mediaPlayer.start();
-                            }
-                            setActorsEffects(arRoomId, players, "spark", 1000);
-                            break;
-                        case "suckerpunch":
-                            if (soundEnabled)
-                            {
-                                mediaPlayer = MediaPlayer.create(context, R.raw.hit);
-                                mediaPlayer.start();
-                            }
-                            setActorEffect(arRoomId, targetId, "spark", 1000);
-                            break;
-                        case "spear_toss":
-                            if (soundEnabled)
-                            {
-                                mediaPlayer = MediaPlayer.create(context, R.raw.metalic_vuln);
-                                mediaPlayer.start();
-                            }
-                            setActorEffect(arRoomId, targetId, "spark", 1000);
+                        mediaPlayer = MediaPlayer.create(context, R.raw.open_door);
+                        mediaPlayer.start();
                     }
-                }
-                break;
-            case "item":
-                arRoom.setResidentPose(sourceId, "heroic");
-                if (targetId != -1 && targetId != sourceId && splitAction.length > 1)
-                {
-                    switch (splitAction[1])
-                    {
-                        case "harm":
-                            if (targetState != null && targetState.equals("defend"))
-                            {
-                                arRoom.setResidentPose(targetId, "defend");
-                            }
-                            else
-                            {
-                                arRoom.setResidentPose(targetId, "hurt");
-                            }
-                            break;
-                        case "help":
-                            arRoom.setResidentPose(targetId, "heroic");
-                            break;
-                    }
-                }
-                break;
-            case "door":
-                if (soundEnabled)
-                {
-                    mediaPlayer = MediaPlayer.create(context, R.raw.open_door);
-                    mediaPlayer.start();
-                }
-                break;
-            default:
-                break;
+                    break;
+                default:
+                    break;
+            }
+        }
+        catch (Exception x)
+        {
+            x.printStackTrace();
+
+            Toast.makeText(context,
+                           "Oops! Failed to show action, sorry about that.",
+                           Toast.LENGTH_SHORT).show();
         }
 
         if (handler != null)
