@@ -4,6 +4,7 @@ import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.ServiceConnection;
+import android.media.MediaPlayer;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.IBinder;
@@ -14,6 +15,7 @@ import android.widget.Toast;
 
 import com.semaphore_soft.apps.cypher.game.Actor;
 import com.semaphore_soft.apps.cypher.game.GameController;
+import com.semaphore_soft.apps.cypher.game.ItemConsumable;
 import com.semaphore_soft.apps.cypher.game.Room;
 import com.semaphore_soft.apps.cypher.game.Special;
 import com.semaphore_soft.apps.cypher.networking.Client;
@@ -63,14 +65,17 @@ public class PortalClientActivity extends ARActivity implements UIListener,
     private static ArrayList<Integer> roomMarkers;
     private static ArrayList<Integer> placedRoomMarkers;
 
-    private static HashMap<Integer, String>                                 nonPlayerTargets;
-    private static HashMap<Integer, String>                                 playerTargets;
-    private static HashMap<Integer, Pair<String, Special.E_TARGETING_TYPE>> specials;
+    private static HashMap<Integer, String>                                        nonPlayerTargets;
+    private static HashMap<Integer, String>                                        playerTargets;
+    private static HashMap<Integer, Pair<String, Special.E_TARGETING_TYPE>>        specials;
+    private static HashMap<Integer, Pair<String, ItemConsumable.E_TARGETING_TYPE>> items;
 
     private static int healthMax;
     private static int healthCurrent;
     private static int energyMax;
     private static int energyCurrent;
+
+    private static MediaPlayer mediaPlayer;
 
     /**
      * {@inheritDoc}
@@ -81,6 +86,11 @@ public class PortalClientActivity extends ARActivity implements UIListener,
     public void onCreate(Bundle savedInstanceState)
     {
         super.onCreate(savedInstanceState);
+
+        /*mediaPlayer = MediaPlayer.create(this, R.raw.overworld);
+        mediaPlayer.setLooping(true);
+        mediaPlayer.start();*/
+
         setContentView(R.layout.empty);
 
         uiPortalActivity = new UIPortalActivity(this);
@@ -116,6 +126,9 @@ public class PortalClientActivity extends ARActivity implements UIListener,
         nonPlayerTargets = new HashMap<>();
         playerTargets = new HashMap<>();
         specials = new HashMap<>();
+        items = new HashMap<>();
+
+        uiPortalOverlay.setCharPortrait(characterName);
     }
 
     /**
@@ -146,6 +159,15 @@ public class PortalClientActivity extends ARActivity implements UIListener,
             unbindService(mClientConnection);
             mClientBound = false;
         }
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public void onBackPressed()
+    {
+        //do nothing
     }
 
     /**
@@ -194,9 +216,6 @@ public class PortalClientActivity extends ARActivity implements UIListener,
                             NetworkConstants.PREFIX_MARK_REQUEST + firstUnreservedMarker);
                     }
                     break;
-                case "cmd_btnEndTurn":
-                    moveActor();
-                    break;
                 case "cmd_btnOpenDoor":
                     openDoor();
                     break;
@@ -210,7 +229,7 @@ public class PortalClientActivity extends ARActivity implements UIListener,
                         attackOptions.add(targetPair);
                     }
 
-                    uiPortalOverlay.overlaySelect(attackOptions);
+                    uiPortalOverlay.overlaySelect(attackOptions, false, false);
                     break;
                 case "cmd_btnDefend":
                     clientService.write(NetworkConstants.PREFIX_ACTION_REQUEST + "cmd_defend");
@@ -229,13 +248,47 @@ public class PortalClientActivity extends ARActivity implements UIListener,
                         specialOptions.add(specialOptionPair);
                     }
 
-                    uiPortalOverlay.overlaySelect(specialOptions);
+                    uiPortalOverlay.overlaySelect(specialOptions, false, true);
                     break;
                 case "cmd_btnCancel":
                     uiPortalOverlay.overlayAction(healthMax,
                                                   healthCurrent,
                                                   energyMax,
                                                   energyCurrent);
+                    break;
+                case "cmd_btnItems":
+                    ArrayList<Pair<String, String>> options = new ArrayList<>();
+
+                    Pair<String, String> inventory = new Pair<>("Inventory", "cmd_btnInventory");
+                    options.add(inventory);
+
+                    Pair<String, String> floor = new Pair<>("Floor", "cmd_btnFloor");
+                    options.add(floor);
+
+                    uiPortalOverlay.overlaySelect(options, true, true);
+                    break;
+                case "cmd_btnInventory":
+                    clientService.write(NetworkConstants.GAME_INVENTORY_REQUEST);
+
+                    ArrayList<Pair<String, String>> itemOptions = new ArrayList<>();
+
+                    for (int i : items.keySet())
+                    {
+                        Pair<String, ItemConsumable.E_TARGETING_TYPE> itemDescriptionPair =
+                            items.get(i);
+                        String itemName =
+                            itemDescriptionPair.first;
+                        Pair<String, String> itemOptionPair =
+                            new Pair<>(itemName,
+                                       ((itemDescriptionPair.second !=
+                                         null) ? "cmd_invConItem:" : "cmd_invDurItem:") + i);
+                        itemOptions.add(itemOptionPair);
+                    }
+
+                    uiPortalOverlay.overlaySelect(itemOptions, false, true);
+                    break;
+                case "cmd_btnFloor":
+                    clientService.write(NetworkConstants.GAME_FLOOR_REQUEST);
                     break;
             }
         }
@@ -244,7 +297,102 @@ public class PortalClientActivity extends ARActivity implements UIListener,
             String[] splitCmd    = cmd.split("_");
             String[] splitAction = splitCmd[1].split(":");
 
-            if (splitAction[0].equals("special"))
+            if (splitAction[0].equals("invConItem"))
+            {
+                ArrayList<Pair<String, String>> options = new ArrayList<>();
+
+                Pair<String, String> useOption =
+                    new Pair<>("Use", "cmd_useItem:" + splitAction[1]);
+                options.add(useOption);
+
+                Pair<String, String> dropOption =
+                    new Pair<>("Drop", "cmd_dropItem:" + splitAction[1]);
+                options.add(dropOption);
+
+                uiPortalOverlay.overlaySelect(options, true, true);
+            }
+            else if (splitAction[0].equals("invDurItem"))
+            {
+                ArrayList<Pair<String, String>> options = new ArrayList<>();
+
+                Pair<String, String> dropOption =
+                    new Pair<>("Drop", "cmd_dropItem:" + splitAction[1]);
+                options.add(dropOption);
+
+                uiPortalOverlay.overlaySelect(options, true, true);
+            }
+            else if (splitAction[0].equals("floorItem"))
+            {
+                ArrayList<Pair<String, String>> options = new ArrayList<>();
+
+                Pair<String, String> takeOption =
+                    new Pair<>("Take", "cmd_takeItem:" + splitAction[1]);
+                options.add(takeOption);
+
+                uiPortalOverlay.overlaySelect(options, true, true);
+            }
+            else if (splitAction[0].equals("useItem"))
+            {
+                int itemId = Integer.parseInt(splitAction[1]);
+
+                ItemConsumable.E_TARGETING_TYPE itemType = items.get(itemId).second;
+
+                if (splitAction.length < 3)
+                {
+                    if (itemType != ItemConsumable.E_TARGETING_TYPE.AOE_PLAYER && itemType !=
+                                                                                  ItemConsumable.E_TARGETING_TYPE.AOE_NON_PLAYER)
+                    {
+                        ArrayList<Pair<String, String>> targetOptions = new ArrayList<>();
+
+                        if (itemType == ItemConsumable.E_TARGETING_TYPE.SINGLE_NON_PLAYER)
+                        {
+                            for (int i : nonPlayerTargets.keySet())
+                            {
+                                Pair<String, String> targetPair =
+                                    new Pair<>(nonPlayerTargets.get(i),
+                                               "cmd_useItem:" + itemId + ":" + i);
+
+                                targetOptions.add(targetPair);
+                            }
+                        }
+                        else
+                        {
+                            for (int i : playerTargets.keySet())
+                            {
+                                Pair<String, String> targetPair =
+                                    new Pair<>(playerTargets.get(i),
+                                               "cmd_useItem:" + itemId + ":" + i);
+
+                                targetOptions.add(targetPair);
+                            }
+                        }
+
+                        uiPortalOverlay.overlaySelect(targetOptions, false, true);
+                    }
+                    else
+                    {
+                        clientService.write(NetworkConstants.PREFIX_USE_ITEM + splitAction[1]);
+                        renderer.setCheckingNearestRoomMarker(false);
+                    }
+                }
+                else
+                {
+                    clientService.write(
+                        NetworkConstants.PREFIX_USE_ITEM + splitAction[1] + ":" + splitAction[2]);
+                    renderer.setCheckingNearestRoomMarker(false);
+                }
+
+                clientService.write(NetworkConstants.PREFIX_USE_ITEM + splitAction[1]);
+            }
+            else if (splitAction[0].equals("dropItem"))
+            {
+                clientService.write(NetworkConstants.PREFIX_DROP_ITEM + splitAction[1]);
+            }
+            else if (splitAction[0].equals("takeItem"))
+            {
+                clientService.write(NetworkConstants.PREFIX_TAKE_ITEM + splitAction[1]);
+            }
+            else if (splitAction[0].equals("special"))
             {
                 int specialId = Integer.parseInt(splitAction[1]);
 
@@ -280,21 +428,24 @@ public class PortalClientActivity extends ARActivity implements UIListener,
                             }
                         }
 
-                        uiPortalOverlay.overlaySelect(targetOptions);
+                        uiPortalOverlay.overlaySelect(targetOptions, false, true);
                     }
                     else
                     {
                         clientService.write(NetworkConstants.PREFIX_ACTION_REQUEST + cmd);
+                        //renderer.setCheckingNearestRoomMarker(false);
                     }
                 }
                 else
                 {
                     clientService.write(NetworkConstants.PREFIX_ACTION_REQUEST + cmd);
+                    //renderer.setCheckingNearestRoomMarker(false);
                 }
             }
             else
             {
                 clientService.write(NetworkConstants.PREFIX_ACTION_REQUEST + cmd);
+                renderer.setCheckingNearestRoomMarker(false);
             }
         }
     }
@@ -314,12 +465,14 @@ public class PortalClientActivity extends ARActivity implements UIListener,
             String[] splitMsg = msg.split(":");
 
             playerMarker = Integer.parseInt(splitMsg[1]);
+            renderer.setPlayerMarker(playerMarker);
         }
         else if (msg.startsWith(NetworkConstants.PREFIX_ASSIGN_ROOM_MARK))
         {
             String[] splitMsg = msg.split(":");
 
             playerRoomMarker = Integer.parseInt(splitMsg[1]);
+            renderer.setPlayerRoomMarker(playerRoomMarker);
         }
         else if (msg.startsWith(NetworkConstants.PREFIX_RESERVE_PLAYER))
         {
@@ -387,6 +540,8 @@ public class PortalClientActivity extends ARActivity implements UIListener,
             energyMax = Integer.parseInt(splitMsg[3]);
             energyCurrent = Integer.parseInt(splitMsg[4]);
 
+            renderer.setCheckingNearestRoomMarker(true);
+
             uiPortalOverlay.overlayAction(healthMax,
                                           healthCurrent,
                                           energyMax,
@@ -405,6 +560,8 @@ public class PortalClientActivity extends ARActivity implements UIListener,
                                                   healthCurrent,
                                                   energyMax,
                                                   energyCurrent);
+
+            renderer.setCheckingNearestRoomMarker(false);
         }
         else if (msg.startsWith(NetworkConstants.PREFIX_HEALTH))
         {
@@ -496,7 +653,8 @@ public class PortalClientActivity extends ARActivity implements UIListener,
                                 splitMsg[5],
                                 splitMsg[6].equals("") ? null : splitMsg[6],
                                 Boolean.parseBoolean(splitMsg[7]),
-                                Boolean.parseBoolean(splitMsg[8]));
+                                Boolean.parseBoolean(splitMsg[8]),
+                                splitMsg[9]);
         }
         else if (msg.startsWith(NetworkConstants.PREFIX_UPDATE_NON_PLAYER_TARGETS))
         {
@@ -558,6 +716,80 @@ public class PortalClientActivity extends ARActivity implements UIListener,
                 }
             }
         }
+        else if (msg.startsWith(NetworkConstants.PREFIX_UPDATE_PLAYER_ITEMS))
+        {
+            items.clear();
+
+            String[] splitMsg = msg.split(":");
+
+            if (splitMsg.length > 1)
+            {
+                String[] itemTriads = splitMsg[1].split(",");
+
+                for (String itemTriad : itemTriads)
+                {
+                    String[] splitItemTriad = itemTriad.split("\\.");
+
+                    Pair<String, ItemConsumable.E_TARGETING_TYPE> itemNameTargetingPair =
+                        new Pair<>(splitItemTriad[1],
+                                   (!splitItemTriad[2].equals("DUR") ?
+                                    ItemConsumable.E_TARGETING_TYPE.valueOf(splitItemTriad[2]) : null));
+
+                    items.put(Integer.parseInt(splitItemTriad[0]), itemNameTargetingPair);
+                }
+            }
+        }
+        else if (msg.equals(NetworkConstants.GAME_WIN_CONDITION))
+        {
+            uiPortalOverlay.overlayWinCondition();
+        }
+        else if (msg.equals(NetworkConstants.GAME_LOSE_CONDITION))
+        {
+            uiPortalOverlay.overlayLoseCondition();
+        }
+        else if (msg.startsWith(NetworkConstants.PREFIX_INVENTORY_LIST))
+        {
+            String[] splitMsg = msg.split(":");
+
+            ArrayList<Pair<String, String>> options = new ArrayList<>();
+
+            for (int i = 1; i < splitMsg.length; ++i)
+            {
+                String[] splitItem = splitMsg[i].split(",");
+
+                if (splitItem[1].equals("consumable"))
+                {
+                    options.add(new Pair<>(splitItem[0], "cmd_invConItem:" + splitItem[2]));
+                }
+                else if (splitItem[1].equals("durable"))
+                {
+                    options.add(new Pair<>(splitItem[0], "cmd_invDurItem:" + splitItem[2]));
+                }
+            }
+
+            uiPortalOverlay.overlaySelect(options, true, true);
+        }
+        else if (msg.startsWith(NetworkConstants.PREFIX_FLOOR_LIST))
+        {
+            String[] splitMsg = msg.split(":");
+
+            ArrayList<Pair<String, String>> options = new ArrayList<>();
+
+            for (int i = 1; i < splitMsg.length; ++i)
+            {
+                String[] splitItem = splitMsg[i].split(",");
+
+                options.add(new Pair<>(splitItem[0], "cmd_floorItem:" + splitItem[1]));
+            }
+
+            uiPortalOverlay.overlaySelect(options, true, true);
+        }
+        else if (msg.startsWith(NetworkConstants.PREFIX_FEEDBACK))
+        {
+            String[] splitMsg = msg.split("~");
+
+            Toast.makeText(this, splitMsg[1], Toast.LENGTH_SHORT).show();
+        }
     }
 
     /**
@@ -610,37 +842,6 @@ public class PortalClientActivity extends ARActivity implements UIListener,
     /**
      * Get the reference ID of the nearest visible AR marker to a given AR
      * marker via the {@link PortalRenderer} which is not associated with an
-     * {@link Actor}, or {@code -1} if either the given marker is not visible
-     * or there are no other markers in view.
-     *
-     * @param mark0 int: The reference ID of the desired AR marker to get the
-     *              nearest marker to.
-     *
-     * @return int: The reference ID of the nearest visible AR marker to a
-     * given AR marker via the {@link PortalRenderer} which is not associated
-     * with an {@link Actor}, or {@code -1} if either the given marker is not
-     * visible or there are no other markers in view.
-     *
-     * @see PortalRenderer
-     * @see PortalRenderer#getNearestMarkerExcluding(int, ArrayList)
-     * @see Actor
-     * @see Actor#getMarker()
-     */
-    private int getNearestNonPlayerMarker(final int mark0)
-    {
-        int foundMarker = renderer.getNearestMarkerExcluding(mark0, playerMarkers);
-
-        if (foundMarker > -1)
-        {
-            return foundMarker;
-        }
-
-        return -1;
-    }
-
-    /**
-     * Get the reference ID of the nearest visible AR marker to a given AR
-     * marker via the {@link PortalRenderer} which is not associated with an
      * {@link Actor} and is not in the list of AR marker reference IDs
      * indicated as excluded, or {@code -1} if either the given marker is not
      * visible or there are no other markers in view.
@@ -676,24 +877,6 @@ public class PortalClientActivity extends ARActivity implements UIListener,
         }
 
         return -1;
-    }
-
-    private void moveActor()
-    {
-        int nearestMarkerId =
-            getNearestNonPlayerMarker(playerMarker);
-
-        if (nearestMarkerId > -1)
-        {
-            clientService.write(NetworkConstants.PREFIX_MOVE_REQUEST + nearestMarkerId);
-        }
-        else
-        {
-            Toast.makeText(getApplicationContext(),
-                           "Couldn't Find Valid Room",
-                           Toast.LENGTH_SHORT)
-                 .show();
-        }
     }
 
     private static short getWallFromAngle(final float angle)
@@ -791,7 +974,7 @@ public class PortalClientActivity extends ARActivity implements UIListener,
     }
 
     @Override
-    public final void onActorAction(int sourceId, int targetId, String action)
+    public final void onActorAction(int sourceId, int targetId, String action, String desc)
     {
         // DO NOT USE
     }
@@ -814,9 +997,15 @@ public class PortalClientActivity extends ARActivity implements UIListener,
         clientService.write(NetworkConstants.PREFIX_GENERATE_ROOM_REQUEST + marker);
     }
 
+    /**
+     * Simulate a player {@link Actor actor} moving to a new {@link Room}
+     *
+     * @param marker   New {@link Room} the {@link Actor} is moving too.
+     * @param updateId Not used by this function
+     */
     @Override
-    public void newNearestRoomMarker(int marker)
+    public void newNearestRoomMarker(int marker, int updateId)
     {
-
+        clientService.write(NetworkConstants.PREFIX_UPDATE_NEAREST_ROOM + marker);
     }
 }

@@ -1,63 +1,52 @@
 <?xml version="1.0" encoding="utf-8"?>
-<android.support.design.widget.CoordinatorLayout
-    xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
-    xmlns:tools="http://schemas.android.com/tools"
-    android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:fitsSystemWindows="true"
-    tools:context="com.semaphore_soft.apps.cypher.ConnectionLobbyActivity">
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:app="http://schemas.android.com/apk/res-auto"
+        android:orientation="vertical"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
 
-    <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-                  xmlns:app="http://schemas.android.com/apk/res-auto"
-                  android:orientation="vertical"
-                  android:layout_width="match_parent"
-                  android:layout_height="match_parent">
+    <ScrollView
+            android:layout_width="match_parent"
+            android:layout_height="match_parent">
 
-        <android.support.design.widget.AppBarLayout
+        <LinearLayout
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:theme="@style/AppTheme.AppBarOverlay">
+                android:layout_height="match_parent"
+                android:orientation="vertical">
 
-            <android.support.v7.widget.Toolbar
-                    android:id="@+id/toolbar"
+            <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:id="@+id/txtDisplayName"
+                    android:textAppearance="@style/TextAppearance.AppCompat.Medium" />
+
+            <TextView
+                    android:text=""
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:id="@+id/ip_address"
+                    android:textAppearance="@style/TextAppearance.AppCompat.Medium" />
+
+            <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Connected Players:"
+                    android:textAppearance="@style/TextAppearance.AppCompat.Medium" />
+
+            <android.support.v7.widget.RecyclerView
+                    android:id="@+id/recPlayerCardList"
                     android:layout_width="match_parent"
-                    android:layout_height="?attr/actionBarSize"
-                    android:background="?attr/colorPrimary"
-                    app:popupTheme="@style/AppTheme.PopupOverlay"/>
+                    android:layout_height="wrap_content"
+                    app:layout_behavior="@string/appbar_scrolling_view_behavior" />
 
-        </android.support.design.widget.AppBarLayout>
+            <Button
+                    android:text="Start Game"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:id="@+id/btnStart" />
 
-        <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:id="@+id/txtDisplayName"
-                android:textAppearance="@style/TextAppearance.AppCompat.Medium"/>
+        </LinearLayout>
 
-        <TextView
-                android:text=""
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:id="@+id/ip_address"
-                android:textAppearance="@style/TextAppearance.AppCompat.Medium"/>
+    </ScrollView>
 
-        <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Connected Players:"
-                android:textAppearance="@style/TextAppearance.AppCompat.Medium"/>
-
-        <android.support.v7.widget.RecyclerView
-                android:id="@+id/recPlayerCardList"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                app:layout_behavior="@string/appbar_scrolling_view_behavior"/>
-
-        <Button
-                android:text="Start Game"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:id="@+id/btnStart"/>
-    </LinearLayout>
-
-</android.support.design.widget.CoordinatorLayout>
+</LinearLayout>

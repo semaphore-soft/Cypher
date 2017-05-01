@@ -53,6 +53,8 @@ public class TextureLoader
         Timer timer = new Timer();
         timer.start();
 
+        boolean failure = false;
+
         Logger.logI("loading texture <" + filename + ">", 3);
 
         int[] textureHandle = new int[1];
@@ -74,6 +76,10 @@ public class TextureLoader
                 }
                 catch (IOException e)
                 {
+                    e.printStackTrace();
+
+                    failure = true;
+
                     try
                     {
                         bitmap =
@@ -90,6 +96,8 @@ public class TextureLoader
             }
             else
             {
+                failure = true;
+
                 try
                 {
                     bitmap =
@@ -116,12 +124,24 @@ public class TextureLoader
             GLUtils.texImage2D(GLES20.GL_TEXTURE_2D, 0, bitmap, 0);
 
             bitmap.recycle();
-
+        }
+        else
+        {
+            Logger.logE("error getting texture handle");
         }
 
-        Logger.logI(
-            "finished loading texture <" + filename + "> in " + ((float) timer.getTime()) / 1000f +
-            " seconds", 3);
+        if (!failure)
+        {
+            Logger.logI(
+                "finished loading texture <" + filename + "> in " +
+                ((float) timer.getTime()) / 1000f +
+                " seconds", 3);
+        }
+        else
+        {
+            Logger.logE("error loading texture:<" + filename + ">");
+        }
+
         return textureHandle[0];
     }
 }

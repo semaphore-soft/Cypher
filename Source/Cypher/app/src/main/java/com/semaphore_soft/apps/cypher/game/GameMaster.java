@@ -10,10 +10,14 @@ import com.semaphore_soft.apps.cypher.PortalActivity;
 import com.semaphore_soft.apps.cypher.utils.CollectionManager;
 import com.semaphore_soft.apps.cypher.utils.GameStatLoader;
 import com.semaphore_soft.apps.cypher.utils.Logger;
+import com.semaphore_soft.apps.cypher.utils.Lottery;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.concurrent.ConcurrentHashMap;
+
+import static com.semaphore_soft.apps.cypher.utils.Lottery.performLottery;
 
 /**
  * {@link GameMaster game.GameMaster} is a coordinator class intended to define
@@ -100,6 +104,7 @@ public class GameMaster
      * @see Actor
      * @see Model
      */
+    @Nullable
     public static Room generateRoom(final Context context,
                                     final Model model,
                                     final int id,
@@ -109,51 +114,100 @@ public class GameMaster
 
         Room room = new Room(id, mark);
 
-        boolean demo = true;
-
-        if (demo)
-        {
-            String enemyName = "impKing";
-
-            Actor enemy =
-                new Actor(CollectionManager.getNextID(model.getActors()),
-                          id,
-                          enemyName);
-            GameStatLoader.loadActorStats(enemy,
-                                          enemyName,
-                                          model.getSpecials(),
-                                          context);
-
-            model.addActor(enemy.getId(), enemy);
-            room.addActor(enemy.getId());
-        }
-        else
+        if (getNumRooms(model) < 15)
         {
             int numEnemies = (int) (Math.random() * 4);
             if (numEnemies > 0)
             {
                 ArrayList<String> enemyList = GameStatLoader.getList(context, "enemies");
-                if (enemyList != null)
+
+                HashMap<String, Integer> enemyPrevalenceMap =
+                    GameStatLoader.getTagsMembers(context, "actors.xml", enemyList, "prevalence");
+
+                if (enemyPrevalenceMap != null)
                 {
                     for (int i = 0; i < numEnemies; ++i)
                     {
-                        Collections.shuffle(enemyList);
-                        String enemyName = enemyList.get(0);
+                        String enemyName = performLottery(enemyPrevalenceMap);
 
-                        Actor enemy =
-                            new Actor(CollectionManager.getNextID(model.getActors()),
-                                      id,
-                                      enemyName);
+                        Actor enemy = new Actor(CollectionManager.getNextID(model.getActors()),
+                                                id,
+                                                enemyName);
+
                         GameStatLoader.loadActorStats(enemy,
                                                       enemyName,
                                                       model.getSpecials(),
                                                       context);
+
+                        HashMap<String, Integer> itemPrevalence =
+                            GameStatLoader.getItemPrevalence(context, enemyName);
+
+                        String itemName = Lottery.performLottery(itemPrevalence);
+
+                        Logger.logI("chosen item for <" + enemyName + "> is <" + itemName + ">");
+
+                        Item item = null;
+
+                        if (itemName == null || itemName.equals("none"))
+                        {
+
+                        }
+                        else if (itemName.equals("random"))
+                        {
+                            ArrayList<String> items = GameStatLoader.getList(context, "items");
+
+                            if (items != null)
+                            {
+                                int itemId = (int) (Math.random() * items.size());
+
+                                String selectedItem = items.get(itemId);
+
+                                Logger.logI("randomly selected item:<" + selectedItem + ">");
+
+                                item = GameStatLoader.loadItemStats(selectedItem,
+                                                                    model.getItems(),
+                                                                    model.getSpecials(),
+                                                                    context);
+                            }
+                        }
+                        else
+                        {
+                            item = GameStatLoader.loadItemStats(itemName,
+                                                                model.getItems(),
+                                                                model.getSpecials(),
+                                                                context);
+                        }
+
+                        if (item != null)
+                        {
+                            enemy.addItem(item);
+                        }
 
                         model.addActor(enemy.getId(), enemy);
                         room.addActor(enemy.getId());
                     }
                 }
             }
+        }
+        else if (getNumRooms(model) == 15)
+        {
+            ArrayList<String> bossList = GameStatLoader.getList(context, "bosses");
+            if (bossList != null)
+            {
+                Collections.shuffle(bossList);
+                String bossName = bossList.get(0);
+
+                Actor boss =
+                    new Actor(CollectionManager.getNextID(model.getActors()), id, bossName, true);
+                GameStatLoader.loadActorStats(boss, bossName, model.getSpecials(), context);
+
+                model.addActor(boss.getId(), boss);
+                room.addActor(boss.getId());
+            }
+        }
+        else
+        {
+            return null;
         }
 
         ArrayList<Short> walls = new ArrayList<>();
@@ -199,6 +253,11 @@ public class GameMaster
     public static Room getRoom(final Model model, final int id)
     {
         return model.getRooms().get(id);
+    }
+
+    public static int getNumRooms(final Model model)
+    {
+        return model.getRooms().size();
     }
 
     /**
@@ -588,7 +647,6 @@ public class GameMaster
      * </ul>
      *
      * @see Room
-     * @see PortalActivity#moveActor(int, int)
      * @see PortalActivity#onActorMove(int, int)
      */
     public static int moveActor(final Model model, final int actorId, final int endRoomId)
@@ -692,6 +750,37 @@ public class GameMaster
         }
 
         return -4;
+    }
+
+    public static int getRoomFull(final Model model, final int roomId)
+    {
+        int residentEnemies = 0;
+
+        Room endRoom = getRoom(model, roomId);
+
+        if (endRoom != null)
+        {
+            for (int actorId : endRoom.getResidentActors())
+            {
+                Actor actor = getActor(model, actorId);
+
+                if (actor != null && !actor.isPlayer())
+                {
+                    ++residentEnemies;
+                }
+            }
+
+            if (residentEnemies >= 4)
+            {
+                return -1;
+            }
+
+            return 0;
+        }
+        else
+        {
+            return -2;
+        }
     }
 
     /**
@@ -834,9 +923,13 @@ public class GameMaster
 
                 return 0;
             }
+            else
+            {
+                return -2;
+            }
         }
 
-        return -1;
+        //return -1;
     }
 
     /**
@@ -1163,17 +1256,24 @@ public class GameMaster
         Logger.logD("looking for player targets for: " + actorId);
         Logger.logD("looking for player targets in room: " + actor.getRoom());
 
-        for (int targetId : room.getResidentActors())
+        try
         {
-            if (targetId != actorId)
+            for (int targetId : room.getResidentActors())
             {
-                Actor target = model.getActors().get(targetId);
-                if (!target.isPlayer())
+                if (targetId != actorId)
                 {
-                    Logger.logD("found valid target: " + target.getId());
-                    targets.add(targetId);
+                    Actor target = model.getActors().get(targetId);
+                    if (!target.isPlayer())
+                    {
+                        Logger.logD("found valid target: " + target.getId());
+                        targets.add(targetId);
+                    }
                 }
             }
+        }
+        catch (Exception e)
+        {
+            return getNonPlayerTargetIds(model, actorId);
         }
 
         return targets;
@@ -1249,7 +1349,7 @@ public class GameMaster
      */
     public static int attack(final Model model, final int attackerId, final int defenderId)
     {
-        int ret;
+        int ret = 0;
 
         Actor attacker = model.getActors().get(attackerId);
         Actor defender = model.getActors().get(defenderId);
@@ -1260,11 +1360,37 @@ public class GameMaster
 
         if (defender.getHealthCurrent() <= 0)
         {
-            ret = 1;
-        }
-        else
-        {
-            ret = 0;
+            if (defender.isBoss())
+            {
+                ret = 2;
+            }
+            else if (defender.isPlayer())
+            {
+                ret = 3;
+
+                if (areAllPlayersDead(model))
+                {
+                    ret = 4;
+                }
+            }
+            else
+            {
+                ret = 1;
+
+                Room room = getRoom(model, defender.getRoom());
+
+                if (room != null)
+                {
+                    for (int itemId : defender.getItems().keySet())
+                    {
+                        room.addItem(itemId);
+                        Logger.logI("item <" + itemId + "> added to room <" + room.getId() + ">");
+                        defender.removeItem(itemId);
+
+                        ret = 5;
+                    }
+                }
+            }
         }
 
         int proposedRoom = model.getActors().get(attackerId).getProposedRoomId();
@@ -1391,9 +1517,12 @@ public class GameMaster
         Special          special = model.getSpecials().get(specialId);
         ArrayList<Actor> targets = new ArrayList<>();
 
+        int actorRoomId = (source.getProposedRoomId() !=
+                           -1) ? source.getProposedRoomId() : source.getRoom();
+
         for (Actor actor : model.getActors().values())
         {
-            if (actor.getRoom() == source.getRoom())
+            if (actor.getRoom() == actorRoomId)
             {
                 if (special.getTargetingType() == Special.E_TARGETING_TYPE.AOE_PLAYER &&
                     actor.isPlayer())
@@ -1419,16 +1548,51 @@ public class GameMaster
 
                 for (Actor target : targets)
                 {
-                    boolean kill = false;
+                    boolean kill       = false;
+                    boolean playerKill = false;
+                    boolean teamKill   = false;
 
                     if (target.getHealthCurrent() <= 0)
                     {
-                        kill = true;
+                        ret = 1;
+
+                        if (target.isBoss())
+                        {
+                            return 2;
+                        }
+
+                        if (target.isPlayer())
+                        {
+                            playerKill = true;
+                        }
+                        else
+                        {
+                            Room room = getRoom(model, target.getRoom());
+
+                            if (room != null)
+                            {
+                                for (int itemId : target.getItems().keySet())
+                                {
+                                    room.addItem(itemId);
+                                    Logger.logI(
+                                        "item <" + itemId + "> added to room <" + room.getId() +
+                                        ">");
+                                    target.removeItem(itemId);
+
+                                    ret = 6;
+                                }
+                            }
+                        }
                     }
 
-                    if (kill)
+                    if (playerKill)
                     {
-                        ret = 1;
+                        ret = 3;
+
+                        if (areAllPlayersDead(model))
+                        {
+                            ret = 4;
+                        }
                     }
                 }
 
@@ -1485,13 +1649,16 @@ public class GameMaster
                               final int targetId,
                               final int specialId)
     {
-        int ret;
+        int ret = 0;
 
         Actor   source  = model.getActors().get(sourceId);
         Actor   target  = model.getActors().get(targetId);
         Special special = model.getSpecials().get(specialId);
 
-        if (source.getRoom() == target.getRoom())
+        int actorRoomId = (source.getProposedRoomId() !=
+                           -1) ? source.getProposedRoomId() : source.getRoom();
+
+        if (actorRoomId == target.getRoom())
         {
             if (source.performSpecial(special, target))
             {
@@ -1502,6 +1669,37 @@ public class GameMaster
                 if (target.getHealthCurrent() <= 0)
                 {
                     ret = 1;
+
+                    if (target.isBoss())
+                    {
+                        ret = 2;
+                    }
+                    else if (target.isPlayer())
+                    {
+                        ret = 3;
+
+                        if (areAllPlayersDead(model))
+                        {
+                            ret = 4;
+                        }
+                    }
+                    else
+                    {
+                        Room room = getRoom(model, target.getRoom());
+
+                        if (room != null)
+                        {
+                            for (int itemId : target.getItems().keySet())
+                            {
+                                room.addItem(itemId);
+                                Logger.logI(
+                                    "item <" + itemId + "> added to room <" + room.getId() + ">");
+                                target.removeItem(itemId);
+
+                                ret = 5;
+                            }
+                        }
+                    }
                 }
 
                 int proposedRoom = model.getActors().get(sourceId).getProposedRoomId();
@@ -1547,7 +1745,7 @@ public class GameMaster
 
         if (specialEffects.contains(Effect.E_EFFECT.HEAL) ||
             specialEffects.contains(Effect.E_EFFECT.ATTACK_RATING_UP) ||
-            specialEffects.contains(Effect.E_EFFECT.DEFENCE_RATING_UP) ||
+            specialEffects.contains(Effect.E_EFFECT.DEFENSE_RATING_UP) ||
             specialEffects.contains(Effect.E_EFFECT.HEALTH_MAXIMUM_UP) ||
             specialEffects.contains(Effect.E_EFFECT.SPECIAL_MAXIMUM_UP) ||
             specialEffects.contains(Effect.E_EFFECT.SPECIAL_RATING_UP))
@@ -1594,5 +1792,41 @@ public class GameMaster
         }
 
         return playerActorIds;
+    }
+
+    public static boolean areAllPlayersDead(final Model model)
+    {
+        ArrayList<Integer> playersIds     = getPlayerActorIds(model);
+        int                numPlayers     = playersIds.size();
+        int                numDeadPlayers = 0;
+
+        for (int id : playersIds)
+        {
+            Actor actor = getActor(model, id);
+
+            if (actor != null && actor.getHealthCurrent() <= 0)
+            {
+                ++numDeadPlayers;
+            }
+        }
+
+        return numDeadPlayers >= numPlayers;
+    }
+
+    @Nullable
+    public static Item getItem(final Model model, final int itemId)
+    {
+        return model.getItems().get(itemId);
+    }
+
+    public static void removeItem(final Model model, final int itemId)
+    {
+        model.getItems().remove(itemId);
+    }
+
+    @Nullable
+    public static Special getSpecial(final Model model, final int specialId)
+    {
+        return model.getSpecials().get(specialId);
     }
 }

@@ -1,141 +1,139 @@
 <?xml version="1.0" encoding="utf-8"?>
-<android.support.design.widget.CoordinatorLayout
+<RelativeLayout
         xmlns:android="http://schemas.android.com/apk/res/android"
         xmlns:app="http://schemas.android.com/apk/res-auto"
-        xmlns:tools="http://schemas.android.com/tools"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:fitsSystemWindows="true"
-        tools:context="com.semaphore_soft.apps.cypher.CharacterSelectActivity">
+        android:gravity="center_horizontal">
 
-    <LinearLayout
-            android:orientation="vertical"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:gravity="center_horizontal"
-            >
+    <RelativeLayout
+            android:layout_width="250dip"
+            android:layout_height="300dip"
+            android:id="@+id/relativeLayout"
+            android:layout_centerVertical="true"
+            android:layout_alignParentStart="true">
 
-        <android.support.design.widget.AppBarLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:theme="@style/AppTheme.AppBarOverlay">
+        <ImageButton
+                android:id="@+id/imgBtnKnight"
+                android:layout_width="110dip"
+                android:layout_height="130dip"
+                app:srcCompat="@drawable/player_knight"
+                android:background="?android:selectableItemBackground"
+                android:minWidth="100dip"
+                android:minHeight="100dip"
+                android:scaleType="fitXY"
+                android:layout_above="@+id/imgBtnWizard"
+                android:layout_toEndOf="@+id/imgBtnWizard"/>
 
-            <android.support.v7.widget.Toolbar
-                    android:id="@+id/toolbar"
-                    android:layout_width="match_parent"
-                    android:layout_height="?attr/actionBarSize"
-                    android:background="?attr/colorPrimary"
-                    app:popupTheme="@style/AppTheme.PopupOverlay"/>
+        <ImageButton
+                android:id="@+id/imgBtnSoldier"
+                android:layout_width="110dip"
+                android:layout_height="143dip"
+                app:srcCompat="@drawable/player_soldier"
+                android:background="?android:selectableItemBackground"
+                android:minWidth="100dip"
+                android:minHeight="100dip"
+                android:scaleType="fitXY"
+                android:layout_marginStart="10dip"
+                android:layout_above="@+id/imgBtnWizard"
+                android:layout_alignParentStart="true"/>
 
-        </android.support.design.widget.AppBarLayout>
+        <ImageButton
+                android:id="@+id/imgBtnRanger"
+                android:layout_width="110dip"
+                android:layout_height="130dip"
+                app:srcCompat="@drawable/player_ranger"
+                android:background="?android:selectableItemBackground"
+                android:minWidth="100dip"
+                android:minHeight="100dip"
+                android:scaleType="fitXY"
+                android:layout_alignParentBottom="true"
+                android:layout_alignStart="@+id/imgBtnKnight"/>
 
-        <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:id="@+id/txtStatus"
-                android:textAppearance="@android:style/TextAppearance.Material.Large"/>
+        <ImageButton
+                android:id="@+id/imgBtnWizard"
+                android:layout_width="135dip"
+                android:layout_height="146dip"
+                app:srcCompat="@drawable/player_wizard"
+                android:background="?android:selectableItemBackground"
+                android:minWidth="100dip"
+                android:minHeight="100dip"
+                android:scaleType="fitXY"
+                android:layout_alignParentBottom="true"
+                android:layout_alignParentStart="true"/>
 
-        <LinearLayout
-                android:orientation="vertical"
+    </RelativeLayout>
+
+    <RelativeLayout
+            android:layout_width="300dip"
+            android:layout_height="250dip"
+            android:id="@+id/relativeLayout2"
+            android:layout_above="@+id/btnStart"
+            android:layout_alignParentEnd="true">
+
+        <ImageView
+                android:id="@+id/imgKnight"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
-                android:layout_weight="1">
+                app:srcCompat="@drawable/knight_final"
+                android:background="?android:selectableItemBackground"
+                android:visibility="gone"
+                android:scaleType="fitCenter" />
 
-            <LinearLayout
-                    android:orientation="horizontal"
-                    android:layout_width="match_parent"
-                    android:layout_height="match_parent">
+        <ImageView
+                android:id="@+id/imgSoldier"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                app:srcCompat="@drawable/soldier_full"
+                android:background="?android:selectableItemBackground"
+                android:visibility="gone"
+                android:scaleType="fitCenter"/>
 
-                <FrameLayout
-                        android:layout_width="match_parent"
-                        android:layout_height="match_parent"
-                        android:layout_weight="1">
+        <ImageView
+                android:id="@+id/imgRanger"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                app:srcCompat="@drawable/ranger_full"
+                android:background="?android:selectableItemBackground"
+                android:visibility="gone"
+                android:scaleType="fitCenter"/>
 
-                    <ImageView
-                            android:id="@+id/imgKnight"
-                            android:layout_width="match_parent"
-                            android:layout_height="match_parent"
-                            app:srcCompat="@android:color/darker_gray"
-                            android:visibility="gone"/>
+        <ImageView
+                android:id="@+id/imgWizard"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                app:srcCompat="@drawable/wizard_full"
+                android:background="?android:selectableItemBackground"
+                android:visibility="gone"
+                android:scaleType="fitCenter"/>
 
-                    <ImageView
-                            android:id="@+id/imgSoldier"
-                            android:layout_width="match_parent"
-                            android:layout_height="match_parent"
-                            app:srcCompat="@android:color/holo_red_light"
-                            android:visibility="gone"/>
+    </RelativeLayout>
 
-                    <ImageView
-                            android:id="@+id/imgRanger"
-                            android:layout_width="match_parent"
-                            android:layout_height="match_parent"
-                            app:srcCompat="@android:color/holo_green_dark"
-                            android:visibility="gone"/>
+    <ImageView
+            android:layout_width="344dip"
+            android:layout_height="50dip"
+            app:srcCompat="@drawable/player_select"
+            android:id="@+id/imageView3"
+            android:layout_weight="1"
+            android:layout_alignParentTop="true"
+            android:layout_centerHorizontal="true"/>
 
-                    <ImageView
-                            android:id="@+id/imgWizard"
-                            android:layout_width="match_parent"
-                            android:layout_height="match_parent"
-                            app:srcCompat="@android:color/holo_purple"
-                            android:visibility="gone"/>
-                </FrameLayout>
+    <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:id="@+id/txtStatus"
+            android:textAppearance="@android:style/TextAppearance.Material.Large"
+            android:layout_weight="1"
+            android:text="emtpy"
+            android:layout_alignParentBottom="true"
+            android:layout_alignStart="@+id/relativeLayout2"/>
 
-                <RelativeLayout
-                        android:layout_width="match_parent"
-                        android:layout_height="match_parent"
-                        android:layout_weight="1">
+    <Button
+            android:id="@+id/btnStart"
+            android:text="Start"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentBottom="true"
+            android:layout_alignParentEnd="true"/>
 
-                    <ImageButton
-                            android:id="@+id/imgBtnKnight"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            app:srcCompat="@android:color/darker_gray"
-                            android:layout_alignParentStart="true"
-                            android:layout_alignParentTop="true"
-                            android:minWidth="100dp"
-                            android:minHeight="100dp"/>
-
-                    <ImageButton
-                            android:id="@+id/imgBtnSoldier"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            app:srcCompat="@android:color/holo_red_light"
-                            android:layout_alignParentTop="true"
-                            android:layout_alignParentEnd="true"
-                            android:minWidth="100dp"
-                            android:minHeight="100dp"/>
-
-                    <ImageButton
-                            android:id="@+id/imgBtnRanger"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            app:srcCompat="@android:color/holo_green_dark"
-                            android:layout_alignParentBottom="true"
-                            android:layout_alignParentStart="true"
-                            android:minWidth="100dp"
-                            android:minHeight="100dp"/>
-
-                    <ImageButton
-                            android:id="@+id/imgBtnWizard"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            app:srcCompat="@android:color/holo_purple"
-                            android:layout_alignParentBottom="true"
-                            android:layout_alignParentEnd="true"
-                            android:minWidth="100dp"
-                            android:minHeight="100dp"/>
-                </RelativeLayout>
-
-            </LinearLayout>
-
-        </LinearLayout>
-
-        <Button
-                android:id="@+id/btnStart"
-                android:text="Start"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"/>
-
-    </LinearLayout>
-
-</android.support.design.widget.CoordinatorLayout>
+</RelativeLayout>

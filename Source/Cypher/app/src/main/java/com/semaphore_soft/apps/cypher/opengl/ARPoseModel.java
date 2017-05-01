@@ -54,6 +54,35 @@ public class ARPoseModel implements ARDrawableGLES20
         poseLib.get(currentPose).draw(projectionMatrix, modelViewMatrix, lightPos);
     }
 
+    public void draw(float[] projectionMatrix, float[] modelViewMatrix, String pose)
+    {
+        float[] lightPos             = new float[3];
+        float[] transformationMatrix = new float[16];
+        System.arraycopy(modelViewMatrix, 0, transformationMatrix, 0, 16);
+        Matrix.translateM(transformationMatrix, 0, 0.0f, 0.0f, 80.0f);
+        for (int i = 0; i < 3; ++i)
+        {
+            lightPos[0] = transformationMatrix[i + 12];
+        }
+        draw(projectionMatrix, modelViewMatrix, lightPos, pose);
+    }
+
+    public void draw(float[] projectionMatrix,
+                     float[] modelViewMatrix,
+                     float[] lightPos,
+                     String pose)
+    {
+        if (poseLib.get(pose) != null)
+        {
+            poseLib.get(pose).draw(projectionMatrix, modelViewMatrix, lightPos);
+        }
+        else
+        {
+            //Logger.logI("missing pose:<" + pose + ">");
+            poseLib.get(defaultPose).draw(projectionMatrix, modelViewMatrix, lightPos);
+        }
+    }
+
     public void setShaderProgram(DynamicShaderProgram shaderProgram)
     {
         for (String pose : poseLib.keySet())

@@ -1,5 +1,7 @@
 package com.semaphore_soft.apps.cypher.game;
 
+import com.semaphore_soft.apps.cypher.utils.Logger;
+
 /**
  * {@link Effect game.Effect} provides a list of effect types for {@link Item
  * Items} and {@link Special Specials} to associate with, and the methods
@@ -34,6 +36,7 @@ public abstract class Effect
     public enum E_EFFECT
     {
         HEAL,
+        ENERGY_RESTORE,
         ATTACK,
         HEALTH_MAXIMUM_UP,
         HEALTH_MAXIMUM_DOWN,
@@ -43,8 +46,8 @@ public abstract class Effect
         SPECIAL_MAXIMUM_DOWN,
         SPECIAL_RATING_UP,
         SPECIAL_RATING_DOWN,
-        DEFENCE_RATING_UP,
-        DEFENCE_RATING_DOWN
+        DEFENSE_RATING_UP,
+        DEFENSE_RATING_DOWN
     }
 
     /**
@@ -61,7 +64,7 @@ public abstract class Effect
      *                     the target {@link Actor}.
      * @param duration     int: The duration of any {@link StatusTemporary} to
      *                     be applied to the target {@link Actor}.
-     * @param actor        {@link Actor}: The target to apply the given {@link Effect}
+     * @param targetActor  {@link Actor}: The target to apply the given {@link Effect}
      *                     to.
      *
      * @see E_EFFECT
@@ -71,32 +74,63 @@ public abstract class Effect
      * @see ItemConsumable
      * @see Item
      * @see Special
-     * @see Special#applySpecial(int, Actor)
-     * @see Actor#useItem(int)
+     * @see Special#applySpecial(int, Actor, Actor)
+     * @see Actor#useItem(Model, int)
      * @see Actor#useItem(Item)
-     * @see Actor#addNewStatusTemporary(Status.E_STATUS_TYPE, int, int)
+     * @see Actor#addNewStatusTemporary(Status.E_STATUS_TYPE, int, int, int)
      */
     static void applyTemporaryEffect(E_EFFECT effect,
                                      int effectRating,
                                      int duration,
-                                     Actor actor)
+                                     Actor sourceActor,
+                                     Actor targetActor)
     {
+        int adjustedDuration = (sourceActor.getId() == targetActor.getId())
+                               ?
+                               duration + 2
+                               //;
+                               :
+                               duration + 1;
+
+        Logger.logI(
+            "applying effect:<" + effect.toString() + "> with duration:<" + duration + "> to <" +
+            targetActor.getDisplayName() + "> from <" + sourceActor.getDisplayName() + ">");
+
         switch (effect)
         {
             case HEAL:
             {
-                int actorHealthMaximum = actor.getHealthMaximum();
-                int actorHealthCurrent = actor.getHealthCurrent();
-                actor.setHealthCurrent(((actorHealthCurrent + effectRating) >
-                                        actorHealthMaximum) ? actorHealthMaximum :
-                                       actorHealthCurrent + effectRating);
+                Logger.logI("applying heal");
+                Logger.logI("pre-health:<" + targetActor.getHealthCurrent() + ">");
+
+                int actorHealthMaximum = targetActor.getHealthMaximum();
+                int actorHealthCurrent = targetActor.getHealthCurrent();
+                targetActor.setHealthCurrent(((actorHealthCurrent + effectRating) >
+                                              actorHealthMaximum) ? actorHealthMaximum :
+                                             actorHealthCurrent + effectRating);
+
+                Logger.logI("post-health:<" + targetActor.getHealthCurrent() + ">");
+                break;
+            }
+            case ENERGY_RESTORE:
+            {
+                Logger.logI("applying energy restore");
+                Logger.logI("pre-energy:<" + targetActor.getSpecialCurrent() + ">");
+
+                int actorEnergyMaximum = targetActor.getSpecialMaximum();
+                int actorEnergyCurrent = targetActor.getSpecialCurrent();
+                targetActor.setSpecialCurrent(((actorEnergyCurrent + effectRating) >
+                                               actorEnergyMaximum) ? actorEnergyMaximum :
+                                              actorEnergyCurrent + effectRating);
+
+                Logger.logI("post-energy:<" + targetActor.getSpecialCurrent() + ">");
                 break;
             }
             case ATTACK:
             {
                 int damage = effectRating;
 
-                switch (actor.getState())
+                switch (targetActor.getState())
                 {
                     case ATTACK:
                         damage = effectRating * 2;
@@ -112,81 +146,101 @@ public abstract class Effect
                         break;
                 }
 
-                damage -= actor.getRealDefenceRating();
+                damage -= targetActor.getRealDefenseRating();
                 damage = (damage < 0) ? 0 : damage;
 
-                int actorHealth = actor.getHealthCurrent();
-                actor.setHealthCurrent((damage > actorHealth) ? 0 : actorHealth - damage);
+                int actorHealth = targetActor.getHealthCurrent();
+                targetActor.setHealthCurrent((damage > actorHealth) ? 0 : actorHealth - damage);
                 break;
             }
             case HEALTH_MAXIMUM_UP:
             {
-                actor.addNewStatusTemporary(Status.E_STATUS_TYPE.HEALTH_MAXIMUM_MODIFIER,
-                                            effectRating,
-                                            duration);
+                targetActor.addNewStatusTemporary(Status.E_STATUS_TYPE.HEALTH_MAXIMUM_MODIFIER,
+                                                  effectRating,
+                                                  adjustedDuration,
+                                                  sourceActor.getId());
+                sourceActor.addEffectedActor(targetActor);
                 break;
             }
             case HEALTH_MAXIMUM_DOWN:
             {
-                actor.addNewStatusTemporary(Status.E_STATUS_TYPE.HEALTH_MAXIMUM_MODIFIER,
-                                            -effectRating,
-                                            duration);
+                targetActor.addNewStatusTemporary(Status.E_STATUS_TYPE.HEALTH_MAXIMUM_MODIFIER,
+                                                  -effectRating,
+                                                  adjustedDuration,
+                                                  sourceActor.getId());
+                sourceActor.addEffectedActor(targetActor);
                 break;
             }
             case ATTACK_RATING_UP:
             {
-                actor.addNewStatusTemporary(Status.E_STATUS_TYPE.ATTACK_RATING_MODIFIER,
-                                            effectRating,
-                                            duration);
+                targetActor.addNewStatusTemporary(Status.E_STATUS_TYPE.ATTACK_RATING_MODIFIER,
+                                                  effectRating,
+                                                  adjustedDuration,
+                                                  sourceActor.getId());
+                sourceActor.addEffectedActor(targetActor);
                 break;
             }
             case ATTACK_RATING_DOWN:
             {
-                actor.addNewStatusTemporary(Status.E_STATUS_TYPE.ATTACK_RATING_MODIFIER,
-                                            -effectRating,
-                                            duration);
+                targetActor.addNewStatusTemporary(Status.E_STATUS_TYPE.ATTACK_RATING_MODIFIER,
+                                                  -effectRating,
+                                                  adjustedDuration,
+                                                  sourceActor.getId());
+                sourceActor.addEffectedActor(targetActor);
                 break;
             }
             case SPECIAL_MAXIMUM_UP:
             {
-                actor.addNewStatusTemporary(Status.E_STATUS_TYPE.SPECIAL_MAXIMUM_MODIFIER,
-                                            effectRating,
-                                            duration);
+                targetActor.addNewStatusTemporary(Status.E_STATUS_TYPE.SPECIAL_MAXIMUM_MODIFIER,
+                                                  effectRating,
+                                                  adjustedDuration,
+                                                  sourceActor.getId());
+                sourceActor.addEffectedActor(targetActor);
                 break;
             }
             case SPECIAL_MAXIMUM_DOWN:
             {
-                actor.addNewStatusTemporary(Status.E_STATUS_TYPE.ATTACK_RATING_MODIFIER,
-                                            -effectRating,
-                                            duration);
+                targetActor.addNewStatusTemporary(Status.E_STATUS_TYPE.ATTACK_RATING_MODIFIER,
+                                                  -effectRating,
+                                                  adjustedDuration,
+                                                  sourceActor.getId());
+                sourceActor.addEffectedActor(targetActor);
                 break;
             }
             case SPECIAL_RATING_UP:
             {
-                actor.addNewStatusTemporary(Status.E_STATUS_TYPE.SPECIAL_RATING_MODIFIER,
-                                            effectRating,
-                                            duration);
+                targetActor.addNewStatusTemporary(Status.E_STATUS_TYPE.SPECIAL_RATING_MODIFIER,
+                                                  effectRating,
+                                                  adjustedDuration,
+                                                  sourceActor.getId());
+                sourceActor.addEffectedActor(targetActor);
                 break;
             }
             case SPECIAL_RATING_DOWN:
             {
-                actor.addNewStatusTemporary(Status.E_STATUS_TYPE.ATTACK_RATING_MODIFIER,
-                                            -effectRating,
-                                            duration);
+                targetActor.addNewStatusTemporary(Status.E_STATUS_TYPE.ATTACK_RATING_MODIFIER,
+                                                  -effectRating,
+                                                  adjustedDuration,
+                                                  sourceActor.getId());
+                sourceActor.addEffectedActor(targetActor);
                 break;
             }
-            case DEFENCE_RATING_UP:
+            case DEFENSE_RATING_UP:
             {
-                actor.addNewStatusTemporary(Status.E_STATUS_TYPE.DEFENCE_RATING_MODIFIER,
-                                            effectRating,
-                                            duration);
+                targetActor.addNewStatusTemporary(Status.E_STATUS_TYPE.DEFENSE_RATING_MODIFIER,
+                                                  effectRating,
+                                                  adjustedDuration,
+                                                  sourceActor.getId());
+                sourceActor.addEffectedActor(targetActor);
                 break;
             }
-            case DEFENCE_RATING_DOWN:
+            case DEFENSE_RATING_DOWN:
             {
-                actor.addNewStatusTemporary(Status.E_STATUS_TYPE.DEFENCE_RATING_MODIFIER,
-                                            -effectRating,
-                                            duration);
+                targetActor.addNewStatusTemporary(Status.E_STATUS_TYPE.DEFENSE_RATING_MODIFIER,
+                                                  -effectRating,
+                                                  adjustedDuration,
+                                                  sourceActor.getId());
+                sourceActor.addEffectedActor(targetActor);
                 break;
             }
         }
@@ -227,13 +281,16 @@ public abstract class Effect
         {
             case HEAL:
             {
-                int actorHealthMaximum = actor.getHealthMaximum();
-                int actorHealthCurrent = actor.getHealthCurrent();
-                actor.setHealthCurrent(((actorHealthCurrent + effectRating) >
-                                        actorHealthMaximum) ? actorHealthMaximum :
-                                       actorHealthCurrent + effectRating);
+                actor.addNewStatusLinked(Status.E_STATUS_TYPE.RECURRING_HEAL,
+                                         effectRating,
+                                         linkId);
                 break;
             }
+            case ENERGY_RESTORE:
+                actor.addNewStatusLinked(Status.E_STATUS_TYPE.RECURRING_ENERGY_RESTORE,
+                                         effectRating,
+                                         linkId);
+                break;
             case ATTACK:
             {
                 int damage = effectRating;
@@ -254,7 +311,7 @@ public abstract class Effect
                         break;
                 }
 
-                damage -= actor.getRealDefenceRating();
+                damage -= actor.getRealDefenseRating();
                 damage = (damage < 0) ? 0 : damage;
 
                 int actorHealth = actor.getHealthCurrent();
@@ -317,16 +374,16 @@ public abstract class Effect
                                          linkId);
                 break;
             }
-            case DEFENCE_RATING_UP:
+            case DEFENSE_RATING_UP:
             {
-                actor.addNewStatusLinked(Status.E_STATUS_TYPE.DEFENCE_RATING_MODIFIER,
+                actor.addNewStatusLinked(Status.E_STATUS_TYPE.DEFENSE_RATING_MODIFIER,
                                          effectRating,
                                          linkId);
                 break;
             }
-            case DEFENCE_RATING_DOWN:
+            case DEFENSE_RATING_DOWN:
             {
-                actor.addNewStatusLinked(Status.E_STATUS_TYPE.DEFENCE_RATING_MODIFIER,
+                actor.addNewStatusLinked(Status.E_STATUS_TYPE.DEFENSE_RATING_MODIFIER,
                                          -effectRating,
                                          linkId);
                 break;

@@ -45,13 +45,13 @@ public class MainApplication extends Application
     // in the application.
     protected void initializeInstance()
     {
-
         // Unpack assets to cache directory so native library can read them.
         // N.B.: If contents of assets folder changes, be sure to increment the
         // versionCode integer in the modules build.gradle file.
         AssetHelper assetHelper = new AssetHelper(getAssets());
         assetHelper.cacheAssetFolder(getInstance(), "Data");
         assetHelper.cacheAssetFolder(getInstance(), "models");
+        assetHelper.cacheAssetFolder(getInstance(), "textures");
     }
 
 }

@@ -80,7 +80,7 @@ public abstract class Item
      *
      * @return int: The logical reference ID of this {@link Item}.
      */
-    public int getID()
+    public int getId()
     {
         return id;
     }
@@ -172,7 +172,7 @@ public abstract class Item
      * @see Effect.E_EFFECT
      * @see Effect
      */
-    ArrayList<Effect.E_EFFECT> getEffects()
+    public ArrayList<Effect.E_EFFECT> getEffects()
     {
         return effects;
     }

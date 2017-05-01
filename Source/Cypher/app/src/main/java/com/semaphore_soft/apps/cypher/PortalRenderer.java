@@ -1,11 +1,13 @@
 package com.semaphore_soft.apps.cypher;
 
 import android.content.Context;
+import android.media.MediaPlayer;
 import android.opengl.GLES20;
 import android.opengl.Matrix;
 import android.os.Handler;
 import android.support.annotation.Nullable;
 import android.support.v4.util.Pair;
+import android.widget.Toast;
 
 import com.semaphore_soft.apps.cypher.game.Actor;
 import com.semaphore_soft.apps.cypher.game.GameController;
@@ -28,6 +30,7 @@ import org.artoolkit.ar.base.ARToolKit;
 import org.artoolkit.ar.base.rendering.gles20.ARRendererGLES20;
 
 import java.util.ArrayList;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
 import javax.microedition.khronos.egl.EGLConfig;
@@ -63,31 +66,35 @@ class PortalRenderer extends ARRendererGLES20
     private static int playerRoomMarker  = -1;
     private static int nearestRoomMarker = -1;
 
+    private static MediaPlayer mediaPlayer;
+
+    private static boolean soundEnabled = true;
+
     @Override
     public boolean configureARScene()
     {
         markers = new ArrayList<>();
 
-        markers.add(ARToolKit.getInstance().addMarker("single;Data/00.patt;80"));
-        markers.add(ARToolKit.getInstance().addMarker("single;Data/01.patt;80"));
-        markers.add(ARToolKit.getInstance().addMarker("single;Data/02.patt;80"));
-        markers.add(ARToolKit.getInstance().addMarker("single;Data/03.patt;80"));
-        markers.add(ARToolKit.getInstance().addMarker("single;Data/04.patt;80"));
-        markers.add(ARToolKit.getInstance().addMarker("single;Data/05.patt;80"));
-        markers.add(ARToolKit.getInstance().addMarker("single;Data/06.patt;80"));
-        markers.add(ARToolKit.getInstance().addMarker("single;Data/07.patt;80"));
-        markers.add(ARToolKit.getInstance().addMarker("single;Data/08.patt;80"));
-        markers.add(ARToolKit.getInstance().addMarker("single;Data/09.patt;80"));
-        markers.add(ARToolKit.getInstance().addMarker("single;Data/10.patt;80"));
-        markers.add(ARToolKit.getInstance().addMarker("single;Data/11.patt;80"));
-        markers.add(ARToolKit.getInstance().addMarker("single;Data/12.patt;80"));
-        markers.add(ARToolKit.getInstance().addMarker("single;Data/13.patt;80"));
-        markers.add(ARToolKit.getInstance().addMarker("single;Data/14.patt;80"));
-        markers.add(ARToolKit.getInstance().addMarker("single;Data/15.patt;80"));
-        markers.add(ARToolKit.getInstance().addMarker("single;Data/16.patt;80"));
-        markers.add(ARToolKit.getInstance().addMarker("single;Data/17.patt;80"));
-        markers.add(ARToolKit.getInstance().addMarker("single;Data/18.patt;80"));
-        markers.add(ARToolKit.getInstance().addMarker("single;Data/19.patt;80"));
+        markers.add(ARToolKit.getInstance().addMarker("single;Data/mk2_00.patt;80"));
+        markers.add(ARToolKit.getInstance().addMarker("single;Data/mk2_01.patt;80"));
+        markers.add(ARToolKit.getInstance().addMarker("single;Data/mk2_02.patt;80"));
+        markers.add(ARToolKit.getInstance().addMarker("single;Data/mk2_03.patt;80"));
+        markers.add(ARToolKit.getInstance().addMarker("single;Data/mk2_04.patt;80"));
+        markers.add(ARToolKit.getInstance().addMarker("single;Data/mk2_05.patt;80"));
+        markers.add(ARToolKit.getInstance().addMarker("single;Data/mk2_06.patt;80"));
+        markers.add(ARToolKit.getInstance().addMarker("single;Data/mk2_07.patt;80"));
+        markers.add(ARToolKit.getInstance().addMarker("single;Data/mk2_08.patt;80"));
+        markers.add(ARToolKit.getInstance().addMarker("single;Data/mk2_09.patt;80"));
+        markers.add(ARToolKit.getInstance().addMarker("single;Data/mk2_10.patt;80"));
+        markers.add(ARToolKit.getInstance().addMarker("single;Data/mk2_11.patt;80"));
+        markers.add(ARToolKit.getInstance().addMarker("single;Data/mk2_12.patt;80"));
+        markers.add(ARToolKit.getInstance().addMarker("single;Data/mk2_13.patt;80"));
+        markers.add(ARToolKit.getInstance().addMarker("single;Data/mk2_14.patt;80"));
+        markers.add(ARToolKit.getInstance().addMarker("single;Data/mk2_15.patt;80"));
+        markers.add(ARToolKit.getInstance().addMarker("single;Data/mk2_16.patt;80"));
+        markers.add(ARToolKit.getInstance().addMarker("single;Data/mk2_17.patt;80"));
+        markers.add(ARToolKit.getInstance().addMarker("single;Data/mk2_18.patt;80"));
+        markers.add(ARToolKit.getInstance().addMarker("single;Data/mk2_19.patt;80"));
 
         for (int id : markers)
         {
@@ -155,18 +162,24 @@ class PortalRenderer extends ARRendererGLES20
         waypoint.setShaderProgram(waypointShaderProgram);
         models.put("waypoint", waypoint);
 
-        ARDrawableGLES20 overlay =
-            ModelLoader.load(context, "overlay", 5.0f, "spark");
-        DynamicShaderProgram overlayShaderProgram =
-            new DynamicShaderProgram(ShaderLoader.createShader(context,
-                                                               "shaders/vertexShaderTextured.glsl",
-                                                               GLES20.GL_VERTEX_SHADER),
-                                     ShaderLoader.createShader(context,
-                                                               "shaders/fragmentShaderShadelessTexturedTransparent.glsl",
-                                                               GLES20.GL_FRAGMENT_SHADER),
-                                     new String[]{"a_Position", "a_Color", "a_Normal", "a_TexCoordinate"});
-        overlay.setShaderProgram(overlayShaderProgram);
-        models.put("overlay", overlay);
+        String[] effects =
+            new String[]{"spark", "chill", "flameShot", "heal", "ignusFatuus", "slash"};
+
+        for (String effect : effects)
+        {
+            ARDrawableGLES20 overlay =
+                ModelLoader.load(context, "overlay", 5.0f, effect);
+            DynamicShaderProgram overlayShaderProgram =
+                new DynamicShaderProgram(ShaderLoader.createShader(context,
+                                                                   "shaders/vertexShaderTextured.glsl",
+                                                                   GLES20.GL_VERTEX_SHADER),
+                                         ShaderLoader.createShader(context,
+                                                                   "shaders/fragmentShaderShadelessTexturedTransparent.glsl",
+                                                                   GLES20.GL_FRAGMENT_SHADER),
+                                         new String[]{"a_Position", "a_Color", "a_Normal", "a_TexCoordinate"});
+            overlay.setShaderProgram(overlayShaderProgram);
+            models.put(effect, overlay);
+        }
 
         ArrayList<String> actorNames = GameStatLoader.getList(context, "actors");
         if (actorNames != null)
@@ -286,14 +299,15 @@ class PortalRenderer extends ARRendererGLES20
             {
                 if (knownMarkers.contains(id))
                 {
-                    for (int i : playerMarkerIDs)
+                    for (int i = 0; i < playerMarkerIDs.size(); ++i)
                     {
-                        if (i == id)
+                        if (playerMarkerIDs.get(i) == id)
                         {
-                            characterModels.get(i).draw(projectionMatrix,
-                                                        ARToolKit.getInstance()
-                                                                 .queryMarkerTransformation(
-                                                                     playerMarkerIDs.get(i)));
+                            characterModels.get(i)
+                                           .draw(projectionMatrix,
+                                                 ARToolKit.getInstance()
+                                                          .queryMarkerTransformation(playerMarkerIDs
+                                                                                         .get(i)));
                         }
                     }
                     for (int i : arRooms.keySet())
@@ -321,7 +335,7 @@ class PortalRenderer extends ARRendererGLES20
             {
                 nearestRoomMarker = newNearestRoomId;
 
-                newMarkerListener.newNearestRoomMarker(nearestRoomMarker);
+                newMarkerListener.newNearestRoomMarker(nearestRoomMarker, -1);
             }
         }
     }
@@ -423,31 +437,40 @@ class PortalRenderer extends ARRendererGLES20
                 if (!marksX.contains(mark1) && mark0 != mark1 &&
                     ARToolKit.getInstance().queryMarkerVisible(mark1))
                 {
-                    float[] mark0TransInfo =
-                        ARToolKit.getInstance().queryMarkerTransformation(mark0);
-                    float[] mark0PosInfo =
-                        {mark0TransInfo[mark0TransInfo.length - 4], mark0TransInfo[
-                            mark0TransInfo.length -
-                            3], mark0TransInfo[
-                            mark0TransInfo.length - 2]};
-
-                    float[] mark1TransInfo =
-                        ARToolKit.getInstance().queryMarkerTransformation(mark1);
-                    float[] mark1PosInfo =
-                        {mark1TransInfo[mark1TransInfo.length - 4], mark1TransInfo[
-                            mark1TransInfo.length -
-                            3], mark1TransInfo[
-                            mark1TransInfo.length - 2]};
-
-                    double thisDistance =
-                        Math.sqrt(Math.pow(mark0PosInfo[0] - mark1PosInfo[0], 2) +
-                                  Math.pow(mark0PosInfo[1] - mark1PosInfo[1], 2) +
-                                  Math.pow(mark0PosInfo[2] - mark1PosInfo[2], 2));
-
-                    if (thisDistance < shortestDistance || shortestDistance < 0)
+                    try
                     {
-                        nearest = mark1;
-                        shortestDistance = thisDistance;
+                        float[] mark0TransInfo =
+                            ARToolKit.getInstance().queryMarkerTransformation(mark0);
+                        float[] mark0PosInfo =
+                            {mark0TransInfo[mark0TransInfo.length - 4], mark0TransInfo[
+                                mark0TransInfo.length -
+                                3], mark0TransInfo[
+                                mark0TransInfo.length - 2]};
+
+                        float[] mark1TransInfo =
+                            ARToolKit.getInstance().queryMarkerTransformation(mark1);
+                        float[] mark1PosInfo =
+                            {mark1TransInfo[mark1TransInfo.length - 4], mark1TransInfo[
+                                mark1TransInfo.length -
+                                3], mark1TransInfo[
+                                mark1TransInfo.length - 2]};
+
+                        double thisDistance =
+                            Math.sqrt(Math.pow(mark0PosInfo[0] - mark1PosInfo[0], 2) +
+                                      Math.pow(mark0PosInfo[1] - mark1PosInfo[1], 2) +
+                                      Math.pow(mark0PosInfo[2] - mark1PosInfo[2], 2));
+
+                        if (thisDistance < shortestDistance || shortestDistance < 0)
+                        {
+                            nearest = mark1;
+                            shortestDistance = thisDistance;
+                        }
+                    }
+                    catch (NullPointerException x)
+                    {
+                        x.printStackTrace();
+
+                        getNearestMarkerExcluding(mark0, marksX);
                     }
                 }
             }
@@ -553,7 +576,10 @@ class PortalRenderer extends ARRendererGLES20
      * @param effect   Name of the effect to apply
      * @param duration How long the effect should last in milliseconds
      */
-    private void setActorEffect(final int roomId, final int actorId, String effect, long duration)
+    private void setActorEffect(final int roomId,
+                                final int actorId,
+                                final String effect,
+                                final long duration)
     {
         final ARRoom room = arRooms.get(roomId);
         room.addEffect(actorId, models.get(effect));
@@ -567,6 +593,34 @@ class PortalRenderer extends ARRendererGLES20
         };
         // Remove effect after the duration has passed
         handler.postDelayed(removeEffect, duration);
+    }
+
+    private void setActorsEffects(final int roomId,
+                                  final boolean players,
+                                  String effect,
+                                  long duration)
+    {
+        final ARRoom room = arRooms.get(roomId);
+
+        if (room != null)
+        {
+            Set<Integer> actors = (players) ? room.getPlayers() : room.getEnemies();
+
+            for (final int id : actors)
+            {
+                room.addEffect(id, models.get(effect));
+                Runnable removeEffect = new Runnable()
+                {
+                    @Override
+                    public void run()
+                    {
+                        room.removeEffect(id);
+                    }
+                };
+                // Remove effect after the duration has passed
+                handler.postDelayed(removeEffect, duration);
+            }
+        }
     }
 
     /**
@@ -627,7 +681,7 @@ class PortalRenderer extends ARRendererGLES20
      * @see ARRoom
      * @see Room
      * @see ARDrawableGLES20
-     * @see PortalActivity#postOpenDoorResult(int, int)
+     * @see PortalActivity#postOpenDoorResult(int, int, int)
      */
     void updateRoomWalls(final int arRoomId,
                          final String[] wallDescriptors)
@@ -660,7 +714,6 @@ class PortalRenderer extends ARRendererGLES20
      * @see Room
      * @see Actor
      * @see ARDrawableGLES20
-     * @see PortalActivity#postMoveResult(int, int, int, int)
      */
     void updateRoomAlignment(final int arRoomId, final short side)
     {
@@ -703,9 +756,10 @@ class PortalRenderer extends ARRendererGLES20
 
             String name = splitResident[0];
 
-            Logger.logI("adding actor:" + id + ":" + name + " to arRoom:" + arRoomId, 2);
-
             String pose = ((splitResident.length > 1) ? splitResident[1] : null);
+
+            Logger.logI("adding actor:" + id + ":" + name + ":" + pose + " to arRoom:" + arRoomId,
+                        2);
 
             if (name != null && models.keySet().contains(name))
             {
@@ -798,7 +852,7 @@ class PortalRenderer extends ARRendererGLES20
      * @see ARRoom
      * @see ARPoseModel
      * @see GameMaster#getSpecialTypeDescriptor(Model, int)
-     * @see PortalActivity#showAction(int, int, int, int, String, String, boolean, boolean)
+     * @see PortalActivity#showAction(int, int, int, int, String, String, boolean, boolean, String)
      */
     void showAction(final int arRoomId,
                     final int sourceId,
@@ -807,74 +861,263 @@ class PortalRenderer extends ARRendererGLES20
                     final String actionType,
                     @Nullable final String targetState,
                     final boolean playerAction,
-                    final boolean forward)
+                    final boolean forward,
+                    @Nullable final String desc)
     {
-        ARRoom arRoom = arRooms.get(arRoomId);
-        if (forward)
+        Logger.logD("action:<" + actionType + ">");
+        Logger.logD("action description:<" + desc + ">");
+
+        try
         {
-            if (playerAction)
+            if (mediaPlayer != null)
             {
-                arRoom.setForwardPlayer(sourceId);
-                if (targetId > -1)
+                mediaPlayer.release();
+                mediaPlayer = null;
+            }
+
+            ARRoom arRoom = arRooms.get(arRoomId);
+            if (forward)
+            {
+                if (playerAction)
                 {
-                    arRoom.setForwardEnemy(targetId);
-                    setActorEffect(arRoomId, targetId, "overlay", 1000);
+                    arRoom.setForwardPlayer(sourceId);
+                    if (targetId > -1)
+                    {
+                        arRoom.setForwardEnemy(targetId);
+                    }
+                }
+                else
+                {
+                    arRoom.setForwardEnemy(sourceId);
+                    if (targetId > -1)
+                    {
+                        arRoom.setForwardPlayer(targetId);
+                    }
                 }
             }
-            else
+
+            String[] splitAction = actionType.split("\\.");
+
+            switch (splitAction[0])
             {
-                arRoom.setForwardEnemy(sourceId);
-                if (targetId > -1)
-                {
-                    arRoom.setForwardPlayer(targetId);
-                    setActorEffect(arRoomId, targetId, "overlay", 1000);
-                }
+                case "attack":
+                    arRoom.setResidentPose(sourceId, "attack");
+                    if (targetId > -1)
+                    {
+                        if (targetState != null && targetState.equals("defend"))
+                        {
+                            arRoom.setResidentPose(targetId, "defend");
+                        }
+                        else
+                        {
+                            arRoom.setResidentPose(targetId, "hurt");
+                        }
+                        setActorEffect(arRoomId, targetId, "spark", 1000);
+                    }
+                    if (desc != null)
+                    {
+                        switch (desc)
+                        {
+                            case "knight":
+                            case "soldier":
+                            case "groblin":
+                            case "groblinCommando":
+                                if (targetState != null && targetState.equals("defend"))
+                                {
+                                    if (soundEnabled)
+                                    {
+                                        mediaPlayer =
+                                            MediaPlayer.create(context, R.raw.metalic_prot);
+                                        mediaPlayer.start();
+                                    }
+                                }
+                                else
+                                {
+                                    if (soundEnabled)
+                                    {
+                                        mediaPlayer =
+                                            MediaPlayer.create(context, R.raw.metalic_vuln);
+                                        mediaPlayer.start();
+                                    }
+                                }
+                                break;
+                            case "wizard":
+                                if (soundEnabled)
+                                {
+                                    mediaPlayer = MediaPlayer.create(context, R.raw.hit);
+                                    mediaPlayer.start();
+                                }
+                                break;
+                            case "ranger":
+                                if (soundEnabled)
+                                {
+                                    mediaPlayer = MediaPlayer.create(context, R.raw.arrow);
+                                    mediaPlayer.start();
+                                }
+                                break;
+                            default:
+                                if (soundEnabled)
+                                {
+                                    mediaPlayer = MediaPlayer.create(context, R.raw.hit);
+                                    mediaPlayer.start();
+                                }
+                                break;
+                        }
+                    }
+                    break;
+                case "defend":
+                    arRoom.setResidentPose(sourceId, "defend");
+                    break;
+                case "special":
+                    arRoom.setResidentPose(sourceId, "special");
+                    boolean players = false;
+                    if (splitAction.length > 1)
+                    {
+                        switch (splitAction[1])
+                        {
+                            case "harm":
+                                if (targetId != -1 && targetId != sourceId)
+                                {
+                                    if (targetState != null && targetState.equals("defend"))
+                                    {
+                                        arRoom.setResidentPose(targetId, "defend");
+                                    }
+                                    else
+                                    {
+                                        arRoom.setResidentPose(targetId, "hurt");
+                                    }
+                                }
+                                players = !playerAction;
+                                break;
+                            case "help":
+                                if (targetId != -1 && targetId != sourceId)
+                                {
+                                    arRoom.setResidentPose(targetId, "heroic");
+                                }
+                                players = playerAction;
+                                break;
+                        }
+                    }
+                    if (desc != null)
+                    {
+                        switch (desc)
+                        {
+                            case "chill":
+                                if (soundEnabled)
+                                {
+                                    mediaPlayer = MediaPlayer.create(context, R.raw.chill);
+                                    mediaPlayer.start();
+                                }
+                                setActorsEffects(arRoomId, players, "chill", 1000);
+                                break;
+                            case "flame_shot":
+                                if (soundEnabled)
+                                {
+                                    mediaPlayer = MediaPlayer.create(context, R.raw.flame_shot);
+                                    mediaPlayer.start();
+                                }
+                                setActorEffect(arRoomId, targetId, "flameShot", 1000);
+                                break;
+                            case "heal":
+                            case "beef_increase":
+                                if (soundEnabled)
+                                {
+                                    mediaPlayer = MediaPlayer.create(context, R.raw.magic_hlp);
+                                    mediaPlayer.start();
+                                }
+                                setActorEffect(arRoomId, targetId, "heal", 1000);
+                                break;
+                            case "ignus_fatuus":
+                                if (soundEnabled)
+                                {
+                                    mediaPlayer = MediaPlayer.create(context, R.raw.magic_atk);
+                                    mediaPlayer.start();
+                                }
+                                setActorEffect(arRoomId, targetId, "ignusFatuus", 1000);
+                                break;
+                            case "pin":
+                                if (soundEnabled)
+                                {
+                                    mediaPlayer = MediaPlayer.create(context, R.raw.arrow);
+                                    mediaPlayer.start();
+                                }
+                                setActorEffect(arRoomId, targetId, "spark", 1000);
+                                break;
+                            case "multishot":
+                                if (soundEnabled)
+                                {
+                                    mediaPlayer = MediaPlayer.create(context, R.raw.multishot);
+                                    mediaPlayer.start();
+                                }
+                                setActorsEffects(arRoomId, players, "spark", 1000);
+                                break;
+                            case "flurry_of_fists":
+                            case "take_a_shit":
+                                if (soundEnabled)
+                                {
+                                    mediaPlayer = MediaPlayer.create(context, R.raw.multi_punch);
+                                    mediaPlayer.start();
+                                }
+                                setActorsEffects(arRoomId, players, "spark", 1000);
+                                break;
+                            case "suckerpunch":
+                                if (soundEnabled)
+                                {
+                                    mediaPlayer = MediaPlayer.create(context, R.raw.hit);
+                                    mediaPlayer.start();
+                                }
+                                setActorEffect(arRoomId, targetId, "spark", 1000);
+                                break;
+                            case "spear_toss":
+                                if (soundEnabled)
+                                {
+                                    mediaPlayer = MediaPlayer.create(context, R.raw.metalic_vuln);
+                                    mediaPlayer.start();
+                                }
+                                setActorEffect(arRoomId, targetId, "spark", 1000);
+                        }
+                    }
+                    break;
+                case "item":
+                    arRoom.setResidentPose(sourceId, "heroic");
+                    if (targetId != -1 && targetId != sourceId && splitAction.length > 1)
+                    {
+                        switch (splitAction[1])
+                        {
+                            case "harm":
+                                if (targetState != null && targetState.equals("defend"))
+                                {
+                                    arRoom.setResidentPose(targetId, "defend");
+                                }
+                                else
+                                {
+                                    arRoom.setResidentPose(targetId, "hurt");
+                                }
+                                break;
+                            case "help":
+                                arRoom.setResidentPose(targetId, "heroic");
+                                break;
+                        }
+                    }
+                    break;
+                case "door":
+                    if (soundEnabled)
+                    {
+                        mediaPlayer = MediaPlayer.create(context, R.raw.open_door);
+                        mediaPlayer.start();
+                    }
+                    break;
+                default:
+                    break;
             }
         }
-
-        String[] splitAction = actionType.split("\\.");
-
-        switch (splitAction[0])
+        catch (Exception x)
         {
-            case "attack":
-                arRoom.setResidentPose(sourceId, "attack");
-                if (targetId > -1)
-                {
-                    if (targetState != null && targetState.equals("defend"))
-                    {
-                        arRoom.setResidentPose(targetId, "defend");
-                    }
-                    else
-                    {
-                        arRoom.setResidentPose(targetId, "hurt");
-                    }
-                }
-                break;
-            case "defend":
-                arRoom.setResidentPose(sourceId, "defend");
-                break;
-            case "special":
-                arRoom.setResidentPose(sourceId, "special");
-                if (targetId != sourceId)
-                {
-                    switch (splitAction[1])
-                    {
-                        case "harm":
-                            if (targetState != null && targetState.equals("defend"))
-                            {
-                                arRoom.setResidentPose(targetId, "defend");
-                            }
-                            else
-                            {
-                                arRoom.setResidentPose(targetId, "hurt");
-                            }
-                            break;
-                        case "help":
-                            arRoom.setResidentPose(targetId, "heroic");
-                            break;
-                    }
-                }
-                break;
+            x.printStackTrace();
+
+            Toast.makeText(context,
+                           "Oops! Failed to show action, sorry about that.",
+                           Toast.LENGTH_SHORT).show();
         }
 
         if (handler != null)
@@ -933,6 +1176,11 @@ class PortalRenderer extends ARRendererGLES20
     {
         void newMarker(int marker);
 
-        void newNearestRoomMarker(int marker);
+        void newNearestRoomMarker(int marker, int updateId);
+    }
+
+    public void toggleSound()
+    {
+
     }
 }

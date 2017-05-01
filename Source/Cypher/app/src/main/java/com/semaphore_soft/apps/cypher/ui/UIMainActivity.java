@@ -1,10 +1,9 @@
 package com.semaphore_soft.apps.cypher.ui;
 
 import android.content.Context;
-import android.support.v7.widget.Toolbar;
 import android.util.AttributeSet;
 import android.view.View;
-import android.widget.Button;
+import android.widget.ImageButton;
 
 import com.semaphore_soft.apps.cypher.R;
 
@@ -39,7 +38,7 @@ public class UIMainActivity extends UIBase
         makeView(R.layout.activity_main);
 
         //Host Button
-        Button btnHost = (Button) findViewById(R.id.btnHost);
+        ImageButton btnHost = (ImageButton) findViewById(R.id.btnHost);
         btnHost.setOnClickListener(new View.OnClickListener()
         {
             @Override
@@ -50,7 +49,7 @@ public class UIMainActivity extends UIBase
         });
 
         //Join Button
-        Button btnJoin = (Button) findViewById(R.id.btnJoin);
+        ImageButton btnJoin = (ImageButton) findViewById(R.id.btnJoin);
         btnJoin.setOnClickListener(new View.OnClickListener()
         {
             @Override
@@ -60,8 +59,19 @@ public class UIMainActivity extends UIBase
             }
         });
 
+        //Options Button
+        ImageButton btnOptions = (ImageButton) findViewById(R.id.btnOptions);
+        btnOptions.setOnClickListener(new OnClickListener()
+        {
+            @Override
+            public void onClick(View view)
+            {
+                notifyListener("cmd_btnOptions");
+            }
+        });
+
         //Launch Button
-        Button btnLaunch = (Button) findViewById(R.id.btnLaunch);
+        /*Button btnLaunch = (Button) findViewById(R.id.btnLaunch);
         btnLaunch.setOnClickListener(new View.OnClickListener()
         {
             @Override
@@ -69,11 +79,11 @@ public class UIMainActivity extends UIBase
             {
                 notifyListener("cmd_btnLaunch");
             }
-        });
+        });*/
     }
 
-    public Toolbar getToolbar()
+    /*public Toolbar getToolbar()
     {
         return (Toolbar) findViewById(R.id.toolbar);
-    }
+    }*/
 }

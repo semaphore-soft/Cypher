@@ -3,22 +3,134 @@
     <!--Delightful Bread-->
     <delightful_bread>
         <name>Delightful Bread</name>
-        <effectRating>1</effectRating>
+        <effectRating>15</effectRating>
         <duration>0</duration>
         <targetingType>SINGLE_PLAYER</targetingType>
         <effects>
-            <effect>heal</effect>
+            <effect>HEAL</effect>
         </effects>
     </delightful_bread>
 
     <!--Potion of Buffness-->
     <potion_of_buffness>
         <name>Potion of Buffness</name>
-        <effectRating>1</effectRating>
-        <duration>5</duration>
+        <effectRating>6</effectRating>
+        <duration>2</duration>
         <targetingType>SINGLE_PLAYER</targetingType>
         <effects>
-            <effect>beef_increase</effect>
+            <effect>BEEF_INCREASE</effect>
         </effects>
     </potion_of_buffness>
+
+    <!--Elven Bread-->
+    <elven_bread>
+        <name>Elven Bread</name>
+        <effectRating>30</effectRating>
+        <duration>0</duration>
+        <targetingType>SINGLE_PLAYER</targetingType>
+        <effects>
+            <effect>HEAL</effect>
+        </effects>
+    </elven_bread>
+
+    <!--Elven Pan Pizza-->
+    <elven_pan_pizza>
+        <name>Elven Pan Pizza</name>
+        <effectRating>15</effectRating>
+        <duration>0</duration>
+        <targetingType>AOE_PLAYER</targetingType>
+        <effects>
+            <effect>HEAL</effect>
+        </effects>
+    </elven_pan_pizza>
+
+    <!--$30 Italian Meal-->
+    <italian_meal_30>
+        <name>$30 Italian Meal</name>
+        <effectRating>50</effectRating>
+        <duration>0</duration>
+        <targetingType>AOE_PLAYER</targetingType>
+        <effects>
+            <effect>HEAL</effect>
+        </effects>
+    </italian_meal_30>
+
+    <!--$50 Italian Meal-->
+    <italian_meal_50>
+        <name>$50 Italian Meal</name>
+        <effectRating>50</effectRating>
+        <duration>0</duration>
+        <targetingType>AOE_PLAYER</targetingType>
+        <effects>
+            <effect>HEAL</effect>
+            <effect>ENERGY_RESTORE</effect>
+        </effects>
+    </italian_meal_50>
+
+    <!--Fire Cracker-->
+    <fire_cracker>
+        <name>Fire Cracker</name>
+        <effectRating>20</effectRating>
+        <duration>0</duration>
+        <targetingType>SINGLE_NON_PLAYER</targetingType>
+        <effects>
+            <effect>ATTACK</effect>
+        </effects>
+    </fire_cracker>
+
+    <!--Elixir-->
+    <elixir>
+        <name>Elixir</name>
+        <effectRating>20</effectRating>
+        <duration>0</duration>
+        <targetingType>SINGLE_PLAYER</targetingType>
+        <effects>
+            <effect>ENERGY_RESTORE</effect>
+        </effects>
+    </elixir>
+
+    <!--Impressive Shin Greaves-->
+    <impressive_shin_greaves>
+        <name>Impressive Shin Greaves</name>
+        <effectRating>3</effectRating>
+        <effects>
+            <effect>DEFENSE_RATING_UP</effect>
+        </effects>
+    </impressive_shin_greaves>
+
+    <!--Champion Gauntlets-->
+    <champion_gauntlets>
+        <name>Champion Gauntlets</name>
+        <effectRating>3</effectRating>
+        <effects>
+            <effect>ATTACK_RATING_UP</effect>
+        </effects>
+    </champion_gauntlets>
+
+    <!--Refresh Ring-->
+    <refresh_ring>
+        <name>Refresh Ring</name>
+        <effectRating>2</effectRating>
+        <effects>
+            <effect>HEAL</effect>
+        </effects>
+    </refresh_ring>
+
+    <!--Ancient Spell Book-->
+    <ancient_spell_book>
+        <name>Ancient Spell Book</name>
+        <effectRating>3</effectRating>
+        <effects>
+            <effect>SPECIAL_RATING_UP</effect>
+        </effects>
+    </ancient_spell_book>
+
+    <!--Spell Ring-->
+    <spell_ring>
+        <name>Spell Ring</name>
+        <effectRating>2</effectRating>
+        <effects>
+            <effect>ENERGY_RESTORE</effect>
+        </effects>
+    </spell_ring>
 </items>

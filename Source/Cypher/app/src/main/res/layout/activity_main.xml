@@ -1,50 +1,41 @@
 <?xml version="1.0" encoding="utf-8"?>
-<android.support.design.widget.CoordinatorLayout
-    xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
-    xmlns:tools="http://schemas.android.com/tools"
-    android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:fitsSystemWindows="true"
-    tools:context="com.semaphore_soft.apps.cypher.MainActivity">
+<RelativeLayout
+        xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:app="http://schemas.android.com/apk/res-auto"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="@color/mainBackground">
 
-    <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:orientation="vertical">
+    <ImageButton
+            android:layout_width="377dip"
+            android:layout_height="110dip"
+            app:srcCompat="@drawable/tile_host"
+            android:background="?android:selectableItemBackground"
+            android:id="@+id/btnHost"
+            android:scaleType="fitXY"
+            android:layout_marginTop="45dip"
+            android:layout_alignParentTop="true"
+            android:layout_alignParentStart="true"/>
 
-        <android.support.design.widget.AppBarLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:theme="@style/AppTheme.AppBarOverlay">
+    <ImageButton
+            android:layout_width="291dip"
+            android:layout_height="110dip"
+            app:srcCompat="@drawable/tile_join"
+            android:background="?android:selectableItemBackground"
+            android:id="@+id/btnJoin"
+            android:scaleType="fitXY"
+            android:layout_alignParentBottom="true"
+            android:layout_alignParentStart="true"
+            android:layout_marginBottom="45dip"/>
 
-            <android.support.v7.widget.Toolbar
-                    android:id="@+id/toolbar"
-                    android:layout_width="match_parent"
-                    android:layout_height="?attr/actionBarSize"
-                    android:background="?attr/colorPrimary"
-                    app:popupTheme="@style/AppTheme.PopupOverlay"/>
+    <ImageButton
+            android:layout_width="291dip"
+            android:layout_height="110dip"
+            app:srcCompat="@drawable/tile_opt"
+            android:background="?android:selectableItemBackground"
+            android:id="@+id/btnOptions"
+            android:scaleType="fitXY"
+            android:layout_centerVertical="true"
+            android:layout_alignParentEnd="true"/>
 
-        </android.support.design.widget.AppBarLayout>
-
-        <Button
-                android:text="Host Game"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:id="@+id/btnHost"/>
-
-        <Button
-                android:text="Join Game"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:id="@+id/btnJoin"/>
-
-        <Button
-            android:text="Launch"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:id="@+id/btnLaunch" />
-
-    </LinearLayout>
-
-</android.support.design.widget.CoordinatorLayout>
+</RelativeLayout>

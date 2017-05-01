@@ -12,8 +12,6 @@ import android.support.v4.app.FragmentManager;
 import android.support.v4.content.LocalBroadcastManager;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
-import android.view.Menu;
-import android.view.MenuItem;
 import android.widget.FrameLayout;
 import android.widget.Toast;
 
@@ -52,7 +50,7 @@ public class MainActivity extends AppCompatActivity implements GetNameDialogFrag
         ((FrameLayout) findViewById(R.id.empty)).addView(UIMainActivity);
         UIMainActivity.setUIListener(this);
 
-        setSupportActionBar(UIMainActivity.getToolbar());
+        //setSupportActionBar(UIMainActivity.getToolbar());
 
         // Allow network connections
         StrictMode.ThreadPolicy policy =
@@ -83,6 +81,15 @@ public class MainActivity extends AppCompatActivity implements GetNameDialogFrag
     }
 
     /**
+     * {@inheritDoc}
+     */
+    @Override
+    public void onBackPressed()
+    {
+        //do nothing
+    }
+
+    /**
      * Creates an instance of {@link GetNameDialogFragment}.
      */
     private void showGetNameDialog()
@@ -104,7 +111,7 @@ public class MainActivity extends AppCompatActivity implements GetNameDialogFrag
         connectFragment.show(fm, "connect_dialog");
     }
 
-    @Override
+    /*@Override
     public boolean onCreateOptionsMenu(Menu menu)
     {
         // Inflate the menu; this adds items to the action bar if it is present.
@@ -127,7 +134,7 @@ public class MainActivity extends AppCompatActivity implements GetNameDialogFrag
         }
 
         return super.onOptionsItemSelected(item);
-    }
+    }*/
 
     /**
      * {@inheritDoc}
@@ -166,7 +173,7 @@ public class MainActivity extends AppCompatActivity implements GetNameDialogFrag
     /**
      * {@inheritDoc}
      *
-     * @param msg Message read from network
+     * @param msg      Message read from network
      * @param readFrom Device that message was received from
      */
     @Override
@@ -180,7 +187,7 @@ public class MainActivity extends AppCompatActivity implements GetNameDialogFrag
      * Moves players to {@link ConnectionLobbyActivity} when client or server
      * notify that they have successfully started a connection.
      *
-     * @param msg Status update
+     * @param msg      Status update
      * @param readFrom Device that update was received from
      */
     @Override
@@ -206,7 +213,7 @@ public class MainActivity extends AppCompatActivity implements GetNameDialogFrag
      * <p>
      * Shows alert if client was unable to successfully start a connection.
      *
-     * @param msg Error message
+     * @param msg      Error message
      * @param readFrom Device that error was received from
      */
     @Override
@@ -269,6 +276,11 @@ public class MainActivity extends AppCompatActivity implements GetNameDialogFrag
                 intent.putExtra("player", 0);
                 intent.putExtra("character", "knight");
                 startActivity(intent);
+                break;
+            }
+            case "cmd_btnOptions":
+            {
+                startActivity(new Intent(this, CameraPreferencesActivity.class));
                 break;
             }
             default:

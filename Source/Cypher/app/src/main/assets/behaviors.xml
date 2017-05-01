@@ -1,14 +1,18 @@
-<aggressive>
-    <attack>15</attack>
-    <defend>5</defend>
-    <special>10</special>
-    <move>0</move>
-    <seek>1</seek>
-</aggressive>
+<behaviors>
+    <aggressive>
+        <attack>15</attack>
+        <defend>5</defend>
+        <special>10</special>
+        <move>0</move>
+        <item>5</item>
+        <seek>1</seek>
+    </aggressive>
 
-<cowardly>
-<attack>10</attack>
-<defend>5</defend>
-<special>5</special>
-<move>5</move>
-</cowardly>
+    <cowardly>
+        <attack>10</attack>
+        <defend>5</defend>
+        <special>5</special>
+        <move>5</move>
+        <item>5</item>
+    </cowardly>
+</behaviors>

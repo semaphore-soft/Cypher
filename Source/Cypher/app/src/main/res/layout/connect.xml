@@ -3,11 +3,11 @@
               android:orientation="vertical"
               android:layout_width="match_parent"
               android:layout_height="match_parent"
-              android:minWidth="300dp"
-              android:paddingTop="20dp"
-              android:paddingLeft="10dp"
-              android:paddingRight="10dp"
-              android:paddingBottom="10dp">
+              android:minWidth="300dip"
+              android:paddingTop="20dip"
+              android:paddingLeft="10dip"
+              android:paddingRight="10dip"
+              android:paddingBottom="10dip">
 
     <LinearLayout
             android:orientation="horizontal"
@@ -53,7 +53,8 @@
                 android:hint="Host Address"
                 android:digits='"0123456789."'
                 android:inputType="number"
-                android:layout_weight="1"/>
+                android:layout_weight="1"
+                android:imeOptions="actionGo" />
     </LinearLayout>
 
     <LinearLayout

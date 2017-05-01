@@ -17,6 +17,7 @@ import org.xmlpull.v1.XmlPullParserFactory;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.concurrent.ConcurrentHashMap;
 
 import static com.semaphore_soft.apps.cypher.utils.CollectionManager.getNextID;
@@ -100,6 +101,128 @@ public class GameStatLoader
         return null;
     }
 
+    public static HashMap<String, Integer> getTagsMembers(Context context,
+                                                          String file,
+                                                          ArrayList<String> tags,
+                                                          String memberName)
+    {
+        try
+        {
+            XmlPullParserFactory factory    = XmlPullParserFactory.newInstance();
+            XmlPullParser        listParser = factory.newPullParser();
+
+            AssetManager assetManager    = context.getAssets();
+            InputStream  listInputStream = assetManager.open(file);
+            listParser.setInput(listInputStream, null);
+
+            Logger.logI("loading tags with member <" + memberName + ">");
+
+            HashMap<String, Integer> res = new HashMap<>();
+
+            int event = listParser.getEventType();
+
+            while (event != XmlPullParser.END_DOCUMENT)
+            {
+                switch (event)
+                {
+                    case XmlPullParser.START_TAG:
+                        for (String tag : tags)
+                        {
+                            if (tag.equals(listParser.getName()))
+                            {
+                                int[] member = new int[1];
+
+                                if (getIntMember(listParser, tag, memberName, member))
+                                {
+                                    res.put(tag, member[0]);
+
+                                    Logger.logI(
+                                        "found tag <" + tag + "> with member <" + memberName +
+                                        ">:<" + member[0] + ">");
+                                }
+                            }
+                        }
+                        break;
+                    default:
+                        break;
+                }
+
+                if (tags.size() == res.size())
+                {
+                    return res;
+                }
+
+                event = listParser.next();
+            }
+
+            return res;
+        }
+        catch (XmlPullParserException e)
+        {
+            e.printStackTrace();
+        }
+        catch (IOException e)
+        {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
+    private static boolean getIntMember(final XmlPullParser parser,
+                                        final String parentName,
+                                        final String memberName,
+                                        final int[] member)
+    {
+        Logger.logD("enter trace");
+
+        try
+        {
+            int event = parser.getEventType();
+
+            while (event != XmlPullParser.END_DOCUMENT)
+            {
+                switch (event)
+                {
+                    case XmlPullParser.START_TAG:
+                        if (memberName.equals(parser.getName()))
+                        {
+                            parser.next();
+                            member[0] = Integer.parseInt(parser.getText());
+
+                            Logger.logD("exit trace");
+
+                            return true;
+                        }
+                        break;
+                    case XmlPullParser.END_TAG:
+                        if (parentName.equals(parser.getName()))
+                        {
+                            Logger.logD("exit trace");
+
+                            return false;
+                        }
+                        break;
+                    default:
+                        break;
+                }
+
+                event = parser.next();
+            }
+        }
+        catch (XmlPullParserException e)
+        {
+            e.printStackTrace();
+        }
+        catch (IOException e)
+        {
+            e.printStackTrace();
+        }
+
+        Logger.logD("exit trace");
+
+        return false;
+    }
+
     public static void loadActorStats(Actor actor,
                                       int characterID,
                                       ConcurrentHashMap<Integer, Special> specials,
@@ -176,7 +299,7 @@ public class GameStatLoader
                                 actorSpecials.add(actorParser.getText());
                                 Logger.logI("found special: " + actorParser.getText(), 1);
                             }
-                            else if (actorParser.getName().equals("name"))
+                            else if (actorParser.getName().equals("displayName"))
                             {
                                 actorParser.next();
                                 actor.setDisplayName(actorParser.getText());
@@ -212,12 +335,12 @@ public class GameStatLoader
                                 Logger.logI(
                                     "found special rating: " + actorParser.getText(), 1);
                             }
-                            else if (actorParser.getName().equals("defenceRating"))
+                            else if (actorParser.getName().equals("defenseRating"))
                             {
                                 actorParser.next();
-                                actor.setDefenceRating(Integer.parseInt(actorParser.getText()));
+                                actor.setDefenseRating(Integer.parseInt(actorParser.getText()));
                                 Logger.logI(
-                                    "found defence rating: " + actorParser.getText(), 1);
+                                    "found defense rating: " + actorParser.getText(), 1);
                             }
                             else if (actorParser.getName().equals("behavior"))
                             {
@@ -277,6 +400,8 @@ public class GameStatLoader
                 Logger.logI("actor behavior not defined", 1);
             }
 
+            actor.setName(actorName);
+
             Logger.logI("finished loading actor <" + actorName + ">");
         }
         catch (XmlPullParserException e)
@@ -289,6 +414,95 @@ public class GameStatLoader
             Logger.logD("actors file error");
             e.printStackTrace();
         }
+    }
+
+    public static HashMap<String, Integer> getItemPrevalence(final Context context,
+                                                             final String actorName)
+    {
+        HashMap<String, Integer> ret = new HashMap<>();
+
+        XmlPullParserFactory factory = null;
+        try
+        {
+            factory = XmlPullParserFactory.newInstance();
+            AssetManager assetManager = context.getAssets();
+
+            XmlPullParser actorItemsParser      = factory.newPullParser();
+            InputStream   actorItemsInputStream = assetManager.open("actors.xml");
+            actorItemsParser.setInput(actorItemsInputStream, null);
+
+            boolean foundActor    = false;
+            boolean foundItems    = false;
+            boolean finishedItems = false;
+            boolean foundItem     = false;
+
+            int event = actorItemsParser.getEventType();
+
+            String itemName       = "none";
+            int    itemPrevalence = 0;
+
+            while (event != XmlPullParser.END_DOCUMENT && !finishedItems)
+            {
+                switch (event)
+                {
+                    case XmlPullParser.START_TAG:
+                        //Logger.logD(actorItemsParser.getName());
+                        if (!foundActor && actorName.equals(actorItemsParser.getName()))
+                        {
+                            foundActor = true;
+                        }
+                        else if (!foundItems && actorItemsParser.getName().equals("items"))
+                        {
+                            foundItems = true;
+                        }
+                        else if (!foundItem && actorItemsParser.getName().equals("item"))
+                        {
+                            foundItem = true;
+                        }
+                        else if (foundItem)
+                        {
+                            if (actorItemsParser.getName().equals("name"))
+                            {
+                                actorItemsParser.next();
+                                itemName = actorItemsParser.getText();
+                            }
+                            else if (actorItemsParser.getName().equals("prevalence"))
+                            {
+                                actorItemsParser.next();
+                                itemPrevalence = Integer.parseInt(actorItemsParser.getText());
+                            }
+                        }
+                        break;
+                    case XmlPullParser.END_TAG:
+                        //Logger.logD(actorItemsParser.getName());
+                        if (foundItem && actorItemsParser.getName().equals("item"))
+                        {
+                            foundItem = false;
+                            ret.put(itemName, itemPrevalence);
+                        }
+                        else if ((foundItems && actorItemsParser.getName().equals("items")) ||
+                                 actorItemsParser.getName().equals(actorName))
+                        {
+                            finishedItems = true;
+                        }
+                        break;
+                    default:
+                        break;
+                }
+
+                event = actorItemsParser.next();
+            }
+        }
+        catch (XmlPullParserException e)
+        {
+            e.printStackTrace();
+        }
+        catch (IOException e)
+        {
+            e.printStackTrace();
+        }
+
+        return ret;
     }
 
     public static Special loadSpecialStats(String specialName,
@@ -322,8 +536,9 @@ public class GameStatLoader
             boolean foundEffects    = false;
             boolean finishedEffects = false;
 
-            int               cost               = -1;
+            int               cost               = 1;
             int               duration           = -1;
+            float             scalar             = 1;
             String            targetingType      = "";
             ArrayList<String> effects            = new ArrayList<>();
             String            specialDisplayName = null;
@@ -372,6 +587,13 @@ public class GameStatLoader
                                 duration = Integer.parseInt(specialParser.getText());
                                 Logger.logI(
                                     "found duration: " + specialParser.getText(), 1);
+                            }
+                            else if (specialParser.getName().equals("scalar"))
+                            {
+                                specialParser.next();
+                                scalar = Float.parseFloat(specialParser.getText());
+                                Logger.logI(
+                                    "found scalar: " + specialParser.getText(), 1);
                             }
                             else if (specialParser.getName().equals("targetingType"))
                             {
@@ -437,6 +659,7 @@ public class GameStatLoader
                                               specialName,
                                               cost,
                                               duration,
+                                              scalar,
                                               specialTargetingType);
 
                 if (specialDisplayName != null)
@@ -478,11 +701,11 @@ public class GameStatLoader
                         case "SPECIAL_RATING_DOWN":
                             special.addEffect(Effect.E_EFFECT.SPECIAL_RATING_DOWN);
                             break;
-                        case "DEFENCE_RATING_UP":
-                            special.addEffect(Effect.E_EFFECT.DEFENCE_RATING_UP);
+                        case "DEFENSE_RATING_UP":
+                            special.addEffect(Effect.E_EFFECT.DEFENSE_RATING_UP);
                             break;
-                        case "DEFENCE_RATING_DOWN":
-                            special.addEffect(Effect.E_EFFECT.DEFENCE_RATING_DOWN);
+                        case "DEFENSE_RATING_DOWN":
+                            special.addEffect(Effect.E_EFFECT.DEFENSE_RATING_DOWN);
                             break;
                         default:
                             Special linkedSpecial = loadSpecialStats(effect, specials, context);
@@ -502,6 +725,9 @@ public class GameStatLoader
 
                 specials.put(special.getId(), special);
                 Logger.logI("special added to specials table", 1);
+
+                special.setName(specialName);
+
                 Logger.logI("finished loading special <" + specialName + ">");
                 return special;
             }
@@ -545,7 +771,7 @@ public class GameStatLoader
                         if (behaviorName.equals(behaviorParser.getName()))
                         {
                             foundBehavior = true;
-                            Logger.logI("found item", 1);
+                            Logger.logI("found behavior", 1);
                         }
                         else if (foundBehavior)
                         {
@@ -574,6 +800,13 @@ public class GameStatLoader
                                 actor.setMoveTickets(Integer.parseInt(behaviorParser.getText()));
                                 Logger.logI("found move tickets: " + behaviorParser.getText(), 1);
                             }
+                            else if (behaviorParser.getName().equals("item"))
+                            {
+                                behaviorParser.next();
+                                actor.setUseItemTickets(Integer.parseInt(behaviorParser.getText()));
+                                Logger.logI("found use item tickets: " + behaviorParser.getText(),
+                                            1);
+                            }
                             else if (behaviorParser.getName().equals("seek"))
                             {
                                 behaviorParser.next();
@@ -588,7 +821,7 @@ public class GameStatLoader
                             if (behaviorName.equals(behaviorParser.getName()))
                             {
                                 finishedBehavior = true;
-                                Logger.logI("finished item", 1);
+                                Logger.logI("finished behavior", 1);
                             }
                         }
                         break;
@@ -633,21 +866,31 @@ public class GameStatLoader
                                                  item.getEffectRating(),
                                                  ((ItemConsumable) item).getDuration(),
                                                  ((ItemConsumable) item).getTargetingType());
+                    for (Effect.E_EFFECT effect : item.getEffects())
+                    {
+                        newItem.addEffect(effect);
+                    }
+                    newItem.setDisplayName(item.getDisplayName());
                 }
                 else if (item instanceof ItemDurable)
                 {
                     newItem = new ItemDurable(getNextID(items),
                                               itemName,
                                               item.getEffectRating());
+                    for (Effect.E_EFFECT effect : item.getEffects())
+                    {
+                        newItem.addEffect(effect);
+                    }
+                    newItem.setDisplayName(item.getDisplayName());
                 }
                 else
                 {
                     Logger.logI("error: bad item in table, removing", 1);
-                    items.remove(item.getID());
+                    items.remove(item.getId());
                 }
                 if (newItem != null)
                 {
-                    items.put(newItem.getID(), newItem);
+                    items.put(newItem.getId(), newItem);
                     Logger.logI("finished loading item");
                     return newItem;
                 }
@@ -681,6 +924,7 @@ public class GameStatLoader
                 switch (event)
                 {
                     case XmlPullParser.START_TAG:
+                        //Logger.logD(itemParser.getName());
                         if (itemName.equals(itemParser.getName()))
                         {
                             foundItem = true;
@@ -727,6 +971,7 @@ public class GameStatLoader
                         }
                         break;
                     case XmlPullParser.END_TAG:
+                        //Logger.logD(itemParser.getName());
                         if (foundItem)
                         {
                             if (itemName.equals(itemParser.getName()))
@@ -804,6 +1049,9 @@ public class GameStatLoader
                     case "HEAL":
                         item.addEffect(Effect.E_EFFECT.HEAL);
                         break;
+                    case "ENERGY_RESTORE":
+                        item.addEffect(Effect.E_EFFECT.ENERGY_RESTORE);
+                        break;
                     case "ATTACK":
                         item.addEffect(Effect.E_EFFECT.ATTACK);
                         break;
@@ -831,11 +1079,11 @@ public class GameStatLoader
                     case "SPECIAL_RATING_DOWN":
                         item.addEffect(Effect.E_EFFECT.SPECIAL_RATING_DOWN);
                         break;
-                    case "DEFENCE_RATING_UP":
-                        item.addEffect(Effect.E_EFFECT.DEFENCE_RATING_UP);
+                    case "DEFENSE_RATING_UP":
+                        item.addEffect(Effect.E_EFFECT.DEFENSE_RATING_UP);
                         break;
-                    case "DEFENCE_RATING_DOWN":
-                        item.addEffect(Effect.E_EFFECT.DEFENCE_RATING_DOWN);
+                    case "DEFENSE_RATING_DOWN":
+                        item.addEffect(Effect.E_EFFECT.DEFENSE_RATING_DOWN);
                         break;
                     default:
                         Special special = loadSpecialStats(effect, specials, context);
@@ -853,7 +1101,7 @@ public class GameStatLoader
                 }
             }
 
-            items.put(item.getID(), item);
+            items.put(item.getId(), item);
             Logger.logI("item added to items table", 1);
             Logger.logI("finished loading item <" + itemName + ">");
             return item;

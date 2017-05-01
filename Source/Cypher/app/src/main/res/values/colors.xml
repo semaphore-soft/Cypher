@@ -9,4 +9,6 @@
 
     <color name="energyPrimary">#9e1f63</color>
     <color name="energySecondary">#FFFFFF</color>
+
+    <color name="mainBackground">#e7f5fc</color>
 </resources>

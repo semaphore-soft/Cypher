@@ -1,5 +1,7 @@
 package com.semaphore_soft.apps.cypher.game;
 
+import com.semaphore_soft.apps.cypher.utils.Logger;
+
 import java.util.ArrayList;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -51,18 +53,23 @@ public class Actor
     private int     specialMaximum;
     private int     specialCurrent;
     private int     specialRating;
-    private int     defenceRating;
+    private int     defenseRating;
     private E_STATE state;
 
     private int     attackTickets  = 1;
     private int     defendTickets  = 1;
     private int     specialTickets = 1;
     private int     moveTickets    = 1;
+    private int     useItemTickets = 1;
     private boolean seeker         = false;
+
+    private boolean boss = false;
 
     private ConcurrentHashMap<Integer, Special> specials;
     private ConcurrentHashMap<Integer, Item>    items;
     private ConcurrentHashMap<Integer, Status>  statuses;
+
+    private ArrayList<Actor> effectedActors;
 
     /**
      * Logical ID and name constructor.
@@ -112,6 +119,8 @@ public class Actor
         specials = new ConcurrentHashMap<>();
         items = new ConcurrentHashMap<>();
         statuses = new ConcurrentHashMap<>();
+
+        effectedActors = new ArrayList<>();
     }
 
     /**
@@ -151,6 +160,27 @@ public class Actor
      */
     public Actor(int id, int roomId, String name)
     {
+        this(id, roomId, name, false);
+    }
+
+    /**
+     * Logical ID, {@link Room} ID, and name constructor.
+     * <p>
+     * Creates an {@link Actor} object with a name, associated with a {@link
+     * Room}, and not associated with an AR marker, in a neutral state. Because
+     * it is created with a {@link Room} ID, it will be assumed to be a
+     * non-player {@link Actor}. Initializes member HashMaps.
+     *
+     * @param id     int: The logical reference ID of this {@link Actor}.
+     * @param roomId int: The logical reference ID of the {@link Room} this
+     *               {@link Actor} is associated with, or a resident of.
+     * @param name   String: The reference name of this {@link Actor}.
+     *               Primarily used for logging.
+     *
+     * @see E_STATE
+     */
+    public Actor(int id, int roomId, String name, boolean boss)
+    {
         this.id = id;
         this.markerId = -1;
         this.name = name;
@@ -159,9 +189,13 @@ public class Actor
         isPlayer = false;
         state = E_STATE.NEUTRAL;
 
+        this.boss = boss;
+
         specials = new ConcurrentHashMap<>();
         items = new ConcurrentHashMap<>();
         statuses = new ConcurrentHashMap<>();
+
+        effectedActors = new ArrayList<>();
     }
 
     /**
@@ -328,7 +362,7 @@ public class Actor
      *                      will be able to have.
      *
      * @see #receiveAttack(int)
-     * @see Special#applySpecial(int, Actor)
+     * @see Special#applySpecial(int, Actor, Actor)
      * @see GameMaster#attack(Model, int, int)
      * @see GameMaster#special(Model, int, int)
      * @see GameMaster#special(Model, int, int, int)
@@ -347,7 +381,7 @@ public class Actor
      * @return int: The maximum amount of health this {@link Actor} can have.
      *
      * @see #receiveAttack(int)
-     * @see Special#applySpecial(int, Actor)
+     * @see Special#applySpecial(int, Actor, Actor)
      * @see GameMaster#attack(Model, int, int)
      * @see GameMaster#special(Model, int, int)
      * @see GameMaster#special(Model, int, int, int)
@@ -364,7 +398,7 @@ public class Actor
      *                      Actor} is to have.
      *
      * @see #receiveAttack(int)
-     * @see Special#applySpecial(int, Actor)
+     * @see Special#applySpecial(int, Actor, Actor)
      * @see GameMaster#attack(Model, int, int)
      * @see GameMaster#special(Model, int, int)
      * @see GameMaster#special(Model, int, int, int)
@@ -380,7 +414,7 @@ public class Actor
      * @return int: The current amount of health this {@link Actor} has.
      *
      * @see #receiveAttack(int)
-     * @see Special#applySpecial(int, Actor)
+     * @see Special#applySpecial(int, Actor, Actor)
      * @see GameMaster#attack(Model, int, int)
      * @see GameMaster#special(Model, int, int)
      * @see GameMaster#special(Model, int, int, int)
@@ -548,7 +582,7 @@ public class Actor
      * @see #getRealSpecialRating()
      * @see #performSpecial(Special, Actor)
      * @see #performSpecial(Special, ArrayList)
-     * @see Special#applySpecial(int, Actor)
+     * @see Special#applySpecial(int, Actor, Actor)
      */
     public void setSpecialRating(int specialRating)
     {
@@ -568,7 +602,7 @@ public class Actor
      * @see #getRealSpecialRating()
      * @see #performSpecial(Special, Actor)
      * @see #performSpecial(Special, ArrayList)
-     * @see Special#applySpecial(int, Actor)
+     * @see Special#applySpecial(int, Actor, Actor)
      */
     public int getSpecialRating()
     {
@@ -581,15 +615,15 @@ public class Actor
      * Used in determining the amount of damage this {@link Actor} ignores when
      * attacked.
      *
-     * @param defenceRating int: The base defense rating this {@link Actor}
+     * @param defenseRating int: The base defense rating this {@link Actor}
      *                      will have.
      *
      * @see #receiveAttack(int)
-     * @see #getRealDefenceRating()
+     * @see #getRealDefenseRating()
      */
-    public void setDefenceRating(int defenceRating)
+    public void setDefenseRating(int defenseRating)
     {
-        this.defenceRating = defenceRating;
+        this.defenseRating = defenseRating;
     }
 
     /**
@@ -601,11 +635,11 @@ public class Actor
      * @return int: The base defense rating of this {@link Actor}.
      *
      * @see #receiveAttack(int)
-     * @see #getRealDefenceRating()
+     * @see #getRealDefenseRating()
      */
-    public int getDefenceRating()
+    public int getDefenseRating()
     {
-        return defenceRating;
+        return defenseRating;
     }
 
     /**
@@ -625,7 +659,7 @@ public class Actor
      * @see GameMaster#special(Model, int, int, int)
      * @see GameMaster#setActorState(Model, int, E_STATE)
      * @see #receiveAttack(int)
-     * @see Special#applySpecial(int, Actor)
+     * @see Special#applySpecial(int, Actor, Actor)
      */
     void setState(E_STATE state)
     {
@@ -643,7 +677,7 @@ public class Actor
      *
      * @see E_STATE
      * @see #receiveAttack(int)
-     * @see Special#applySpecial(int, Actor)
+     * @see Special#applySpecial(int, Actor, Actor)
      */
     public E_STATE getState()
     {
@@ -808,6 +842,16 @@ public class Actor
         this.moveTickets = moveTickets;
     }
 
+    public int getUseItemTickets()
+    {
+        return useItemTickets;
+    }
+
+    public void setUseItemTickets(int useItemTickets)
+    {
+        this.useItemTickets = useItemTickets;
+    }
+
     /**
      * Check this {@link Actor Actor's} 'seeker' flag.
      * <p>
@@ -854,6 +898,16 @@ public class Actor
         this.seeker = seeker;
     }
 
+    public boolean isBoss()
+    {
+        return boss;
+    }
+
+    public void setBoss(boolean boss)
+    {
+        this.boss = boss;
+    }
+
     /**
      * Perform an attack on a given {@link Actor}. Sets this {@link Actor
      * Actor's} {@link E_STATE state} to 'attack' and calls receiveAttack on
@@ -868,7 +922,12 @@ public class Actor
      */
     void attack(Actor actor)
     {
+        Logger.logI("actor:<" + id + "> attacking actor:<" + actor.getId() + ">");
+        Logger.logI("target health pre-attack:<" + actor.getHealthCurrent() + ">");
+
         actor.receiveAttack(getRealAttackRating());
+
+        Logger.logI("target health post-attack:<" + actor.getHealthCurrent() + ">");
 
         state = E_STATE.ATTACK;
     }
@@ -876,7 +935,7 @@ public class Actor
     /**
      * Calculate the amount of damage received by this {@link Actor} based on
      * the attack rating, this {@link Actor Actor's} {@link E_STATE state}, and
-     * defence rating. Update this {@link Actor Actor's} current health
+     * defense rating. Update this {@link Actor Actor's} current health
      * accordingly.
      *
      * @param attackRating int: The attack rating of the incoming attack.
@@ -904,7 +963,7 @@ public class Actor
                 break;
         }
 
-        damage -= getRealDefenceRating();
+        damage -= getRealDefenseRating();
         damage = (damage < 0) ? 0 : damage;
 
         healthCurrent = (damage > healthCurrent) ? 0 : healthCurrent - damage;
@@ -933,7 +992,7 @@ public class Actor
      * </ul>
      *
      * @see Special
-     * @see Special#applySpecial(int, Actor)
+     * @see Special#applySpecial(int, Actor, Actor)
      */
     public boolean performSpecial(Special special, Actor actor)
     {
@@ -946,14 +1005,16 @@ public class Actor
             specialCurrent -= special.getCost();
         }
 
-        // ensure a self-targeted special's effects will be present for their
+        state = E_STATE.SPECIAL;
+
+        /*// ensure a self-targeted special's effects will be present for their
         // entire duration after the turn the special was used
         if (id == actor.getId())
         {
             special.incrementDuration();
-        }
+        }*/
 
-        special.applySpecial(getRealSpecialRating(), actor);
+        special.applySpecial(getRealSpecialRating(), this, actor);
 
         return true;
     }
@@ -982,7 +1043,7 @@ public class Actor
      * </ul>
      *
      * @see Special
-     * @see Special#applySpecial(int, Actor)
+     * @see Special#applySpecial(int, Actor, Actor)
      */
     public boolean performSpecial(Special special, ArrayList<Actor> actors)
     {
@@ -995,9 +1056,11 @@ public class Actor
             specialCurrent -= special.getCost();
         }
 
+        state = E_STATE.SPECIAL;
+
         for (Actor actor : actors)
         {
-            special.applySpecial(getRealSpecialRating(), actor);
+            special.applySpecial(getRealSpecialRating(), this, actor);
         }
 
         return true;
@@ -1031,14 +1094,20 @@ public class Actor
      */
     public void addItem(Item item)
     {
-        if (!items.containsKey(item.getID()))
+        if (!items.containsKey(item.getId()))
         {
-            items.put(item.getID(), item);
+            items.put(item.getId(), item);
             if (item instanceof ItemDurable)
             {
+                Logger.logI(
+                    "actor:<" + id + "> acquired durable item:<" + item.getDisplayName() + ">");
+
                 for (Effect.E_EFFECT effect : item.getEffects())
                 {
-                    Effect.applyLinkedEffect(effect, item.getEffectRating(), this, item.getID());
+                    Logger.logI("applying linked effect:<" + effect.toString() + "> with rating:<" +
+                                item.getEffectRating() + ">");
+
+                    Effect.applyLinkedEffect(effect, item.getEffectRating(), this, item.getId());
                 }
             }
         }
@@ -1070,12 +1139,17 @@ public class Actor
     {
         if (items.containsKey(itemID))
         {
+            Logger.logI("actor:<" + id + "> removing item:<" + itemID + ">");
+
             items.remove(itemID);
             for (int statusID : statuses.keySet())
             {
                 Status status = statuses.get(statusID);
                 if (status instanceof StatusLinked && ((StatusLinked) status).getLinkID() == itemID)
                 {
+                    Logger.logI("removing linked status:<" + status.getId() +
+                                "> with link id:<" + ((StatusLinked) status).getLinkID() + ">");
+
                     removeStatus(status);
                 }
             }
@@ -1106,14 +1180,14 @@ public class Actor
      */
     public void removeItem(Item item)
     {
-        if (items.containsKey(item.getID()))
+        if (items.containsKey(item.getId()))
         {
-            items.remove(item.getID());
+            items.remove(item.getId());
             for (int statusID : statuses.keySet())
             {
                 Status status = statuses.get(statusID);
                 if (status instanceof StatusLinked &&
-                    ((StatusLinked) status).getLinkID() == item.getID())
+                    ((StatusLinked) status).getLinkID() == item.getId())
                 {
                     removeStatus(status);
                 }
@@ -1164,10 +1238,13 @@ public class Actor
      * @see Special
      * @see Effect
      */
-    void addNewStatusTemporary(Status.E_STATUS_TYPE type, int effectRating, int duration)
+    void addNewStatusTemporary(Status.E_STATUS_TYPE type,
+                               int effectRating,
+                               int duration,
+                               int sourceActorId)
     {
         StatusTemporary status =
-            new StatusTemporary(getNextID(statuses), type, effectRating, duration);
+            new StatusTemporary(getNextID(statuses), type, effectRating, duration, sourceActorId);
 
         statuses.put(status.getId(), status);
     }
@@ -1308,21 +1385,21 @@ public class Actor
      * @see Status#getType()
      * @see Status#getEffectRating()
      */
-    int getRealDefenceRating()
+    int getRealDefenseRating()
     {
-        int realDefenceRating = defenceRating;
+        int realDefenseRating = defenseRating;
 
         for (int statusID : statuses.keySet())
         {
             Status status = statuses.get(statusID);
-            if (status.getType() == Status.E_STATUS_TYPE.DEFENCE_RATING_MODIFIER)
+            if (status.getType() == Status.E_STATUS_TYPE.DEFENSE_RATING_MODIFIER)
             {
-                realDefenceRating += status.getEffectRating();
+                realDefenseRating += status.getEffectRating();
             }
 
         }
 
-        return realDefenceRating;
+        return realDefenseRating;
     }
 
     /**
@@ -1339,14 +1416,16 @@ public class Actor
      * @see Item
      * @see Effect
      * @see Effect.E_EFFECT
-     * @see Effect#applyTemporaryEffect(Effect.E_EFFECT, int, int, Actor)
+     * @see Effect#applyTemporaryEffect(Effect.E_EFFECT, int, int, Actor, Actor)
      */
-    public void useItem(int itemID)
+    public boolean useItem(Model model, int itemID)
     {
-        if (items.containsKey(itemID))
+        //if (items.containsKey(itemID))
         {
-            useItem(items.get(itemID));
+            return useItem(GameMaster.getItem(model, itemID));
         }
+
+        //return false;
     }
 
     /**
@@ -1362,23 +1441,45 @@ public class Actor
      * @see Item
      * @see Effect
      * @see Effect.E_EFFECT
-     * @see Effect#applyTemporaryEffect(Effect.E_EFFECT, int, int, Actor)
+     * @see Effect#applyTemporaryEffect(Effect.E_EFFECT, int, int, Actor, Actor)
      */
-    private void useItem(Item item)
+    public boolean useItem(Item item)
     {
-        if (items.containsKey(item.getID()))
+        Logger.logD("enter trace");
+
+        Logger.logD("item id:<" + item.getId() + ">");
+
+        //if (items.containsKey(item.getId()))
         {
+            //Logger.logD("item found in inventory");
+
             if (item instanceof ItemConsumable)
             {
+                Logger.logD("item is consumable");
+
                 for (Effect.E_EFFECT effect : item.getEffects())
                 {
+                    Logger.logI("applying effect:<" + effect.toString() + "> with rating:<" +
+                                item.getEffectRating() + ">");
+
                     Effect.applyTemporaryEffect(effect,
                                                 item.getEffectRating(),
                                                 ((ItemConsumable) item).getDuration(),
+                                                this,
                                                 this);
                 }
+
+                //removeItem(item);
+
+                Logger.logD("exit trace");
+
+                return true;
             }
         }
+
+        Logger.logD("exit trace");
+
+        return false;
     }
 
     /**
@@ -1395,13 +1496,111 @@ public class Actor
      */
     public void tick()
     {
-        for (int statusID : statuses.keySet())
+        Logger.logD("enter trace");
+
+        ArrayList<Actor> noLongerEffectingActors = new ArrayList<>();
+
+        for (Actor actor : effectedActors)
+        {
+            boolean noLongerEffecting = true;
+
+            for (Status status : actor.getStatuses().values())
+            {
+                if (status instanceof StatusTemporary &&
+                    ((StatusTemporary) status).getSourceActorId() == id)
+                {
+                    Logger.logI("found child temporary status of actor:<" + id + "> on actor:<" +
+                                actor.getId() + ">, status is of type:<" +
+                                status.getType().toString() + ">");
+                    if (((StatusTemporary) status).tick())
+                    {
+                        Logger.logI("child status expired, removing");
+                        actor.removeStatus(status);
+                    }
+                    else
+                    {
+                        noLongerEffecting = false;
+                    }
+                }
+            }
+
+            if (noLongerEffecting)
+            {
+                Logger.logI("actor:<" + id + "> if no longer effecting actor:<" + actor.getId() +
+                            ">, removing from effecting list");
+
+                noLongerEffectingActors.add(actor);
+            }
+        }
+
+        for (Actor actor : noLongerEffectingActors)
+        {
+            effectedActors.remove(actor);
+        }
+
+        for (Status status : statuses.values())
+        {
+            if (status instanceof StatusLinked)
+            {
+                Logger.logI("checking linked status");
+                switch (status.getType())
+                {
+                    case RECURRING_HEAL:
+                        Logger.logI("applying recurring heal");
+                        Effect.applyTemporaryEffect(Effect.E_EFFECT.HEAL,
+                                                    status.getEffectRating(),
+                                                    0,
+                                                    this,
+                                                    this);
+                        break;
+                    case RECURRING_ENERGY_RESTORE:
+                        Logger.logI("applying recurring energy restore");
+                        Effect.applyTemporaryEffect(Effect.E_EFFECT.ENERGY_RESTORE,
+                                                    status.getEffectRating(),
+                                                    0,
+                                                    this,
+                                                    this);
+                        break;
+                    default:
+                        break;
+                }
+            }
+        }
+
+        /*for (int statusID : statuses.keySet())
         {
             Status status = statuses.get(statusID);
             if (status instanceof StatusTemporary && ((StatusTemporary) status).tick())
             {
                 removeStatus(status);
             }
+        }*/
+
+        Logger.logD("exit trace");
+    }
+
+    public ConcurrentHashMap<Integer, Item> getItems()
+    {
+        return items;
+    }
+
+    public void addEffectedActor(Actor actor)
+    {
+        Logger.logD("enter trace");
+
+        if (!effectedActors.contains(actor))
+        {
+            Logger.logI(
+                "registering effect of actor:<" + id + "> on actor:<" + actor.getId() + ">");
+
+            effectedActors.add(actor);
         }
+
+        Logger.logD("exit trace");
+    }
+
+    public ConcurrentHashMap<Integer, Status> getStatuses()
+    {
+        return statuses;
     }
 }

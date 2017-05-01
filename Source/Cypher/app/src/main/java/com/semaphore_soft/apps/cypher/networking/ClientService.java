@@ -96,7 +96,7 @@ public class ClientService extends Service
     {
         if (clientThread != null)
         {
-            Logger.logD("Writing to server");
+            Logger.logD("Writing to server", 5);
             clientThread.write(msg);
         }
         else
@@ -129,7 +129,7 @@ public class ClientService extends Service
      */
     public void threadRead(String msg)
     {
-        Logger.logD("Sending thread read");
+        Logger.logD("Sending thread read", 5);
         Intent localIntent = new Intent(NetworkConstants.BROADCAST_MESSAGE)
             .putExtra(NetworkConstants.MESSAGE, msg);
         LocalBroadcastManager.getInstance(this).sendBroadcast(localIntent);
@@ -144,7 +144,7 @@ public class ClientService extends Service
      */
     public void threadUpdate(String msg)
     {
-        Logger.logD("Sending thread update");
+        Logger.logD("Sending thread update", 5);
         Intent localIntent = new Intent(NetworkConstants.BROADCAST_STATUS)
             .putExtra(NetworkConstants.MESSAGE, msg);
         LocalBroadcastManager.getInstance(this).sendBroadcast(localIntent);
@@ -159,7 +159,7 @@ public class ClientService extends Service
      */
     public void threadError(String msg)
     {
-        Logger.logD("Sending thread error");
+        Logger.logD("Sending thread error", 5);
         Intent localIntent = new Intent(NetworkConstants.BROADCAST_ERROR).putExtra(
             NetworkConstants.MESSAGE, msg);
         LocalBroadcastManager.getInstance(this).sendBroadcast(localIntent);
